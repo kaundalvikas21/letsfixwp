@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Hero } from "@/components/sections/v1/Hero";
+import { PlatformMarquee } from "@/components/sections/v1/PlatformMarquee";
 import { hubNodes, nodes, routes } from "@/config/routes";
 import { guides } from "@/content";
 
@@ -17,6 +18,7 @@ export default function Home() {
   return (
     <>
       <Hero />
+      <PlatformMarquee />
 
       <section aria-labelledby="critical">
         <h2 id="critical">Site down or hacked right now</h2>

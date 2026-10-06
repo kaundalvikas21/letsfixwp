@@ -23,7 +23,10 @@ Status: S1, S2 built in V1.1. Eyebrows used: 0. Marquees used: 0.
 | # | Section | Layout family | Eyebrow | Marquee | CTA intents |
 | --- | --- | --- | --- | --- | --- |
 | H1 | Hero with live triage | Asymmetric split 5/7 (text / interactive console); stacked under 768px, console after headline | No | No | BOOK (solid), CHAT (ghost); console result adds BOOK (service + guide) and the HOW text link; no-match shows CHAT + CHECK text link |
+| H2 | Platform logos under the hero | Logo marquee (the page's only marquee): one plain line + monochrome Simple Icons logos | No (plain sentence, not an eyebrow) | Yes (1 of 1) | None |
 
 Status: H1 built in V1.2. Home sections so far: 1. Eyebrows used: 0 of ceil(n/3). Marquees used: 0. Image-plus-text splits in a row: 1.
 
 V1 SYNC (after merging main): S1 and H1 rows updated for the sitemap model. Layout families unchanged. Eyebrows used: 0. Marquees used: 0.
+
+V1.3: H2 built (logo marquee). Home sections so far: 2. Eyebrows used: 0 of ceil(2/3)=1. Marquees used: 1 of 1. Image-plus-text splits in a row: 0 (marquee breaks the run).

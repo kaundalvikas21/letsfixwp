@@ -70,3 +70,6 @@
 @media (prefers-reduced-motion: reduce) {
   .sheet-panel, .sheet-overlay { animation: none !important; }
 }
+
+/* Platform logo marquee (src/components/sections/v1/Marquee.tsx): two identical sets, shift by one set. */
+@keyframes marquee { to { transform: translateX(-50%); } }
