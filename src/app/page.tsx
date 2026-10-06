@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Hero } from "@/components/sections/v1/Hero";
 import { PlatformMarquee } from "@/components/sections/v1/PlatformMarquee";
+import { ProblemFinder } from "@/components/sections/v1/ProblemFinder";
 import { hubNodes, nodes, routes } from "@/config/routes";
-import { guides } from "@/content";
 
 export const metadata: Metadata = {
   title: { absolute: "WordPress Emergency Fixes, Care Plans and Development" },
@@ -13,23 +13,12 @@ export const metadata: Metadata = {
 
 /** Emergency-first: the V1 hero (live triage) leads; hubs follow in SITEMAP order (fixes before development). */
 export default function Home() {
-  const critical = guides.filter((g) => g.urgency === "critical").slice(0, 8);
-
   return (
     <>
       <Hero />
       <PlatformMarquee />
 
-      <section aria-labelledby="critical">
-        <h2 id="critical">Site down or hacked right now</h2>
-        <ul>
-          {critical.map((g) => (
-            <li key={g.slug}>
-              <Link href={routes.guide(g.slug)}>{g.title}</Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <ProblemFinder />
 
       <section aria-labelledby="hubs">
         <h2 id="hubs">What we do</h2>
