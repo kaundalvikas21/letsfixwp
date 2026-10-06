@@ -3,6 +3,7 @@ export const CTA = {
   BOOK: "Fix my site",
   CHAT: "Chat with an engineer",
   PLANS: "See care plans",
+  HOW: "See how we fix it", // secondary text link to a problem page
 } as const;
 
 export const PLANS_HREF = "/wordpress-maintenance-services";

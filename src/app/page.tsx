@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookLink, ChatButton, PlansLink } from "@/components/Cta";
-import { SiteStatus } from "@/components/SiteStatus";
-import { Triage } from "@/components/Triage";
+import { PlansLink } from "@/components/Cta";
+import { Hero } from "@/components/sections/v1/Hero";
 import { categories, categoryLabels } from "@/content/categories";
-import { problemPath, problemSummaries, problems, problemsIn } from "@/content/problems";
+import { problemPath, problems, problemsIn } from "@/content/problems";
 import { site } from "@/content/site";
 import { testimonials } from "@/content/testimonials";
 
@@ -18,18 +17,7 @@ export default function Home() {
 
   return (
     <>
-      <section aria-labelledby="hero">
-        <h1 id="hero">Your WordPress site is broken. Tell us what you see.</h1>
-        <p>
-          Pick the problem and book a fix, or talk it through with an engineer first. Hacked sites are{" "}
-          {site.hackedPromise}, and every service carries a {site.guaranteeDays}-day guarantee.
-        </p>
-        <Triage problems={problemSummaries} location="home:hero" />
-        <p data-hero-cta>
-          <BookLink location="home:hero" /> <ChatButton location="home:hero" />
-        </p>
-        <SiteStatus />
-      </section>
+      <Hero />
 
       <section aria-labelledby="critical">
         <h2 id="critical">Site down or hacked right now</h2>

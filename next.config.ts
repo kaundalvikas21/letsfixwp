@@ -2,6 +2,13 @@ import type { NextConfig } from "next";
 import { legacyProblems } from "./src/content/problems";
 
 const nextConfig: NextConfig = {
+  images: {
+    // ponytail: picsum placeholders only (docs/image-todo.md). Remove once real images land in /public.
+    remotePatterns: [
+      { protocol: "https", hostname: "picsum.photos" },
+      { protocol: "https", hostname: "fastly.picsum.photos" },
+    ],
+  },
   async redirects() {
     return [
       // Problems with a live legacy URL: the legacy URL is canonical, /fix/<slug> points at it.

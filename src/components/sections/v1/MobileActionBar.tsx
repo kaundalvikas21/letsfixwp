@@ -25,7 +25,7 @@ export function MobileActionBar() {
         else onScreen.delete(e.target);
       }
       setHeroVisible(onScreen.size > 0);
-    });
+    }, { threshold: 1 }); // a half-visible CTA row still counts as hidden, so BOOK is always fully on screen
     targets.forEach((t) => io.observe(t));
     // No hero CTAs on this page: report "not visible" through the same async path.
     const t = targets.length ? undefined : setTimeout(() => setHeroVisible(false), 0);
