@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BookLink, ChatButton } from "@/components/Cta";
+import { routes } from "@/config/routes";
 import { MobileMenu } from "./MobileMenu";
 import { NavBackdrop } from "./NavBackdrop";
 import { NavLinks } from "./NavLinks";
@@ -26,7 +27,7 @@ export function SiteNav() {
       <NavBackdrop />
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 md:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr]">
         <Link
-          href="/"
+          href={routes.home}
           aria-label="fixmywp home"
           className="inline-flex min-h-11 items-center gap-2 justify-self-start rounded-control text-[17px] font-semibold tracking-tight text-text"
         >

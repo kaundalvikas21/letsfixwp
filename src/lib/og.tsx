@@ -1,11 +1,10 @@
 import { ImageResponse } from "next/og";
-import type { Problem } from "@/content/schema";
-import { site } from "@/content/site";
+import { brand } from "@/config/brand";
 
 export const ogSize = { width: 1200, height: 630 };
 
 // Incident Console tokens (design-system/fixmywp-v1/MASTER.md). Locked dark like the site.
-export function problemOg(p: Problem) {
+export function ogImage(title: string) {
   return new ImageResponse(
     (
       <div
@@ -17,11 +16,11 @@ export function problemOg(p: Problem) {
           justifyContent: "space-between",
           padding: 72,
           background: "#0B0B0D",
-          borderTop: `16px solid ${site.colors.primary}`,
+          borderTop: `16px solid ${brand.accent}`,
         }}
       >
-        <div style={{ fontSize: 64, fontWeight: 700, color: "#EDEDEF", lineHeight: 1.1 }}>{p.h1}</div>
-        <div style={{ fontSize: 32, color: "#A1A1AA" }}>{site.name}</div>
+        <div style={{ fontSize: 64, fontWeight: 700, color: "#EDEDEF", lineHeight: 1.1 }}>{title}</div>
+        <div style={{ fontSize: 32, color: "#A1A1AA" }}>{brand.name}</div>
       </div>
     ),
     ogSize,

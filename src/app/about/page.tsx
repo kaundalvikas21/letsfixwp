@@ -1,37 +1,32 @@
 import type { Metadata } from "next";
-import { BookLink, ChatButton } from "@/components/Cta";
-import { site } from "@/content/site";
-import { testimonials } from "@/content/testimonials";
+import Link from "next/link";
+import { CtaPair } from "@/components/Cta";
+import { nodeCrumbs } from "@/components/JsonLd";
+import { Breadcrumbs } from "@/components/templates/parts";
+import { brand } from "@/config/brand";
+import { primaryCtaFor } from "@/config/cta";
+import { hubNodes, nodeByPath, routes } from "@/config/routes";
 
 export const metadata: Metadata = {
-  title: "About Us",
-  description: "FixMyWP repairs broken, hacked and slow WordPress sites on demand.",
-  alternates: { canonical: "/about" },
+  title: "About",
+  description: "WordPress engineers for sites that are down, hacked or slow, plus care plans and development.",
+  alternates: { canonical: routes.about },
 };
 
 export default function About() {
-  const press = testimonials[0];
   return (
     <>
-      <h1>About {site.name}</h1>
-      <p>
-        {site.name} repairs WordPress sites that are down, hacked, throwing errors or too slow. Founded by Makis
-        Mourelatos.
-      </p>
-      <p>
-        Every service carries a {site.guaranteeDays}-day guarantee. Hacked sites are {site.hackedPromise}.
-      </p>
-      <figure>
-        <blockquote cite={press.url}>
-          <p>{press.quote}</p>
-        </blockquote>
-        <figcaption>
-          {press.name}, {press.org} <a href={press.url}>Read the interview</a>
-        </figcaption>
-      </figure>
-      <p>
-        <BookLink location="about" /> <ChatButton location="about" />
-      </p>
+      <Breadcrumbs items={nodeCrumbs(routes.about)} />
+      <h1>About {brand.name}</h1>
+      <p>We fix WordPress sites that are down, hacked or slow, look after them afterwards, and build new ones.</p>
+      <ul>
+        {hubNodes.map((h) => (
+          <li key={h.path}>
+            <Link href={h.path}>{h.title}</Link>
+          </li>
+        ))}
+      </ul>
+      <CtaPair intent={primaryCtaFor(nodeByPath.get(routes.about)?.intent)} location="about" />
     </>
   );
 }

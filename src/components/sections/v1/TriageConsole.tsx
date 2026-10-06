@@ -6,16 +6,23 @@ import Link from "next/link";
 import { useEffect, useId, useState } from "react";
 import { BookLink, ChatButton } from "@/components/Cta";
 import { CTA } from "@/config/cta";
-import type { Problem } from "@/content/schema";
-import { matchProblem } from "@/lib/match-problem";
+import { matchKey, matchProblem, type MatchCandidate } from "@/lib/match-problem";
 import { useSearchTracking } from "@/lib/use-search-tracking";
 
-export type TriageProblem = Pick<
-  Problem,
-  "slug" | "title" | "h1" | "symptoms" | "urgency" | "typicalTurnaround" | "priceFrom"
-> & { path: string; causes: string[] };
+/** One answer card per match candidate, keyed by matchKey(). Built on the server. */
+export type TriageEntry = {
+  title: string;
+  causes: string[]; // a guide's top two likely causes; empty for a service-only match
+  summary: string; // shown when there are no causes
+  urgency?: "critical" | "high" | "standard";
+  service: string;
+  guide?: string;
+  servicePath: string;
+  typicalTurnaround: string | null;
+  priceFrom: string | null;
+};
 
-export type TriageChip = { label: string; slug: string };
+export type TriageChip = { label: string; key: string };
 
 const chipClass =
   "inline-flex min-h-11 cursor-pointer items-center rounded-control border border-line bg-surface-2 px-3.5 text-[14px] text-text transition-transform duration-150 hover:border-muted/40 active:scale-[0.98] aria-pressed:border-accent";
@@ -25,25 +32,37 @@ const chipClass =
  * The result streams in line by line (40ms opacity stagger). It communicates state:
  * the console is reading what you typed and answering. Reduced motion shows the final card at once.
  */
-export function TriageConsole({ problems, chips }: { problems: TriageProblem[]; chips: TriageChip[] }) {
+export function TriageConsole({
+  index,
+  entries,
+  chips,
+}: {
+  index: MatchCandidate[];
+  entries: Record<string, TriageEntry>;
+  chips: TriageChip[];
+}) {
   const inputId = useId();
   const reduce = useReducedMotion();
   const [query, setQuery] = useState("");
   const [pick, setPick] = useState<TriageChip | null>(null);
-  // undefined = nothing asked yet, null = asked but no match, string = matched slug
-  const [slug, setSlug] = useState<string | null | undefined>(undefined);
+  // undefined = nothing asked yet, null = asked but no match, string = matched entry key
+  const [key, setKey] = useState<string | null | undefined>(undefined);
   useSearchTracking(query);
 
   useEffect(() => {
     const t = setTimeout(() => {
       const q = query.trim();
-      if (!q) return setSlug(undefined);
-      setSlug(pick && q === pick.label ? pick.slug : (matchProblem(q, problems)[0] ?? null));
+      if (!q) return setKey(undefined);
+      if (pick && q === pick.label) return setKey(pick.key);
+      const results = matchProblem(q, index);
+      // On a tie, prefer the guide: it carries the specific likely causes.
+      const best = results.find((r) => r.guideSlug && r.score === results[0].score) ?? results[0];
+      setKey(best ? matchKey(best) : null);
     }, 200);
     return () => clearTimeout(t);
-  }, [query, pick, problems]);
+  }, [query, pick, index]);
 
-  const match = slug ? problems.find((p) => p.slug === slug) : undefined;
+  const match = key ? entries[key] : undefined;
 
   const list = { hidden: {}, show: { transition: { staggerChildren: 0.04 } } };
   const line = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.24 } } };
@@ -68,10 +87,10 @@ export function TriageConsole({ problems, chips }: { problems: TriageProblem[]; 
 
         <ul className="mt-3 flex flex-wrap gap-2" aria-label="Common problems">
           {chips.map((c) => (
-            <li key={c.slug}>
+            <li key={c.key}>
               <button
                 type="button"
-                aria-pressed={pick?.slug === c.slug && query === c.label}
+                aria-pressed={pick?.key === c.key && query === c.label}
                 onClick={() => {
                   setPick(c);
                   setQuery(c.label);
@@ -87,7 +106,7 @@ export function TriageConsole({ problems, chips }: { problems: TriageProblem[]; 
         <div aria-live="polite">
           {match && (
             <motion.div
-              key={match.slug}
+              key={key}
               variants={list}
               initial={reduce ? false : "hidden"}
               animate="show"
@@ -99,22 +118,34 @@ export function TriageConsole({ problems, chips }: { problems: TriageProblem[]; 
               <motion.p variants={line} className="mt-1 text-xl font-semibold tracking-tight text-text">
                 {match.title}
               </motion.p>
-              <motion.p variants={line} className="mt-4 text-[14px] text-muted">
-                Likely causes
-              </motion.p>
-              <ul className="mt-1 space-y-1.5">
-                {match.causes.map((c) => (
-                  <motion.li key={c} variants={line} className="max-w-[65ch] text-[15px] leading-relaxed text-text">
-                    {c}
-                  </motion.li>
-                ))}
-              </ul>
+              {match.causes.length > 0 ? (
+                <>
+                  <motion.p variants={line} className="mt-4 text-[14px] text-muted">
+                    Likely causes
+                  </motion.p>
+                  <ul className="mt-1 space-y-1.5">
+                    {match.causes.map((c) => (
+                      <motion.li key={c} variants={line} className="max-w-[65ch] text-[15px] leading-relaxed text-text">
+                        {c}
+                      </motion.li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <motion.p variants={line} className="mt-3 max-w-[65ch] text-[15px] leading-relaxed text-text">
+                  {match.summary}
+                </motion.p>
+              )}
               <motion.dl variants={line} className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 font-mono text-[13px]">
-                <dt className="text-muted">urgency</dt>
-                <dd className="flex items-center gap-1.5 text-text">
-                  {match.urgency !== "standard" && <WarningCircle size={16} className="text-accent-ink" aria-hidden />}
-                  {match.urgency}
-                </dd>
+                {match.urgency && (
+                  <>
+                    <dt className="text-muted">urgency</dt>
+                    <dd className="flex items-center gap-1.5 text-text">
+                      {match.urgency !== "standard" && <WarningCircle size={16} className="text-accent-ink" aria-hidden />}
+                      {match.urgency}
+                    </dd>
+                  </>
+                )}
                 {match.typicalTurnaround && (
                   <>
                     <dt className="text-muted">turnaround</dt>
@@ -129,9 +160,9 @@ export function TriageConsole({ problems, chips }: { problems: TriageProblem[]; 
                 )}
               </motion.dl>
               <motion.div variants={line} className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
-                <BookLink location="hero:triage" problem={match.slug} />
+                <BookLink location="hero:triage" service={match.service} guide={match.guide} />
                 <Link
-                  href={match.path}
+                  href={match.servicePath}
                   className="inline-flex min-h-11 items-center gap-1.5 rounded-control text-[15px] font-medium text-accent-ink hover:underline"
                 >
                   {CTA.HOW}
@@ -141,7 +172,7 @@ export function TriageConsole({ problems, chips }: { problems: TriageProblem[]; 
             </motion.div>
           )}
 
-          {slug === null && (
+          {key === null && (
             <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5">
               <p className="text-[15px] text-muted">No close match. Describe it to an engineer instead.</p>
               <ChatButton location="hero:triage-no-match" />

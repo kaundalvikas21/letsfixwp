@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { routes } from "@/config/routes";
 
-// Primary nav labels set by the V1.1 brief (approved change from the live WP Help / Got Hacked? labels).
+// Primary nav labels set by the V1.1 brief; targets mapped to SITEMAP per contract rule 16.
 export const navItems = [
-  { href: "/fix", label: "Problems" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/wordpress-maintenance-services", label: "Care plans" },
-  { href: "/testimonials", label: "Reviews" },
+  { href: routes.hub("wordpress-fix"), label: "Problems" },
+  { href: routes.pricing, label: "Pricing" },
+  { href: routes.plans("care-plans"), label: "Care plans" },
+  { href: routes.reviews, label: "Reviews" },
 ] as const;
 
 export function NavLinks({
@@ -24,7 +25,8 @@ export function NavLinks({
   return (
     <ul className={listClassName}>
       {navItems.map(({ href, label }) => {
-        const active = pathname === href || pathname.startsWith(`${href}/`);
+        const here = pathname.endsWith("/") ? pathname : `${pathname}/`;
+        const active = here.startsWith(href);
         return (
           <li key={href}>
             <Link href={href} aria-current={active ? "page" : undefined} onClick={onNavigate} className={linkClassName}>

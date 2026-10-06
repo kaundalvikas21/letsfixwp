@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BookLink, ChatButton } from "@/components/Cta";
+import { routes } from "@/config/routes";
 
 /**
  * Under 768px: fixed bottom bar with BOOK and a CHAT icon.
@@ -35,7 +36,8 @@ export function MobileActionBar() {
     };
   }, [pathname]);
 
-  if (pathname === "/app") return null; // the booking page is the BOOK destination
+  // The booking page is the BOOK destination; usePathname may or may not carry the trailing slash.
+  if (`${pathname.replace(/\/$/, "")}/` === routes.contact) return null;
 
   const show = !heroVisible;
   return (

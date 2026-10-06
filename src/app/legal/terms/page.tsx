@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
+import { LegalPending } from "@/components/templates/parts";
+import { brand } from "@/config/brand";
+import { routes } from "@/config/routes";
 
-// Text copied word for word from the live https://fixmywp.com/tos (noindex, follow there too).
+// fixmywp.com text, shown only when brand.legacy.enabled (it belongs to that business). Copied word for word from the live https://fixmywp.com/tos (noindex, follow there too).
 export const metadata: Metadata = {
-  title: { absolute: "Fix My WP Terms Service" },
-  alternates: { canonical: "/legal/terms" },
+  title: brand.legacy.enabled ? { absolute: "Fix My WP Terms Service" } : "Terms of Service",
+  alternates: { canonical: routes.legal.terms },
   robots: { index: false, follow: true },
 };
 
 export default function Terms() {
+  if (!brand.legacy.enabled) return <LegalPending title="Terms of Service" />;
   return (
     <article>
       <h1>Terms Of Service</h1>

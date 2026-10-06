@@ -1,5 +1,9 @@
 # fixmywp redesign audit (taste-skill 11.B)
 
+> **Status after Prompt 0.1 (sitemap migration):** the site is now letsfixwp.com with the IA in `src/config/sitemap.ts`. Everything below about fixmywp.com (brand claims, testimonials, address, legal text, old URLs) applies **only when `brand.legacy.enabled` is true** in `src/config/brand.ts`, which defaults to false. While it is false none of those claims render, the legal pages show a pending notice, and the fixmywp.com redirects are off.
+>
+> **Legacy redirects** (when enabled) live in `src/config/redirects.ts` as host-matched 301s for `fixmywp.com` and `www.fixmywp.com`. Host-level alternative: point fixmywp.com at a redirect-only host (Cloudflare Redirect Rules, or an nginx `server` block) that returns 301 for the six mapped paths and sends every other path to the letsfixwp.com home page. Either way, keep the old domain registered and verified in Search Console and submit a Change of Address.
+
 Mode: **Redesign, Overhaul**. New visual language; content, URLs and SEO equity preserved.
 Source: facts supplied in the foundation brief, plus one read of the live /testimonials, /tos and /privacy-policy pages (owner approved) for verbatim quotes and legal text. No other scraping.
 

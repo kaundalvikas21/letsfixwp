@@ -4,7 +4,8 @@ import { JsonLd, organizationLd } from "@/components/JsonLd";
 import { SiteFooter } from "@/components/SiteFooter";
 import { MobileActionBar } from "@/components/sections/v1/MobileActionBar";
 import { SiteNav } from "@/components/sections/v1/SiteNav";
-import { site } from "@/content/site";
+import { brand } from "@/config/brand";
+import { SITE_URL } from "@/config/sitemap";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -14,12 +15,11 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 export const viewport: Viewport = { themeColor: "#0B0B0D", colorScheme: "dark", viewportFit: "cover" };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(site.url),
-  title: { default: "FixMyWP: WordPress emergency repair", template: "%s | FixMyWP" },
-  description:
-    "Broken WordPress site? Pick your problem and book a fix, or chat with an engineer. Hacked sites restored in a day or less, with a 30-day guarantee.",
-  openGraph: { siteName: site.name, type: "website", locale: "en_US" },
-  twitter: { card: "summary_large_image", site: "@fixmywp" },
+  metadataBase: new URL(SITE_URL),
+  title: { default: `${brand.name}: WordPress fixes, care plans and development`, template: `%s | ${brand.name}` },
+  description: "Broken WordPress site? Pick your problem and book a fix, or chat with an engineer.",
+  openGraph: { siteName: brand.name, type: "website", locale: "en_IN" },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

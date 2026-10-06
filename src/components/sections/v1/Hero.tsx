@@ -1,30 +1,58 @@
 import Image from "next/image";
 import { BookLink, ChatButton } from "@/components/Cta";
-import { getProblem, problemPath, problems } from "@/content/problems";
-import { site } from "@/content/site";
-import { TriageConsole, type TriageChip, type TriageProblem } from "./TriageConsole";
+import { brand } from "@/config/brand";
+import { routes } from "@/config/routes";
+import { getGuide, getService, guides, matchIndex, services } from "@/content";
+import { matchKey } from "@/lib/match-problem";
+import { TriageConsole, type TriageChip, type TriageEntry } from "./TriageConsole";
 
-const chips: TriageChip[] = [
-  { label: "White screen", slug: "white-screen-of-death" },
-  { label: "Critical error", slug: "critical-error-on-this-website" },
-  { label: "Hacked", slug: "hacked" },
-  { label: "Database error", slug: "error-establishing-database-connection" },
-  { label: "Locked out", slug: "locked-out-of-wp-admin" },
-  { label: "Checkout broken", slug: "woocommerce-checkout-not-working" },
+// Quick picks resolve straight to a guide, so they always return the right answer.
+const chipGuides: [label: string, guide: string][] = [
+  ["White screen", "white-screen-of-death"],
+  ["Critical error", "critical-error-on-this-website"],
+  ["Hacked", "wordpress-hacked"],
+  ["Database error", "error-establishing-database-connection"],
+  ["Locked out", "locked-out-of-wp-admin"],
+  ["Checkout broken", "woocommerce-checkout-not-working"],
 ];
-for (const c of chips) if (!getProblem(c.slug)) throw new Error(`Hero chip points at unknown problem "${c.slug}"`);
+const chips: TriageChip[] = chipGuides.map(([label, slug]) => {
+  const g = getGuide(slug);
+  if (!g) throw new Error(`Hero chip points at unknown guide "${slug}"`);
+  return { label, key: matchKey({ serviceSlug: g.parentService, guideSlug: g.slug }) };
+});
 
-const triageProblems: TriageProblem[] = problems.map((p) => ({
-  slug: p.slug,
-  title: p.title,
-  h1: p.h1,
-  symptoms: p.symptoms,
-  urgency: p.urgency,
-  typicalTurnaround: p.typicalTurnaround,
-  priceFrom: p.priceFrom,
-  path: problemPath(p),
-  causes: p.likelyCauses.slice(0, 2),
-}));
+// One answer card per match candidate (guides and fix-intent services). Turnaround and price come from the service.
+const entries: Record<string, TriageEntry> = Object.fromEntries([
+  ...guides.map((g) => {
+    const s = getService(g.parentService)!;
+    const e: TriageEntry = {
+      title: g.title,
+      causes: g.likelyCauses.slice(0, 2),
+      summary: s.summary,
+      urgency: g.urgency,
+      service: s.id,
+      guide: g.slug,
+      servicePath: routes.service(s.id),
+      typicalTurnaround: s.typicalTurnaround,
+      priceFrom: s.priceFrom,
+    };
+    return [matchKey({ serviceSlug: s.id, guideSlug: g.slug }), e];
+  }),
+  ...services
+    .filter((s) => s.intent === "fix")
+    .map((s) => {
+      const e: TriageEntry = {
+        title: s.title,
+        causes: [],
+        summary: s.summary,
+        service: s.id,
+        servicePath: routes.service(s.id),
+        typicalTurnaround: s.typicalTurnaround,
+        priceFrom: s.priceFrom,
+      };
+      return [matchKey({ serviceSlug: s.id }), e];
+    }),
+]);
 
 /**
  * Asymmetric split, 5/7 at lg. One grid, explicit placement:
@@ -61,12 +89,14 @@ export function Hero() {
             <div className="absolute inset-0 bg-linear-to-r from-bg via-bg/20 to-bg/60" />
             <div className="absolute inset-0 bg-linear-to-b from-bg via-transparent to-bg" />
           </div>
-          <TriageConsole problems={triageProblems} chips={chips} />
+          <TriageConsole index={matchIndex} entries={entries} chips={chips} />
         </div>
 
         <p className="max-w-[44ch] text-lg leading-relaxed text-muted lg:col-span-5 lg:row-start-2">
-          Tell us what you see. A senior WordPress engineer diagnoses it, fixes it, and backs it with a{" "}
-          {site.guaranteeDays}-day guarantee.
+          {/* The guarantee belongs to the legacy business: shown only when brand.legacy.enabled. */}
+          {brand.legacy.facts
+            ? `Tell us what you see. A senior WordPress engineer diagnoses it, fixes it, and backs it with a ${brand.legacy.facts.guaranteeDays}-day guarantee.`
+            : "Tell us what you see. A senior WordPress engineer diagnoses it and fixes it."}
         </p>
 
         <div data-hero-cta className="flex flex-wrap gap-2 lg:col-span-5 lg:row-start-3 lg:self-start">
