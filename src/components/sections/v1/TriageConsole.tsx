@@ -1,10 +1,10 @@
 "use client";
 
-import { ArrowRight, WarningCircle } from "@phosphor-icons/react";
+import { ArrowRight } from "@phosphor-icons/react";
 import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useId, useState } from "react";
-import { BookLink, ChatButton } from "@/components/Cta";
+import { BookLink, ChatButton, CheckLink, ctaStyles } from "@/components/Cta";
 import { CTA } from "@/config/cta";
 import { matchKey, matchProblem, type MatchCandidate } from "@/lib/match-problem";
 import { useSearchTracking } from "@/lib/use-search-tracking";
@@ -12,14 +12,12 @@ import { useSearchTracking } from "@/lib/use-search-tracking";
 /** One answer card per match candidate, keyed by matchKey(). Built on the server. */
 export type TriageEntry = {
   title: string;
+  errorText?: string; // the guide's literal error message, shown in Geist Mono
   causes: string[]; // a guide's top two likely causes; empty for a service-only match
-  summary: string; // shown when there are no causes
-  urgency?: "critical" | "high" | "standard";
-  service: string;
+  summary: string; // shown only for a service-only match
+  service: string; // the guide's parentService
   guide?: string;
   servicePath: string;
-  typicalTurnaround: string | null;
-  priceFrom: string | null;
 };
 
 export type TriageChip = { label: string; key: string };
@@ -55,8 +53,9 @@ export function TriageConsole({
       if (!q) return setKey(undefined);
       if (pick && q === pick.label) return setKey(pick.key);
       const results = matchProblem(q, index);
-      // On a tie, prefer the guide: it carries the specific likely causes.
-      const best = results.find((r) => r.guideSlug && r.score === results[0].score) ?? results[0];
+      // The card is about a specific error, so prefer the best guide in the top results; a service-only
+      // match is the fallback when no guide scored.
+      const best = results.find((r) => r.guideSlug) ?? results[0];
       setKey(best ? matchKey(best) : null);
     }, 200);
     return () => clearTimeout(t);
@@ -118,6 +117,11 @@ export function TriageConsole({
               <motion.p variants={line} className="mt-1 text-xl font-semibold tracking-tight text-text">
                 {match.title}
               </motion.p>
+              {match.errorText && (
+                <motion.p variants={line} className="mt-2 max-w-[65ch] font-mono text-[13px] leading-relaxed text-muted">
+                  <code>{match.errorText}</code>
+                </motion.p>
+              )}
               {match.causes.length > 0 ? (
                 <>
                   <motion.p variants={line} className="mt-4 text-[14px] text-muted">
@@ -136,35 +140,9 @@ export function TriageConsole({
                   {match.summary}
                 </motion.p>
               )}
-              <motion.dl variants={line} className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 font-mono text-[13px]">
-                {match.urgency && (
-                  <>
-                    <dt className="text-muted">urgency</dt>
-                    <dd className="flex items-center gap-1.5 text-text">
-                      {match.urgency !== "standard" && <WarningCircle size={16} className="text-accent-ink" aria-hidden />}
-                      {match.urgency}
-                    </dd>
-                  </>
-                )}
-                {match.typicalTurnaround && (
-                  <>
-                    <dt className="text-muted">turnaround</dt>
-                    <dd className="text-text">{match.typicalTurnaround}</dd>
-                  </>
-                )}
-                {match.priceFrom && (
-                  <>
-                    <dt className="text-muted">from</dt>
-                    <dd className="text-text">{match.priceFrom}</dd>
-                  </>
-                )}
-              </motion.dl>
               <motion.div variants={line} className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
                 <BookLink location="hero:triage" service={match.service} guide={match.guide} />
-                <Link
-                  href={match.servicePath}
-                  className="inline-flex min-h-11 items-center gap-1.5 rounded-control text-[15px] font-medium text-accent-ink hover:underline"
-                >
+                <Link href={match.servicePath} className={ctaStyles.text}>
                   {CTA.HOW}
                   <ArrowRight size={16} aria-hidden />
                 </Link>
@@ -175,7 +153,10 @@ export function TriageConsole({
           {key === null && (
             <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5">
               <p className="text-[15px] text-muted">No close match. Describe it to an engineer instead.</p>
-              <ChatButton location="hero:triage-no-match" />
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                <ChatButton location="hero:triage-no-match" />
+                <CheckLink location="hero:triage-no-match" variant="text" />
+              </div>
             </div>
           )}
         </div>

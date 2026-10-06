@@ -3,7 +3,8 @@ import { BookLink, ChatButton } from "@/components/Cta";
 import { routes } from "@/config/routes";
 import { MobileMenu } from "./MobileMenu";
 import { NavBackdrop } from "./NavBackdrop";
-import { NavLinks } from "./NavLinks";
+import { DesktopNav } from "./DesktopNav";
+import { desktopNav, mobileNav } from "./nav-model";
 
 /** Bracketed dot: one path, accent fill (3.83:1 on --bg, passes 3:1 for graphics). */
 function Mark() {
@@ -18,7 +19,7 @@ function Mark() {
 }
 
 /**
- * Global nav, 64px. Desktop (lg+): wordmark | centered links | CHAT ghost + BOOK solid, single line.
+ * Global nav, 64px. Desktop (lg+): wordmark | Fixes, Security, Care plans, Pricing, More | CHAT ghost + BOOK solid, one line.
  * md to lg: wordmark | BOOK + menu. Under md: wordmark | menu (BOOK lives in the bottom action bar).
  */
 export function SiteNav() {
@@ -35,17 +36,12 @@ export function SiteNav() {
           fixmywp
         </Link>
 
-        <nav aria-label="Primary" className="hidden lg:block">
-          <NavLinks
-            listClassName="flex items-center gap-1"
-            linkClassName="inline-flex min-h-11 items-center rounded-control px-3 text-[15px] text-muted transition-colors hover:text-text aria-[current=page]:text-text"
-          />
-        </nav>
+        <DesktopNav items={desktopNav()} />
 
         <div className="ml-auto flex items-center gap-2 lg:ml-0 lg:justify-self-end">
           <ChatButton location="nav" className="max-lg:hidden" />
           <BookLink location="nav" className="max-md:hidden" />
-          <MobileMenu />
+          <MobileMenu {...mobileNav()} />
         </div>
       </div>
     </header>

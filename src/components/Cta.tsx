@@ -15,10 +15,11 @@ const base =
 export const ctaStyles = {
   solid: `${base} bg-accent text-accent-label hover:-translate-y-px`,
   ghost: `${base} border border-line text-text hover:bg-surface-2`,
+  text: "inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-control text-[15px] font-medium text-accent-ink hover:underline",
   icon: "inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-control border border-line text-text transition-transform duration-150 active:scale-[0.98]",
 };
 
-type Variant = "solid" | "ghost";
+type Variant = "solid" | "ghost" | "text";
 type Common = { location: string; service?: string; variant?: Variant; className?: string };
 
 const cls = (variant: Variant, className = "") => `${ctaStyles[variant]} ${className}`;

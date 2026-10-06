@@ -21,20 +21,18 @@ const chips: TriageChip[] = chipGuides.map(([label, slug]) => {
   return { label, key: matchKey({ serviceSlug: g.parentService, guideSlug: g.slug }) };
 });
 
-// One answer card per match candidate (guides and fix-intent services). Turnaround and price come from the service.
+// One answer card per match candidate: every guide, plus fix-intent services as the fallback when no guide matches.
 const entries: Record<string, TriageEntry> = Object.fromEntries([
   ...guides.map((g) => {
     const s = getService(g.parentService)!;
     const e: TriageEntry = {
       title: g.title,
+      errorText: g.errorText,
       causes: g.likelyCauses.slice(0, 2),
       summary: s.summary,
-      urgency: g.urgency,
       service: s.id,
       guide: g.slug,
       servicePath: routes.service(s.id),
-      typicalTurnaround: s.typicalTurnaround,
-      priceFrom: s.priceFrom,
     };
     return [matchKey({ serviceSlug: s.id, guideSlug: g.slug }), e];
   }),
@@ -47,8 +45,6 @@ const entries: Record<string, TriageEntry> = Object.fromEntries([
         summary: s.summary,
         service: s.id,
         servicePath: routes.service(s.id),
-        typicalTurnaround: s.typicalTurnaround,
-        priceFrom: s.priceFrom,
       };
       return [matchKey({ serviceSlug: s.id }), e];
     }),
