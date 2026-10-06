@@ -4,7 +4,8 @@ import { site } from "@/content/site";
 
 export function SiteFooter() {
   return (
-    <footer>
+    // Bottom padding under md clears the fixed mobile action bar.
+    <footer className="pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
       <address>
         <strong>{site.name}</strong>
         <br />
@@ -26,6 +27,12 @@ export function SiteFooter() {
           </li>
           <li>
             <Link href="/wordpress-maintenance-services">WordPress maintenance services</Link>
+          </li>
+          <li>
+            <Link href="/about">About us</Link>
+          </li>
+          <li>
+            <Link href="/contact">Contact</Link>
           </li>
           <li>
             <Link href="/legal/terms">Terms of Service</Link>

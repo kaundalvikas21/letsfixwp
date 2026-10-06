@@ -25,7 +25,7 @@ export default function Home() {
           {site.hackedPromise}, and every service carries a {site.guaranteeDays}-day guarantee.
         </p>
         <Triage problems={problemSummaries} location="home:hero" />
-        <p>
+        <p data-hero-cta>
           <BookLink location="home:hero" /> <ChatButton location="home:hero" />
         </p>
         <SiteStatus />

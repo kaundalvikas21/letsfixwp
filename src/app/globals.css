@@ -38,6 +38,7 @@
 @layer base {
   html {
     background: var(--bg);
+    scroll-padding-top: 5rem; /* anchors and skip link land below the 64px sticky nav */
   }
   body {
     background: var(--bg);
@@ -55,4 +56,17 @@
     background: var(--accent);
     color: var(--accent-label);
   }
+}
+
+/* Sheet open/close (src/components/ui/sheet.tsx). Radix waits for these to finish before unmounting. */
+@keyframes sheet-in { from { transform: translateX(100%); } }
+@keyframes sheet-out { to { transform: translateX(100%); } }
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes fade-out { to { opacity: 0; } }
+.sheet-panel[data-state="open"] { animation: sheet-in 320ms cubic-bezier(0.32, 0.72, 0, 1); }
+.sheet-panel[data-state="closed"] { animation: sheet-out 220ms cubic-bezier(0.32, 0.72, 0, 1); }
+.sheet-overlay[data-state="open"] { animation: fade-in 320ms ease-out; }
+.sheet-overlay[data-state="closed"] { animation: fade-out 220ms ease-in; }
+@media (prefers-reduced-motion: reduce) {
+  .sheet-panel, .sheet-overlay { animation: none !important; }
 }

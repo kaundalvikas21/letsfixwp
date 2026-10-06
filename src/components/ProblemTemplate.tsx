@@ -48,7 +48,7 @@ export function ProblemTemplate({ problem: p }: { problem: Problem }) {
       <header>
         <p>{categoryLabels[p.category]}</p>
         <h1>{p.h1}</h1>
-        <p>
+        <p data-hero-cta>
           <BookLink location={`${loc}:hero`} problem={p.slug} /> <ChatButton location={`${loc}:hero`} />
         </p>
         <SiteStatus />
