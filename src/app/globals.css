@@ -1,1 +1,58 @@
 @import "tailwindcss";
+
+/* fixmywp-v1 Incident Console tokens. Theme locked dark. Source of truth: design-system/fixmywp-v1/MASTER.md */
+:root {
+  --bg: #0b0b0d;
+  --surface: #131316;
+  --surface-2: #1a1a1f;
+  --line: rgb(255 255 255 / 0.08);
+  --text: #ededef;
+  --muted: #a1a1aa;
+  --accent: #cc3333; /* fills and focus ring only, never text on dark (3.83:1) */
+  --accent-ink: #f07070; /* accent text on dark: 6.80 on bg, 6.41 on surface */
+  --accent-label: #fafafa; /* text on accent fills: 4.92:1 */
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-label: var(--accent-label);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --radius-card: 12px;
+  --radius-control: 8px;
+
+  /* Tinted to the bg hue, never pure black. */
+  --shadow-card: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 12px 32px -12px rgb(4 4 6 / 0.7);
+}
+
+@layer base {
+  html {
+    background: var(--bg);
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-label);
+  }
+}
