@@ -1,30 +1,31 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookLink, ChatButton, PlansLink } from "@/components/Cta";
+import { BookLink, ChatButton } from "@/components/Cta";
+import { Finder, type FinderLabels } from "@/components/Finder";
 import { SiteStatus } from "@/components/SiteStatus";
-import { Triage } from "@/components/Triage";
-import { categories, categoryLabels } from "@/content/categories";
-import { problemPath, problemSummaries, problems, problemsIn } from "@/content/problems";
-import { site } from "@/content/site";
-import { testimonials } from "@/content/testimonials";
+import { hubNodes, nodes, routes } from "@/config/routes";
+import { guides, matchIndex, services } from "@/content";
 
 export const metadata: Metadata = {
-  title: { absolute: "WordPress Emergency Repair, Fixed by Engineers | FixMyWP" },
-  alternates: { canonical: "/" },
+  title: { absolute: "WordPress Emergency Fixes, Care Plans and Development" },
+  description: "WordPress site down, hacked or throwing errors? Pick your problem and book a fix, or chat with an engineer.",
+  alternates: { canonical: routes.home },
 };
 
+const labels: FinderLabels = {
+  services: Object.fromEntries(services.map((s) => [s.id, { title: s.title, path: s.path }])),
+  guides: Object.fromEntries(guides.map((g) => [g.slug, g.title])),
+};
+
+/** Emergency-first: finder and fix CTAs lead; hubs follow in SITEMAP order (fixes before development). */
 export default function Home() {
-  const critical = problems.filter((p) => p.urgency === "critical");
+  const critical = guides.filter((g) => g.urgency === "critical").slice(0, 8);
 
   return (
     <>
       <section aria-labelledby="hero">
         <h1 id="hero">Your WordPress site is broken. Tell us what you see.</h1>
-        <p>
-          Pick the problem and book a fix, or talk it through with an engineer first. Hacked sites are{" "}
-          {site.hackedPromise}, and every service carries a {site.guaranteeDays}-day guarantee.
-        </p>
-        <Triage problems={problemSummaries} location="home:hero" />
+        <Finder index={matchIndex} labels={labels} location="home:hero" />
         <p>
           <BookLink location="home:hero" /> <ChatButton location="home:hero" />
         </p>
@@ -34,60 +35,32 @@ export default function Home() {
       <section aria-labelledby="critical">
         <h2 id="critical">Site down or hacked right now</h2>
         <ul>
-          {critical.map((p) => (
-            <li key={p.slug}>
-              <Link href={problemPath(p)}>{p.title}</Link>
+          {critical.map((g) => (
+            <li key={g.slug}>
+              <Link href={routes.guide(g.slug)}>{g.title}</Link>
             </li>
           ))}
         </ul>
       </section>
 
-      <section aria-labelledby="by-category">
-        <h2 id="by-category">Every problem we fix</h2>
-        {categories.map((c) => (
-          <section key={c} aria-labelledby={`cat-${c}`}>
-            <h3 id={`cat-${c}`}>{categoryLabels[c]}</h3>
+      <section aria-labelledby="hubs">
+        <h2 id="hubs">What we do</h2>
+        {hubNodes.map((h) => (
+          <section key={h.path} aria-labelledby={`hub-${h.path}`}>
+            <h3 id={`hub-${h.path}`}>
+              <Link href={h.path}>{h.title}</Link>
+            </h3>
             <ul>
-              {problemsIn(c).map((p) => (
-                <li key={p.slug}>
-                  <Link href={problemPath(p)}>{p.title}</Link>
-                </li>
-              ))}
+              {nodes
+                .filter((n) => n.parentPath === h.path && n.kind === "service")
+                .map((n) => (
+                  <li key={n.path}>
+                    <Link href={n.path}>{n.title}</Link>
+                  </li>
+                ))}
             </ul>
           </section>
         ))}
-        <p>
-          <Link href="/fix">Search all WordPress problems</Link>
-        </p>
-      </section>
-
-      <section aria-labelledby="proof">
-        <h2 id="proof">What clients say</h2>
-        {testimonials.map((t) => (
-          <figure key={t.name}>
-            <blockquote>
-              {t.quote.split("\n\n").map((para) => (
-                <p key={para.slice(0, 24)}>{para}</p>
-              ))}
-            </blockquote>
-            <figcaption>
-              {t.name}, {t.org}
-            </figcaption>
-          </figure>
-        ))}
-        <p>
-          <Link href="/testimonials">Read testimonials</Link>
-        </p>
-      </section>
-
-      <section aria-labelledby="plans">
-        <h2 id="plans">Stop it happening again</h2>
-        <p>
-          Our {site.plan.name.toLowerCase()} includes one free fix ({site.plan.freeFixValue} value).
-        </p>
-        <p>
-          <PlansLink />
-        </p>
       </section>
     </>
   );

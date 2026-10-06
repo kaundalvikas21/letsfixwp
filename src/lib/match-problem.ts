@@ -1,4 +1,12 @@
-type Matchable = { slug: string; title: string; h1: string; symptoms: readonly string[] };
+/** What the matcher scores. Built on the server (src/content/index.ts matchIndex) and passed to client islands. */
+export type MatchCandidate = {
+  serviceSlug: string; // always set, so BOOK always has a target
+  guideSlug?: string;
+  head: string; // title and errorText (weighted)
+  body: string; // symptoms
+};
+
+export type MatchResult = { guideSlug?: string; serviceSlug: string; score: number };
 
 const STOP = new Set([
   "the", "and", "for", "with", "my", "our", "site", "website", "wordpress", "wp",
@@ -14,19 +22,21 @@ export const tokenize = (s: string) =>
     .map((t) => (t.length > 3 && t.endsWith("s") ? t.slice(0, -1) : t))
     .filter((t) => t && !STOP.has(t) && (t.length > 2 || /^\d+$/.test(t)));
 
-/** Top 3 slugs for a free-text symptom. Title and h1 hits outweigh symptom hits. */
-export function matchProblem(query: string, problems: readonly Matchable[], limit = 3): string[] {
-  const q = tokenize(query);
+/**
+ * Scores free text against guides (title, errorText, symptoms) and fix-intent services (title, symptoms).
+ * Returns the top results, best first. Every result resolves to a service.
+ */
+export function matchProblem(text: string, index: readonly MatchCandidate[], limit = 3): MatchResult[] {
+  const q = tokenize(text);
   if (!q.length) return [];
-  return problems
-    .map((p) => {
-      const head = new Set(tokenize(`${p.title} ${p.h1}`));
-      const body = new Set(tokenize(p.symptoms.join(" ")));
+  return index
+    .map((c) => {
+      const head = new Set(tokenize(c.head));
+      const body = new Set(tokenize(c.body));
       const score = q.reduce((n, t) => n + (head.has(t) ? 3 : 0) + (body.has(t) ? 1 : 0), 0);
-      return { slug: p.slug, score };
+      return { guideSlug: c.guideSlug, serviceSlug: c.serviceSlug, score };
     })
     .filter((r) => r.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit)
-    .map((r) => r.slug);
+    .sort((a, b) => b.score - a.score || Number(!!b.guideSlug) - Number(!!a.guideSlug))
+    .slice(0, limit);
 }

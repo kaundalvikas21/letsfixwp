@@ -1,24 +1,18 @@
 import type { NextConfig } from "next";
-import { legacyProblems } from "./src/content/problems";
+import { unconfirmedBrandFields } from "./src/config/brand";
+import { redirects } from "./src/config/redirects";
+
+// Unconfirmed brand values (src/config/brand.ts): loud warning on every build, hard failure on a production deploy.
+if (unconfirmedBrandFields.length) {
+  const msg = `Unconfirmed brand values in src/config/brand.ts:\n  - ${unconfirmedBrandFields.join("\n  - ")}`;
+  if (process.env.VERCEL_ENV === "production" || process.env.BRAND_STRICT === "1") throw new Error(msg);
+  console.warn(`\n\x1b[33m⚠ ${msg}\nA production deploy (VERCEL_ENV=production or BRAND_STRICT=1) will fail until they are confirmed.\x1b[0m\n`);
+}
 
 const nextConfig: NextConfig = {
+  trailingSlash: true,
   async redirects() {
-    return [
-      // Problems with a live legacy URL: the legacy URL is canonical, /fix/<slug> points at it.
-      ...legacyProblems.map((p) => ({
-        source: `/fix/${p.slug}`,
-        destination: `/${p.legacySlug}`,
-        permanent: true,
-      })),
-      // Other live URLs from the audit (docs/audit.md) mapped onto the new IA.
-      { source: "/about-us", destination: "/about", permanent: true },
-      { source: "/testimonials/page/:n", destination: "/testimonials", permanent: true },
-      { source: "/tos", destination: "/legal/terms", permanent: true },
-      { source: "/privacy-policy", destination: "/legal/privacy", permanent: true },
-      { source: "/wordpress-support-request", destination: "/app", permanent: true },
-      { source: "/fix-wordpress-services", destination: "/fix", permanent: true },
-      { source: "/wordpress-optimization", destination: "/fix/slow-wordpress-site", permanent: true },
-    ];
+    return redirects;
   },
 };
 

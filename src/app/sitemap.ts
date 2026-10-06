@@ -1,10 +1,14 @@
 import type { MetadataRoute } from "next";
-import { problemPath, problems } from "@/content/problems";
-import { site } from "@/content/site";
+import { nodes, routes } from "@/config/routes";
+import { SITE_URL } from "@/config/sitemap";
+import { compares, guides } from "@/content";
 
-// Legal pages are noindex, so they stay out. Problem URLs use their canonical (legacy-aware) path.
-const pages = ["/", "/fix", "/app", "/pricing", "/wordpress-maintenance-services", "/testimonials", "/about", "/contact"];
-
+// Every SITEMAP node plus the guide and compare collections. Utility routes (legal, thanks) are noindex and stay out.
 export default function sitemap(): MetadataRoute.Sitemap {
-  return [...pages, ...problems.map(problemPath)].map((path) => ({ url: `${site.url}${path}` }));
+  const paths = [
+    ...nodes.map((n) => n.path),
+    ...guides.map((g) => routes.guide(g.slug)),
+    ...compares.map((c) => routes.compare(c.slug)),
+  ];
+  return paths.map((path) => ({ url: `${SITE_URL}${path}` }));
 }

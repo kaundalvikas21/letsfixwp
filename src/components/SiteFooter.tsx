@@ -1,43 +1,68 @@
 import Link from "next/link";
-import { ChatButton, PlansLink } from "@/components/Cta";
-import { site } from "@/content/site";
+import { ChatButton, CheckLink } from "@/components/Cta";
+import { brand } from "@/config/brand";
+import { nodes, routes } from "@/config/routes";
+
+// Footer = every SITEMAP node (including inNav: false ones) plus the utility routes.
+const top = nodes.filter((n) => n.parentPath === routes.home);
+const childrenOf = (path: string) => nodes.filter((n) => n.parentPath === path);
 
 export function SiteFooter() {
+  const facts = brand.legacy.facts;
   return (
     <footer>
-      <address>
-        <strong>{site.name}</strong>
-        <br />
-        {site.address.street}
-        <br />
-        {site.address.locality} {site.address.region} {site.address.postalCode}
-        <br />
-        <a href={`mailto:${site.email}`}>{site.email}</a>
-        <br />
-        Hours: {site.hours}
-      </address>
-      <p>
-        <ChatButton location="footer" /> <PlansLink />
-      </p>
       <nav aria-label="Footer">
+        {top
+          .filter((n) => n.kind === "hub")
+          .map((hub) => (
+            <section key={hub.path} aria-labelledby={`f-${hub.path}`}>
+              <h2 id={`f-${hub.path}`}>
+                <Link href={hub.path}>{hub.title}</Link>
+              </h2>
+              <ul>
+                {childrenOf(hub.path).map((n) => (
+                  <li key={n.path}>
+                    <Link href={n.path}>{n.title}</Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
         <ul>
+          {top
+            .filter((n) => n.kind !== "hub")
+            .map((n) => (
+              <li key={n.path}>
+                <Link href={n.path}>{n.title}</Link>
+              </li>
+            ))}
           <li>
-            <Link href="/fix">All WordPress problems</Link>
+            <Link href={routes.legal.terms}>Terms of Service</Link>
           </li>
           <li>
-            <Link href="/wordpress-maintenance-services">WordPress maintenance services</Link>
+            <Link href={routes.legal.privacy}>Privacy Policy</Link>
           </li>
-          <li>
-            <Link href="/legal/terms">Terms of Service</Link>
-          </li>
-          <li>
-            <Link href="/legal/privacy">Privacy Policy</Link>
-          </li>
-          <li>
-            <Link href="/legal/guarantee">{site.guaranteeDays}-day guarantee</Link>
-          </li>
+          {facts && (
+            <li>
+              <Link href={routes.legal.guarantee}>{facts.guaranteeDays}-day guarantee</Link>
+            </li>
+          )}
         </ul>
       </nav>
+      <p>
+        <ChatButton location="footer" /> <CheckLink location="footer" />
+      </p>
+      <address>
+        <a href={`mailto:${brand.email}`}>{brand.email}</a>
+        {facts && (
+          <>
+            <br />
+            {facts.address.street}, {facts.address.locality} {facts.address.region} {facts.address.postalCode}
+            <br />
+            Hours: {facts.hours}
+          </>
+        )}
+      </address>
       <p>This website is not affiliated with or sponsored by Automattic or the WordPress Open Source project</p>
     </footer>
   );

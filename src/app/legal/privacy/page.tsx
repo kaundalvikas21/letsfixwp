@@ -1,14 +1,18 @@
 import type { Metadata } from "next";
+import { LegalPending } from "@/components/templates/parts";
+import { brand } from "@/config/brand";
+import { routes } from "@/config/routes";
 import Link from "next/link";
 
-// Text copied word for word from the live https://fixmywp.com/privacy-policy (noindex, follow there too).
+// fixmywp.com text, shown only when brand.legacy.enabled (it belongs to that business). Copied word for word from the live https://fixmywp.com/privacy-policy (noindex, follow there too).
 export const metadata: Metadata = {
-  title: { absolute: "Fix My WP Privacy Policy" },
-  alternates: { canonical: "/legal/privacy" },
+  title: brand.legacy.enabled ? { absolute: "Fix My WP Privacy Policy" } : "Privacy Policy",
+  alternates: { canonical: routes.legal.privacy },
   robots: { index: false, follow: true },
 };
 
 export default function Privacy() {
+  if (!brand.legacy.enabled) return <LegalPending title="Privacy Policy" />;
   return (
     <article>
       <h1>Privacy Policy</h1>
@@ -114,7 +118,7 @@ export default function Privacy() {
 
       <h2>TERMS OF SERVICES</h2>
       <p>
-        Please also <Link href="/legal/terms">visit our Terms of Services section</Link> establishing the use,
+        Please also <Link href={routes.legal.terms}>visit our Terms of Services section</Link> establishing the use,
         disclaimers, and limitations of liability governing the use of our website
       </p>
 

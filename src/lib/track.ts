@@ -1,6 +1,11 @@
+type CtaProps = { location: string; service?: string };
+
 type Events = {
-  cta_book_click: { location: string; problem?: string };
-  cta_chat_open: { location: string };
+  cta_book_click: CtaProps;
+  cta_chat_open: CtaProps;
+  cta_plans_click: CtaProps;
+  cta_quote_click: CtaProps;
+  cta_check_click: CtaProps;
   problem_search: { query: string };
   booking_step: { step: string };
   booking_complete: Record<string, never>;

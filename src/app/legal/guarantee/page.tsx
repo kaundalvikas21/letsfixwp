@@ -1,24 +1,29 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { site } from "@/content/site";
+import { notFound } from "next/navigation";
+import { brand } from "@/config/brand";
+import { routes } from "@/config/routes";
 
-// ponytail: no guarantee page exists on the live site. This states only confirmed facts; the owner supplies full terms.
+// Legacy only (docs/foundation.md): the guarantee belongs to the fixmywp.com business and 404s otherwise.
+// ponytail: states only the confirmed fact; the owner supplies the full terms.
 export const metadata: Metadata = {
-  title: `${site.guaranteeDays}-Day Guarantee`,
-  alternates: { canonical: "/legal/guarantee" },
+  title: "Guarantee",
+  alternates: { canonical: routes.legal.guarantee },
   robots: { index: false, follow: true },
 };
 
 export default function Guarantee() {
+  const facts = brand.legacy.facts;
+  if (!facts) notFound();
   return (
     <article>
-      <h1>Our {site.guaranteeDays}-day guarantee</h1>
-      <p>Every {site.name} service carries a {site.guaranteeDays}-day guarantee.</p>
+      <h1>Our {facts.guaranteeDays}-day guarantee</h1>
+      <p>Every service carries a {facts.guaranteeDays}-day guarantee.</p>
       <p>
-        To make a claim or ask about it, email <a href={`mailto:${site.email}`}>{site.email}</a>.
+        To make a claim or ask about it, email <a href={`mailto:${brand.email}`}>{brand.email}</a>.
       </p>
       <p>
-        See also our <Link href="/legal/terms">Terms of Service</Link>.
+        See also our <Link href={routes.legal.terms}>Terms of Service</Link>.
       </p>
     </article>
   );

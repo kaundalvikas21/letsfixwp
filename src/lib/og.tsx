@@ -1,11 +1,10 @@
 import { ImageResponse } from "next/og";
-import type { Problem } from "@/content/schema";
-import { site } from "@/content/site";
+import { brand } from "@/config/brand";
 
 export const ogSize = { width: 1200, height: 630 };
 
-// Minimal on purpose: the variation prompts restyle this with the chosen type and layout.
-export function problemOg(p: Problem) {
+// Minimal on purpose: each variation restyles this with its own type and layout.
+export function ogImage(title: string) {
   return new ImageResponse(
     (
       <div
@@ -16,12 +15,12 @@ export function problemOg(p: Problem) {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: 72,
-          background: "#ffffff",
-          borderTop: `16px solid ${site.colors.primary}`,
+          background: "#FAFAFA",
+          borderTop: `16px solid ${brand.accent}`,
         }}
       >
-        <div style={{ fontSize: 64, fontWeight: 700, color: "#111111", lineHeight: 1.1 }}>{p.h1}</div>
-        <div style={{ fontSize: 32, color: "#444444" }}>{site.name}</div>
+        <div style={{ fontSize: 64, fontWeight: 700, color: "#18181B", lineHeight: 1.1 }}>{title}</div>
+        <div style={{ fontSize: 32, color: "#52525B" }}>{brand.name}</div>
       </div>
     ),
     ogSize,
