@@ -1,0 +1,19 @@
+# Section contract
+
+Shared rules for every section prompt. Re-read before building or editing any section.
+
+1. Precedence: accessibility and touch (ui-ux-pro-max P1-P2) > taste-skill hard bans and Section 14 Pre-Flight > fixmywp brand anchors > ui-ux-pro-max design-system output > dials and judgment.
+2. Files: each section is a Server Component in src/components/sections/<variant>/. Anything using motion, GSAP, scroll or pointer physics is an isolated 'use client' leaf. Never mix GSAP and Motion in one component tree.
+3. Ledger: before coding, record in docs/layout-ledger.md the section's layout family, whether it has an eyebrow, whether it has a marquee, and which CTA intents it shows. Refuse to build a section whose layout family is already on the page. Max one marquee per page. Eyebrows max ceil(sections / 3), hero included. Max 2 consecutive image-plus-text splits.
+4. Content shape: headline max 8 words, supporting copy max 25 words, then one visual or one CTA. Hero: max 4 text elements, headline max 2 lines, subtext max 20 words, CTA visible without scrolling, top padding max pt-24, min-h-[100dvh] never h-screen.
+5. CTAs: labels only from src/config/cta.ts. Primary label never wraps at desktop. Every interactive target min 44x44px with 8px spacing. :active uses scale-[0.98]. focus-visible ring 2px in the accent with 2px offset. Fire track() on click.
+6. Banned everywhere: em-dash and en-dash characters, "Step 1 / Stage 2" labels, section-number eyebrows, decorative dots (one live-status dot is allowed only when getSiteStatus() returns real data), pills or labels on images, scroll cues, version labels, div-built fake screenshots or dashboards, three equal cards in a row, Inter as default, AI purple or neon glows, pure #000000 or #ffffff, custom cursors, window.addEventListener('scroll'), generic names, invented brands, filler verbs (elevate, seamless, unleash, revolutionize), invented statistics.
+7. Images: every visual is real. Order: (a) an image-generation tool if one is available, using the variation's art direction; (b) real captures from public/screens/; (c) https://picsum.photos/seed/fixmywp-<section>-<n>/<w>/<h> as a placeholder, logged in docs/image-todo.md with size, aspect ratio and art direction. next/image with explicit sizes, descriptive alt, hero image priority.
+8. Numbers on screen come only from src/content or getSiteStatus(). If a value is null, render nothing for it.
+9. Accessibility: WCAG AA contrast (4.5:1 body, 3:1 large text and UI boundaries) in both themes, semantic landmarks, one h1 per page, aria-label on icon-only buttons, keyboard-operable everything, carousels and marquees get pause plus previous and next controls and stop on hover, focus and reduced motion.
+10. Motion: animate transform and opacity only. Spring defaults stiffness 100, damping 20. Every animation must answer "what does this communicate" in one sentence (hierarchy, story, feedback, state). useReducedMotion() collapses everything to the final static state. Cleanup in every effect.
+11. States: skeletons shaped like the final layout, a composed empty state, inline errors under fields.
+12. Responsive: declare the under-768px layout in the same component; check 375, 768, 1024 and 1440 widths. No horizontal page scroll.
+13. Performance: LCP under 2.5s, CLS under 0.1, INP under 200ms. Lazy-load below-the-fold client islands. Grain or noise only on a fixed pointer-events-none layer.
+14. Copy self-audit: re-read every visible string; replace anything cute, vague or grammatically odd with a plain sentence. Quotes max 3 lines with name, role and company.
+15. Finish every section by reporting, in 5 lines max: layout family, eyebrow count so far, contrast checks run, reduced-motion behaviour, anything logged to image-todo. Then stop and wait for the next prompt.
