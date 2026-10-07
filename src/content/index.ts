@@ -1,12 +1,14 @@
-import { citySlugs, nodeByPath, serviceIdOf, serviceIds, serviceNodes, hubIdOf } from "../config/routes";
+import { citySlugs, hubIdOf, hubIds, nodeByPath, serviceIdOf, serviceIds, serviceNodes } from "../config/routes";
 import type { MatchCandidate } from "../lib/match-problem";
 import { citiesList, comparesList, guidesList, servicesList } from "./all";
-import type { City, Compare, Guide, Service } from "./schema";
+import { hubsList } from "./hubs";
+import type { City, Compare, Guide, Hub, Service } from "./schema";
 
 export const guides: Guide[] = guidesList;
 export const services: Service[] = servicesList;
 export const cities: City[] = [...citiesList].sort((a, b) => a.priority - b.priority);
 export const compares: Compare[] = comparesList;
+export const hubs: Hub[] = hubsList;
 
 const bySlug = <T,>(list: T[], key: (t: T) => string, kind: string) => {
   const m = new Map(list.map((t) => [key(t), t]));
@@ -17,11 +19,13 @@ const guideMap = bySlug(guides, (g) => g.slug, "guide");
 const serviceMap = bySlug(services, (s) => s.id, "service");
 const cityMap = bySlug(cities, (c) => c.slug, "city");
 const compareMap = bySlug(compares, (c) => c.slug, "compare");
+const hubMap = bySlug(hubs, (h) => h.id, "hub");
 
 export const getGuide = (slug: string) => guideMap.get(slug);
 export const getService = (id: string) => serviceMap.get(id);
 export const getCity = (slug: string) => cityMap.get(slug);
 export const getCompare = (slug: string) => compareMap.get(slug);
+export const getHub = (id: string) => hubMap.get(id);
 export const guidesFor = (serviceId: string) => guides.filter((g) => g.parentService === serviceId);
 
 // ---- Integrity: fail the build on content that does not match SITEMAP or links to nothing. ----
@@ -55,6 +59,9 @@ for (const c of cities) {
   else if (node.priority !== c.priority) fail(`city ${c.slug} priority ${c.priority} != SITEMAP ${node.priority}`);
   for (const id of c.servicesHighlighted) if (!serviceMap.has(id)) fail(`city ${c.slug} highlights unknown service ${id}`);
 }
+
+for (const id of hubIds) if (!hubMap.has(id)) fail(`SITEMAP hub ${id} has no entry in src/content/hubs.ts`);
+for (const c of compares) if (!serviceMap.has(c.closestService)) fail(`compare ${c.slug} closestService ${c.closestService} unknown`);
 
 /** Lightweight search data for client islands (no zod, no full copy). */
 export const matchIndex: MatchCandidate[] = [

@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "project",
   title: "WordPress migration to new hosting",
   h1: "Move your WordPress site to a new host or server",
+  heroLine: "Changing hosts or servers? We move the whole site, test it on the new server, then switch DNS.",
   summary:
     "We move your WordPress files, database, email settings and SSL to the new host, test everything there before DNS changes, and keep the old site intact until the new one is confirmed working.",
   whoItsFor:

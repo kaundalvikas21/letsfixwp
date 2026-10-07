@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "project",
   title: "Hire a WordPress developer",
   h1: "Hire a dedicated WordPress developer",
+  heroLine: "One developer on your WordPress backlog, week after week, working in your tickets, repositories and chat.",
   summary:
     "A WordPress developer who works on your projects as part of your team, part time or full time, using your tools and your process.",
   whoItsFor:

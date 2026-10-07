@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "project",
   title: "WordPress security audit and hardening",
   h1: "WordPress security audit and hardening",
+  heroLine: "We look for the weak points attackers use in your site, hosting and logins, then close them.",
   summary:
     "We review your WordPress site, hosting and accounts for the weaknesses attackers use, fix what can be fixed safely, and give you a written report of everything else.",
   whoItsFor:

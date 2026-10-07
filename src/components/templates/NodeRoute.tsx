@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { nodeByPath, nodes, serviceIdOf } from "@/config/routes";
-import { getCity, getService } from "@/content";
+import { getCity, getHub, getService } from "@/content";
 import { CityHubTemplate, CityTemplate } from "./CityTemplates";
 import { HubTemplate } from "./HubTemplate";
 import { pageMetadata } from "./parts";
@@ -29,6 +29,7 @@ export function nodeMetadata(path: string): Metadata {
   if (!n) return {};
   if (n.kind === "service") return pageMetadata(getService(serviceIdOf(n.path))!.seo, n.path);
   if (n.kind === "city") return pageMetadata(getCity(lastSegment(n.path))!.seo, n.path);
+  if (n.kind === "hub") return pageMetadata(getHub(lastSegment(n.path))!.seo, n.path);
   const children = nodes.filter((c) => c.parentPath === n.path).map((c) => c.title);
   const description = `${n.title}: ${children.join(", ")}.`;
   return {

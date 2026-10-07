@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "project",
   title: "WordPress website design",
   h1: "WordPress website design for businesses",
+  heroLine: "A WordPress site planned around your business, quick on phones, ready for search and easy for you to edit.",
   summary:
     "We plan, design and build a WordPress website that you can edit yourself, loads quickly on phones and is set up for search from launch.",
   whoItsFor:

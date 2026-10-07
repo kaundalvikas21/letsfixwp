@@ -10,6 +10,8 @@ export default citySchema.parse({
     "Diamond and jewellery traders and other exporters from across Gujarat often want a B2B catalogue that hides prices from the public and shows them only to approved buyers. Retail and D2C brands from the city want the opposite: a WooCommerce store with Indian payment gateways, GST invoices and shipping integrations.",
     "Gujarati content matters for many of these businesses, whether the readers are local dealers or decision makers in family-run firms who prefer it. We set up Gujarati and English versions with separate URLs and check font rendering on phones. Our work with Ahmedabad businesses is remote, with meetings on video call.",
   ],
+  remoteDelivery:
+    "Being on the same IST clock, we set video calls for whenever suits you, between dealer meetings or after the day's dispatches are done. At handover we pass on all logins and hosting details, a written guide to adding fabrics or products to the catalogue in English and Gujarati, and a recorded walkthrough your sales staff can return to.",
   servicesHighlighted: ["woocommerce-development", "payment-gateway-gst", "custom-plugin", "website-design"],
   faqs: [
     {

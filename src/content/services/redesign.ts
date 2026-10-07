@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "project",
   title: "WordPress website redesign",
   h1: "Redesign your WordPress website without losing traffic",
+  heroLine: "Your site looks dated or is hard to edit. We redesign it and keep the URLs that earn search traffic.",
   summary:
     "We redesign your existing WordPress site with a new look and structure, while keeping your content, URLs and search rankings protected through the change.",
   whoItsFor:

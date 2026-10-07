@@ -29,7 +29,7 @@ export default guideSchema.parse({
   faqs: [
     { q: "Should I restore a backup?", a: "A full restore also rolls back any orders, posts or form entries made since the backup. Rolling back only the update that failed keeps all of that." },
     { q: "Can I just downgrade the plugin?", a: "Often yes, and it can be the quickest way back online. We check whether the old version has known security issues before leaving it in place." },
-    { q: "Why did one update break the whole site?", a: "WordPress loads every active plugin and the theme on each request. If one of them hits a fatal PHP error, the whole page stops, not just that feature." },
+    { q: "Why did one update break the whole site?", a: "The new version may need a newer PHP release, or call code that your theme or another plugin does not provide. Because WordPress loads all active plugins on every page, a fatal error in the updated one stops the entire site." },
     { q: "Should I turn off automatic updates?", a: "Turning them off avoids surprise breakage but leaves security fixes waiting. A better approach is updating on a schedule and testing first, which we can explain for your site." },
   ],
   seo: {

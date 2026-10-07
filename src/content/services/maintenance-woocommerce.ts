@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "plan",
   title: "WooCommerce maintenance",
   h1: "WooCommerce maintenance for stores that cannot afford a broken checkout",
+  heroLine: "We look after your WooCommerce store, checking checkout and payments after every update and keeping order data backed up.",
   summary:
     "Ongoing care for WooCommerce stores: updates tested against your checkout and payment gateways, backups that never lose orders, and monitoring of the parts that take money.",
   whoItsFor:

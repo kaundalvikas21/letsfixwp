@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "fix",
   title: "WordPress broken after PHP update",
   h1: "Fix WordPress after a PHP upgrade or failed core update",
+  heroLine: "Your host changed PHP versions or a core update stopped halfway. We fix the old code or finish the update.",
   summary:
     "Hosts move sites to newer PHP versions, and old plugin or theme code that relied on removed functions stops working. Core updates can also fail halfway. We fix the incompatible code or finish the update so the site runs on a current, supported PHP version.",
   whoItsFor:

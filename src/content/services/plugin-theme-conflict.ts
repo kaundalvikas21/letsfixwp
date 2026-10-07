@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "fix",
   title: "WordPress plugin conflict fix",
   h1: "Fix WordPress plugin and theme conflicts",
+  heroLine: "Something broke after a plugin or theme change. We find the clashing pair and fix it, keeping your settings.",
   summary:
     "When two plugins, or a plugin and your theme, load clashing code, features stop working or the layout breaks. We find the exact pair that conflicts, fix or replace the code and keep your settings and design.",
   whoItsFor:

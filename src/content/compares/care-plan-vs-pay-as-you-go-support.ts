@@ -4,6 +4,7 @@ export default compareSchema.parse({
   slug: "care-plan-vs-pay-as-you-go-support",
   a: "Monthly care plan",
   b: "Pay-as-you-go support hours",
+  closestService: "care-plans",
   rows: [
     {
       criterion: "How you pay",

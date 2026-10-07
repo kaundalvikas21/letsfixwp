@@ -10,6 +10,8 @@ export default citySchema.parse({
     "The city also has a large number of consumer brands, restaurants, clinics and local service businesses selling to people who live here. Some want Kannada content for part of their audience, which we handle with a multilingual setup rather than a second copy of the site.",
     "We work with Bengaluru teams remotely. Reviews happen on video call, and we can work inside the tools you already use, such as Git, Jira, Linear or Slack.",
   ],
+  remoteDelivery:
+    "We work on IST like you, so standups, sprint reviews and design calls on video happen inside your normal hours rather than late at night. Handover fits how engineering teams already work: credentials shared through your password manager, documentation in your repository or wiki, and a recorded walkthrough of the theme and block setup for the marketing team.",
   servicesHighlighted: ["custom-theme", "hire-developer", "speed-optimization", "custom-plugin"],
   faqs: [
     {

@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "project",
   title: "Custom WordPress plugin development",
   h1: "Custom WordPress plugin development",
+  heroLine: "A feature or integration no existing plugin covers, built as one focused plugin that follows WordPress coding standards.",
   summary:
     "When no existing plugin does what you need, we build one: a custom feature, an API integration or a WooCommerce extension, written to WordPress standards.",
   whoItsFor:

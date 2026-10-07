@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "fix",
   title: "Google blacklist removal for WordPress",
   h1: "Remove Google and browser warnings from your WordPress site",
+  heroLine: "Visitors see a red warning before your site loads. We remove the cause and request the reviews that lift it.",
   summary:
     "Google Safe Browsing, antivirus vendors and email blocklists flag sites that serve malware or phishing. We remove the cause from your WordPress site first, then request reviews so the warnings come down.",
   whoItsFor:

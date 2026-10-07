@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "fix",
   title: "WordPress login problems fix",
   h1: "Fix WordPress login loops, lockouts and redirect errors",
+  heroLine: "Locked out of wp-admin or stuck in a redirect loop? We get you back in and fix the setting responsible.",
   summary:
     "Login loops, too many redirects and missing reset emails usually trace back to wrong site URLs, HTTPS settings, cookies or a security plugin. We get you back into wp-admin and fix the setting that locked you out.",
   whoItsFor:

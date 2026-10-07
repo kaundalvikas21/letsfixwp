@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "project",
   title: "WordPress SEO services",
   h1: "Technical and on-page SEO for WordPress sites",
+  heroLine: "Pages missing from Google or slipping down? We fix crawl and index problems and set up each page's on-page SEO.",
   summary:
     "We fix the technical problems that stop WordPress pages being crawled, indexed and ranked, and set up on-page SEO so each page targets the searches it should.",
   whoItsFor:

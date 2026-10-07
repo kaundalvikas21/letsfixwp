@@ -10,6 +10,8 @@ export default citySchema.parse({
     "Chennai also has a mature SaaS and IT services scene. Product companies here often run their app on a separate stack and use WordPress for the marketing site, blog and documentation. For them the work is a fast custom theme the marketing team can publish to on its own, clean connections to their CRM and analytics, and technical SEO that keeps the blog and landing pages indexable.",
     "We work with Chennai businesses remotely. Discovery calls, design reviews and handover sessions happen over video call, and everything else runs through shared documents and a staging site you can check at any point.",
   ],
+  remoteDelivery:
+    "Chennai runs on IST like the rest of India, so there is no time difference to plan around, and video calls are fixed around your plant shifts or clinic hours. When the site is ready we hand over every login and hosting credential, written notes on how the product catalogue and Tamil pages are organised, and a recorded walkthrough your marketing or purchase team can replay.",
   servicesHighlighted: ["website-design", "custom-plugin", "seo-services"],
   faqs: [
     {

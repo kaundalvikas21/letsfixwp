@@ -17,6 +17,7 @@ export const serviceSchema = z
     intent,
     title: text, // the phrase people search
     h1: text,
+    heroLine: text.refine((t) => t.trim().split(/\s+/).length <= 20, "heroLine must be 20 words or fewer"), // hero subtext
     summary: text,
     whoItsFor: text,
     symptoms: z.array(text), // fix intent only
@@ -58,6 +59,7 @@ export const citySchema = z.object({
   city: text,
   priority: z.number().int().min(1),
   localContext: z.array(text).min(2), // paragraphs
+  remoteDelivery: text, // how remote delivery works for this city (time zone, meetings, handover); unique per city
   servicesHighlighted: z.array(slug).min(2),
   faqs: z.array(faq).min(3).max(5),
   seo,
@@ -68,12 +70,17 @@ export const compareSchema = z.object({
   slug,
   a: text,
   b: text,
+  closestService: slug, // the service whose intent sets this page's primary CTA
   verdictByScenario: z.array(z.object({ scenario: text, verdict: text })).min(3),
   rows: z.array(z.object({ criterion: text, a: text, b: text })).min(5),
   seo,
 });
 
+/** One per SITEMAP hub: src/content/hubs.ts */
+export const hubSchema = z.object({ id: slug, intro: text, seo });
+
 export type Service = z.infer<typeof serviceSchema>;
+export type Hub = z.infer<typeof hubSchema>;
 export type Guide = z.infer<typeof guideSchema>;
 export type City = z.infer<typeof citySchema>;
 export type Compare = z.infer<typeof compareSchema>;

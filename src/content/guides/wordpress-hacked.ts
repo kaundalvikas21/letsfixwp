@@ -28,10 +28,10 @@ export default guideSchema.parse({
   parentService: "malware-removal",
   urgency: "critical",
   faqs: [
-    { q: "Will I lose my content?", a: "No. We back up the site before cleaning and remove only malicious code and accounts. Your posts, pages, products and orders stay." },
+    { q: "Will I lose my content?", a: "Usually not. Most hacks add files, users and spam posts rather than deleting your own content. We take a backup first and remove only what the attacker added, and if anything was altered or deleted we check older backups to recover it." },
     { q: "Can I just restore an old backup?", a: "A backup can hold the same backdoor, and restoring it does not close the hole the attacker used. The site is often reinfected soon after. Cleaning and closing the entry point is what stops it." },
     { q: "What access do you need?", a: "Hosting control panel or SFTP access plus a WordPress admin account. We send a checklist so you can create temporary access and revoke it afterwards." },
-    { q: "Do I need to tell my customers?", a: "If customer data such as accounts or orders may have been exposed, you may have legal duties to notify people. We tell you what the evidence shows so you can decide with your adviser." },
+    { q: "Do I need to tell my customers?", a: "It depends on what the attacker reached. A spam redirect that never touched the database is a different case from code on the checkout page or a copied user table. We show you what the files and logs indicate, so you and your adviser can judge whether any notification duty applies." },
   ],
   seo: {
     title: "Hacked WordPress Site Repair",

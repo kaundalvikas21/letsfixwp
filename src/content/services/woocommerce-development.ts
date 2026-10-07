@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "project",
   title: "WooCommerce development",
   h1: "WooCommerce store development",
+  heroLine: "A WooCommerce store built for selling in India, with Indian gateways, GST, shipping and the features your catalogue needs.",
   summary:
     "We build WooCommerce stores and custom store features: product setup, Indian payment gateways, GST, shipping, and the extensions your catalogue needs.",
   whoItsFor:

@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "project",
   title: "WordPress speed optimization",
   h1: "WordPress speed optimization based on measurement, not guesswork",
+  heroLine: "Slow pages or failing Core Web Vitals. We measure what slows them, fix it and re-test the same pages.",
   summary:
     "We measure where your WordPress site loses time, fix the causes in caching, images, plugins, database and hosting, and re-test the same pages so you can see what changed.",
   whoItsFor:

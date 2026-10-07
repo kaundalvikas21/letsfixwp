@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "project",
   title: "White label WordPress support for agencies",
   h1: "White-label WordPress support your agency can put its own name on",
+  heroLine: "WordPress fixes, upkeep and builds done quietly behind your agency, with your name on everything your clients see.",
   summary:
     "We do the WordPress maintenance, fixes and development behind the scenes, and your agency stays the only name your clients see.",
   whoItsFor:

@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "project",
   title: "Wix to WordPress migration",
   h1: "Move from Wix, Squarespace or Blogger to WordPress",
+  heroLine: "Your Wix, Squarespace or Blogger site moved to WordPress you own, with every old URL redirected to its new page.",
   summary:
     "We move your pages, posts, images and SEO settings from Wix, Squarespace or Blogger to a self-hosted WordPress site, with 301 redirects from every old URL.",
   whoItsFor:

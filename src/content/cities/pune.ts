@@ -10,6 +10,8 @@ export default citySchema.parse({
     "Pune also has a large IT services and product engineering sector. Mid-sized IT firms usually need a site that presents service lines and industry pages, shows project material they already have permission to publish, and runs a careers section connected to their hiring tools.",
     "Marathi pages are useful for schools, local institutes and consumer businesses with a local audience. After launch, many institutions prefer a monthly care plan so updates, backups and security checks do not depend on one staff member. All our work with Pune clients is remote, with meetings on video call.",
   ],
+  remoteDelivery:
+    "Sharing IST means video meetings can sit inside your college timetable or your plant's working hours. Because people across many departments edit these sites, handover includes a separate login for each role, a written guide for each page template, and a recorded walkthrough that new staff can watch when they join.",
   servicesHighlighted: ["website-design", "custom-plugin", "care-plans", "seo-services"],
   faqs: [
     {

@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "plan",
   title: "WordPress maintenance plans",
   h1: "WordPress care plans that keep your site updated, backed up and watched",
+  heroLine: "Updates, backups, uptime checks and security scans handled each month while you get on with running the business.",
   summary:
     "A monthly plan where we handle updates, backups, monitoring and security checks on your WordPress site, so problems are caught before your visitors find them.",
   whoItsFor:

@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "plan",
   title: "Pay as you go WordPress support",
   h1: "Pay-as-you-go WordPress support hours",
+  heroLine: "Developer time for occasional WordPress jobs, used when you need it, with no monthly contract.",
   summary:
     "Buy a block of developer hours and use them for whatever your WordPress site needs, from small fixes to content changes, without a monthly contract.",
   whoItsFor:

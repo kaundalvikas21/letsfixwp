@@ -10,6 +10,8 @@ export default citySchema.parse({
     "The city's large IT services and global capability centre presence means many technology companies with their own marketing teams. They often want a developer who can work through a steady flow of landing pages, integrations and fixes, plus a care arrangement that keeps the site updated and backed up between projects.",
     "Telugu pages make sense for schools, hospitals, real estate projects and consumer brands selling within Telangana and Andhra Pradesh. We work with Hyderabad businesses remotely and hold all meetings on video call.",
   ],
+  remoteDelivery:
+    "Hyderabad shares IST with us, so meetings run on video during your working hours and can include your QA or regulatory staff when product pages need their sign-off. Handover covers credentials for the site, hosting and any partner download area, a written guide to adding or updating product records, and a recorded screen walkthrough your marketing team can keep for reference.",
   servicesHighlighted: ["custom-theme", "custom-plugin", "hire-developer", "care-plans"],
   faqs: [
     {

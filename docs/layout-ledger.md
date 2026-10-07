@@ -58,3 +58,20 @@ V1.10: H9 built (guarantee split). Home sections (legacy on): 9. Eyebrows used: 
 V1.11: H10 built (objection FAQ). Home sections (legacy on): 10. Eyebrows used: 2 of ceil(10/3)=4. Marquees used: 1 of 1. Start time, cannot-fix policy, payment and the backup line carry {{CONFIRM}}.
 
 V1.12: H11 (final CTA) and S3 (footer) built; the unstyled foundation "What we do" list is removed (the footer carries every hub and service link). Home sections (legacy on): 11, all different layout families. Eyebrows used: 2 of ceil(11/3)=4. Marquees: 1 of 1. Section 14 pre-flight run: see the V1.12 report.
+
+## v1-incident-console / page templates (P1)
+
+| Template | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- |
+| Service | Document column + sticky conversion rail (lg); stacked hero with browser frame; labelled verb grid | No | No | Node intent primary + CHAT (hero, rail, band) |
+| Guide | Single-column article (760px), mono error block, warning callout | No | No | BOOK (parent service + guide), CHECK |
+| Hub | Two-column ledger list of services, urgent-guide link list | No | No | Node intent primary + CHAT |
+| City / city index | Long-form article with inline service index and a remote-delivery panel / link index | No | No | QUOTE + CHAT |
+| Compare | Verdict ledger then a data table | No | No | Closest service intent + CHAT |
+| Free site check | Lead magnet + form: 2x2 coverage grid beside a minimal form | No | No | CHECK (submit) |
+| Case studies | Composed empty state | No | No | CHAT |
+| Pricing | Rate tables per hub | No | No | CHAT + CHECK |
+| About | Short statement with a hub index | No | No | Node intent primary + CHAT |
+
+None reuses a home layout family. Thin-content scan over all 95 sitemap pages: 0 repeated paragraphs.
+

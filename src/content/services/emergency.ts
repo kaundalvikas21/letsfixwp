@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "fix",
   title: "WordPress emergency fix",
   h1: "Emergency fix for a WordPress site that is down",
+  heroLine: "Your site is down or stuck on maintenance. We find what broke it and bring it back online.",
   summary:
     "Your WordPress site went down after an update, is stuck on the maintenance message, or simply stopped loading. We find the change that took it offline, bring it back and keep the orders, posts and form entries made since your last backup.",
   whoItsFor:

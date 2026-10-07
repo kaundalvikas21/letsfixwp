@@ -10,6 +10,8 @@ export default citySchema.parse({
     "Export houses in Noida, Okhla and the wider NCR, dealing in garments, home textiles and handicrafts, use their websites as a catalogue for overseas buyers. They need product ranges, compliance and certification pages, and a way to request quotes without publishing prices.",
     "Professional firms such as chartered accountants, law practices and consultancies want something quieter: clear service pages, partner profiles, articles and an easy way to book a consultation. We are not based in Delhi NCR; we work remotely, with reviews and walkthroughs on video call.",
   ],
+  remoteDelivery:
+    "Everyone involved works on IST, so there is no clock difference to manage. We book video calls around your sales or admissions calendar, so a review does not land in the middle of a project launch or results week. At handover you get the admin and hosting logins, a short written guide to creating a new project or course page from its template, and a screen recording of the same steps.",
   servicesHighlighted: ["website-design", "custom-theme", "seo-services", "redesign"],
   faqs: [
     {

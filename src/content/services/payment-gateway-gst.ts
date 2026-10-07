@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "project",
   title: "Razorpay WooCommerce integration and GST setup",
   h1: "Indian payment gateways and GST setup for WooCommerce",
+  heroLine: "UPI, cards and netbanking through an Indian gateway, with GST charged and invoiced the way your accountant needs.",
   summary:
     "We connect Razorpay, PayU, Cashfree, PhonePe or CCAvenue to your WooCommerce store and configure GST tax classes, state-based CGST, SGST and IGST, and GST invoices as your accountant specifies.",
   whoItsFor:

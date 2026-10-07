@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "fix",
   title: "WordPress SEO spam cleanup",
   h1: "Clean SEO spam and the Japanese keyword hack from WordPress",
+  heroLine: "Japanese or pharmacy spam pages appearing under your domain in Google. We remove them and the code that makes them.",
   summary:
     "SEO spam hacks create pages full of Japanese text, pharmacy or casino links on your domain, usually hidden from you and shown only to search engines. We remove the generator code and spam pages, take back Search Console and help Google drop the spam from its index.",
   whoItsFor:

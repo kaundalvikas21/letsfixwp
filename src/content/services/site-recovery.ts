@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "fix",
   title: "WordPress site recovery",
   h1: "Recover a broken WordPress site after a failed migration or restore",
+  heroLine: "A move or restore went wrong and left the site half working. We rebuild it and check nothing is missing.",
   summary:
     "A migration that went wrong, a restore that stopped halfway or posts that suddenly return 404 can leave a site half working. We rebuild it from what you have, fix URLs and permalinks, and check the content is complete.",
   whoItsFor:

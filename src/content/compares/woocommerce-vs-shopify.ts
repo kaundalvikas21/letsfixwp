@@ -4,6 +4,7 @@ export default compareSchema.parse({
   slug: "woocommerce-vs-shopify",
   a: "WooCommerce",
   b: "Shopify",
+  closestService: "shopify-migration",
   rows: [
     {
       criterion: "Ownership and hosting",

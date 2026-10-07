@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "project",
   title: "Custom WordPress theme development",
   h1: "Custom WordPress theme development",
+  heroLine: "A theme coded from your design with only what your site uses, so pages stay light and easy to edit.",
   summary:
     "We code a WordPress theme from your design, built only for what your site needs, so it stays light, fast and easy for your team to edit.",
   whoItsFor:

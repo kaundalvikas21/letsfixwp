@@ -1,11 +1,11 @@
+import { FolderOpen } from "@phosphor-icons/react/ssr";
 import type { Metadata } from "next";
-import { CtaPair } from "@/components/Cta";
+import { ChatButton } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
+import { h1, pageWrap } from "@/components/sections/v1/page-kit";
 import { Breadcrumbs } from "@/components/templates/parts";
-import { brand } from "@/config/brand";
-import { primaryCtaFor } from "@/config/cta";
-import { nodeByPath, routes } from "@/config/routes";
-import { testimonials } from "@/content/testimonials";
+import { routes } from "@/config/routes";
+import { pageCopy } from "@/content/pages";
 
 export const metadata: Metadata = {
   title: "Case Studies",
@@ -13,30 +13,20 @@ export const metadata: Metadata = {
   alternates: { canonical: routes.reviews },
 };
 
+const c = pageCopy.caseStudies;
+
+/** Real case files only. None exist yet, so a composed empty state with CHAT. */
 export default function CaseStudies() {
-  // The only approved quotes belong to the fixmywp.com business, so they show only when legacy is enabled.
-  const quotes = brand.legacy.enabled ? testimonials : [];
   return (
-    <>
+    <div className={`${pageWrap} pb-24`}>
       <Breadcrumbs items={nodeCrumbs(routes.reviews)} />
-      <h1>Case studies</h1>
-      {quotes.length ? (
-        quotes.map((t) => (
-          <figure key={t.name}>
-            <blockquote>
-              {t.quote.split("\n\n").map((para) => (
-                <p key={para.slice(0, 24)}>{para}</p>
-              ))}
-            </blockquote>
-            <figcaption>
-              {t.name}, {t.org}
-            </figcaption>
-          </figure>
-        ))
-      ) : (
-        <p>No case studies are published yet. We add them once clients approve the write-up.</p>
-      )}
-      <CtaPair intent={primaryCtaFor(nodeByPath.get(routes.reviews)?.intent)} location="case-studies" />
-    </>
+      <h1 className={`pt-8 md:pt-12 ${h1}`}>{c.h1}</h1>
+      <div className="mt-12 flex flex-col items-start gap-5 rounded-card border border-dashed border-line bg-surface p-8 md:p-12">
+        <FolderOpen size={32} aria-hidden className="text-muted" />
+        <p className="max-w-[52ch] text-lg leading-relaxed text-text">{c.empty}</p>
+        <p className="max-w-[52ch] text-[16px] leading-relaxed text-muted">{c.chat}</p>
+        <ChatButton location="case-studies:empty" />
+      </div>
+    </div>
   );
 }

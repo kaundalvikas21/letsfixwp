@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "fix",
   title: "Elementor not working fix",
   h1: "Fix Elementor and page builder problems",
+  heroLine: "The Elementor editor will not load or your pages look broken. We get the builder and your layouts working again.",
   summary:
     "Page builders break when versions fall out of step, generated CSS goes stale, or caching and optimisation plugins interfere. We fix Elementor and other builders so the editor loads and your pages look the way you designed them.",
   whoItsFor:

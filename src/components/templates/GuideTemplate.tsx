@@ -1,18 +1,45 @@
-import Link from "next/link";
-import { BookLink, ChatButton, CheckLink } from "@/components/Cta";
+import { Warning } from "@phosphor-icons/react/ssr";
+import { BookLink, CheckLink } from "@/components/Cta";
 import { faqLd, guideLd, JsonLd } from "@/components/JsonLd";
+import { body, h1, h2 } from "@/components/sections/v1/page-kit";
 import { routes } from "@/config/routes";
-import { getService } from "@/content";
+import { getService, guidesFor } from "@/content";
+import { pageCopy } from "@/content/pages";
 import type { Guide } from "@/content/schema";
-import { Breadcrumbs, Faqs, RealScreen } from "./parts";
+import { Breadcrumbs, Faqs, LinkList, RealScreen } from "./parts";
 
-/** /guides/<slug>/: one specific error. Info intent, so BOOK (into the parent service) + CHAT, and CHECK. */
+function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
+  return (
+    <section aria-labelledby={id} className="mt-16">
+      <h2 id={id} className={h2}>
+        {title}
+      </h2>
+      <div className="mt-6">{children}</div>
+    </section>
+  );
+}
+
+const Bullets = ({ items }: { items: string[] }) => (
+  <ul className="space-y-3">
+    {items.map((x) => (
+      <li key={x} className={`${body} relative pl-5 before:absolute before:top-[0.7em] before:left-0 before:h-px before:w-2.5 before:bg-muted`}>
+        {x}
+      </li>
+    ))}
+  </ul>
+);
+
+/**
+ * Guide page (/guides/<slug>/), informational intent. Layout family: single-column article (760px).
+ * H1 is the exact error phrase; errorText sits in a mono block exactly as WordPress prints it.
+ */
 export function GuideTemplate({ guide: g }: { guide: Guide }) {
   const parent = getService(g.parentService)!;
+  const related = guidesFor(parent.id).filter((x) => x.slug !== g.slug);
   const loc = `guide:${g.slug}`;
 
   return (
-    <article data-urgency={g.urgency}>
+    <article data-urgency={g.urgency} className="mx-auto max-w-[47.5rem] px-4 pb-24 md:px-6">
       <JsonLd data={[guideLd(g), faqLd(g.faqs)]} />
       <Breadcrumbs
         items={[
@@ -22,65 +49,56 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
         ]}
       />
 
-      <header>
-        <h1>{g.h1}</h1>
+      <header className="pt-8 md:pt-12">
+        <h1 className={h1}>{g.title}</h1>
         {g.errorText && (
-          <p>
+          <pre className="mt-8 overflow-x-auto rounded-card border border-line bg-surface px-5 py-4 font-mono text-[14px] leading-relaxed whitespace-pre-wrap text-text">
             <code>{g.errorText}</code>
-          </p>
+          </pre>
         )}
-        <p className="flex flex-wrap gap-2" data-hero-cta>
-          <BookLink location={`${loc}:hero`} service={parent.id} guide={g.slug} />{" "}
-          <ChatButton location={`${loc}:hero`} service={parent.id} />
-        </p>
+        <RealScreen slot={g.image.slot} alt={g.image.alt} />
       </header>
 
-      <RealScreen slot={g.image.slot} alt={g.image.alt} />
+      <Section id="symptoms" title="What you are seeing">
+        <Bullets items={g.symptoms} />
+      </Section>
 
-      <section aria-labelledby="symptoms">
-        <h2 id="symptoms">What you are seeing</h2>
-        <ul>
-          {g.symptoms.map((x) => (
-            <li key={x}>{x}</li>
-          ))}
-        </ul>
-      </section>
+      <Section id="causes" title="Likely causes">
+        <Bullets items={g.likelyCauses} />
+      </Section>
 
-      <section aria-labelledby="causes">
-        <h2 id="causes">What usually causes it</h2>
-        <ul>
-          {g.likelyCauses.map((x) => (
-            <li key={x}>{x}</li>
-          ))}
-        </ul>
-      </section>
-
-      <section aria-labelledby="safe-checks">
-        <h2 id="safe-checks">Safe things to try first</h2>
-        <ol>
+      <Section id="safe-checks" title="Safe things to try first">
+        <ol className="space-y-4">
           {g.safeChecks.map((x) => (
-            <li key={x}>{x}</li>
+            <li key={x} className={body}>
+              {x}
+            </li>
           ))}
         </ol>
-      </section>
+        <p className="mt-8 flex gap-3 rounded-card border border-accent/50 bg-surface px-5 py-4 text-[15px] leading-relaxed text-text">
+          <Warning size={20} aria-hidden className="mt-0.5 shrink-0 text-accent-ink" />
+          <span>{pageCopy.guide.coreWarning.replace("{title}", g.title)}</span>
+        </p>
+      </Section>
 
-      <section aria-labelledby="call-us">
-        <h2 id="call-us">When to call us</h2>
-        <p>{g.whenToCallUs}</p>
-        <p>
-          How we fix it: <Link href={parent.path}>{parent.title}</Link>
-        </p>
-        <p>
-          <BookLink location={`${loc}:call-us`} service={parent.id} guide={g.slug} />{" "}
-          <ChatButton location={`${loc}:call-us`} service={parent.id} />
-        </p>
-      </section>
+      <Section id="call-us" title="When to call us">
+        <p className={body}>{g.whenToCallUs}</p>
+        <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-3">
+          <BookLink location={`${loc}:call-us`} service={parent.id} guide={g.slug} />
+          <CheckLink location={`${loc}:call-us`} service={parent.id} />
+        </div>
+      </Section>
 
       <Faqs faqs={g.faqs} />
 
-      <p>
-        Not an emergency? <CheckLink location={`${loc}:footer`} service={parent.id} />
-      </p>
+      <Section id="related" title={related.length ? `More ${parent.title.toLowerCase()} guides` : "How we fix it"}>
+        <LinkList
+          items={[
+            ...related.map((x) => ({ href: routes.guide(x.slug), title: x.title, meta: x.errorText })),
+            { href: parent.path, title: parent.title },
+          ]}
+        />
+      </Section>
     </article>
   );
 }

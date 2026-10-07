@@ -10,6 +10,8 @@ export default citySchema.parse({
     "The city is also home to many retail and D2C brands in fashion, beauty, food and home goods. Their WooCommerce stores have to handle UPI and card payments through Indian gateways, cash on delivery rules, GST invoices and shipping aggregator integrations, and keep checkout responsive on sale days.",
     "Marathi and Hindi versions are worth adding for brands and services that sell to a broad local audience. We are not based in Mumbai and work remotely, with reviews and handovers on video call.",
   ],
+  remoteDelivery:
+    "With everyone on IST, video calls go into your compliance, marketing or ecommerce team's calendar during their working day, and we plan reviews well clear of big sale days. On handover you get the admin and hosting credentials, a document listing where each disclosure, policy or product setting lives, and a recorded walkthrough of the publishing and order screens.",
   servicesHighlighted: ["woocommerce-development", "payment-gateway-gst", "speed-optimization", "redesign"],
   faqs: [
     {

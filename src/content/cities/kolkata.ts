@@ -10,6 +10,8 @@ export default citySchema.parse({
     "The city is also a distribution base for eastern India and the North East, with many FMCG distributors, stockists and C&F agents. For them a site is mostly about credibility and coverage: the brands they carry, the areas they serve and an easy way for retailers to get in touch. Schools, colleges and coaching centres, another large group, need admission pages, notice boards and fee information that office staff can update themselves.",
     "A good share of the audience for schools, local brands and retail tea reads Bengali, so we often build Bengali pages alongside English ones and check that Bengali script displays correctly. We work with Kolkata businesses remotely, with every meeting on video call.",
   ],
+  remoteDelivery:
+    "Kolkata is on IST like the rest of India, so we book video calls during your working week and avoid the days your sales or admissions staff are busiest. Once the site is live you receive every credential, written steps for updating tea grades, product lists or school notices, and a recorded walkthrough a new staff member can follow later.",
   servicesHighlighted: ["website-design", "woocommerce-development", "redesign", "seo-services"],
   faqs: [
     {

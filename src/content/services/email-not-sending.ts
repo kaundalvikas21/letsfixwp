@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "fix",
   title: "WordPress not sending email fix",
   h1: "Fix WordPress and WooCommerce emails that do not arrive",
+  heroLine: "Form notifications, order emails and password resets that never arrive. We send them through authenticated SMTP and test each one.",
   summary:
     "By default WordPress sends mail through PHP on your web server, which many hosts restrict and many inboxes distrust. We route your site's email through authenticated SMTP, set up the DNS records inboxes check, and test every form and order email.",
   whoItsFor:

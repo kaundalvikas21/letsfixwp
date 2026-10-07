@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "project",
   title: "Shopify to WooCommerce migration",
   h1: "Move your store from Shopify to WooCommerce",
+  heroLine: "Leave Shopify for a WooCommerce store you control, with products, customers, orders and old URLs carried across.",
   summary:
     "We move your products, variants, customers, orders and content from Shopify to WooCommerce, and redirect every old Shopify URL so search traffic follows.",
   whoItsFor:

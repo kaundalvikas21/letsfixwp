@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "fix",
   title: "WordPress 500, 502 and 503 error fix",
   h1: "Fix 500, 502 and 503 errors on WordPress",
+  heroLine: "A 500, 502 or 503 page instead of your site. We read the server logs and fix the real fault.",
   summary:
     "500, 502 and 503 errors come from the web server, not from WordPress itself, so the real cause sits in the server and PHP logs. We read those logs, separate hosting problems from WordPress problems and fix the one that is failing.",
   whoItsFor:

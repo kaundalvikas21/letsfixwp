@@ -7,6 +7,7 @@ export default serviceSchema.parse({
   intent: "fix",
   title: "WooCommerce not working",
   h1: "Fix WooCommerce checkout, payment and order problems",
+  heroLine: "Checkout broken, payments failing or orders not coming through. We find the fault and get your store selling again.",
   summary:
     "When customers cannot check out, payments fail or orders go missing, we find the plugin, gateway or caching fault behind it and get the store taking orders again.",
   whoItsFor:

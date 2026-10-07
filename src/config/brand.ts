@@ -44,6 +44,8 @@ const input = {
     faqStartTime: confirm("FAQ answer: when work starts after booking", false),
     faqCannotFix: confirm("FAQ answer: what happens and what is charged when a fix is not possible", false),
     faqPayment: confirm("FAQ answer: payment methods and timing", false),
+    // P1 free site check
+    checkReportTiming: confirm("claim: when the free site check report arrives", false),
   },
 };
 
@@ -107,5 +109,6 @@ export const brand = {
     faqStartTime: v(input.claims.faqStartTime),
     faqCannotFix: v(input.claims.faqCannotFix),
     faqPayment: v(input.claims.faqPayment),
+    checkReportTiming: v(input.claims.checkReportTiming),
   },
 } as const;

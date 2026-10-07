@@ -4,6 +4,7 @@ export default compareSchema.parse({
   slug: "wordpress-vs-wix",
   a: "WordPress",
   b: "Wix",
+  closestService: "platform-migration",
   rows: [
     {
       criterion: "Ownership and hosting",
