@@ -46,5 +46,5 @@ export default serviceSchema.parse({
     title: "Google Blacklist and Deceptive Site Warning Removal",
     description: "Red \"Deceptive site ahead\" warning or \"This site may be hacked\" in Google? We clean the cause, then request reviews from Google and blocklists.",
   },
-  image: { slot: "service-blacklist-removal", alt: "Chrome's red \"Deceptive site ahead\" warning page" },
+  image: { slot: "service-blacklist-removal", photo: "monitors", alt: "Chrome's red \"Deceptive site ahead\" warning page" },
 });

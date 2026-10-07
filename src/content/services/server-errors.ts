@@ -45,5 +45,5 @@ export default serviceSchema.parse({
     title: "WordPress 500, 502 and 503 Error Fix",
     description: "WordPress showing a 500, 502 or 503 error, or failing image uploads? We read the server logs, find whether WordPress or the host is at fault and fix it.",
   },
-  image: { slot: "service-server-errors", alt: "A browser showing a 502 Bad Gateway error page in front of a WordPress site" },
+  image: { slot: "service-server-errors", photo: "alert", alt: "A browser showing a 502 Bad Gateway error page in front of a WordPress site" },
 });

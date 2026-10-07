@@ -47,5 +47,5 @@ export default serviceSchema.parse({
     title: "WordPress Not Sending Email Fix",
     description: "Contact forms, order emails or password resets not arriving? We set up authenticated SMTP and SPF, DKIM and DMARC, then test every email your site sends.",
   },
-  image: { slot: "service-email-not-sending", alt: "An SMTP plugin settings screen in wp-admin next to a test email in an inbox" },
+  image: { slot: "service-email-not-sending", photo: "workspace", alt: "An SMTP plugin settings screen in wp-admin next to a test email in an inbox" },
 });

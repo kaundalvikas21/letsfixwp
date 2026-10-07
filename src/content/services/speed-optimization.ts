@@ -47,5 +47,5 @@ export default serviceSchema.parse({
     title: "WordPress Speed Optimization and Core Web Vitals Fixes",
     description: "We measure your WordPress site, fix caching, images, plugins and database bloat, and re-test against Core Web Vitals so you can see what changed.",
   },
-  image: { slot: "service-speed-optimization", alt: "PageSpeed Insights report showing LCP, INP and CLS results for a WordPress page" },
+  image: { slot: "service-speed-optimization", photo: "cables", alt: "PageSpeed Insights report showing LCP, INP and CLS results for a WordPress page" },
 });

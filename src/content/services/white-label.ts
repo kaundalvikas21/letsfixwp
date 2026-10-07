@@ -41,5 +41,5 @@ export default serviceSchema.parse({
     title: "White Label WordPress Support for Agencies",
     description: "White-label WordPress maintenance, fixes and development for agencies, with an NDA, unbranded reports and no contact with your clients.",
   },
-  image: { slot: "service-white-label", alt: "Agency project board with WordPress support tickets assigned and in progress" },
+  image: { slot: "service-white-label", photo: "night-desk", alt: "Agency project board with WordPress support tickets assigned and in progress" },
 });

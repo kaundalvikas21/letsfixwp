@@ -85,3 +85,15 @@ None reuses a home layout family. Thin-content scan over all 95 sitemap pages: 0
 | /legal/* | Long-form legal article, .legal-prose in globals.css | No | No | None |
 
 /contact/thanks/ deleted: P2 moved the success state into the ticket flow, so nothing linked to it.
+
+## v1-incident-console / service and timeline imagery (external-image pass)
+
+| Slot | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- |
+| Service hero image (32 pages) | Unframed 16:10 photograph, 12px radius, hairline border, directly under the hero CTA pair | No | No | None |
+| Timeline Diagnose / Verify | Same photograph treatment, in the right / left grid cell from 768px | No | No | None |
+
+The browser frame is gone from both until a real capture exists in `public/screens/`; `ScreenOrPhoto` switches
+back to the framed capture automatically. Chrome around a stock photo would read as a screenshot of the
+customer's own site, which rule 6 bans. Photographs are decorative, so `alt` is empty. Twelve IT photographs
+cover the 32 services: `docs/image-credits.md`.

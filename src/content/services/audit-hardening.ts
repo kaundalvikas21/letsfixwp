@@ -42,5 +42,5 @@ export default serviceSchema.parse({
     title: "WordPress Security Audit and Hardening",
     description: "A WordPress security audit of plugins, users, hosting access and backups, with safe hardening changes and a written report ranked by risk.",
   },
-  image: { slot: "service-audit-hardening", alt: "A WordPress Users screen filtered to administrators beside a security audit checklist" },
+  image: { slot: "service-audit-hardening", photo: "terminal", alt: "A WordPress Users screen filtered to administrators beside a security audit checklist" },
 });

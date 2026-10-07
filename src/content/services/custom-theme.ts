@@ -46,5 +46,5 @@ export default serviceSchema.parse({
     title: "Custom WordPress Theme Development",
     description: "Custom WordPress block and classic themes coded from your design, light and fast, with custom blocks, Git source code and full ownership.",
   },
-  image: { slot: "service-custom-theme", alt: "Code editor showing a WordPress block theme's theme.json and template files" },
+  image: { slot: "service-custom-theme", photo: "night-desk", alt: "Code editor showing a WordPress block theme's theme.json and template files" },
 });

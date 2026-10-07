@@ -39,5 +39,5 @@ export default serviceSchema.parse({
     title: "Pay As You Go WordPress Support Hours",
     description: "Buy WordPress developer hours and use them for fixes, changes and small builds. Estimates before each task and a log of every hour used.",
   },
-  image: { slot: "service-support-hours", alt: "Time log listing WordPress support tasks with hours used against each one" },
+  image: { slot: "service-support-hours", photo: "workspace", alt: "Time log listing WordPress support tasks with hours used against each one" },
 });

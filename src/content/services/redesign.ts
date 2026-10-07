@@ -41,5 +41,5 @@ export default serviceSchema.parse({
     title: "WordPress Website Redesign Without Losing Traffic",
     description: "Redesign your WordPress site on staging with your content kept, every changed URL redirected and Search Console checked after launch.",
   },
-  image: { slot: "service-redesign", alt: "Old and new versions of a WordPress home page shown side by side" },
+  image: { slot: "service-redesign", photo: "drafting", alt: "Old and new versions of a WordPress home page shown side by side" },
 });

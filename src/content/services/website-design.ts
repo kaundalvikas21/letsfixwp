@@ -43,5 +43,5 @@ export default serviceSchema.parse({
     title: "WordPress Website Design for Businesses",
     description: "We plan, design and build WordPress websites you can edit yourself, fast on phones and ready for search, on hosting and a domain you own.",
   },
-  image: { slot: "service-website-design", alt: "Desktop and mobile mockups of a business website open side by side on a designer's screen" },
+  image: { slot: "service-website-design", photo: "drafting", alt: "Desktop and mobile mockups of a business website open side by side on a designer's screen" },
 });

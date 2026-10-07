@@ -6,6 +6,11 @@ Run 2026-10-07 against the production build (`npm run build && npm run start`, p
 **Result: clean.** Every failure found during this pass was fixed and re-verified, except two documented gaps
 (home LCP and placeholder imagery), both tied to the picsum placeholders rather than the build.
 
+**Update 2026-10-07, external-image pass.** The picsum placeholders are gone; every rendered image is now a
+local file. Both gaps above are closed. Re-measured on the production build (desktop preset): `/` performance
+**94**, LCP **0.8s**, CLS 0; `/wordpress-security/malware-removal/` performance **99**, LCP **0.6s**, CLS 0.
+axe re-run over 7 pages covering every changed template: **0 serious or critical**. See the amended rows below.
+
 `rg` is not installed on this machine, so every grep below uses `grep -rnP` with the same patterns.
 
 ---
@@ -170,6 +175,15 @@ because the hero placeholder is fetched from `picsum.photos` over the internet b
 | `/` | **91** (89-92) | **100** | **100** | **100** | 3.24s | 0 | 128ms |
 | `/guides/white-screen-of-death/` | **97** (96-97) | **100** | **100** | **100** | 2.46s | 0 | 107ms |
 
+After the external-image pass (desktop preset, local images, single run):
+
+| Page | Performance | LCP | CLS | TBT |
+| --- | --- | --- | --- | --- |
+| `/` | **94** | 0.8s | 0 | 180ms |
+| `/wordpress-security/malware-removal/` | **99** | 0.6s | 0 | 80ms |
+
+The remote fetch that caused the wide spread is gone, so a cold cache no longer changes the score.
+
 **INP: 112ms** (passes the 200ms target). Lighthouse lab runs do not report INP, so it was measured separately with
 PerformanceObserver under 4x CPU throttling across 66 real interactions: triage typing, a quick-pick chip, a tab
 switch and an accordion. Worst interaction 112ms (pointer events); keyboard 72ms.
@@ -208,7 +222,7 @@ Every box ticks except those listed here.
 
 | Box | Status | Why |
 | --- | --- | --- |
-| Real images used | **cannot tick** | 9 picsum placeholders remain (see below). Image generation is blocked by the Higgsfield plan and the screenshot script needs Docker, which this machine does not have. All are logged in `docs/image-todo.md` |
+| Real images used | **partial** (was **cannot tick**) | No placeholders and no external images remain: the four home photographs are generated to brief and the 32 service heroes plus 2 timeline slots show real licensed photographs from `public/site_images/services/` (`docs/image-credits.md`). Still outstanding are the WordPress screenshots themselves, which must be real captures; `npm run capture` needs Docker, absent on this machine. Logged in `docs/image-todo.md` |
 | Copy self-audit | **cannot tick** | 14 `{{CONFIRM}}` tokens render on purpose: unconfirmed claims, prices, desk hours, support email, FAQ answers and the booking handoff. A production deploy fails until each is confirmed in `brand.ts` |
 | No locale / city-name strips | **cannot tick** | The footer carries a row of 8 city links. The V1.12 brief asked for it as internal linking for SEO, so the brief wins |
 | Motion isolated in client leaves, memoized | **partial** | Motion is isolated in `'use client'` leaves, but none are wrapped in `React.memo`. Their props come from server components and never change, so memo would add code without changing behaviour |

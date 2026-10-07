@@ -44,5 +44,5 @@ export default serviceSchema.parse({
     title: "Razorpay, PayU and GST Setup for WooCommerce",
     description: "Set up Razorpay, PayU, Cashfree, PhonePe or CCAvenue on WooCommerce, with CGST, SGST and IGST by state and GST invoices showing your GSTIN.",
   },
-  image: { slot: "service-payment-gateway-gst", alt: "WooCommerce tax settings screen with CGST, SGST and IGST rates entered by state" },
+  image: { slot: "service-payment-gateway-gst", photo: "store", alt: "WooCommerce tax settings screen with CGST, SGST and IGST rates entered by state" },
 });

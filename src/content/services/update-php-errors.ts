@@ -46,5 +46,5 @@ export default serviceSchema.parse({
     title: "WordPress Broken After PHP or Core Update",
     description: "Site broke after a PHP version change or a failed WordPress update? We fix incompatible plugin and theme code and finish the update on supported PHP.",
   },
-  image: { slot: "service-update-php-errors", alt: "A hosting control panel PHP version selector next to WordPress deprecated notices" },
+  image: { slot: "service-update-php-errors", photo: "keys", alt: "A hosting control panel PHP version selector next to WordPress deprecated notices" },
 });

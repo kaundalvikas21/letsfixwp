@@ -4,7 +4,6 @@ import Link from "next/link";
 import { breadcrumbLd, JsonLd, type Crumb } from "@/components/JsonLd";
 import { nodeByPath } from "@/config/routes";
 import { getCompare, getGuide } from "@/content";
-import { BrowserFrame } from "@/components/sections/v1/BrowserFrame";
 import { FaqAccordion } from "@/components/sections/v1/FaqAccordion";
 import { h2 } from "@/components/sections/v1/page-kit";
 
@@ -88,11 +87,6 @@ export function LinkList({ items }: { items: { href: string; title: string; meta
 }
 
 export const pathItems = (paths: string[]) => paths.map((p) => ({ href: p, title: titleForPath(p) }));
-
-/** A real capture from scripts/capture-errors.mjs, rendered only once the file exists. */
-export function RealScreen({ slot, alt, url = "https://example.com/" }: { slot: string; alt: string; url?: string }) {
-  return <BrowserFrame slot={slot} alt={alt} url={url} realOnly />;
-}
 
 /** Shown instead of the fixmywp.com legal text while brand.legacy.enabled is false. */
 export function LegalPending({ title }: { title: string }) {

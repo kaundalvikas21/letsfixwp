@@ -46,5 +46,5 @@ export default serviceSchema.parse({
     title: "WordPress SEO Services: Technical and On-Page",
     description: "Technical and on-page SEO for WordPress: indexing fixes, sitemaps, canonicals, redirects, structured data and page titles, measured in Search Console.",
   },
-  image: { slot: "service-seo-services", alt: "Google Search Console page indexing report for a WordPress site" },
+  image: { slot: "service-seo-services", photo: "night-desk", alt: "Google Search Console page indexing report for a WordPress site" },
 });

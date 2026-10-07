@@ -1,7 +1,7 @@
 import { Check } from "@phosphor-icons/react/ssr";
 import { BookLink, ChatButton, CtaPair, PlansLink, QuoteLink } from "@/components/Cta";
 import { faqLd, JsonLd, nodeCrumbs, serviceLd } from "@/components/JsonLd";
-import { BrowserFrame } from "@/components/sections/v1/BrowserFrame";
+import { ScreenOrPhoto } from "@/components/sections/v1/BrowserFrame";
 import { body, CtaBand, h1, h2, lead, pageWrap } from "@/components/sections/v1/page-kit";
 import { brand } from "@/config/brand";
 import { primaryCtaFor } from "@/config/cta";
@@ -51,7 +51,7 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
               <div className="mt-8">
                 <CtaPair intent={intent} location={`${loc}:hero`} service={s.id} hero />
               </div>
-              <BrowserFrame slot={s.image.slot} alt={s.image.alt} url="https://example.com/wp-admin/" className="mt-12" preload />
+              <ScreenOrPhoto slot={s.image.slot} alt={s.image.alt} photo={s.image.photo} url="https://example.com/wp-admin/" className="mt-12" preload />
             </header>
 
             {s.intent === "fix" ? (

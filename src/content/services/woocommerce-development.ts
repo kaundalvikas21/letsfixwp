@@ -42,5 +42,5 @@ export default serviceSchema.parse({
     title: "WooCommerce Development: Stores and Custom Features",
     description: "WooCommerce store development with Indian payment gateways, GST, shipping and custom features, tested with real orders before launch.",
   },
-  image: { slot: "service-woocommerce-development", alt: "WooCommerce product edit screen with price, stock and variation settings" },
+  image: { slot: "service-woocommerce-development", photo: "store", alt: "WooCommerce product edit screen with price, stock and variation settings" },
 });

@@ -47,5 +47,5 @@ export default serviceSchema.parse({
     title: "WordPress SEO Spam and Japanese Keyword Hack Cleanup",
     description: "Japanese or spam pages showing in Google for your domain? We remove the generator code, take back Search Console and help Google drop the spam pages.",
   },
-  image: { slot: "service-seo-spam-cleanup", alt: "Google search results for a site: query showing Japanese spam titles on a WordPress domain" },
+  image: { slot: "service-seo-spam-cleanup", photo: "monitors", alt: "Google search results for a site: query showing Japanese spam titles on a WordPress domain" },
 });

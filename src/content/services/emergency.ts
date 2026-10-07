@@ -47,5 +47,5 @@ export default serviceSchema.parse({
     title: "Emergency WordPress Fix for a Site That Is Down",
     description: "WordPress site down after an update or stuck in maintenance mode? We find the change that broke it and bring the site back without losing recent data.",
   },
-  image: { slot: "service-emergency", alt: "A browser showing the WordPress \"Briefly unavailable for scheduled maintenance\" message" },
+  image: { slot: "service-emergency", photo: "emergency", alt: "A browser showing the WordPress \"Briefly unavailable for scheduled maintenance\" message" },
 });

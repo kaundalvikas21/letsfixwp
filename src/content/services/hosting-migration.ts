@@ -46,5 +46,5 @@ export default serviceSchema.parse({
     title: "WordPress Hosting Migration: Move to a New Server Safely",
     description: "We move WordPress files, database, SSL, DNS and email records to your new host, test before switching and keep the old site until it is confirmed.",
   },
-  image: { slot: "service-hosting-migration", alt: "Terminal window running WP-CLI search-replace during a WordPress server migration" },
+  image: { slot: "service-hosting-migration", photo: "racks", alt: "Terminal window running WP-CLI search-replace during a WordPress server migration" },
 });

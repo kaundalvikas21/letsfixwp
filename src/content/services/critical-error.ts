@@ -47,5 +47,5 @@ export default serviceSchema.parse({
     title: "WordPress Critical Error Fix",
     description: "Seeing \"There has been a critical error on this website\"? We find the fatal PHP error in your logs and fix the plugin, theme or code behind it.",
   },
-  image: { slot: "service-critical-error", alt: "A browser showing the WordPress message \"There has been a critical error on this website\"" },
+  image: { slot: "service-critical-error", photo: "emergency", alt: "A browser showing the WordPress message \"There has been a critical error on this website\"" },
 });

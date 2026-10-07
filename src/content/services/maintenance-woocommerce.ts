@@ -42,5 +42,5 @@ export default serviceSchema.parse({
     title: "WooCommerce Maintenance: Tested Updates and Backups",
     description: "WooCommerce maintenance with updates tested on staging, order-safe backups and checkout monitoring, so updates do not break the way you take payments.",
   },
-  image: { slot: "service-maintenance-woocommerce", alt: "WooCommerce Status screen showing outdated template overrides and system information" },
+  image: { slot: "service-maintenance-woocommerce", photo: "workspace", alt: "WooCommerce Status screen showing outdated template overrides and system information" },
 });

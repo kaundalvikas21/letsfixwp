@@ -42,5 +42,5 @@ export default serviceSchema.parse({
     title: "Shopify to WooCommerce Migration",
     description: "Move products, variants, customers and orders from Shopify to WooCommerce, with 301 redirects from every Shopify URL and payments tested before launch.",
   },
-  image: { slot: "service-shopify-migration", alt: "Shopify product export CSV beside the WooCommerce product import screen" },
+  image: { slot: "service-shopify-migration", photo: "store", alt: "Shopify product export CSV beside the WooCommerce product import screen" },
 });

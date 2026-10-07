@@ -45,5 +45,5 @@ export default serviceSchema.parse({
     title: "Fix Error Establishing a Database Connection",
     description: "WordPress showing \"Error establishing a database connection\"? We fix credentials, crashed tables or host limits and check your posts and orders are intact.",
   },
-  image: { slot: "service-database-connection-error", alt: "A browser showing the WordPress message \"Error establishing a database connection\"" },
+  image: { slot: "service-database-connection-error", photo: "racks", alt: "A browser showing the WordPress message \"Error establishing a database connection\"" },
 });

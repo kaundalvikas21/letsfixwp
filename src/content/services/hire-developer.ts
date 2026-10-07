@@ -41,5 +41,5 @@ export default serviceSchema.parse({
     title: "Hire a Dedicated WordPress Developer",
     description: "Hire a dedicated WordPress developer, part time or full time, working in your tools and repositories, with an NDA and full code ownership.",
   },
-  image: { slot: "service-hire-developer", alt: "Developer reviewing a pull request for a WordPress theme on a laptop" },
+  image: { slot: "service-hire-developer", photo: "terminal", alt: "Developer reviewing a pull request for a WordPress theme on a laptop" },
 });

@@ -5,7 +5,11 @@ const path = z.string().regex(/^\/([a-z0-9-]+\/)*$/, "path must start and end wi
 const text = z.string().min(1);
 const faq = z.object({ q: text, a: text });
 const seo = z.object({ title: z.string().min(1).max(60), description: z.string().min(1).max(155) });
-const image = z.object({ slot: text, alt: text });
+/**
+ * `slot` names the real capture in public/screens/ that scripts/capture-errors.mjs will write, and `alt` describes
+ * it. Until that capture exists, `photo` names a decorative stand-in in public/site_images/services/.
+ */
+const image = z.object({ slot: text, alt: text, photo: slug.optional() });
 const intent = z.enum(["fix", "plan", "project", "info"]);
 
 /** One per SITEMAP service leaf: src/content/services/<id>.ts */

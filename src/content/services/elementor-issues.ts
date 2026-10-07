@@ -46,5 +46,5 @@ export default serviceSchema.parse({
     title: "Elementor Not Working? Page Builder Fix",
     description: "Elementor editor stuck loading or pages broken on the live site? We fix version mismatches, stale CSS and caching conflicts without losing your designs.",
   },
-  image: { slot: "service-elementor-issues", alt: "The Elementor editor stuck on its loading screen inside wp-admin" },
+  image: { slot: "service-elementor-issues", photo: "drafting", alt: "The Elementor editor stuck on its loading screen inside wp-admin" },
 });

@@ -47,5 +47,5 @@ export default serviceSchema.parse({
     title: "WordPress Maintenance Plans: Updates, Backups, Monitoring",
     description: "Monthly WordPress care plans covering updates, off-server backups, uptime and security monitoring, small fixes and plain-language reports.",
   },
-  image: { slot: "service-care-plans", alt: "WordPress dashboard Updates screen listing plugin and theme updates ready to install" },
+  image: { slot: "service-care-plans", photo: "workspace", alt: "WordPress dashboard Updates screen listing plugin and theme updates ready to install" },
 });

@@ -46,5 +46,5 @@ export default serviceSchema.parse({
     title: "WordPress Plugin and Theme Conflict Fix",
     description: "Features or layout broke after a plugin or theme update? We find the conflicting code on a staging copy, fix it and keep your settings and design intact.",
   },
-  image: { slot: "service-plugin-theme-conflict", alt: "The WordPress Plugins screen with two plugins highlighted next to a browser console error" },
+  image: { slot: "service-plugin-theme-conflict", photo: "keys", alt: "The WordPress Plugins screen with two plugins highlighted next to a browser console error" },
 });

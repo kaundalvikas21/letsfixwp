@@ -52,5 +52,5 @@ export default serviceSchema.parse({
     title: "WooCommerce Checkout and Payment Problems Fixed",
     description: "WooCommerce checkout broken, payments failing or orders stuck at pending? We trace the plugin, gateway or caching fault and get orders coming in.",
   },
-  image: { slot: "service-woocommerce-fixes", alt: "WooCommerce checkout page with a red error notice above the Place order button" },
+  image: { slot: "service-woocommerce-fixes", photo: "store", alt: "WooCommerce checkout page with a red error notice above the Place order button" },
 });

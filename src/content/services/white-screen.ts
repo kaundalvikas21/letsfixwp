@@ -46,5 +46,5 @@ export default serviceSchema.parse({
     title: "WordPress White Screen of Death Fix",
     description: "Blank white page on your WordPress site or in wp-admin? We find the hidden PHP error in your logs and fix the plugin, theme or setting behind it.",
   },
-  image: { slot: "service-white-screen", alt: "A browser window showing a completely blank white WordPress page" },
+  image: { slot: "service-white-screen", photo: "night-desk", alt: "A browser window showing a completely blank white WordPress page" },
 });

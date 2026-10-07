@@ -6,7 +6,8 @@ import { routes } from "@/config/routes";
 import { getService, guidesFor } from "@/content";
 import { pageCopy } from "@/content/pages";
 import type { Guide } from "@/content/schema";
-import { Breadcrumbs, Faqs, LinkList, RealScreen } from "./parts";
+import { BrowserFrame } from "@/components/sections/v1/BrowserFrame";
+import { Breadcrumbs, Faqs, LinkList } from "./parts";
 
 function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
@@ -56,7 +57,7 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
             <code>{g.errorText}</code>
           </pre>
         )}
-        <RealScreen slot={g.image.slot} alt={g.image.alt} />
+        <BrowserFrame slot={g.image.slot} url="https://example.com/" alt={g.image.alt} />
       </header>
 
       <Section id="symptoms" title="What you are seeing">

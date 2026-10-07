@@ -42,5 +42,5 @@ export default serviceSchema.parse({
     title: "Custom WordPress Plugin Development",
     description: "Custom WordPress plugins, API integrations and WooCommerce extensions built to WordPress standards, with Git source code you own.",
   },
-  image: { slot: "service-custom-plugin", alt: "Code editor showing a custom WordPress plugin file with registered hooks" },
+  image: { slot: "service-custom-plugin", photo: "terminal", alt: "Code editor showing a custom WordPress plugin file with registered hooks" },
 });

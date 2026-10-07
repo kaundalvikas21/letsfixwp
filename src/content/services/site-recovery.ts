@@ -46,5 +46,5 @@ export default serviceSchema.parse({
     title: "WordPress Site Recovery After Migration or Restore",
     description: "Site broken after a failed migration or restore, or posts returning 404? We rebuild it from your backups, fix URLs and permalinks, and check your content.",
   },
-  image: { slot: "service-site-recovery", alt: "A server file manager showing a WordPress backup archive and database export ready to restore" },
+  image: { slot: "service-site-recovery", photo: "racks", alt: "A server file manager showing a WordPress backup archive and database export ready to restore" },
 });

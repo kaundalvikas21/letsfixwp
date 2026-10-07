@@ -46,5 +46,5 @@ export default serviceSchema.parse({
     title: "WordPress Login Loop and Redirect Fix",
     description: "Locked out of wp-admin, stuck in a login loop or seeing too many redirects? We fix the URL, HTTPS or security setting behind it and get you back in.",
   },
-  image: { slot: "service-login-redirect-issues", alt: "A browser showing the ERR_TOO_MANY_REDIRECTS error on a WordPress login page" },
+  image: { slot: "service-login-redirect-issues", photo: "terminal", alt: "A browser showing the ERR_TOO_MANY_REDIRECTS error on a WordPress login page" },
 });

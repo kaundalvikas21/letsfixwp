@@ -42,5 +42,5 @@ export default serviceSchema.parse({
     title: "Wix, Squarespace and Blogger to WordPress Migration",
     description: "Move from Wix, Squarespace or Blogger to WordPress with your content, images and SEO settings carried over and 301 redirects from every old URL.",
   },
-  image: { slot: "service-platform-migration", alt: "Spreadsheet mapping old Wix page URLs to their new WordPress addresses" },
+  image: { slot: "service-platform-migration", photo: "cables", alt: "Spreadsheet mapping old Wix page URLs to their new WordPress addresses" },
 });

@@ -1,11 +1,11 @@
-import { BrowserFrame } from "./BrowserFrame";
+import { ScreenOrPhoto } from "./BrowserFrame";
 import { TimelineLine } from "./TimelineLine";
 
 type Step = {
   verb: string;
   engineer: string;
   owner: string;
-  frame?: { slot: string; url: string; alt: string; side: "right" | "left" };
+  frame?: { slot: string; url: string; alt: string; photo: string; side: "right" | "left" };
 };
 
 // Verbs as labels, never numbers. One sentence on the engineer's work, one on what the owner receives.
@@ -18,6 +18,7 @@ const steps: Step[] = [
       slot: "critical-error-on-this-website",
       url: "https://example.com/",
       alt: "A WordPress site showing the message: There has been a critical error on this website.",
+      photo: "terminal",
       side: "right",
     },
   },
@@ -39,6 +40,7 @@ const steps: Step[] = [
       slot: "restored-site",
       url: "https://example.com/",
       alt: "The same WordPress site loading normally again after the repair.",
+      photo: "workspace",
       side: "left",
     },
   },
@@ -51,8 +53,8 @@ const steps: Step[] = [
 
 /**
  * V1.5. Layout family: vertical timeline with a scroll-drawn line.
- * Two entries carry a browser-frame capture (Diagnose right, Verify left) from 768px; under 768px everything
- * stacks in one column with the frame after the text.
+ * Two entries carry an image (Diagnose right, Verify left) from 768px; under 768px everything stacks in one
+ * column with the image after the text. Until the real captures exist these are plain photographs, never framed.
  */
 export function AfterYouBook() {
   return (
@@ -71,7 +73,7 @@ export function AfterYouBook() {
                   <p className="mt-3 max-w-[60ch] text-[16px] leading-relaxed text-text">{s.engineer}</p>
                   <p className="mt-2 max-w-[60ch] text-[16px] leading-relaxed text-muted">{s.owner}</p>
                 </div>
-                {s.frame && <BrowserFrame slot={s.frame.slot} url={s.frame.url} alt={s.frame.alt} />}
+                {s.frame && <ScreenOrPhoto slot={s.frame.slot} url={s.frame.url} alt={s.frame.alt} photo={s.frame.photo} />}
               </li>
             ))}
           </ol>
