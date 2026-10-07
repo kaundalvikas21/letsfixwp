@@ -14,7 +14,7 @@ excluded.
 
 | File | Unsplash photo id | Processing |
 | --- | --- | --- |
-| `emergency.jpg` | `photo-1660484578217-74126336c9d0` | crop only |
+| `emergency.jpg` | `photo-1758773263238-1989d0cc788c` | crop only |
 | `alert.jpg` | `photo-1739799088045-7b715b372b46` | crop only |
 | `monitors.jpg` | `photo-1457305237443-44c3d5a30b89` | crop only |
 | `racks.jpg` | `photo-1558494949-ef010cbdcc31` | crop only |
@@ -35,6 +35,10 @@ image search and fetched from the CDN directly.
 Servers, racks, patch panels, monitors, keyboards and developer desks: IT and web work. Candidates showing
 padlocks, bench vices or hand tools were rejected because they read as a physical repair shop rather than a
 WordPress service.
+
+Rejected for not being IT at all: a red-lit industrial stairwell of pipes and gantries (it also leaked cyan
+daylight through the windows) and a darkroom photo lab under a red safelight. Red light alone does not make a
+picture about a website being down.
 
 Rejected for carrying someone else's brand: a bank card whose face showed a Visa mark and legible Portuguese
 ad copy for XP Investimentos, Amazon-branded parcels, `imgIX` logos on a data-centre rack, a watch

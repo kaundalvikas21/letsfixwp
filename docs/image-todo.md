@@ -55,7 +55,7 @@ contract bans images that look like UI.
 
 | Photo | Subject | Services |
 | --- | --- | --- |
-| `emergency` | Red-lit server corridor | critical-error, emergency |
+| `emergency` | Engineer over the shoulder at a laptop of code, city at night behind | critical-error, emergency |
 | `alert` | Wall of red server LEDs | server-errors |
 | `monitors` | Two screens of code against a red wall | malware-removal, blacklist-removal, seo-spam-cleanup |
 | `racks` | Rows of server racks | database-connection-error, hosting-migration, site-recovery |
