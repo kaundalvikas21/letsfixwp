@@ -1,5 +1,10 @@
-# fixmywp
+# letsfixwp.com
 website that is only going to focus on urgent problems in WordPress that can be fixed instantly.
+
+The business is **LetsFixWP** at **letsfixwp.com** (`brand` in `src/config/brand.ts`). `fixmywp.com` is a
+different company that is still trading: none of its content, claims, testimonials, address or legal text may
+appear here. `main` is the brand foundation; each design variation lives on its own branch with its own
+`design-system/<slug>/`.
 
 
 ## Getting Started

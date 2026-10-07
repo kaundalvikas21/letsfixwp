@@ -16,10 +16,11 @@ Load design-taste-frontend, redesign-existing-projects, full-output-enforcement 
 
 ## BRAND CONFIG: src/config/brand.ts
 ```
-{ name: "fixmywp" {{CONFIRM final brand name}}, domain: SITE_URL, email: "{{CONFIRM}}", accent: "#CC3333",
+{ name: "LetsFixWP", domain: SITE_URL, email: "{{CONFIRM}}", accent: "#CC3333",
   currency: "INR" {{CONFIRM INR, USD or both}}, gst: { registered: {{CONFIRM}}, gstin: null },
-  legacy: { enabled: {{CONFIRM true only if letsfixwp.com replaces fixmywp.com for the same business}} } }
+  legacy: { enabled: false } }
 ```
+Name and legacy are confirmed (2026-10-07): the business is LetsFixWP at letsfixwp.com, and fixmywp.com is a different company that is still trading, so legacy.enabled is false for good. The paragraph below describes the dead branch only, and src/content/testimonials.ts now holds placeholders instead of that company's quotes.
 When legacy.enabled is true, and only then: the 30-day guarantee, the "restored in a day or less" promise for hacked sites, the care plan's free fix ($150 value), and the testimonials of Sean Garrity (HostingAdvice.com) and Joe Kwak (DEN Industries Professional Services) may appear, docs/audit.md records them, and the old fixmywp.com URLs redirect (table below). When false, none of those claims or quotes appear anywhere.
 Until the owner confirms, keep {{CONFIRM}} values as typed placeholders that fail loudly in a production build, and default legacy.enabled to false.
 

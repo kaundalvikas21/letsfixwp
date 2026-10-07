@@ -10,7 +10,7 @@ type Unconfirmed<T> = { readonly unconfirmed: string; readonly value: T };
 const confirm = <T>(what: string, value: T): Unconfirmed<T> => ({ unconfirmed: what, value });
 
 const input = {
-  name: confirm("final brand name", "fixmywp"),
+  name: "LetsFixWP",
   domain: SITE_URL,
   email: confirm("support email address", "{{CONFIRM support email}}"),
   accent: "#CC3333",
@@ -20,8 +20,10 @@ const input = {
     gstin: null as string | null,
   },
   legacy: {
-    // true only if letsfixwp.com replaces fixmywp.com for the same business.
-    enabled: confirm("letsfixwp.com replaces fixmywp.com for the same business", false),
+    // Confirmed false by the owner on 2026-10-07: letsfixwp.com is a different business from fixmywp.com, which
+    // is still live and trading. Nothing belonging to that company may appear here. The branch below is dead as
+    // a result and is kept only until the removal pass; do not flip this back without a written instruction.
+    enabled: false,
   },
 };
 

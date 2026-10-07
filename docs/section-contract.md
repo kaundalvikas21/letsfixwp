@@ -2,7 +2,7 @@
 
 Shared rules for every section prompt. Re-read before building or editing any section.
 
-1. Precedence: accessibility and touch (ui-ux-pro-max P1-P2) > taste-skill hard bans and Section 14 Pre-Flight > fixmywp brand anchors > ui-ux-pro-max design-system output > dials and judgment.
+1. Precedence: accessibility and touch (ui-ux-pro-max P1-P2) > taste-skill hard bans and Section 14 Pre-Flight > letsfixwp.com brand anchors > ui-ux-pro-max design-system output > dials and judgment.
 2. Files: each section is a Server Component in src/components/sections/<variant>/. Anything using motion, GSAP, scroll or pointer physics is an isolated 'use client' leaf. Never mix GSAP and Motion in one component tree.
 3. Ledger: before coding, record in docs/layout-ledger.md the section's layout family, whether it has an eyebrow, whether it has a marquee, and which CTA intents it shows. Refuse to build a section whose layout family is already on the page. Max one marquee per page. Eyebrows max ceil(sections / 3), hero included. Max 2 consecutive image-plus-text splits.
 4. Content shape: headline max 8 words, supporting copy max 25 words, then one visual or one CTA. Hero: max 4 text elements, headline max 2 lines, subtext max 20 words, CTA visible without scrolling, top padding max pt-24, min-h-[100dvh] never h-screen.
