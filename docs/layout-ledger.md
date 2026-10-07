@@ -29,6 +29,7 @@ Status: S1, S2 built in V1.1. Eyebrows used: 0. Marquees used: 0.
 | H5 | Trust bento | Bento grid, 5 cells in 3x3: 2x2 photo (guarantee), 1x1 accent tint, 1x1 macro photo, 1x1 surface, 2x1 surface-2; columns A/A/D, A/A/E, B/C/E | No | No | None |
 | H6 | Live desk status | Full-width single statement row: status or desk hours left, one CTA right | No | No | CHAT only |
 | H7 | Pricing | Uneven pricing columns 1.4fr 1fr 1fr at lg (emergency full row over two columns at md, stacked under 768px, emergency first) | No | No | BOOK (emergency), PLANS (support hours, care plans), CHECK text link under the grid |
+| H8 | Client quotes | Asymmetric quote pair: 7-col large quote left, 5-col quote right 64px lower; renders only when brand.legacy.enabled (both quotes belong to the fixmywp.com business) | No | No | None (text link to case studies) |
 
 Status: H1 built in V1.2. Home sections so far: 1. Eyebrows used: 0 of ceil(n/3). Marquees used: 0. Image-plus-text splits in a row: 1.
 
@@ -45,3 +46,5 @@ V1.6: H5 built (trust bento). Home sections so far: 5. Eyebrows used: 1 of ceil(
 V1.7: H6 built (desk status row). Home sections so far: 6. Eyebrows used: 1 of ceil(6/3)=2. Marquees used: 1 of 1. Live dot: 0 today (getSiteStatus() returns nulls); 1 when real data arrives.
 
 V1.8: H7 built (pricing). Home sections so far: 7. Eyebrows used: 1 of ceil(7/3)=3. Marquees used: 1 of 1. Every price and the "Quote in minutes" promise show {{CONFIRM}}; "Most booked" hidden until confirmed; guarantee line hidden while legacy is off.
+
+V1.9: H8 built (quote pair). Renders only when brand.legacy.enabled; today it is absent, so visible home sections stay at 7. Eyebrows used: 1. Marquees used: 1 of 1.

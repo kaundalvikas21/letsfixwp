@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Accordion } from "radix-ui";
 import { useState } from "react";
-import { BookLink, ChatButton, ctaStyles } from "@/components/Cta";
+import { BookLink, ChatButton } from "@/components/Cta";
+import { ctaStyles } from "@/components/cta-styles";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import type { NavGroup, NavLeaf } from "./nav-model";
 

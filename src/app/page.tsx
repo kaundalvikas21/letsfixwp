@@ -6,6 +6,7 @@ import { Hero } from "@/components/sections/v1/Hero";
 import { PlatformMarquee } from "@/components/sections/v1/PlatformMarquee";
 import { PricingColumns } from "@/components/sections/v1/PricingColumns";
 import { ProblemFinder } from "@/components/sections/v1/ProblemFinder";
+import { QuotePair } from "@/components/sections/v1/QuotePair";
 import { TrustBento } from "@/components/sections/v1/TrustBento";
 import { hubNodes, nodes, routes } from "@/config/routes";
 
@@ -27,6 +28,7 @@ export default function Home() {
       <TrustBento />
       <DeskStatus />
       <PricingColumns />
+      <QuotePair />
 
       <section aria-labelledby="hubs">
         <h2 id="hubs">What we do</h2>

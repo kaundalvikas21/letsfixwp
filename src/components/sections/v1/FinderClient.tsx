@@ -5,7 +5,8 @@ import { LayoutGroup, motion, MotionConfig } from "motion/react";
 import Link from "next/link";
 import { Tabs } from "radix-ui";
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
-import { BookLink, ChatButton, ctaStyles } from "@/components/Cta";
+import { BookLink, ChatButton } from "@/components/Cta";
+import { ctaStyles } from "@/components/cta-styles";
 import { matchProblem, type MatchCandidate } from "@/lib/match-problem";
 import { useSearchTracking } from "@/lib/use-search-tracking";
 
