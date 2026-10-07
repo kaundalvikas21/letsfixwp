@@ -25,6 +25,7 @@ Status: S1, S2 built in V1.1. Eyebrows used: 0. Marquees used: 0.
 | H1 | Hero with live triage | Asymmetric split 5/7 (text / interactive console); stacked under 768px, console after headline | No | No | BOOK (solid), CHAT (ghost); console result adds BOOK (service + guide) and the HOW text link; no-match shows CHAT + CHECK text link |
 | H2 | Platform logos under the hero | Logo marquee (the page's only marquee): one plain line + monochrome Simple Icons logos | No (plain sentence, not an eyebrow) | Yes (1 of 1) | None |
 | H3 | Problem finder | Vertical tab index: search above, left vertical tablist (horizontal scroll-snap under 768px), right 2-column row list | Yes: "Common emergencies" (1 of 1 allowed at 3 sections) | No | BOOK per search result (text link), CHAT in footer; rows link to service and guide pages |
+| H4 | After you book | Vertical timeline with a scroll-drawn line; browser-frame captures on two entries (Diagnose right, Verify left) | No | No | None |
 
 Status: H1 built in V1.2. Home sections so far: 1. Eyebrows used: 0 of ceil(n/3). Marquees used: 0. Image-plus-text splits in a row: 1.
 
@@ -33,3 +34,5 @@ V1 SYNC (after merging main): S1 and H1 rows updated for the sitemap model. Layo
 V1.3: H2 built (logo marquee). Home sections so far: 2. Eyebrows used: 0 of ceil(2/3)=1. Marquees used: 1 of 1. Image-plus-text splits in a row: 0 (marquee breaks the run).
 
 V1.4: H3 built (problem finder). Home sections so far: 3. Eyebrows used: 1 of ceil(3/3)=1 ("Common emergencies"). Marquees used: 1 of 1. Image-plus-text splits in a row: 0. The finder replaced the unstyled foundation "Site down or hacked right now" list.
+
+V1.5: H4 built (vertical timeline). Home sections so far: 4. Eyebrows used: 1 of ceil(4/3)=2. Marquees used: 1 of 1. Image-plus-text splits in a row: 1 (Diagnose), then text-only entries, then 1 (Verify).

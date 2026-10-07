@@ -31,6 +31,12 @@ const setMu = (php) => writeFileSync(join(muDir, "break.php"), php ? `<?php\n${p
 
 const states = [
   {
+    slot: "restored-site",
+    // The healthy site, captured first: the "restored state" shown on the V1 timeline's Verify step.
+    break: () => {},
+    fix: () => {},
+  },
+  {
     slot: "white-screen-of-death",
     // A PHP fatal with WordPress's recovery handler disabled, so the page is truly blank.
     break: () => {
