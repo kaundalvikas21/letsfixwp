@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AfterYouBook } from "@/components/sections/v1/AfterYouBook";
+import { DeskStatus } from "@/components/sections/v1/DeskStatus";
 import { Hero } from "@/components/sections/v1/Hero";
 import { PlatformMarquee } from "@/components/sections/v1/PlatformMarquee";
 import { ProblemFinder } from "@/components/sections/v1/ProblemFinder";
@@ -23,6 +24,7 @@ export default function Home() {
       <ProblemFinder />
       <AfterYouBook />
       <TrustBento />
+      <DeskStatus />
 
       <section aria-labelledby="hubs">
         <h2 id="hubs">What we do</h2>

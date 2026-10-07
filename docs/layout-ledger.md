@@ -27,6 +27,7 @@ Status: S1, S2 built in V1.1. Eyebrows used: 0. Marquees used: 0.
 | H3 | Problem finder | Vertical tab index: search above, left vertical tablist (horizontal scroll-snap under 768px), right 2-column row list | Yes: "Common emergencies" (1 of 1 allowed at 3 sections) | No | BOOK per search result (text link), CHAT in footer; rows link to service and guide pages |
 | H4 | After you book | Vertical timeline with a scroll-drawn line; browser-frame captures on two entries (Diagnose right, Verify left) | No | No | None |
 | H5 | Trust bento | Bento grid, 5 cells in 3x3: 2x2 photo (guarantee), 1x1 accent tint, 1x1 macro photo, 1x1 surface, 2x1 surface-2; columns A/A/D, A/A/E, B/C/E | No | No | None |
+| H6 | Live desk status | Full-width single statement row: status or desk hours left, one CTA right | No | No | CHAT only |
 
 Status: H1 built in V1.2. Home sections so far: 1. Eyebrows used: 0 of ceil(n/3). Marquees used: 0. Image-plus-text splits in a row: 1.
 
@@ -39,3 +40,5 @@ V1.4: H3 built (problem finder). Home sections so far: 3. Eyebrows used: 1 of ce
 V1.5: H4 built (vertical timeline). Home sections so far: 4. Eyebrows used: 1 of ceil(4/3)=2. Marquees used: 1 of 1. Image-plus-text splits in a row: 1 (Diagnose), then text-only entries, then 1 (Verify).
 
 V1.6: H5 built (trust bento). Home sections so far: 5. Eyebrows used: 1 of ceil(5/3)=2. Marquees used: 1 of 1. Image-plus-text splits in a row: 0. Three claims and the guarantee render as {{CONFIRM}} until confirmed in src/config/brand.ts.
+
+V1.7: H6 built (desk status row). Home sections so far: 6. Eyebrows used: 1 of ceil(6/3)=2. Marquees used: 1 of 1. Live dot: 0 today (getSiteStatus() returns nulls); 1 when real data arrives.

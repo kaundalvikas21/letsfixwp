@@ -23,6 +23,10 @@ const input = {
     // true only if letsfixwp.com replaces fixmywp.com for the same business.
     enabled: confirm("letsfixwp.com replaces fixmywp.com for the same business", false),
   },
+  support: {
+    // Shown when live chat status is unavailable (V1.7), e.g. "Mon to Sat, 9am to 7pm IST".
+    hours: confirm("support desk hours", null as string | null),
+  },
   // Service promises shown on the home page (V1.6). Set to true only once the business commits to them.
   claims: {
     fixedPrice: confirm("claim: fixed price agreed before work starts", false),
@@ -77,6 +81,7 @@ export const brand = {
   currency: v(input.currency),
   gst: { registered: v(input.gst.registered), gstin: input.gst.gstin },
   legacy: { enabled: legacyEnabled, facts: legacyEnabled ? legacyFacts : null },
+  support: { hours: v(input.support.hours) },
   claims: {
     fixedPrice: v(input.claims.fixedPrice),
     fullBackup: v(input.claims.fullBackup),
