@@ -4,6 +4,7 @@ import { AfterYouBook } from "@/components/sections/v1/AfterYouBook";
 import { DeskStatus } from "@/components/sections/v1/DeskStatus";
 import { GuaranteeSplit } from "@/components/sections/v1/GuaranteeSplit";
 import { Hero } from "@/components/sections/v1/Hero";
+import { ObjectionFaq } from "@/components/sections/v1/ObjectionFaq";
 import { PlatformMarquee } from "@/components/sections/v1/PlatformMarquee";
 import { PricingColumns } from "@/components/sections/v1/PricingColumns";
 import { ProblemFinder } from "@/components/sections/v1/ProblemFinder";
@@ -31,6 +32,7 @@ export default function Home() {
       <PricingColumns />
       <QuotePair />
       <GuaranteeSplit />
+      <ObjectionFaq />
 
       <section aria-labelledby="hubs">
         <h2 id="hubs">What we do</h2>

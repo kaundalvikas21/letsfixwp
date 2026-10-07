@@ -40,6 +40,10 @@ const input = {
     twoFactorAccess: confirm("claim: engineers access client sites with two-factor authentication", false),
     stagingFirst: confirm("claim: risky changes are tried on staging first", false),
     writtenReport: confirm("claim: every job ends with a written fix report", false),
+    // V1.11 objection FAQ answers that make a commitment
+    faqStartTime: confirm("FAQ answer: when work starts after booking", false),
+    faqCannotFix: confirm("FAQ answer: what happens and what is charged when a fix is not possible", false),
+    faqPayment: confirm("FAQ answer: payment methods and timing", false),
   },
 };
 
@@ -100,5 +104,8 @@ export const brand = {
     twoFactorAccess: v(input.claims.twoFactorAccess),
     stagingFirst: v(input.claims.stagingFirst),
     writtenReport: v(input.claims.writtenReport),
+    faqStartTime: v(input.claims.faqStartTime),
+    faqCannotFix: v(input.claims.faqCannotFix),
+    faqPayment: v(input.claims.faqPayment),
   },
 } as const;

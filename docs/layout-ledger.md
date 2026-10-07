@@ -31,6 +31,7 @@ Status: S1, S2 built in V1.1. Eyebrows used: 0. Marquees used: 0.
 | H7 | Pricing | Uneven pricing columns 1.4fr 1fr 1fr at lg (emergency full row over two columns at md, stacked under 768px, emergency first) | No | No | BOOK (emergency), PLANS (support hours, care plans), CHECK text link under the grid |
 | H8 | Client quotes | Asymmetric quote pair: 7-col large quote left, 5-col quote right 64px lower; renders only when brand.legacy.enabled (both quotes belong to the fixmywp.com business) | No | No | None (text link to case studies) |
 | H9 | Guarantee | Split statement + checklist (the page's only image-free split): H2 + sentence + link left, 5 ShieldCheck practices right; stacked under 768px | Yes: "Guarantee" (2 of ceil(9/3)=3) | No | None (text link to /legal/guarantee/ when legacy is on) |
+| H10 | Objection FAQ | Single-column accordion (max-w 760px) with a sticky side card at lg; card below the list under lg | No | No | CHAT (side card) |
 
 Status: H1 built in V1.2. Home sections so far: 1. Eyebrows used: 0 of ceil(n/3). Marquees used: 0. Image-plus-text splits in a row: 1.
 
@@ -51,3 +52,5 @@ V1.8: H7 built (pricing). Home sections so far: 7. Eyebrows used: 1 of ceil(7/3)
 V1.9: H8 built (quote pair). Renders only when brand.legacy.enabled; today it is absent, so visible home sections stay at 7. Eyebrows used: 1. Marquees used: 1 of 1.
 
 V1.10: H9 built (guarantee split). Home sections (legacy on): 9. Eyebrows used: 2 of ceil(9/3)=3 ("Common emergencies", "Guarantee"). Marquees used: 1 of 1. Image-free splits: 1 (this one). Headline wording, the reopen sentence and all 5 practices carry {{CONFIRM}}.
+
+V1.11: H10 built (objection FAQ). Home sections (legacy on): 10. Eyebrows used: 2 of ceil(10/3)=4. Marquees used: 1 of 1. Start time, cannot-fix policy, payment and the backup line carry {{CONFIRM}}.
