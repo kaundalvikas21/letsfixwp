@@ -49,6 +49,10 @@ const input = {
     // P2 booking
     quoteBeforeWork: confirm("claim: every job is quoted before work begins", false),
   },
+  // P3: live chat provider (src/lib/chat). Confirmed by setting NEXT_PUBLIC_CHAT_PROVIDER plus its public id.
+  chatProvider: process.env.NEXT_PUBLIC_CHAT_PROVIDER
+    ? process.env.NEXT_PUBLIC_CHAT_PROVIDER
+    : confirm("chat provider: set NEXT_PUBLIC_CHAT_PROVIDER to crisp, intercom, tawk or chatwoot", null as string | null),
   // P2: payment or scheduling handoff after a ticket (src/lib/booking.ts). null = no provider yet.
   bookingProvider: confirm("booking handoff provider: razorpay, stripe or calcom", null as "razorpay" | "stripe" | "calcom" | null),
 };
@@ -117,4 +121,5 @@ export const brand = {
     quoteBeforeWork: v(input.claims.quoteBeforeWork),
   },
   bookingProvider: v(input.bookingProvider),
+  chatProvider: v(input.chatProvider),
 } as const;

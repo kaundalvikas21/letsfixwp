@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { JsonLd, organizationLd } from "@/components/JsonLd";
 import { SiteFooter } from "@/components/SiteFooter";
+import { ChatFallback, ChatLauncher } from "@/components/sections/v1/ChatLauncher";
 import { MobileActionBar } from "@/components/sections/v1/MobileActionBar";
 import { SiteNav } from "@/components/sections/v1/SiteNav";
 import { brand } from "@/config/brand";
@@ -39,6 +40,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </main>
         <SiteFooter />
         <MobileActionBar />
+        <ChatLauncher />
+        <ChatFallback />
       </body>
     </html>
   );

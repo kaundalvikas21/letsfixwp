@@ -41,6 +41,10 @@ export const pageCopy = {
     ],
     band: "Tell us what you need, broken site or new build.",
   },
+  chat: {
+    fallbackTitle: "Chat is not available right now",
+    fallbackBody: "Email us, or open an emergency ticket and an engineer picks it up.",
+  },
   booking: {
     h1: "Contact and emergency ticket",
     tabs: { ticket: "Emergency ticket", project: "Project enquiry" },
