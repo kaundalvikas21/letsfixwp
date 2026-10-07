@@ -7,6 +7,8 @@ import { brand } from "../src/config/brand";
 import { CTA } from "../src/config/cta";
 import { matchIndex } from "../src/content";
 import { matchProblem } from "../src/lib/match-problem";
+import { screenSchemas, ticketSchema } from "../src/app/contact/booking-schema";
+import { ticketIdFor } from "../src/lib/booking";
 
 const walk = (dir: string): string[] =>
   readdirSync(dir).flatMap((f) => {
@@ -52,5 +54,14 @@ assert.ok(matchProblem("ERR_TOO_MANY_REDIRECTS", matchIndex).some((r) => r.guide
 assert.ok(matchProblem("502 bad gateway", matchIndex).some((r) => r.serviceSlug === "server-errors"));
 for (const r of matchProblem("site hacked malware", matchIndex)) assert.ok(r.serviceSlug, "every result resolves to a service");
 assert.deepEqual(matchProblem("", matchIndex), []);
+
+// Booking: schema rules and the server-side double-submit guard.
+const ticket = { service: "emergency", guide: "", other: false, description: "", siteUrl: "example.com", host: "", access: "secure-link", name: "A", email: "a@example.com", phone: "", method: "email", requestId: "6f1c2b8e-9a0d-4c1e-8f2a-1b2c3d4e5f60", company: "" };
+assert.ok(ticketSchema.safeParse(ticket).success, "valid ticket parses");
+assert.ok(!ticketSchema.safeParse({ ...ticket, other: true, service: "", description: "password: hunter2 blank site" }).success, "pasted password rejected");
+assert.ok(!screenSchemas.contact.safeParse({ ...ticket, method: "whatsapp" }).success, "WhatsApp needs a phone number");
+assert.ok(!screenSchemas.problem.safeParse({ ...ticket, service: "" }).success, "a problem or Something else is required");
+assert.equal(ticketIdFor(ticket.requestId).duplicate, false);
+assert.equal(ticketIdFor(ticket.requestId).duplicate, true, "second submit with the same requestId is a duplicate");
 
 console.log(`ok: ${matchIndex.length} match candidates, ${files.length} files scanned, legacy ${brand.legacy.enabled ? "on" : "off"}`);

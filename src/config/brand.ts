@@ -46,7 +46,11 @@ const input = {
     faqPayment: confirm("FAQ answer: payment methods and timing", false),
     // P1 free site check
     checkReportTiming: confirm("claim: when the free site check report arrives", false),
+    // P2 booking
+    quoteBeforeWork: confirm("claim: every job is quoted before work begins", false),
   },
+  // P2: payment or scheduling handoff after a ticket (src/lib/booking.ts). null = no provider yet.
+  bookingProvider: confirm("booking handoff provider: razorpay, stripe or calcom", null as "razorpay" | "stripe" | "calcom" | null),
 };
 
 const isUnconfirmed = (v: unknown): v is Unconfirmed<unknown> =>
@@ -110,5 +114,7 @@ export const brand = {
     faqCannotFix: v(input.claims.faqCannotFix),
     faqPayment: v(input.claims.faqPayment),
     checkReportTiming: v(input.claims.checkReportTiming),
+    quoteBeforeWork: v(input.claims.quoteBeforeWork),
   },
+  bookingProvider: v(input.bookingProvider),
 } as const;

@@ -72,6 +72,6 @@ V1.12: H11 (final CTA) and S3 (footer) built; the unstyled foundation "What we d
 | Case studies | Composed empty state | No | No | CHAT |
 | Pricing | Rate tables per hub | No | No | CHAT + CHECK |
 | About | Short statement with a hub index | No | No | Node intent primary + CHAT |
+| Contact (P2) | Tabbed form surface: 4-screen emergency ticket and a one-screen project enquiry, contact card at lg | No | No | BOOK (ticket submit), QUOTE (enquiry submit), CHAT |
 
 None reuses a home layout family. Thin-content scan over all 95 sitemap pages: 0 repeated paragraphs.
-
