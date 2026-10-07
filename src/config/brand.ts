@@ -35,6 +35,11 @@ const input = {
     // V1.8 pricing
     quoteInMinutes: confirm("claim: emergency quotes are sent within minutes", false),
     mostBookedEmergency: confirm("claim: the emergency fix is the most booked service", false),
+    // V1.10 guarantee section (full backup and credential deletion reuse the claims above)
+    guaranteeWording: confirm('claim: guarantee wording "Fixed, or we keep working"', false),
+    twoFactorAccess: confirm("claim: engineers access client sites with two-factor authentication", false),
+    stagingFirst: confirm("claim: risky changes are tried on staging first", false),
+    writtenReport: confirm("claim: every job ends with a written fix report", false),
   },
 };
 
@@ -91,5 +96,9 @@ export const brand = {
     credentialsDeleted: v(input.claims.credentialsDeleted),
     quoteInMinutes: v(input.claims.quoteInMinutes),
     mostBookedEmergency: v(input.claims.mostBookedEmergency),
+    guaranteeWording: v(input.claims.guaranteeWording),
+    twoFactorAccess: v(input.claims.twoFactorAccess),
+    stagingFirst: v(input.claims.stagingFirst),
+    writtenReport: v(input.claims.writtenReport),
   },
 } as const;

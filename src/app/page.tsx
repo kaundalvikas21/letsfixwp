@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AfterYouBook } from "@/components/sections/v1/AfterYouBook";
 import { DeskStatus } from "@/components/sections/v1/DeskStatus";
+import { GuaranteeSplit } from "@/components/sections/v1/GuaranteeSplit";
 import { Hero } from "@/components/sections/v1/Hero";
 import { PlatformMarquee } from "@/components/sections/v1/PlatformMarquee";
 import { PricingColumns } from "@/components/sections/v1/PricingColumns";
@@ -29,6 +30,7 @@ export default function Home() {
       <DeskStatus />
       <PricingColumns />
       <QuotePair />
+      <GuaranteeSplit />
 
       <section aria-labelledby="hubs">
         <h2 id="hubs">What we do</h2>
