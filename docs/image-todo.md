@@ -37,6 +37,10 @@ photograph to the framed capture with no code change.
 | --- | --- | --- | --- |
 | `critical-error-on-this-website` | 1600x1000 | WordPress "There has been a critical error on this website." screen. Shows `services/terminal.jpg` until then | src/components/sections/v1/AfterYouBook.tsx |
 | `restored-site` | 1600x1000 | The same WordPress site working again (default theme home page). Shows `services/workspace.jpg` until then | src/components/sections/v1/AfterYouBook.tsx |
+
+The timeline's Repair step also carries an image (`services/keys.jpg`) but **no slot**: there is no screen state
+worth capturing while a file is being edited, so it stays a photograph permanently. Diagnose and Verify are the
+before and after of one site, which is the pair the section argues with.
 | `service-<id>` (32 slots) | 1600x1000 | The WordPress admin or front end showing that service's problem or result. Shows the service's `image.photo` until then | src/components/templates/ServiceTemplate.tsx |
 | `illustration-<slug>` / error slots (37 guide slots) | 1600x1000 | Guide pages render nothing until the capture exists; no stand-in | src/components/templates/GuideTemplate.tsx |
 

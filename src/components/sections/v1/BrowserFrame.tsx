@@ -37,6 +37,9 @@ export function BrowserFrame({
  * The real capture in its frame once it exists, otherwise a plain on-brand photograph from
  * public/site_images/services/. The photograph is never framed: browser chrome around stock imagery would read as a
  * screenshot, which the section contract bans. It carries no information the heading does not, so alt stays empty.
+ *
+ * `slot` is optional: some places (the Repair step of the home timeline) have no screen state worth capturing and
+ * stay a photograph for good.
  */
 export function ScreenOrPhoto({
   slot,
@@ -46,14 +49,14 @@ export function ScreenOrPhoto({
   className = "",
   preload = false,
 }: {
-  slot: string;
-  url: string;
-  alt: string;
+  slot?: string;
+  url?: string;
+  alt?: string;
   photo?: string;
   className?: string;
   preload?: boolean;
 }) {
-  if (hasCapture(slot)) return <BrowserFrame slot={slot} url={url} alt={alt} className={className} preload={preload} />;
+  if (slot && url && alt && hasCapture(slot)) return <BrowserFrame slot={slot} url={url} alt={alt} className={className} preload={preload} />;
   if (!photo) return null;
   return (
     <Image

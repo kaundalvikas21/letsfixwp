@@ -26,7 +26,7 @@ Status: S1, S2 built in V1.1. Eyebrows used: 0. Marquees used: 0.
 | H1 | Hero with live triage | Asymmetric split 5/7 (text / interactive console); stacked under 768px, console after headline | No | No | BOOK (solid), CHAT (ghost); console result adds BOOK (service + guide) and the HOW text link; no-match shows CHAT + CHECK text link |
 | H2 | Platform logos under the hero | Logo marquee (the page's only marquee): one plain line + monochrome Simple Icons logos | No (plain sentence, not an eyebrow) | Yes (1 of 1) | None |
 | H3 | Problem finder | Vertical tab index: search above, left vertical tablist (horizontal scroll-snap under 768px), right 2-column row list | Yes: "Common emergencies" (1 of 1 allowed at 3 sections) | No | BOOK per search result (text link), CHAT in footer; rows link to service and guide pages |
-| H4 | After you book | Vertical timeline with a scroll-drawn line; browser-frame captures on two entries (Diagnose right, Verify left) | No | No | None |
+| H4 | After you book | Vertical timeline with a scroll-drawn line; images on three entries, alternating (Diagnose right, Repair left, Verify right) | No | No | None |
 | H5 | Trust bento | Bento grid, 5 cells in 3x3: 2x2 photo (guarantee), 1x1 accent tint, 1x1 macro photo, 1x1 surface, 2x1 surface-2; columns A/A/D, A/A/E, B/C/E | No | No | None |
 | H6 | Live desk status | Full-width single statement row: status or desk hours left, one CTA right | No | No | CHAT only |
 | H7 | Pricing | Uneven pricing columns 1.4fr 1fr 1fr at lg (emergency full row over two columns at md, stacked under 768px, emergency first) | No | No | BOOK (emergency), PLANS (support hours, care plans), CHECK text link under the grid |
@@ -44,6 +44,13 @@ V1.3: H2 built (logo marquee). Home sections so far: 2. Eyebrows used: 0 of ceil
 V1.4: H3 built (problem finder). Home sections so far: 3. Eyebrows used: 1 of ceil(3/3)=1 ("Common emergencies"). Marquees used: 1 of 1. Image-plus-text splits in a row: 0. The finder replaced the unstyled foundation "Site down or hacked right now" list.
 
 V1.5: H4 built (vertical timeline). Home sections so far: 4. Eyebrows used: 1 of ceil(4/3)=2. Marquees used: 1 of 1. Image-plus-text splits in a row: 1 (Diagnose), then text-only entries, then 1 (Verify).
+
+V1.5 revised (external-image pass): Repair gained an image, so the entries now read image / text / image / image /
+text and the sides alternate right, left, right. Repair and Verify are the only adjacent pair, which is exactly
+rule 3's cap of 2 consecutive image-plus-text splits. Three text-only rows in a row left the right half of the
+section empty and the two images looked arbitrary rather than rhythmic. Diagnose and Verify keep their capture
+slots (the same site broken, then working); Repair has no screen state worth capturing, so it carries a
+photograph with no slot and will never switch.
 
 V1.6: H5 built (trust bento). Home sections so far: 5. Eyebrows used: 1 of ceil(5/3)=2. Marquees used: 1 of 1. Image-plus-text splits in a row: 0. Three claims and the guarantee render as {{CONFIRM}} until confirmed in src/config/brand.ts.
 
