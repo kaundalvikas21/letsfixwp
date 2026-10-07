@@ -44,7 +44,7 @@ export function MobileActionBar() {
     <motion.div
       className="fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t border-line bg-surface/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md md:hidden"
       initial={false}
-      animate={{ y: show ? 0 : "100%", opacity: show ? 1 : 0 }}
+      animate={{ y: show ? 0 : "100%" }} // transform only: a fading label dips below AA mid-animation
       transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 100, damping: 20 }}
       aria-hidden={!show}
       inert={!show}

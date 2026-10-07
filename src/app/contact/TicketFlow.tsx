@@ -330,7 +330,7 @@ export function TicketFlow({
                   {label}
                 </button>
               ) : (
-                <span className={`inline-flex min-h-11 items-center ${s === screen ? "text-text" : "text-muted/60"}`}>{label}</span>
+                <span className={`inline-flex min-h-11 items-center ${s === screen ? "text-text" : "text-muted"}`}>{label}</span>
               )}
             </li>
           );

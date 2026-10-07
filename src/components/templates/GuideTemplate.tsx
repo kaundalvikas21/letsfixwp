@@ -52,7 +52,7 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
       <header className="pt-8 md:pt-12">
         <h1 className={h1}>{g.title}</h1>
         {g.errorText && (
-          <pre className="mt-8 overflow-x-auto rounded-card border border-line bg-surface px-5 py-4 font-mono text-[14px] leading-relaxed whitespace-pre-wrap text-text">
+          <pre tabIndex={0} className="mt-8 overflow-x-auto rounded-card border border-line bg-surface px-5 py-4 font-mono text-[14px] leading-relaxed whitespace-pre-wrap text-text">
             <code>{g.errorText}</code>
           </pre>
         )}

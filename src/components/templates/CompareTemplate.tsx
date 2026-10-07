@@ -49,7 +49,7 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
           <h2 id="table" className={h2}>
             Side by side
           </h2>
-          <div className="mt-8 overflow-x-auto rounded-card border border-line">
+          <div tabIndex={0} role="group" aria-label={`${c.a} compared with ${c.b}`} className="mt-8 overflow-x-auto rounded-card border border-line">
             <table className="w-full min-w-[40rem] border-collapse text-left text-[15px] leading-relaxed">
               <caption className="sr-only">
                 {c.a} compared with {c.b}

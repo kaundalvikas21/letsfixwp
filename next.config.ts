@@ -12,6 +12,8 @@ if (unconfirmedBrandFields.length) {
 const nextConfig: NextConfig = {
   trailingSlash: true,
   images: {
+    // 35 is for decorative layers only (the hero backdrop renders at 25% opacity).
+    qualities: [35, 75],
     // ponytail: picsum placeholders only (docs/image-todo.md). Remove once real images land in /public.
     remotePatterns: [
       { protocol: "https", hostname: "picsum.photos" },

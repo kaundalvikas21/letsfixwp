@@ -1,5 +1,5 @@
 import { citySlugs, hubIdOf, hubIds, nodeByPath, serviceIdOf, serviceIds, serviceNodes } from "../config/routes";
-import type { MatchCandidate } from "../lib/match-problem";
+import { tokenize, type MatchCandidate } from "../lib/match-problem";
 import { citiesList, comparesList, guidesList, servicesList } from "./all";
 import { hubsList } from "./hubs";
 import type { City, Compare, Guide, Hub, Service } from "./schema";
@@ -63,15 +63,17 @@ for (const c of cities) {
 for (const id of hubIds) if (!hubMap.has(id)) fail(`SITEMAP hub ${id} has no entry in src/content/hubs.ts`);
 for (const c of compares) if (!serviceMap.has(c.closestService)) fail(`compare ${c.slug} closestService ${c.closestService} unknown`);
 
-/** Lightweight search data for client islands (no zod, no full copy). */
+/**
+ * Lightweight search data for client islands (no zod, no full copy). head and body are pre-tokenized on the
+ * server: it cuts the serialized payload and saves re-tokenising every candidate on each keystroke.
+ */
+const terms = (...parts: string[]) => [...new Set(tokenize(parts.join(" ")))].join(" ");
 export const matchIndex: MatchCandidate[] = [
   ...guides.map((g) => ({
     guideSlug: g.slug,
     serviceSlug: g.parentService,
-    head: [g.title, g.errorText ?? ""].join(" "),
-    body: g.symptoms.join(" "),
+    head: terms(g.title, g.errorText ?? ""),
+    body: terms(...g.symptoms),
   })),
-  ...services
-    .filter((s) => s.intent === "fix")
-    .map((s) => ({ serviceSlug: s.id, head: s.title, body: s.symptoms.join(" ") })),
+  ...services.filter((s) => s.intent === "fix").map((s) => ({ serviceSlug: s.id, head: terms(s.title), body: terms(...s.symptoms) })),
 ];

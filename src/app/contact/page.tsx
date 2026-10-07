@@ -70,7 +70,7 @@ export default async function Contact({ searchParams }: PageProps<"/contact">) {
           <div className="rounded-card border border-line bg-surface p-6 shadow-card lg:sticky lg:top-24">
             <ChatButton location="contact:aside" className="w-full" />
             <p className="mt-4 text-[14px] text-muted">
-              <a href={`mailto:${brand.email}`} className="inline-flex min-h-11 items-center text-text underline-offset-4 hover:underline">
+              <a href={`mailto:${brand.email}`} className="inline-flex min-h-11 items-center text-text underline underline-offset-4">
                 {brand.email}
               </a>
             </p>

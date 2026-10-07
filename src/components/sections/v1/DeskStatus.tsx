@@ -54,7 +54,7 @@ export async function DeskStatus() {
             </h2>
             <p className="mt-2 text-[15px] text-muted">
               Reach the desk by chat, or email{" "}
-              <a href={`mailto:${brand.email}`} className="text-text underline-offset-4 hover:underline">
+              <a href={`mailto:${brand.email}`} className="text-text underline underline-offset-4">
                 {brand.email}
               </a>
               .

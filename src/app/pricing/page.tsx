@@ -38,7 +38,7 @@ export default function Pricing() {
                   {hub.title}
                 </Link>
               </h2>
-              <div className="mt-6 overflow-x-auto rounded-card border border-line">
+              <div tabIndex={0} role="group" aria-label={`${hub.title} prices`} className="mt-6 overflow-x-auto rounded-card border border-line">
                 <table className="w-full min-w-[32rem] border-collapse text-left text-[15px]">
                   <thead className="bg-surface font-mono text-[12px] text-muted">
                     <tr>
