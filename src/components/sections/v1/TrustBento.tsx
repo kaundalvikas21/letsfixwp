@@ -15,11 +15,11 @@ function Claim({ text, confirmed }: { text: string; confirmed: boolean }) {
 
 const headline = "font-semibold tracking-tight text-text";
 
-/** Photo background with a --bg scrim so the text stays readable. Placeholder until real photos land (image-todo). */
-function Photo({ seed, sizes }: { seed: string; sizes: string }) {
+/** Photo background with a --bg scrim so the text stays readable. Decorative, so alt stays empty. */
+function Photo({ file, sizes }: { file: string; sizes: string }) {
   return (
     <>
-      <Image src={`https://picsum.photos/seed/fixmywp-${seed}/1200/1200`} alt="" fill sizes={sizes} className="-z-10 object-cover" />
+      <Image src={`/site_images/${file}.jpg`} alt="" fill sizes={sizes} className="-z-10 object-cover" />
       <div aria-hidden className="absolute inset-0 -z-10 bg-linear-to-t from-bg via-bg/70 to-bg/20" />
     </>
   );
@@ -46,7 +46,7 @@ export function TrustBento() {
       <div className="mx-auto grid max-w-7xl gap-4 px-4 md:grid-cols-3 md:grid-rows-[repeat(3,minmax(13rem,auto))] md:px-6">
         {/* A: 2x2, real photo with scrim, text bottom-left. The guarantee belongs to the legacy business. */}
         <BentoCell className="min-h-[22rem] md:col-span-2 md:row-span-2">
-          <Photo seed="bento-guarantee" sizes="(min-width: 768px) 66vw, 100vw" />
+          <Photo file="bento-guarantee" sizes="(min-width: 768px) 66vw, 100vw" />
           <Body>
             <h3 className={`max-w-[18ch] text-[clamp(1.75rem,1.3rem+2vw,2.75rem)] leading-[1.05] ${headline}`}>
               {days ? `${days}-day guarantee on every fix` : <Claim text="Guarantee on every fix" confirmed={false} />}
@@ -65,7 +65,7 @@ export function TrustBento() {
 
         {/* C: 1x1, real macro photo. */}
         <BentoCell className="min-h-52">
-          <Photo seed="bento-keyboard" sizes="(min-width: 768px) 33vw, 100vw" />
+          <Photo file="bento-keyboard" sizes="(min-width: 768px) 33vw, 100vw" />
           <Body>
             <h3 className={`text-xl ${headline}`}>WordPress only. Nothing else.</h3>
           </Body>

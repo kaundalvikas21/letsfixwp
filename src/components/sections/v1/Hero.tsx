@@ -74,15 +74,16 @@ export function Hero() {
         <div className="relative lg:col-span-7 lg:col-start-6 lg:row-span-3 lg:row-start-1 lg:self-center">
           {/* Dim photo behind the console; edges fade into --bg so the console stays the focal point. */}
           <div aria-hidden className="pointer-events-none absolute -inset-x-4 -inset-y-12 -z-10 md:-inset-x-10 lg:-inset-y-24">
-            {/* This backdrop is the LCP element, so it preloads; at 25% opacity it needs no detail, hence q=35. */}
+            {/* This backdrop is the LCP element, so it preloads. The real photo is low-key, so it needs 50% where the
+                daylight placeholder needed 25%; it still reads as texture, never competing with the console. */}
             <Image
-              src="https://picsum.photos/seed/fixmywp-hero-1/1600/1200"
+              src="/site_images/hero-console-bg.jpg"
               alt=""
               fill
               preload
-              quality={35}
+              quality={55}
               sizes="(min-width: 1024px) 50vw, 60vw"
-              className="object-cover opacity-25"
+              className="object-cover object-[35%_95%] opacity-50"
             />
             <div className="absolute inset-0 bg-linear-to-r from-bg via-bg/20 to-bg/60" />
             <div className="absolute inset-0 bg-linear-to-b from-bg via-transparent to-bg" />
