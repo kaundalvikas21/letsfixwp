@@ -4,6 +4,7 @@ import { AfterYouBook } from "@/components/sections/v1/AfterYouBook";
 import { Hero } from "@/components/sections/v1/Hero";
 import { PlatformMarquee } from "@/components/sections/v1/PlatformMarquee";
 import { ProblemFinder } from "@/components/sections/v1/ProblemFinder";
+import { TrustBento } from "@/components/sections/v1/TrustBento";
 import { hubNodes, nodes, routes } from "@/config/routes";
 
 export const metadata: Metadata = {
@@ -21,6 +22,7 @@ export default function Home() {
 
       <ProblemFinder />
       <AfterYouBook />
+      <TrustBento />
 
       <section aria-labelledby="hubs">
         <h2 id="hubs">What we do</h2>

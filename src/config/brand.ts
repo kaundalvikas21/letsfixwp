@@ -23,6 +23,12 @@ const input = {
     // true only if letsfixwp.com replaces fixmywp.com for the same business.
     enabled: confirm("letsfixwp.com replaces fixmywp.com for the same business", false),
   },
+  // Service promises shown on the home page (V1.6). Set to true only once the business commits to them.
+  claims: {
+    fixedPrice: confirm("claim: fixed price agreed before work starts", false),
+    fullBackup: confirm("claim: full backup taken before any change", false),
+    credentialsDeleted: confirm("claim: client credentials deleted when the job ends", false),
+  },
 };
 
 const isUnconfirmed = (v: unknown): v is Unconfirmed<unknown> =>
@@ -71,4 +77,9 @@ export const brand = {
   currency: v(input.currency),
   gst: { registered: v(input.gst.registered), gstin: input.gst.gstin },
   legacy: { enabled: legacyEnabled, facts: legacyEnabled ? legacyFacts : null },
+  claims: {
+    fixedPrice: v(input.claims.fixedPrice),
+    fullBackup: v(input.claims.fullBackup),
+    credentialsDeleted: v(input.claims.credentialsDeleted),
+  },
 } as const;
