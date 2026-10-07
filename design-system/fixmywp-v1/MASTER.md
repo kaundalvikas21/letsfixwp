@@ -25,7 +25,7 @@
 | 7 | Shadow tokens built on `rgba(0,0,0,...)` | One tinted shadow token, `--shadow-card` | Contract rule 6 bans pure black. Dark shadows are tinted from `--bg` |
 | 8 | Modal radius 16px, mixed radii | **Shape lock:** cards 12px, inputs and buttons 8px, nothing else rounded | Brief. A consistent shape language |
 | 9 | Hover `transform: translateY(-1px)` with `transition: all` | Motion springs (stiffness 100, damping 20) for entrances and hover. Animate transform and opacity only. `:active` uses `scale-[0.98]` | Brief and contract rules 5 and 10. `transition: all` animates layout properties |
-| 10 | GSAP Stagger List with `back.out(1.4)` | Motion only. GSAP is not installed, and the two are never mixed (contract rule 2). Allowed effects: **one** streaming-text effect (inside the triage widget only), **one** SVG line-draw (process timeline), **one** marquee (platform logos). No other loops | Brief: restrained Motion |
+| 10 | GSAP Stagger List with `back.out(1.4)` | Motion only. GSAP is not installed, and the two are never mixed (contract rule 2). Allowed effects: **one** streaming-text effect (inside the triage widget only), **one** sticky card stack (process timeline), **one** marquee (platform logos). No other loops | Brief: restrained Motion |
 | 11 | Icons: Heroicons or Lucide | Phosphor (`@phosphor-icons/react`), weight `regular` everywhere | Brief |
 | 12 | Checklist item "Light mode: text contrast 4.5:1" | Dark-only contrast checks (table below) | Theme is locked dark |
 | 13 | CTA placement "Contact Sales / Get Quote" | CTA labels only from `src/config/cta.ts`: BOOK "Fix my site", CHAT "Chat with an engineer", PLANS "See care plans" | Contract rule 5 and the foundation CRO plumbing |
@@ -118,7 +118,7 @@ Re-run these whenever a token changes.
 | Spring entrance (opacity + y) | Section content on first view | Hierarchy: what to read first |
 | Spring hover (transform) | Interactive cards and buttons | Feedback: this responds |
 | Streaming text | Triage widget only | State: the diagnosis is being worked out from your input |
-| SVG line-draw | Process timeline only | Story: Diagnose, then Back up, then Repair, then Verify, then Harden |
+| Sticky card stack | Process timeline only | Story: the five steps deal over each other in order, so you cannot reach Harden without passing Diagnose |
 | Marquee | Platform logos only | Breadth: the platforms we work on |
 
 - Springs: stiffness 100, damping 20.

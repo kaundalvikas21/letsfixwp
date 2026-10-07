@@ -17,7 +17,7 @@ excluded.
 | `emergency.jpg` | `photo-1758773263238-1989d0cc788c` | crop only |
 | `alert.jpg` | `photo-1739799088045-7b715b372b46` | crop only |
 | `monitors.jpg` | `photo-1457305237443-44c3d5a30b89` | crop only |
-| `racks.jpg` | `photo-1558494949-ef010cbdcc31` | crop only |
+| `racks.jpg` | `photo-1558494949-ef010cbdcc31` | crop, **desaturated** to take the green and amber out of the fibre runs |
 | `cables.jpg` | `photo-1544197150-b99a580bb7a8` | crop, **desaturated** to take the blue out of the patch cables |
 | `terminal.jpg` | `photo-1678728245335-244ffd160d54` | crop only |
 | `keys.jpg` | `photo-1649875951876-59484d9a43e5` | crop only |

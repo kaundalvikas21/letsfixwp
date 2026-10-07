@@ -36,11 +36,13 @@ photograph to the framed capture with no code change.
 | Slot | Size | Art direction (MASTER.md) | Used in |
 | --- | --- | --- | --- |
 | `critical-error-on-this-website` | 1600x1000 | WordPress "There has been a critical error on this website." screen. Shows `services/terminal.jpg` until then | src/components/sections/v1/AfterYouBook.tsx |
-| `restored-site` | 1600x1000 | The same WordPress site working again (default theme home page). Shows `services/workspace.jpg` until then | src/components/sections/v1/AfterYouBook.tsx |
+| `restored-site` | 1600x1000 | The same WordPress site working again (default theme home page). Shows `services/monitors.jpg` until then | src/components/sections/v1/AfterYouBook.tsx |
 
-The timeline's Repair step also carries an image (`services/keys.jpg`) but **no slot**: there is no screen state
-worth capturing while a file is being edited, so it stays a photograph permanently. Diagnose and Verify are the
-before and after of one site, which is the pair the section argues with.
+All five timeline steps carry a photograph, because identical rows are what make the section read as a rhythm:
+Diagnose `terminal`, Back up `racks`, Repair `keys`, Verify `monitors`, Harden `workspace`, an arc from
+investigating to resolved. Only Diagnose and Verify carry a capture slot. They are the before and after of one
+site, which is the pair the section argues with; Back up, Repair and Harden have no screen state worth capturing
+while files are being copied or edited, so those three stay photographs permanently and will never switch.
 | `service-<id>` (32 slots) | 1600x1000 | The WordPress admin or front end showing that service's problem or result. Shows the service's `image.photo` until then | src/components/templates/ServiceTemplate.tsx |
 | `illustration-<slug>` / error slots (37 guide slots) | 1600x1000 | Guide pages render nothing until the capture exists; no stand-in | src/components/templates/GuideTemplate.tsx |
 
@@ -62,7 +64,7 @@ contract bans images that look like UI.
 | `emergency` | Engineer over the shoulder at a laptop of code, city at night behind | critical-error, emergency |
 | `alert` | Wall of red server LEDs | server-errors |
 | `monitors` | Two screens of code against a red wall | malware-removal, blacklist-removal, seo-spam-cleanup |
-| `racks` | Rows of server racks | database-connection-error, hosting-migration, site-recovery |
+| `racks` | Rows of server racks, desaturated off the green and amber fibre | database-connection-error, hosting-migration, site-recovery |
 | `cables` | Patch panel, desaturated off the blue cables | speed-optimization, platform-migration |
 | `terminal` | Hands on a laptop, code on screen | audit-hardening, custom-plugin, hire-developer, login-redirect-issues |
 | `keys` | Black keyboard macro | plugin-theme-conflict, update-php-errors |

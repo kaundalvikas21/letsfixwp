@@ -26,7 +26,7 @@ Status: S1, S2 built in V1.1. Eyebrows used: 0. Marquees used: 0.
 | H1 | Hero with live triage | Asymmetric split 5/7 (text / interactive console); stacked under 768px, console after headline | No | No | BOOK (solid), CHAT (ghost); console result adds BOOK (service + guide) and the HOW text link; no-match shows CHAT + CHECK text link |
 | H2 | Platform logos under the hero | Logo marquee (the page's only marquee): one plain line + monochrome Simple Icons logos | No (plain sentence, not an eyebrow) | Yes (1 of 1) | None |
 | H3 | Problem finder | Vertical tab index: search above, left vertical tablist (horizontal scroll-snap under 768px), right 2-column row list | Yes: "Common emergencies" (1 of 1 allowed at 3 sections) | No | BOOK per search result (text link), CHAT in footer; rows link to service and guide pages |
-| H4 | After you book | Vertical timeline with a scroll-drawn line; images on three entries, alternating (Diagnose right, Repair left, Verify right) | No | No | None |
+| H4 | After you book | Sticky card stack: five step cards, each sticking 12px lower than the last so scrolling deals them over each other; photo zigzags right, left, right inside the cards; each card spring-enters on first view | No | No | None |
 | H5 | Trust bento | Bento grid, 5 cells in 3x3: 2x2 photo (guarantee), 1x1 accent tint, 1x1 macro photo, 1x1 surface, 2x1 surface-2; columns A/A/D, A/A/E, B/C/E | No | No | None |
 | H6 | Live desk status | Full-width single statement row: status or desk hours left, one CTA right | No | No | CHAT only |
 | H7 | Pricing | Uneven pricing columns 1.4fr 1fr 1fr at lg (emergency full row over two columns at md, stacked under 768px, emergency first) | No | No | BOOK (emergency), PLANS (support hours, care plans), CHECK text link under the grid |
@@ -51,6 +51,41 @@ rule 3's cap of 2 consecutive image-plus-text splits. Three text-only rows in a 
 section empty and the two images looked arbitrary rather than rhythmic. Diagnose and Verify keep their capture
 slots (the same site broken, then working); Repair has no screen state worth capturing, so it carries a
 photograph with no slot and will never switch.
+
+V1.5 revised again (scroll-reveal pass): all five steps now carry a photograph and every row is the same unit,
+photo in a fixed 22rem column left of the text from 768px, never alternating. Alternation was the actual fault:
+three images across five steps flipping sides produced three different row shapes and therefore no repeating
+unit, which is what a rhythm is. Under 768px a step stacks text first so the verb leads, then the photo.
+
+Each row enters with a spring on opacity and y as it reaches the viewport (`StepReveal`, a `"use client"` leaf
+beside `TimelineLine`). This needs no override: MASTER.md's motion vocabulary already lists "Spring entrance
+(opacity + y) | Section content on first view | Hierarchy: what to read first" and directs it to Motion
+`whileInView` or IntersectionObserver. It had simply never been built. `useReducedMotion()` suppresses the
+initial offset so the rows mount in their final state; `MotionConfig` is wrong here because it collapses the
+transition but still applies the y offset.
+
+Rule 3's "max 2 consecutive image-plus-text splits" reading, recorded so this does not get re-litigated: the
+counter is page level. It sits among the other page-level counters in the same rule (sections, marquees,
+eyebrows), and it exists to stop the page stacking big alternating half-page image slabs. Five contained media
+rows inside one list are one unit repeated, not five splits. Photos per step: Diagnose terminal, Back up racks,
+Repair keys, Verify monitors, Harden workspace, an arc from investigating to resolved. Only Diagnose and Verify
+carry capture slots.
+
+V1.5 revised a third time (sticky stack): the layout family changes from "vertical timeline with a scroll-drawn
+line" to **sticky card stack**. Each step is a `bg-surface` card; from 768px card n sticks at `6rem + n * 0.75rem`
+so scrolling deals each card over the one before and the covered steps stay readable as a deck of edges. The
+photo zigzags inside the cards, right on Diagnose then alternating, so no two cards read as the same slide. The
+flat list was correct and still dull; the stack makes the sequence physical, which is the point of the section.
+
+Checked against rule 3: no other home section is a sticky stack, so the family is free. `service.md` forbids the
+*timeline* on service pages and is unaffected. `TimelineLine.tsx` is deleted, since stacking cards and a rail
+beside them fight each other; that removes the SVG line-draw, which MASTER.md Override 10 listed as one of three
+allowed effects, so Override 10 and the motion vocabulary table now name the sticky stack in its place.
+
+Cost, stated plainly: the stack needs scroll distance to deal, so the section runs 2799px at 1440 against 1679px
+for the flat version. Under 768px there is no stack at all (a card taller than the viewport cannot stack) and the
+cards are a plain list. Reduced motion drops both the sticky and the 15rem gap, landing at 1967px, so nobody
+scrolls past empty space they are not being shown anything in.
 
 V1.6: H5 built (trust bento). Home sections so far: 5. Eyebrows used: 1 of ceil(5/3)=2. Marquees used: 1 of 1. Image-plus-text splits in a row: 0. Three claims and the guarantee render as {{CONFIRM}} until confirmed in src/config/brand.ts.
 
@@ -98,7 +133,7 @@ None reuses a home layout family. Thin-content scan over all 95 sitemap pages: 0
 | Slot | Layout family | Eyebrow | Marquee | CTA intents |
 | --- | --- | --- | --- | --- |
 | Service hero image (32 pages) | Unframed 16:10 photograph, 12px radius, hairline border, directly under the hero CTA pair | No | No | None |
-| Timeline Diagnose / Verify | Same photograph treatment, in the right / left grid cell from 768px | No | No | None |
+| Timeline, all five steps | Same photograph treatment, flush inside the step card in a 24rem column, side alternating (see the V1.5 sticky-stack note) | No | No | None |
 
 The browser frame is gone from both until a real capture exists in `public/screens/`; `ScreenOrPhoto` switches
 back to the framed capture automatically. Chrome around a stock photo would read as a screenshot of the

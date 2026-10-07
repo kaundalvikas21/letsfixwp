@@ -48,6 +48,7 @@ export function ScreenOrPhoto({
   photo,
   className = "",
   preload = false,
+  sizes = "(min-width: 768px) 40vw, 100vw",
 }: {
   slot?: string;
   url?: string;
@@ -55,6 +56,7 @@ export function ScreenOrPhoto({
   photo?: string;
   className?: string;
   preload?: boolean;
+  sizes?: string; // the slot's real width, so next/image stops fetching a file wider than the column
 }) {
   if (slot && url && alt && hasCapture(slot)) return <BrowserFrame slot={slot} url={url} alt={alt} className={className} preload={preload} />;
   if (!photo) return null;
@@ -64,7 +66,7 @@ export function ScreenOrPhoto({
       alt=""
       width={1600}
       height={1000}
-      sizes="(min-width: 768px) 40vw, 100vw"
+      sizes={sizes}
       preload={preload}
       quality={65}
       className={`block h-auto w-full rounded-card border border-line object-cover ${className}`}
