@@ -32,6 +32,9 @@ const input = {
     fixedPrice: confirm("claim: fixed price agreed before work starts", false),
     fullBackup: confirm("claim: full backup taken before any change", false),
     credentialsDeleted: confirm("claim: client credentials deleted when the job ends", false),
+    // V1.8 pricing
+    quoteInMinutes: confirm("claim: emergency quotes are sent within minutes", false),
+    mostBookedEmergency: confirm("claim: the emergency fix is the most booked service", false),
   },
 };
 
@@ -86,5 +89,7 @@ export const brand = {
     fixedPrice: v(input.claims.fixedPrice),
     fullBackup: v(input.claims.fullBackup),
     credentialsDeleted: v(input.claims.credentialsDeleted),
+    quoteInMinutes: v(input.claims.quoteInMinutes),
+    mostBookedEmergency: v(input.claims.mostBookedEmergency),
   },
 } as const;
