@@ -46,6 +46,10 @@ const input = {
     faqStartTime: confirm("FAQ answer: when work starts after booking", false),
     faqCannotFix: confirm("FAQ answer: what happens and what is charged when a fix is not possible", false),
     faqPayment: confirm("FAQ answer: payment methods and timing", false),
+    // V1.9 quote pair. False means src/content/testimonials.ts still holds placeholders, which render with a
+    // visible {{CONFIRM}} marker. Set true only once every quote is a real client's own words with their real
+    // name, role and company, and they have agreed to be quoted.
+    testimonials: confirm("two real client quotes, with each client's name, role, company and permission", false),
     // P1 free site check
     checkReportTiming: confirm("claim: when the free site check report arrives", false),
     // P2 booking
@@ -119,6 +123,7 @@ export const brand = {
     faqStartTime: v(input.claims.faqStartTime),
     faqCannotFix: v(input.claims.faqCannotFix),
     faqPayment: v(input.claims.faqPayment),
+    testimonials: v(input.claims.testimonials),
     checkReportTiming: v(input.claims.checkReportTiming),
     quoteBeforeWork: v(input.claims.quoteBeforeWork),
   },

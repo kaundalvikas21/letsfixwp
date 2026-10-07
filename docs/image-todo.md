@@ -46,6 +46,12 @@ while files are being copied or edited, so those three stay photographs permanen
 | `service-<id>` (32 slots) | 1600x1000 | The WordPress admin or front end showing that service's problem or result. Shows the service's `image.photo` until then | src/components/templates/ServiceTemplate.tsx |
 | `illustration-<slug>` / error slots (37 guide slots) | 1600x1000 | Guide pages render nothing until the capture exists; no stand-in | src/components/templates/GuideTemplate.tsx |
 
+**next.config.ts `images.qualities` must list every quality a component passes.** An unlisted one makes
+`/_next/image` answer 400 and the prop is dropped silently, which is how the hero sat at 55 and the step
+photographs at 65 for several commits while the optimiser served Next's default. The list is now
+`[35, 55, 65, 75]`. There are no `remotePatterns`: every image is local, and an allowed remote host would leave
+the optimiser able to fetch and serve arbitrary images from it.
+
 ## The service photographs
 
 Twelve photographs cover the 32 services, in `public/site_images/services/`, all 1600x1000 JPEG q72. Sourced

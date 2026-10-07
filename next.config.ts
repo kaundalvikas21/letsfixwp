@@ -12,13 +12,12 @@ if (unconfirmedBrandFields.length) {
 const nextConfig: NextConfig = {
   trailingSlash: true,
   images: {
-    // 35 is for decorative layers only (the hero backdrop renders at 25% opacity).
-    qualities: [35, 75],
-    // ponytail: picsum placeholders only (docs/image-todo.md). Remove once real images land in /public.
-    remotePatterns: [
-      { protocol: "https", hostname: "picsum.photos" },
-      { protocol: "https", hostname: "fastly.picsum.photos" },
-    ],
+    // Every quality a component passes must be listed, or /_next/image answers that request with a 400 and the
+    // prop is silently dropped. 35: decorative layers. 55: the hero backdrop. 65: the service and step
+    // photographs. 75: Next's default, used everywhere else.
+    qualities: [35, 55, 65, 75],
+    // No remotePatterns on purpose. Every image is a local file now (docs/image-credits.md), and an allowed
+    // remote host would leave the optimiser able to fetch and serve arbitrary images from it.
   },
   async redirects() {
     return redirects;

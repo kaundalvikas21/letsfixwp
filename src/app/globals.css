@@ -85,14 +85,10 @@
 .legal-prose strong { color: var(--text); font-weight: 600; }
 
 /* Timeline step stack (src/components/sections/v1/AfterYouBook.tsx): the cards deal over each other on scroll.
-   The gap is the scroll budget that lets each card travel over the one before, so it lives here rather than in a
-   space-y utility: reduced motion has to take the gap away as well as the sticky, or the section keeps 1150px of
-   empty scroll it no longer uses. */
+   The gap stays small on purpose. A large one would supply the scroll distance, but it also leaves a void under
+   the first card on arrival, so the section reads as broken before you have scrolled at all. Each card's own
+   height is the travel distance instead, which keeps the deck continuous and the section about 850px shorter. */
 .step-stack > li + li { margin-top: 2rem; }
-@media (min-width: 768px) {
-  .step-stack > li + li { margin-top: 15rem; }
-}
 @media (prefers-reduced-motion: reduce) {
   .step-stack > li { position: static; }
-  .step-stack > li + li { margin-top: 2rem; }
 }

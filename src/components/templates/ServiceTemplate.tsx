@@ -12,7 +12,9 @@ import { testimonials } from "@/content/testimonials";
 import { Breadcrumbs, Faqs, LinkList, pathItems } from "./parts";
 
 // Each approved quote is about one kind of job, so it appears only on that service (no repeated paragraphs).
-const QUOTE_FOR: Record<string, string> = { "malware-removal": "DEN", "care-plans": "HostingAdvice" };
+// Index into src/content/testimonials.ts. Service pages wait for real quotes rather than showing the home
+// page's marked placeholders, so nothing here renders until brand.claims.testimonials is confirmed.
+const QUOTE_FOR: Record<string, number> = { "malware-removal": 0, "care-plans": 1 };
 
 function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
@@ -34,8 +36,8 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
   const intent = primaryCtaFor(s.intent);
   const loc = `service:${s.id}`;
   const Primary = intent === "PLANS" ? PlansLink : intent === "QUOTE" ? QuoteLink : BookLink;
-  const quoteOrg = QUOTE_FOR[s.id];
-  const quote = brand.legacy.enabled && quoteOrg ? testimonials.find((t) => t.org.startsWith(quoteOrg)) : undefined;
+  const quoteIdx = QUOTE_FOR[s.id];
+  const quote = brand.claims.testimonials && quoteIdx !== undefined ? testimonials[quoteIdx] : undefined;
 
   return (
     <>

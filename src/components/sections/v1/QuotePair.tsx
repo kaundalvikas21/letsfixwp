@@ -24,12 +24,16 @@ function Monogram({ name }: { name: string }) {
 
 type Quote = { name: string; role?: string; org: string; excerpt: string };
 
-function Attribution({ q }: { q: Quote }) {
+/** Placeholder quotes carry the same visible marker as every other unconfirmed claim on the site. */
+function Attribution({ q, pending }: { q: Quote; pending: boolean }) {
   return (
     <figcaption className="mt-6 flex items-center gap-4">
       <Monogram name={q.name} />
       <span className="text-[15px] leading-snug">
-        <span className="block font-medium text-text">{q.name}</span>
+        <span className="block font-medium text-text">
+          {q.name}
+          {pending && <span className="ml-2 align-middle font-mono text-[13px] font-normal text-muted">{"{{CONFIRM}}"}</span>}
+        </span>
         <span className="block text-muted">{[q.role, q.org].filter(Boolean).join(", ")}</span>
       </span>
     </figcaption>
@@ -39,13 +43,14 @@ function Attribution({ q }: { q: Quote }) {
 /**
  * V1.9. Layout family: asymmetric quote pair. Left quote 7 columns in large Geist 500, right quote 5 columns
  * sitting 64px lower (lg); stacked under 1024px with no offset. Verbatim excerpts, max 3 lines each. No carousel.
- * Both quotes belong to the fixmywp.com business, so the section renders only when brand.legacy.enabled.
+ *
+ * Until brand.claims.testimonials is confirmed, src/content/testimonials.ts holds placeholders and every
+ * attribution renders a {{CONFIRM}} marker. The section is shown that way on purpose so the layout can be
+ * reviewed, and a production deploy fails while it is in that state. It never shows an invented endorsement.
  */
 export function QuotePair() {
-  if (!brand.legacy.enabled) return null;
-  // Left: the client quote (guarantee and turnaround). Right: the press quote (approach and after-care).
-  const left = testimonials.find((t) => t.org.startsWith("DEN")) as Quote;
-  const right = testimonials.find((t) => t.org.startsWith("HostingAdvice")) as Quote;
+  const pending = !brand.claims.testimonials;
+  const [left, right] = testimonials as readonly Quote[];
 
   return (
     <section aria-labelledby="quotes" className="border-t border-line py-20 md:py-28">
@@ -57,14 +62,14 @@ export function QuotePair() {
           <blockquote className="text-[17px] leading-snug font-medium tracking-tight text-text md:text-[clamp(1.375rem,1.1rem+1vw,1.875rem)]">
             <p>&ldquo;{left.excerpt}&rdquo;</p>
           </blockquote>
-          <Attribution q={left} />
+          <Attribution q={left} pending={pending} />
         </figure>
 
         <figure className="lg:col-span-5 lg:mt-16">
           <blockquote className="text-[17px] leading-relaxed text-text md:text-[18px]">
             <p>&ldquo;{right.excerpt}&rdquo;</p>
           </blockquote>
-          <Attribution q={right} />
+          <Attribution q={right} pending={pending} />
         </figure>
 
         <p className="lg:col-span-12">
