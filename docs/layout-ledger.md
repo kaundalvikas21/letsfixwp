@@ -15,6 +15,7 @@ One row per section, recorded before coding (docs/section-contract.md rule 3). O
 | --- | --- | --- | --- | --- | --- |
 | S1 | Top nav (64px, sticky) | Three-zone bar: wordmark / Fixes, Security, Care plans, Pricing, More / CTA pair. Fixes and Security open two-column dropdown panels, More a one-column panel (Radix NavigationMenu). Below lg: Sheet with every hub as an accordion | No | No | CHAT (ghost), BOOK (solid) |
 | S2 | Mobile action bar (<768px) | Fixed bottom bar, hidden while hero CTAs are visible | No | No | BOOK (flex-1), CHAT (icon) |
+| S3 | Footer (every page) | Link columns from SITEMAP hubs + Resources, a quiet city row under Development, then company, legal, email, copyright | No | No | None |
 
 Status: S1, S2 built in V1.1. Eyebrows used: 0. Marquees used: 0.
 
@@ -32,6 +33,7 @@ Status: S1, S2 built in V1.1. Eyebrows used: 0. Marquees used: 0.
 | H8 | Client quotes | Asymmetric quote pair: 7-col large quote left, 5-col quote right 64px lower; renders only when brand.legacy.enabled (both quotes belong to the fixmywp.com business) | No | No | None (text link to case studies) |
 | H9 | Guarantee | Split statement + checklist (the page's only image-free split): H2 + sentence + link left, 5 ShieldCheck practices right; stacked under 768px | Yes: "Guarantee" (2 of ceil(9/3)=3) | No | None (text link to /legal/guarantee/ when legacy is on) |
 | H10 | Objection FAQ | Single-column accordion (max-w 760px) with a sticky side card at lg; card below the list under lg | No | No | CHAT (side card) |
+| H11 | Final CTA | Full-bleed photo panel with a --bg 70% scrim, H2 + CTA pair only | No | No | BOOK (solid), CHAT (ghost) |
 
 Status: H1 built in V1.2. Home sections so far: 1. Eyebrows used: 0 of ceil(n/3). Marquees used: 0. Image-plus-text splits in a row: 1.
 
@@ -54,3 +56,5 @@ V1.9: H8 built (quote pair). Renders only when brand.legacy.enabled; today it is
 V1.10: H9 built (guarantee split). Home sections (legacy on): 9. Eyebrows used: 2 of ceil(9/3)=3 ("Common emergencies", "Guarantee"). Marquees used: 1 of 1. Image-free splits: 1 (this one). Headline wording, the reopen sentence and all 5 practices carry {{CONFIRM}}.
 
 V1.11: H10 built (objection FAQ). Home sections (legacy on): 10. Eyebrows used: 2 of ceil(10/3)=4. Marquees used: 1 of 1. Start time, cannot-fix policy, payment and the backup line carry {{CONFIRM}}.
+
+V1.12: H11 (final CTA) and S3 (footer) built; the unstyled foundation "What we do" list is removed (the footer carries every hub and service link). Home sections (legacy on): 11, all different layout families. Eyebrows used: 2 of ceil(11/3)=4. Marquees: 1 of 1. Section 14 pre-flight run: see the V1.12 report.
