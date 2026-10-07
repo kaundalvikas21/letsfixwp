@@ -21,7 +21,7 @@ const input = {
   },
   legacy: {
     // true only if letsfixwp.com replaces fixmywp.com for the same business.
-    enabled: confirm("letsfixwp.com replaces fixmywp.com for the same business", false),
+    enabled: confirm("letsfixwp.com replaces fixmywp.com for the same business", true),
   },
   support: {
     // Shown when live chat status is unavailable (V1.7), e.g. "Mon to Sat, 9am to 7pm IST".
