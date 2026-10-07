@@ -72,6 +72,3 @@ export const enquirySchema = z.object({
 });
 
 export type Enquiry = z.infer<typeof enquirySchema>;
-
-/** sessionStorage key for the legacy /contact/thanks/ handoff. */
-export const HANDOFF_KEY = "booking-handoff";

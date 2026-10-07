@@ -75,3 +75,13 @@ V1.12: H11 (final CTA) and S3 (footer) built; the unstyled foundation "What we d
 | Contact (P2) | Tabbed form surface: 4-screen emergency ticket and a one-screen project enquiry, contact card at lg | No | No | BOOK (ticket submit), QUOTE (enquiry submit), CHAT |
 
 None reuses a home layout family. Thin-content scan over all 95 sitemap pages: 0 repeated paragraphs.
+
+## v1-incident-console / collection and utility pages (design pass after the P1 audit)
+
+| Page | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- |
+| /guides/ | Grouped directory, two columns of per-service guide lists | No | No | BOOK, CHAT, CHECK in the band |
+| /compare/ | Plain directory list, quieter than the guides grid | No | No | Node intent primary + CHAT |
+| /legal/* | Long-form legal article, .legal-prose in globals.css | No | No | None |
+
+/contact/thanks/ deleted: P2 moved the success state into the ticket flow, so nothing linked to it.

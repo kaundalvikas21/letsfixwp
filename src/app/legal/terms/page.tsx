@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { h1, pageWrap } from "@/components/sections/v1/page-kit";
 import { LegalPending } from "@/components/templates/parts";
 import { brand } from "@/config/brand";
 import { routes } from "@/config/routes";
@@ -13,8 +14,9 @@ export const metadata: Metadata = {
 export default function Terms() {
   if (!brand.legacy.enabled) return <LegalPending title="Terms of Service" />;
   return (
-    <article>
-      <h1>Terms Of Service</h1>
+    <article className={`${pageWrap} pb-24`}>
+      <h1 className={`pt-10 pb-4 md:pt-16 ${h1}`}>Terms Of Service</h1>
+      <div className="legal-prose">
 
       <h2>Membership</h2>
       <p>
@@ -168,6 +170,7 @@ export default function Terms() {
         to access the Site from other locations do so on their own initiative, and are responsible for compliance with
         local laws, if and to the extent local laws are applicable.
       </p>
+      </div>
     </article>
   );
 }

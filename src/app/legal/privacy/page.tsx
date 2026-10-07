@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { h1, pageWrap } from "@/components/sections/v1/page-kit";
 import { LegalPending } from "@/components/templates/parts";
 import { brand } from "@/config/brand";
 import { routes } from "@/config/routes";
@@ -14,8 +15,9 @@ export const metadata: Metadata = {
 export default function Privacy() {
   if (!brand.legacy.enabled) return <LegalPending title="Privacy Policy" />;
   return (
-    <article>
-      <h1>Privacy Policy</h1>
+    <article className={`${pageWrap} pb-24`}>
+      <h1 className={`pt-10 pb-4 md:pt-16 ${h1}`}>Privacy Policy</h1>
+      <div className="legal-prose">
 
       <h2>GENERAL INFO</h2>
       <p>
@@ -127,6 +129,7 @@ export default function Privacy() {
 
       <h2>CHANGES TO OUR PRIVACY POLICY</h2>
       <p>If we decide to change our privacy policy, we will post those changes on this page.</p>
+      </div>
     </article>
   );
 }

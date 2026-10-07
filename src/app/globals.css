@@ -73,3 +73,13 @@
 
 /* Platform logo marquee (src/components/sections/v1/Marquee.tsx): two identical sets, shift by one set. */
 @keyframes marquee { to { transform: translateX(-50%); } }
+
+/* Long-form legal text (src/app/legal/*). One rule set, so the imported copy needs no per-element classes. */
+.legal-prose { max-width: 70ch; }
+.legal-prose h2 { margin-top: 2.75rem; font-size: 1.125rem; font-weight: 600; letter-spacing: -0.01em; color: var(--text); }
+.legal-prose p { margin-top: 1rem; line-height: 1.7; color: var(--muted); }
+.legal-prose ul { margin-top: 1rem; display: grid; gap: 0.5rem; }
+.legal-prose li { position: relative; padding-left: 1.25rem; line-height: 1.7; color: var(--muted); }
+.legal-prose li::before { content: ""; position: absolute; left: 0; top: 0.85em; width: 0.5rem; height: 1px; background: var(--muted); }
+.legal-prose a { color: var(--accent-ink); text-decoration: underline; text-underline-offset: 4px; }
+.legal-prose strong { color: var(--text); font-weight: 600; }
