@@ -6,100 +6,128 @@ import { primaryCtaFor } from "@/config/cta";
 import { routes } from "@/config/routes";
 import { getGuide } from "@/content";
 import type { Service } from "@/content/schema";
-import { Breadcrumbs, Faqs, LinkList, RealScreen } from "./parts";
+import { testimonials } from "@/content/testimonials";
+import { Band, BandTitle, Breadcrumbs, Checklist, CtaBand, Faqs, LabelledSteps, LinkList, PlainList, RealScreen } from "./parts";
+
+// One real testimonial, and only a real one: the placeholders in src/content/testimonials.ts are
+// never published here, and the two quotes that used to exist belonged to fixmywp.com.
+const realTestimonial = testimonials.find((t) => t.confirmed) ?? null;
 
 export function ServiceTemplate({ service: s }: { service: Service }) {
   const intent = primaryCtaFor(s.intent);
   const loc = `service:${s.id}`;
+  const isFix = s.intent === "fix";
 
   return (
     <article data-intent={s.intent}>
       <JsonLd data={[serviceLd(s), faqLd(s.faqs)]} />
-      <Breadcrumbs items={nodeCrumbs(s.path)} />
 
-      <header>
-        <h1>{s.h1}</h1>
-        <p>{s.summary}</p>
-        <CtaPair intent={intent} location={`${loc}:hero`} service={s.id} />
-        {s.intent === "fix" && <SiteStatus />}
-        {(s.typicalTurnaround || s.priceFrom) && (
-          <dl>
-            {s.typicalTurnaround && (
-              <>
-                <dt>Typical turnaround</dt>
-                <dd>{s.typicalTurnaround}</dd>
-              </>
-            )}
-            {s.priceFrom && (
-              <>
-                <dt>From</dt>
-                <dd>{s.priceFrom}</dd>
-              </>
-            )}
-          </dl>
+      <div className="mx-auto w-full max-w-[1200px] px-6 pt-8 pb-12 md:pb-16">
+        <Breadcrumbs items={nodeCrumbs(s.path)} />
+        <div className="mt-8 max-w-[52rem]">
+          <h1 className="max-w-[20ch] text-[clamp(2rem,4.2vw,3.25rem)]">{s.h1}</h1>
+          <p className="mt-6 max-w-[52ch] text-lg text-muted">{s.summary}</p>
+          <CtaPair intent={intent} location={`${loc}:hero`} service={s.id} className="mt-8" />
+          {isFix && <SiteStatus />}
+        </div>
+        <RealScreen slot={s.image.slot} alt={s.image.alt} priority />
+      </div>
+
+      {/*
+        Body and rail share one grid so the rail has a containing block as tall as the content.
+        Scoping it to the hero gave it 126px of travel against a 3000px article, which is not sticky.
+      */}
+      <div className="mx-auto w-full max-w-[1200px] px-6 lg:grid lg:grid-cols-12 lg:gap-10">
+        <div className="lg:col-span-8">
+        {isFix && s.symptoms.length > 0 ? (
+          <Band bleed={false} labelledBy="symptoms">
+            <BandTitle id="symptoms">Does your site show this?</BandTitle>
+            <Checklist items={s.symptoms} />
+          </Band>
+        ) : (
+          <Band bleed={false} labelledBy="who">
+            <BandTitle id="who">Who this is for</BandTitle>
+            <p className="mt-6 max-w-[60ch] text-muted">{s.whoItsFor}</p>
+          </Band>
         )}
-      </header>
 
-      <RealScreen slot={s.image.slot} alt={s.image.alt} />
+        <Band bleed={false} labelledBy="what-we-do">
+          <BandTitle id="what-we-do">What we do</BandTitle>
+          <LabelledSteps steps={s.whatWeDo} />
+        </Band>
 
-      <section aria-labelledby="who">
-        <h2 id="who">Who it is for</h2>
-        <p>{s.whoItsFor}</p>
-      </section>
+        <Band bleed={false} labelledBy="deliverables">
+          <BandTitle id="deliverables">What you get</BandTitle>
+          <PlainList items={s.deliverables} />
+        </Band>
 
-      {s.symptoms.length > 0 && (
-        <section aria-labelledby="symptoms">
-          <h2 id="symptoms">What you are seeing</h2>
-          <ul>
-            {s.symptoms.map((x) => (
-              <li key={x}>{x}</li>
-            ))}
-          </ul>
-        </section>
-      )}
+        {s.guideSlugs.length > 0 && (
+          <Band bleed={false} labelledBy="guides">
+            <BandTitle id="guides">Errors we fix here</BandTitle>
+            <ul className="mt-6 grid gap-px sm:grid-cols-2 sm:gap-x-10">
+              {s.guideSlugs.map((slug) => (
+                <li key={slug} className="border-t border-line">
+                  <Link
+                    href={routes.guide(slug)}
+                    className="flex min-h-11 items-center py-3 text-[0.9375rem] transition-colors duration-200 hover:text-accent-text"
+                  >
+                    {getGuide(slug)?.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </Band>
+        )}
 
-      <section aria-labelledby="what-we-do">
-        <h2 id="what-we-do">What we do</h2>
-        <ol>
-          {s.whatWeDo.map((w) => (
-            <li key={w.verb}>
-              <strong>{w.verb}.</strong> {w.detail}
-            </li>
-          ))}
-        </ol>
-      </section>
+        {realTestimonial && (
+          <Band bleed={false}>
+            <figure className="max-w-[60ch]">
+              <blockquote className="text-[clamp(1.25rem,2vw,1.5rem)] font-medium">
+                &ldquo;{realTestimonial.excerpt}&rdquo;
+              </blockquote>
+              <figcaption className="mt-4 text-muted">
+                {realTestimonial.name}, {realTestimonial.role}, {realTestimonial.org}
+              </figcaption>
+            </figure>
+          </Band>
+        )}
 
-      <section aria-labelledby="deliverables">
-        <h2 id="deliverables">What you get</h2>
-        <ul>
-          {s.deliverables.map((d) => (
-            <li key={d}>{d}</li>
-          ))}
-        </ul>
-        <CtaPair intent={intent} location={`${loc}:deliverables`} service={s.id} />
-      </section>
+        <Faqs faqs={s.faqs} bleed={false} />
 
-      {s.guideSlugs.length > 0 && (
-        <section aria-labelledby="guides">
-          <h2 id="guides">Specific errors we fix</h2>
-          <ul>
-            {s.guideSlugs.map((slug) => (
-              <li key={slug}>
-                <Link href={routes.guide(slug)}>{getGuide(slug)?.title}</Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+        {s.relatedPaths.length > 0 && (
+          <Band bleed={false} labelledBy="related">
+            <BandTitle id="related">Related services</BandTitle>
+            <LinkList paths={s.relatedPaths} />
+          </Band>
+        )}
 
-      <Faqs faqs={s.faqs} />
+        </div>
 
-      {s.relatedPaths.length > 0 && (
-        <section aria-labelledby="related">
-          <h2 id="related">Related</h2>
-          <LinkList paths={s.relatedPaths} />
-        </section>
-      )}
+        <aside className="hidden lg:col-span-4 lg:block">
+          <div className="sticky top-[calc(var(--nav-h)+1.5rem)] mt-10 border border-line bg-surface p-6">
+            <p className="font-bold">{s.title}</p>
+            {(s.typicalTurnaround || s.priceFrom) && (
+              <dl className="mt-4">
+                {s.typicalTurnaround && (
+                  <div className="border-t border-line py-2">
+                    <dt className="text-xs font-medium tracking-[0.06em] text-muted uppercase">Typical turnaround</dt>
+                    <dd className="mt-1 font-mono">{s.typicalTurnaround}</dd>
+                  </div>
+                )}
+                {s.priceFrom && (
+                  <div className="border-t border-line py-2">
+                    <dt className="text-xs font-medium tracking-[0.06em] text-muted uppercase">From</dt>
+                    <dd className="mt-1 font-mono">{s.priceFrom}</dd>
+                  </div>
+                )}
+              </dl>
+            )}
+            <CtaPair intent={intent} location={`${loc}:rail`} service={s.id} className="mt-6 !flex-col !items-stretch" />
+          </div>
+        </aside>
+      </div>
+
+      <CtaBand intent={intent} location={`${loc}:closing`} service={s.id} title={`Ready to start on ${s.title.toLowerCase()}?`} />
     </article>
   );
 }

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { ChatLauncher } from "@/components/ChatLauncher";
 import { JsonLd, organizationLd } from "@/components/JsonLd";
 import { SiteFooter } from "@/components/SiteFooter";
-import { SiteHeader } from "@/components/SiteHeader";
+import { MobileBookBar, SiteHeader } from "@/components/SiteHeader";
 import { brand } from "@/config/brand";
 import { SITE_URL } from "@/config/sitemap";
+import { jetbrainsMono, satoshi } from "@/lib/fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,12 +18,21 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" className={`${satoshi.variable} ${jetbrainsMono.variable}`}>
+      {/* Bottom padding clears MobileBookBar under 768px (nothing hidden behind fixed chrome). */}
+      <body className="pb-[calc(var(--bottombar-h)+env(safe-area-inset-bottom))] md:pb-0">
         <JsonLd data={organizationLd()} />
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[60] focus:bg-text focus:px-4 focus:py-3 focus:text-bg"
+        >
+          Skip to content
+        </a>
         <SiteHeader />
-        <main>{children}</main>
+        <main id="main">{children}</main>
         <SiteFooter />
+        <ChatLauncher />
+        <MobileBookBar />
       </body>
     </html>
   );
