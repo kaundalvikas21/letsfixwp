@@ -1,1 +1,202 @@
 @import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Tokens. design-system/letsfixwp-v2/MASTER.md, Global Rules.
+   Light is the default; dark comes from prefers-color-scheme. No theme toggle.
+   Contrast measured 2026-10-12: see the MASTER.md contrast table.
+   --------------------------------------------------------------------------- */
+
+:root {
+  --bg: #f6f6f7;
+  --surface: #fcfcfd;
+  --text: #111113;
+  --muted: #5b5b66;
+  --line: #e2e2e6;
+
+  /* Fill, 1px borders and focus rings. White label on it is 5.14:1. */
+  --accent: #cc3333;
+  --accent-hover: #b82d2d;
+  --accent-on: #ffffff;
+  /* Accent-coloured TEXT and links. #cc3333 is only 3.75:1 on the dark bg. */
+  --accent-text: #cc3333;
+
+  --nav-h: 72px;
+  --bottombar-h: 64px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e0e10;
+    --surface: #151518;
+    --text: #ececee;
+    --muted: #a0a0aa;
+    --line: rgb(255 255 255 / 0.09);
+    --accent-hover: #d84242;
+    --accent-text: #e04f4f;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-on: var(--accent-on);
+  --color-accent-text: var(--accent-text);
+
+  --font-sans: var(--font-satoshi);
+  --font-mono: var(--font-jetbrains);
+
+  /* Shape lock: radius 0 on every element. Overriding the scale means a stray
+     `rounded-lg` in a future section is a no-op instead of a review comment. */
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+    /* The header is sticky, so anchors and scrollIntoView must clear it. */
+    scroll-padding-top: var(--nav-h);
+  }
+
+  /* Under 768px MobileBookBar is fixed to the bottom edge, so a Tab stop scrolled to the last
+     visible line lands underneath it. Reserve its height on the scroll port too. */
+  @media (max-width: 767px) {
+    html {
+      scroll-padding-bottom: calc(var(--bottombar-h) + 1rem);
+    }
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  /* No browser-default blue: it is a second brand colour nobody chose. Links inherit --text and
+     opt in to --accent-text where a section wants the accent. */
+  a {
+    color: inherit;
+  }
+
+  /* Contract rule 5: 2px accent ring, 2px offset. 4.76:1 light, 3.75:1 dark, both over the 3:1 floor. */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-on);
+  }
+
+  /* Display and headings: Satoshi 700, tight tracking. */
+  h1,
+  h2 {
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.08;
+  }
+
+  h3,
+  h4 {
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer components {
+  /* 44px min target with a 16px label (contract rule 5). */
+  .btn-primary,
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 14px 28px;
+    border-radius: 0;
+    font-weight: 500;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+      background-color 200ms ease,
+      border-color 200ms ease,
+      color 200ms ease;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--accent-on);
+    border: 1px solid var(--accent);
+  }
+
+  .btn-primary:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--muted);
+  }
+
+  .btn-secondary:hover {
+    background: var(--surface);
+    border-color: var(--text);
+  }
+
+  .btn-primary:active,
+  .btn-secondary:active {
+    transform: scale(0.98);
+  }
+
+  /* Nav items. 44px target without looking like a button. */
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 4px;
+    color: var(--text);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    border-bottom: 1px solid transparent;
+    transition:
+      color 200ms ease,
+      border-color 200ms ease;
+  }
+
+  .nav-link:hover {
+    border-bottom-color: var(--accent);
+  }
+
+  .nav-link[aria-current="page"] {
+    border-bottom-color: var(--text);
+  }
+}
+
+/* Reduced motion. Scoped to animation on purpose: every transition in this
+   design system is colour-only, and colour is not motion. The three components
+   allowed to use `motion` collapse themselves with useReducedMotion(). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

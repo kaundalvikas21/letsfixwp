@@ -12,6 +12,8 @@
  */
 export const testimonials = [
   {
+    /** Flip to true only when this is a real client's own words, with their consent to publish. */
+    confirmed: false,
     name: "Client name",
     role: "Role",
     org: "Company",
@@ -22,6 +24,7 @@ export const testimonials = [
       "Placeholder for a client's own words about one emergency: what broke, how fast the site came back, and what they were told while it was happening.",
   },
   {
+    confirmed: false,
     name: "Second client",
     role: "Role",
     org: "Company",

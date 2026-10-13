@@ -4,8 +4,9 @@ import { notFound } from "next/navigation";
 import { brand } from "@/config/brand";
 import { routes } from "@/config/routes";
 
-// Legacy only (docs/foundation.md): the guarantee belongs to the fixmywp.com business and 404s otherwise.
-// ponytail: states only the confirmed fact; the owner supplies the full terms.
+// LetsFixWP's own guarantee, from brand.promises.guaranteeDays. While that is null there is no
+// guarantee to document and the page 404s, so nothing on the site may link here unconditionally.
+// The figure that used to live here belonged to fixmywp.com and is not ours to publish.
 export const metadata: Metadata = {
   title: "Guarantee",
   alternates: { canonical: routes.legal.guarantee },
@@ -13,12 +14,12 @@ export const metadata: Metadata = {
 };
 
 export default function Guarantee() {
-  const facts = brand.legacy.facts;
-  if (!facts) notFound();
+  const days = brand.promises.guaranteeDays;
+  if (days === null) notFound();
   return (
     <article>
-      <h1>Our {facts.guaranteeDays}-day guarantee</h1>
-      <p>Every service carries a {facts.guaranteeDays}-day guarantee.</p>
+      <h1>Our {days}-day guarantee</h1>
+      <p>Every fix carries a {days}-day guarantee.</p>
       <p>
         To make a claim or ask about it, email <a href={`mailto:${brand.email}`}>{brand.email}</a>.
       </p>
