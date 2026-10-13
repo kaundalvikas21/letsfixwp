@@ -180,3 +180,27 @@ rather than restyled.
 
 The guide groups sit inside ONE band separated by hairlines, not one band each: sixteen full bands
 for groups of two or three guides left the page mostly air.
+
+## v2-swiss-precision / imagery placed on service pages
+
+| Where | Family | Source | Alt |
+| --- | --- | --- | --- |
+| Home hero, right column | Tall 4:5 image beside left-aligned text | `/site_images/hero-console-bg.jpg` | Written, describes the screen |
+| 32 service pages | Same 7/5 hero: h1, summary and CTA left, 4:5 photograph right | `/site_images/services/<photo>.jpg` via `servicePhotos` | Empty, the photograph is decorative |
+| 6 hub pages | Same 7/5 hero: h1 and lede left, 4:5 photograph right, no CTA | `/site_images/services/<photo>.jpg` via `hubPhotos` | Empty |
+| 37 guide pages | In-body 16:10 figure, 1px `--line` border, renders nothing today | `/screens/<slot>.png`, absent | Written, kept for the capture |
+
+The 7/5 hero family is now spent three times: home, service and hub. That is deliberate reuse of one
+family across page *types*, not repetition within a page, which is what contract rule 4 counts. The
+service and hub heroes replaced a bare h1 block, so no section was added.
+
+`RealScreen` carries both shapes behind a `hero` flag: the 4:5 box above, the bordered in-body figure
+below. Captures keep the figure, which is the shape a screenshot wants.
+
+Every photograph is 16:10 and the hero box is 4:5, so the crop keeps only the middle half of the
+width. `photoFocus` in `src/content/service-photos.ts` holds the frames whose subject sits outside
+that middle half; `emergency` is held left or the laptop and hands crop out entirely.
+
+The photographs repeat on purpose, eleven across thirty-two services, grouped by the kind of work
+(racks for every migration, store for every storefront). A page is never framed in browser chrome
+around a photograph, which would read as a screenshot the contract bans.

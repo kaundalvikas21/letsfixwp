@@ -9,6 +9,7 @@ import { breadcrumbLd, JsonLd, type Crumb } from "@/components/JsonLd";
 import type { CtaIntent } from "@/config/cta";
 import { nodeByPath } from "@/config/routes";
 import { getCompare, getGuide } from "@/content";
+import { hubPhotos, photoFocus, servicePhotos } from "@/content/service-photos";
 
 // Shared template furniture in the v2-swiss-precision language. These are deliberately NOT the home
 // page's layout families (docs/layout-ledger.md): templates get stacked bands, checklists and
@@ -160,20 +161,62 @@ export function LinkList({ paths }: { paths: string[] }) {
   );
 }
 
-/** A real capture from scripts/capture-errors.mjs, rendered only once the file exists. */
-export function RealScreen({ slot, alt, priority = false }: { slot: string; alt: string; priority?: boolean }) {
-  const src = `/screens/${slot}.png`;
+/**
+ * The visual for a service or guide page, resolved from its slot and rendered only once the file
+ * exists, so a missing asset leaves the page short rather than showing a stand-in (contract rule 6).
+ *
+ * `service-<id>`  a photograph from public/site_images/services/, via servicePhotos
+ * anything else   a real capture from scripts/capture-errors.mjs in public/screens/
+ *
+ * The written `alt` describes a screen state, so it belongs to the capture. A photograph carries
+ * nothing the heading does not and is decorative, so it ships with an empty alt, as v1 did.
+ *
+ * The `illustration-*` slots resolve to a capture that no run produces, so they render nothing:
+ * they describe evidence from outside the install (a Google warning, a Search Console report)
+ * that breaking a local WordPress cannot capture. Logged in docs/image-todo.md.
+ */
+export function RealScreen({
+  slot,
+  alt,
+  priority = false,
+  hero = false,
+}: {
+  slot: string;
+  alt: string;
+  priority?: boolean;
+  hero?: boolean;
+}) {
+  const photo = slot.startsWith("service-") ? servicePhotos[slot.slice("service-".length)] : hubPhotos[slot];
+  const src = photo ? `/site_images/services/${photo}.jpg` : `/screens/${slot}.png`;
   if (!existsSync(join(process.cwd(), "public", src))) return null;
+
+  // The hero variant is the home hero's shape: a 4:5 box on md and up, cropped to 16:9 below it,
+  // no border. The default is the in-body figure a capture is shown in.
+  if (hero)
+    return (
+      <div className="-mx-6 aspect-video md:mx-0 md:aspect-4/5">
+        <Image
+          src={src}
+          alt={photo ? "" : alt}
+          width={1600}
+          height={1000}
+          priority={priority}
+          sizes="(min-width: 1200px) 500px, (min-width: 768px) 42vw, 100vw"
+          className={`h-full w-full object-cover${photo ? ` grayscale ${photoFocus[photo] ?? "object-center"}` : ""}`}
+        />
+      </div>
+    );
+
   return (
     <figure className="mt-10">
       <Image
         src={src}
-        alt={alt}
+        alt={photo ? "" : alt}
         width={1600}
         height={1000}
         priority={priority}
         sizes="(min-width: 1024px) 60vw, 100vw"
-        className="w-full border border-line"
+        className={`w-full border border-line${photo ? " grayscale" : ""}`}
       />
     </figure>
   );

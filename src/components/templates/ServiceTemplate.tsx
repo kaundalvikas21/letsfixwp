@@ -24,13 +24,18 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
 
       <div className="mx-auto w-full max-w-[1200px] px-6 pt-8 pb-12 md:pb-16">
         <Breadcrumbs items={nodeCrumbs(s.path)} />
-        <div className="mt-8 max-w-[52rem]">
-          <h1 className="max-w-[20ch] text-[clamp(2rem,4.2vw,3.25rem)]">{s.h1}</h1>
-          <p className="mt-6 max-w-[52ch] text-lg text-muted">{s.summary}</p>
-          <CtaPair intent={intent} location={`${loc}:hero`} service={s.id} className="mt-8" />
-          {isFix && <SiteStatus />}
+        {/* Same 7/5 hero family as the home page: text left, a tall photograph right. */}
+        <div className="mt-8 grid grid-cols-1 gap-10 md:grid-cols-12 md:items-center md:gap-6">
+          <div className="md:col-span-7 md:pr-12">
+            <h1 className="max-w-[20ch] text-[clamp(2rem,4.2vw,3.25rem)]">{s.h1}</h1>
+            <p className="mt-6 max-w-[52ch] text-lg text-muted">{s.summary}</p>
+            <CtaPair intent={intent} location={`${loc}:hero`} service={s.id} className="mt-8" />
+            {isFix && <SiteStatus />}
+          </div>
+          <div className="md:col-span-5">
+            <RealScreen slot={s.image.slot} alt={s.image.alt} priority hero />
+          </div>
         </div>
-        <RealScreen slot={s.image.slot} alt={s.image.alt} priority />
       </div>
 
       {/*

@@ -3,7 +3,7 @@ import { nodeCrumbs } from "@/components/JsonLd";
 import { primaryCtaFor } from "@/config/cta";
 import { hubIdOf, nodes, routes, serviceIdOf, type FlatNode } from "@/config/routes";
 import { getService, guidesFor } from "@/content";
-import { Band, BandTitle, Breadcrumbs, CtaBand } from "./parts";
+import { Band, BandTitle, Breadcrumbs, CtaBand, RealScreen } from "./parts";
 
 const urgencyRank = { critical: 0, high: 1, standard: 2 } as const;
 
@@ -25,8 +25,16 @@ export function HubTemplate({ node }: { node: FlatNode }) {
     <article>
       <div className="mx-auto w-full max-w-[1200px] px-6 pt-8 pb-12 md:pb-16">
         <Breadcrumbs items={nodeCrumbs(node.path)} />
-        <h1 className="mt-8 max-w-[20ch] text-[clamp(2rem,4.2vw,3.25rem)]">{node.title}</h1>
-        <p className="mt-6 max-w-[56ch] text-lg text-muted">{lede}</p>
+        {/* Same 7/5 hero family as the home and service pages. */}
+        <div className="mt-8 grid grid-cols-1 gap-10 md:grid-cols-12 md:items-center md:gap-6">
+          <div className="md:col-span-7 md:pr-12">
+            <h1 className="max-w-[20ch] text-[clamp(2rem,4.2vw,3.25rem)]">{node.title}</h1>
+            <p className="mt-6 max-w-[56ch] text-lg text-muted">{lede}</p>
+          </div>
+          <div className="md:col-span-5">
+            <RealScreen slot={hubIdOf(node.path)} alt="" priority hero />
+          </div>
+        </div>
       </div>
 
       {/* Service rows, not the home page's grouped directory columns. */}

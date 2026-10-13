@@ -4,8 +4,9 @@ import { brand } from "@/config/brand";
 
 // Layout family: left-aligned text with a tall right image, 7/5 of 12. Logged in docs/layout-ledger.md.
 // Four text elements, no eyebrow: h1, subtext, the field label, the chat link.
-// The image is a logged placeholder (docs/image-todo.md): picsum is step (c) of contract rule 7.
-const HERO_IMAGE = "https://picsum.photos/seed/letsfixwp-hero-1/880/1100";
+// Placed photograph, carried over from the v1-incident-console set (docs/image-todo.md). It is lit for
+// v1's after-hours direction, not this variation's natural-light one, so the row stays open.
+const HERO_IMAGE = "/site_images/hero-console-bg.jpg";
 
 export function Hero() {
   return (
@@ -26,9 +27,9 @@ export function Hero() {
         <div className="-mx-6 aspect-video md:col-span-5 md:mx-0 md:aspect-4/5">
           <Image
             src={HERO_IMAGE}
-            alt="A WordPress engineer at work: hands on a laptop keyboard in natural window light, the site's admin dashboard open on screen"
-            width={880}
-            height={1100}
+            alt="A WordPress engineer at a desk after hours, reading a PHP fatal error stack trace on screen"
+            width={1600}
+            height={1200}
             priority
             sizes="(min-width: 1200px) 500px, (min-width: 768px) 42vw, 100vw"
             className="h-full w-full object-cover grayscale"
