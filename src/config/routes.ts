@@ -69,7 +69,6 @@ export const routes = {
   reviews: page("/case-studies/"),
   about: page("/about/"),
   contact: page("/contact/"),
-  contactThanks: "/contact/thanks/",
   legal: { terms: "/legal/terms/", privacy: "/legal/privacy/", guarantee: "/legal/guarantee/" },
   /** Booking flow on /contact/. */
   book: ({ service, guide, url }: { service?: string; guide?: string; url?: string } = {}) => {
@@ -85,7 +84,7 @@ export const routes = {
 };
 
 /** Utility routes that live outside SITEMAP on purpose (route test whitelist). */
-export const utilityPaths = [routes.contactThanks, routes.legal.terms, routes.legal.privacy, routes.legal.guarantee];
+export const utilityPaths = [routes.legal.terms, routes.legal.privacy, routes.legal.guarantee];
 
 /** Home first, then each ancestor down to the node. */
 export const ancestry = (path: string): FlatNode[] => {

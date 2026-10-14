@@ -47,7 +47,11 @@ for (const s of services) {
   for (const g of s.guideSlugs) if (getGuide(g)?.parentService !== s.id) fail(`service ${s.id} lists guide ${g} that is not its child`);
   for (const p of s.relatedPaths) if (!isLinkable(p)) fail(`service ${s.id} relatedPath ${p} goes nowhere`);
 }
-for (const g of guides) if (!serviceIds.includes(g.parentService)) fail(`guide ${g.slug} parentService ${g.parentService} unknown`);
+for (const g of guides) {
+  if (!serviceIds.includes(g.parentService)) fail(`guide ${g.slug} parentService ${g.parentService} unknown`);
+  // Both directions: a guide its parent does not list is orphaned from internal linking and from /fix/ redirects.
+  else if (!getService(g.parentService)!.guideSlugs.includes(g.slug)) fail(`guide ${g.slug} is not listed in service ${g.parentService} guideSlugs`);
+}
 for (const slug of citySlugs) if (!cityMap.has(slug)) fail(`SITEMAP city ${slug} has no content file`);
 for (const c of cities) {
   const node = nodeByPath.get(`/wordpress-development/cities/${c.slug}/`);

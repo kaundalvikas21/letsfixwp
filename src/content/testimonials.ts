@@ -7,27 +7,31 @@
  * not invent a client: a fabricated endorsement on a live site is a false statement about a real person or company,
  * and the section contract bans invented brands outright (rule 6).
  *
+ * `placeholder: true` marks each card visibly on the page and fails a production deploy (next.config.ts). Delete the
+ * flag from an entry only when its words, name, role and org are a real client's.
+ *
  * The previous contents of this file were two real testimonials belonging to fixmywp.com, a different and still
  * trading business. They were removed on 2026-10-07 when the owner confirmed the two companies are unrelated.
  */
 export const testimonials = [
   {
+    placeholder: true,
     name: "Client name",
     role: "Role",
     org: "Company",
     quote:
       "Placeholder. Replace with one client's account of a single emergency, in their words: what broke, what they had already tried, and how long the site was down.\n\nA second paragraph can cover what happened after the fix, which is what the longer placement on the service pages uses.",
-    // Shown on the home page. Keep a real excerpt to about 25 words so it stays within three display lines.
-    excerpt:
-      "Placeholder for a client's own words about one emergency: what broke, how fast the site came back, and what they were told while it was happening.",
+    // Shown on the home page quote cards, which cap a quote at three lines and never cut one: keep a real excerpt to
+    // about 15 words (roughly 90 characters).
+    excerpt: "Placeholder: one client's words on one emergency, what broke and how fast it came back.",
   },
   {
+    placeholder: true,
     name: "Second client",
     role: "Role",
     org: "Company",
     quote:
       "Placeholder. Replace with a second client's words. Pick someone whose job was not an emergency, so the two quotes are not making the same point twice.",
-    excerpt:
-      "Placeholder for a second client, ideally on a care plan or a build rather than an emergency, so the pair covers two different kinds of work.",
+    excerpt: "Placeholder: a second client on a care plan or a build, not another emergency.",
   },
 ] as const;

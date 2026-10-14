@@ -73,6 +73,10 @@ wpEnv("start");
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 try {
+  // The healthy site before anything is broken: the "after" frame (src/components/sections/v3/Steps.tsx).
+  await page.goto(URL, { waitUntil: "load" });
+  await page.screenshot({ path: join(out, "restored.png") });
+  console.log("captured restored");
   for (const s of states) {
     s.break();
     try {
