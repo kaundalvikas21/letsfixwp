@@ -1,202 +1,184 @@
 @import "tailwindcss";
 
-/* ---------------------------------------------------------------------------
-   Tokens. design-system/letsfixwp-v2/MASTER.md, Global Rules.
-   Light is the default; dark comes from prefers-color-scheme. No theme toggle.
-   Contrast measured 2026-10-12: see the MASTER.md contrast table.
-   --------------------------------------------------------------------------- */
-
+/* v3 tokens: design-system/letsfixwp-v3/MASTER.md. Contrast pairs are measured there. */
 :root {
-  --bg: #f6f6f7;
+  --bg: #f3f4f6;
   --surface: #fcfcfd;
-  --text: #111113;
-  --muted: #5b5b66;
-  --line: #e2e2e6;
-
-  /* Fill, 1px borders and focus rings. White label on it is 5.14:1. */
-  --accent: #cc3333;
-  --accent-hover: #b82d2d;
-  --accent-on: #ffffff;
-  /* Accent-coloured TEXT and links. #cc3333 is only 3.75:1 on the dark bg. */
-  --accent-text: #cc3333;
-
-  --nav-h: 72px;
-  --bottombar-h: 64px;
+  --surface-2: #eceef1;
+  --text: #0f1115;
+  --muted: #555b66;
+  --line: #e1e4e8;
+  --line-strong: #7e8590;
+  --accent: #15803d;
+  --on-accent: #fcfcfd;
+  --accent-text: #15803d;
+  --shadow-card: 0 1px 2px hsl(220 20% 40% / 0.06), 0 8px 24px -6px hsl(220 20% 40% / 0.1);
+  --shadow-lift: 0 2px 4px hsl(220 20% 40% / 0.07), 0 16px 40px -10px hsl(220 20% 40% / 0.16);
+  --scrim: hsl(220 30% 8% / 0.4);
+  --photo-scrim: hsl(220 30% 6% / 0.65); /* flat, not a gradient: text on any photo stays >= 5.78:1 */
+  --on-photo: #fcfcfd;
+  --accent-tint: color-mix(in srgb, var(--accent) 6%, var(--surface));
+  /* Final CTA mesh (the one gradient on the site). Lightest point is the accent itself: white text 4.89:1. */
+  --cta-base: #135e30;
+  --cta-blob-1: rgb(21 128 61 / 1);
+  --cta-blob-2: rgb(21 128 61 / 0.85);
+  --on-cta: #fcfcfd;
+  --cta-ink: #0f1115;
+  color-scheme: light dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0e0e10;
-    --surface: #151518;
-    --text: #ececee;
-    --muted: #a0a0aa;
-    --line: rgb(255 255 255 / 0.09);
-    --accent-hover: #d84242;
-    --accent-text: #e04f4f;
+    --bg: #0d0f12;
+    --surface: #15181d;
+    --surface-2: #1b1f25;
+    --text: #e9ebee;
+    --muted: #9aa1ac;
+    --line: rgb(255 255 255 / 0.08);
+    --line-strong: rgb(255 255 255 / 0.36);
+    --accent: #4ade80;
+    --on-accent: #0d0f12;
+    --accent-text: #4ade80;
+    --shadow-card: inset 0 1px 0 rgb(255 255 255 / 0.04), 0 1px 2px hsl(220 30% 2% / 0.5), 0 12px 32px -8px hsl(220 30% 2% / 0.6);
+    --shadow-lift: inset 0 1px 0 rgb(255 255 255 / 0.04), 0 2px 4px hsl(220 30% 2% / 0.55), 0 20px 48px -12px hsl(220 30% 2% / 0.7);
+    /* Dark: deep green base, accent blobs kept low so the lightest overlap still holds white at 6.69:1. */
+    --cta-base: #223a32;
+    --cta-blob-1: rgb(74 222 128 / 0.14);
+    --cta-blob-2: rgb(74 222 128 / 0.12);
+    --scrim: hsl(220 30% 2% / 0.6);
   }
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
   --color-text: var(--text);
   --color-muted: var(--muted);
   --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
   --color-accent: var(--accent);
-  --color-accent-hover: var(--accent-hover);
-  --color-accent-on: var(--accent-on);
+  --color-on-accent: var(--on-accent);
   --color-accent-text: var(--accent-text);
-
-  --font-sans: var(--font-satoshi);
-  --font-mono: var(--font-jetbrains);
-
-  /* Shape lock: radius 0 on every element. Overriding the scale means a stray
-     `rounded-lg` in a future section is a no-op instead of a review comment. */
-  --radius-xs: 0px;
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
-  --radius-2xl: 0px;
-  --radius-3xl: 0px;
-  --radius-4xl: 0px;
+  --color-scrim: var(--scrim);
+  --color-photo-scrim: var(--photo-scrim);
+  --color-on-photo: var(--on-photo);
+  --color-accent-tint: var(--accent-tint);
+  --color-on-cta: var(--on-cta);
+  --color-cta-ink: var(--cta-ink);
+  --shadow-card: var(--shadow-card);
+  --shadow-lift: var(--shadow-lift);
+  --font-display: var(--font-cabinet), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
   html {
-    font-family: var(--font-sans);
-    -webkit-text-size-adjust: 100%;
-    /* The header is sticky, so anchors and scrollIntoView must clear it. */
-    scroll-padding-top: var(--nav-h);
+    /* Focus and anchor targets scroll clear of the floating nav and the fixed mobile action bar, so a
+       keyboard tab stop is never parked underneath either of them. */
+    scroll-padding-top: 6rem;
+    scroll-padding-bottom: 6.5rem;
   }
-
-  /* Under 768px MobileBookBar is fixed to the bottom edge, so a Tab stop scrolled to the last
-     visible line lands underneath it. Reserve its height on the scroll port too. */
-  @media (max-width: 767px) {
+  @media (width >= 48rem) {
     html {
-      scroll-padding-bottom: calc(var(--bottombar-h) + 1rem);
+      scroll-padding-bottom: 2rem;
     }
   }
-
   body {
     background: var(--bg);
     color: var(--text);
-    font-size: 1rem;
+    font-size: 16px;
     line-height: 1.6;
   }
-
-  /* No browser-default blue: it is a second brand colour nobody chose. Links inherit --text and
-     opt in to --accent-text where a section wants the accent. */
-  a {
-    color: inherit;
-  }
-
-  /* Contract rule 5: 2px accent ring, 2px offset. 4.76:1 light, 3.75:1 dark, both over the 3:1 floor. */
   :focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
-
-  ::selection {
-    background: var(--accent);
-    color: var(--accent-on);
-  }
-
-  /* Display and headings: Satoshi 700, tight tracking. */
-  h1,
-  h2 {
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    line-height: 1.08;
-  }
-
-  h3,
-  h4 {
-    font-weight: 500;
-    letter-spacing: -0.01em;
-  }
 }
 
-@layer components {
-  /* 44px min target with a 16px label (contract rule 5). */
-  .btn-primary,
-  .btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    min-height: 44px;
-    padding: 14px 28px;
-    border-radius: 0;
-    font-weight: 500;
-    font-size: 1rem;
-    line-height: 1;
-    cursor: pointer;
-    transition:
-      background-color 200ms ease,
-      border-color 200ms ease,
-      color 200ms ease;
-  }
+/* Shape lock: buttons are full pills. */
+@utility btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding-inline: 1.25rem;
+  border-radius: 9999px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 200ms ease;
+  &:hover { box-shadow: var(--shadow-lift); }
+  &:active { transform: scale(0.98); }
+}
 
-  .btn-primary {
-    background: var(--accent);
-    color: var(--accent-on);
-    border: 1px solid var(--accent);
-  }
+@utility btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding-inline: 1.25rem;
+  border-radius: 9999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 150ms ease;
+  &:active { transform: scale(0.98); }
+}
 
-  .btn-primary:hover {
-    background: var(--accent-hover);
-    border-color: var(--accent-hover);
-  }
-
-  .btn-secondary {
-    background: transparent;
-    color: var(--text);
-    border: 1px solid var(--muted);
-  }
-
-  .btn-secondary:hover {
+/* Web approximation of a frosted material, not Apple Liquid Glass. Used on the floating nav only. */
+@utility nav-glass {
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12), var(--shadow-card);
+  @media (prefers-reduced-transparency: reduce) {
     background: var(--surface);
-    border-color: var(--text);
-  }
-
-  .btn-primary:active,
-  .btn-secondary:active {
-    transform: scale(0.98);
-  }
-
-  /* Nav items. 44px target without looking like a button. */
-  .nav-link {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    padding: 0 4px;
-    color: var(--text);
-    font-weight: 500;
-    font-size: 0.9375rem;
-    border-bottom: 1px solid transparent;
-    transition:
-      color 200ms ease,
-      border-color 200ms ease;
-  }
-
-  .nav-link:hover {
-    border-bottom-color: var(--accent);
-  }
-
-  .nav-link[aria-current="page"] {
-    border-bottom-color: var(--text);
+    backdrop-filter: none;
   }
 }
 
-/* Reduced motion. Scoped to animation on purpose: every transition in this
-   design system is colour-only, and colour is not motion. The three components
-   allowed to use `motion` collapse themselves with useReducedMotion(). */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-  }
+@keyframes dialog-in {
+  from { opacity: 0; transform: scale(0.97); }
+}
+@keyframes sheet-in {
+  from { opacity: 0; transform: translateY(-12px); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+}
+
+/* Spring stiffness 100, damping 20 (critically damped, settles in about 600ms), sampled for CSS. */
+:root {
+  --ease-spring: linear(0, 0.09 8%, 0.264 17%, 0.442 25%, 0.594 33%, 0.713 42%, 0.801 50%, 0.908 67%, 0.96 83%, 1);
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(12px); }
+}
+@keyframes settle {
+  from { opacity: 0; transform: scale(0.98); }
+}
+
+/* Radix accordion open/close, driven by the height it measures. */
+@keyframes acc-open {
+  from { height: 0; opacity: 0; }
+  to { height: var(--radix-accordion-content-height); opacity: 1; }
+}
+@keyframes acc-close {
+  from { height: var(--radix-accordion-content-height); opacity: 1; }
+  to { height: 0; opacity: 0; }
+}
+
+/* The one gradient on the site (MASTER: final CTA only). Static: no animation, no scroll reaction. */
+@utility cta-mesh {
+  background:
+    radial-gradient(58% 82% at 12% 18%, var(--cta-blob-1) 0%, transparent 62%),
+    radial-gradient(52% 76% at 88% 82%, var(--cta-blob-2) 0%, transparent 60%),
+    var(--cta-base);
 }

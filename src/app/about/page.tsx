@@ -1,75 +1,47 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { BookLink, ChatButton } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
-import { Band, BandTitle, Breadcrumbs, CtaBand } from "@/components/templates/parts";
+import { Breadcrumbs, h1, LinkRows, page, Section } from "@/components/templates/parts";
 import { brand } from "@/config/brand";
-import { primaryCtaFor } from "@/config/cta";
-import { hubNodes, nodeByPath, routes } from "@/config/routes";
+import { hubIdOf, hubNodes, routes } from "@/config/routes";
+import { hubLead } from "@/content/hubs";
+import { remoteDelivery } from "@/content/notices";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "About",
   description: "WordPress engineers for sites that are down, hacked or slow, plus care plans and development.",
   alternates: { canonical: routes.about },
-  openGraph: { title: "About", url: routes.about, type: "website" },
 };
 
 export default function About() {
   return (
-    <article>
-      <div className="mx-auto w-full max-w-[1200px] px-6 pt-8 pb-12 md:pb-16">
-        <Breadcrumbs items={nodeCrumbs(routes.about)} />
-        <h1 className="mt-8 max-w-[20ch] text-[clamp(2rem,4.2vw,3.25rem)]">About {brand.name}</h1>
-        <p className="mt-6 max-w-[58ch] text-lg text-muted">
-          We are WordPress engineers. Most people reach us on the worst day their site has had, so the work is organised
-          around getting a broken site serving pages again, then keeping it that way.
-        </p>
-      </div>
+    <div className={cn(page, "max-w-3xl py-8 md:py-12")}>
+      <Breadcrumbs items={nodeCrumbs(routes.about)} />
+      <h1 className={cn(h1, "mt-6")}>About {brand.name}</h1>
+      <p className="mt-5 max-w-[68ch] text-lg text-muted">
+        We fix WordPress sites that are down, hacked or slow, look after them afterwards, and build new ones.
+      </p>
 
-      <Band labelledBy="how">
-        <BandTitle id="how">How we work</BandTitle>
-        <dl className="mt-8 grid gap-x-16 gap-y-px md:grid-cols-2">
-          <div className="border-t border-line py-5">
-            <dt className="font-bold">One engineer per job</dt>
-            <dd className="mt-2 max-w-[48ch] text-muted">{brand.promises.whoWorks}</dd>
-          </div>
-          <div className="border-t border-line py-5">
-            <dt className="font-bold">A price before any work</dt>
-            <dd className="mt-2 max-w-[48ch] text-muted">{brand.quoteFlow}</dd>
-          </div>
-          <div className="border-t border-line py-5">
-            <dt className="font-bold">Nothing changed without a backup</dt>
-            <dd className="mt-2 max-w-[48ch] text-muted">
-              A backup of files and database is taken {brand.promises.backupFirst}. {brand.promises.staging}
-            </dd>
-          </div>
-          <div className="border-t border-line py-5">
-            <dt className="font-bold">A record you keep</dt>
-            <dd className="mt-2 max-w-[48ch] text-muted">{brand.promises.reporting}</dd>
-          </div>
-        </dl>
-      </Band>
+      <Section id="what-we-do" title="What we work on">
+        <LinkRows items={hubNodes.map((h) => ({ href: h.path, title: h.title, summary: hubLead[hubIdOf(h.path)] }))} />
+      </Section>
 
-      <Band labelledBy="what">
-        <BandTitle id="what">What we work on</BandTitle>
-        <ul className="mt-6 grid gap-px sm:grid-cols-2 sm:gap-x-10">
-          {hubNodes.map((h) => (
-            <li key={h.path} className="border-t border-line">
-              <Link
-                href={h.path}
-                className="flex min-h-11 items-center py-3 text-[0.9375rem] transition-colors duration-200 hover:text-accent-text"
-              >
-                {h.title}
-              </Link>
-            </li>
+      <Section id="how" title="How working with us runs">
+        <dl className="grid gap-4 sm:grid-cols-3">
+          {remoteDelivery.map((r) => (
+            <div key={r.label} className="rounded-[20px] border border-line bg-surface p-5">
+              <dt className="font-display text-sm font-bold tracking-wide text-accent-text">{r.label}</dt>
+              <dd className="mt-1.5 text-sm">{r.text}</dd>
+            </div>
           ))}
-        </ul>
-      </Band>
+        </dl>
+      </Section>
 
-      <CtaBand
-        intent={primaryCtaFor(nodeByPath.get(routes.about)?.intent)}
-        location="about"
-        title="Something broken right now?"
-      />
-    </article>
+      <div className="mt-12 flex flex-wrap gap-3 border-t border-line pt-8">
+        <BookLink location="about" className="btn-primary" />
+        <ChatButton location="about" className="btn-secondary" />
+      </div>
+    </div>
   );
 }

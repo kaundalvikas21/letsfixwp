@@ -1,12 +1,21 @@
 import type { Metadata } from "next";
-import { ChatLauncher } from "@/components/ChatLauncher";
+import { Inter_Tight } from "next/font/google";
+import localFont from "next/font/local";
 import { JsonLd, organizationLd } from "@/components/JsonLd";
 import { SiteFooter } from "@/components/SiteFooter";
-import { MobileBookBar, SiteHeader } from "@/components/SiteHeader";
+import { SiteShell } from "@/components/sections/v3/SiteShell";
 import { brand } from "@/config/brand";
 import { SITE_URL } from "@/config/sitemap";
-import { jetbrainsMono, satoshi } from "@/lib/fonts";
 import "./globals.css";
+
+const display = localFont({
+  src: [
+    { path: "../fonts/CabinetGrotesk-Bold.woff2", weight: "700" },
+    { path: "../fonts/CabinetGrotesk-Extrabold.woff2", weight: "800" },
+  ],
+  variable: "--font-cabinet",
+});
+const body = Inter_Tight({ subsets: ["latin"], variable: "--font-inter-tight" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -18,21 +27,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${satoshi.variable} ${jetbrainsMono.variable}`}>
-      {/* Bottom padding clears MobileBookBar under 768px (nothing hidden behind fixed chrome). */}
-      <body className="pb-[calc(var(--bottombar-h)+env(safe-area-inset-bottom))] md:pb-0">
+    <html lang="en" className={`${display.variable} ${body.variable}`}>
+      <body className="pb-[calc(4.75rem+env(safe-area-inset-bottom))] font-sans antialiased md:pb-0">
         <JsonLd data={organizationLd()} />
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[60] focus:bg-text focus:px-4 focus:py-3 focus:text-bg"
-        >
-          Skip to content
-        </a>
-        <SiteHeader />
-        <main id="main">{children}</main>
-        <SiteFooter />
-        <ChatLauncher />
-        <MobileBookBar />
+        <SiteShell>
+          <main id="main">{children}</main>
+          <SiteFooter />
+        </SiteShell>
       </body>
     </html>
   );

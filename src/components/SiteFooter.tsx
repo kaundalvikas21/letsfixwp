@@ -1,97 +1,111 @@
 import Link from "next/link";
 import { brand } from "@/config/brand";
-import { hubNodes, nodes, routes } from "@/config/routes";
+import { nodes, routes } from "@/config/routes";
 
-// Theme lock (taste 4.11): the footer sits on --bg with a single --line top rule, in whichever
-// theme the page is in. No inverted dark slab under a light page.
-//
-// No version strip, no locale or city strip, no build number.
+// Footer = every SITEMAP node (including inNav: false ones) plus the utility routes.
+const top = nodes.filter((n) => n.parentPath === routes.home);
+const childrenOf = (path: string) => nodes.filter((n) => n.parentPath === path);
+const hubs = top.filter((n) => n.kind === "hub");
+const company = top.filter((n) => n.kind !== "hub");
+const hasEmail = !brand.email.includes("{{"); // unconfirmed values must never reach the page
 
-const company = nodes.filter((n) => n.parentPath === routes.home && n.kind !== "hub");
-
-// A mailto to an unconfirmed address is a broken link, so the placeholder renders as plain text
-// until the owner replaces it in src/config/brand.ts.
-const emailConfirmed = !brand.email.includes("{{");
-
-function Column({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <h2 className="font-medium">{title}</h2>
-      {children}
-    </div>
-  );
-}
-
-const linkClass = "inline-flex min-h-9 items-center text-[0.9375rem] text-muted transition-colors duration-200 hover:text-text";
+const colHead = "font-display text-sm font-bold";
+const colList = "mt-3 space-y-2 text-sm text-muted";
+const link = "inline-block py-0.5 hover:text-text";
 
 export function SiteFooter() {
+  const facts = brand.legacy.facts;
   return (
     <footer className="border-t border-line bg-bg">
-      <div className="mx-auto w-full max-w-[1200px] px-6 py-16">
-        <nav aria-label="Footer" className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4">
-          <Column title="What we fix">
-            <ul className="mt-3">
-              {hubNodes.map((h) => (
-                <li key={h.path}>
-                  <Link className={linkClass} href={h.path}>
-                    {h.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </Column>
+      <div className="mx-auto max-w-6xl px-4 py-14 md:px-6">
+        <nav aria-label="Footer" className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          {hubs.map((hub) => (
+            <div key={hub.path}>
+              <h2 className={colHead}>
+                <Link href={hub.path} className="hover:text-accent-text">
+                  {hub.title}
+                </Link>
+              </h2>
+              <ul className={colList}>
+                {childrenOf(hub.path).map((n) => (
+                  <li key={n.path}>
+                    <Link href={n.path} className={link}>
+                      {n.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
 
-          <Column title="Company">
-            <ul className="mt-3">
+          <div>
+            <h2 className={colHead}>Company</h2>
+            <ul className={colList}>
               {company.map((n) => (
                 <li key={n.path}>
-                  <Link className={linkClass} href={n.path}>
+                  <Link href={n.path} className={link}>
                     {n.title}
                   </Link>
                 </li>
               ))}
             </ul>
-          </Column>
+          </div>
 
-          <Column title="Legal">
-            <ul className="mt-3">
+          <div>
+            <h2 className={colHead}>Legal</h2>
+            <ul className={colList}>
               <li>
-                <Link className={linkClass} href={routes.legal.terms}>
+                <Link href={routes.legal.terms} className={link}>
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link className={linkClass} href={routes.legal.privacy}>
+                <Link href={routes.legal.privacy} className={link}>
                   Privacy Policy
                 </Link>
               </li>
-              {/* /legal/guarantee/ 404s until brand.promises.guaranteeDays is set. */}
-              {brand.promises.guaranteeDays !== null && (
+              {(brand.guarantee || facts) && (
                 <li>
-                  <Link className={linkClass} href={routes.legal.guarantee}>
+                  <Link href={routes.legal.guarantee} className={link}>
                     Guarantee
                   </Link>
                 </li>
               )}
             </ul>
-          </Column>
-
-          <Column title="Contact">
-            <address className="mt-3 not-italic">
-              {emailConfirmed ? (
-                <a className={linkClass} href={`mailto:${brand.email}`}>
-                  {brand.email}
-                </a>
-              ) : (
-                <span className="text-[0.9375rem] text-muted">{brand.email}</span>
-              )}
-            </address>
-          </Column>
+          </div>
         </nav>
 
-        <p className="mt-16 max-w-[70ch] text-sm text-muted">
-          {brand.name} is not affiliated with or sponsored by Automattic or the WordPress Open Source project.
-        </p>
+        <div className="mt-12 flex flex-col gap-4 border-t border-line pt-8 text-sm text-muted md:flex-row md:items-center md:justify-between">
+          <address className="not-italic">
+            <span className="font-display font-bold text-text">{brand.name}</span>
+            {hasEmail ? (
+              <>
+                {" · "}
+                <a href={`mailto:${brand.email}`} className="hover:text-text">
+                  {brand.email}
+                </a>
+              </>
+            ) : (
+              <>
+                {" · "}
+                <Link href={routes.contact} className="hover:text-text">
+                  Contact us
+                </Link>
+              </>
+            )}
+            {facts && (
+              <>
+                <br />
+                {facts.address.street}, {facts.address.locality} {facts.address.region} {facts.address.postalCode}
+                <br />
+                Hours: {facts.hours}
+              </>
+            )}
+          </address>
+          <p className="max-w-[46ch] md:text-right">
+            This website is not affiliated with or sponsored by Automattic or the WordPress Open Source project
+          </p>
+        </div>
       </div>
     </footer>
   );

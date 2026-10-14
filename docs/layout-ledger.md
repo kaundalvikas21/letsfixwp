@@ -9,174 +9,127 @@ One row per section, recorded before coding (docs/section-contract.md rule 3). O
 | --- | --- | --- | --- | --- | --- |
 -->
 
-## v2-swiss-precision / global shell
-
-Chrome, not page sections: these render on every route, so each layout family here is spent for the
-whole variant and no page section may reuse one.
+## v3 / global shell (every page)
 
 | # | Section | Layout family | Eyebrow | Marquee | CTA intents |
 | --- | --- | --- | --- | --- | --- |
-| S1 | SiteHeader | Sticky bar, 72px, wordmark left / nav right | no | no | BOOK (md and up) |
-| S2 | SiteNav panel | Full-width dropdown panel under the bar | yes (1: "What we fix and build") | no | none |
-| S3 | MobileBookBar | Fixed bottom bar, under 768px only | no | no | BOOK |
-| S4 | ChatLauncher | Docked square launcher, bottom right | no | no | CHAT |
-| S5 | SiteFooter | Multi-column link tree (still unstyled) | no | no | CHAT, CHECK |
+| 0 | SiteShell: floating glass pill nav (md+), top bar + fixed bottom action bar (<768px), problem command palette | shell (not counted against page layout families) | no | no | BOOK (nav, bottom bar, palette footer with the highlighted problem's slug), CHAT (bottom bar icon, palette no-match) |
 
-Eyebrows so far: 1. Marquees: 0. Consecutive image-plus-text splits: 0.
-
-## v2-swiss-precision / home
+## v3 / home
 
 | # | Section | Layout family | Eyebrow | Marquee | CTA intents |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Hero | Left-aligned text with tall right image, 7/5 of 12 | no | no | BOOK (form submit), CHAT (text link) |
-| 2 | FactStrip | 4-column fact strip, one top border, no cards, no icons (2x2 below 768px) | no | no | none |
-| 3 | ProblemDirectory | Grouped directory columns, 3 at lg / 2 at md / disclosure items below 768px | yes (1: "Problems we fix") | no | none |
-| 4 | HowItWorks | Horizontal verb row, 4 columns, one rule above all four (vertical list, verb left, below 768px) | no | no | none |
-| 5 | ComparisonMatrix | Comparison matrix, real table, our column highlighted, sticky row header + wrapper scroll below 768px | no | no | BOOK |
-| 6 | CaseFile | Before/after compare slider (8) plus short narrative (4); stacked below 768px | yes (2: "Case file") | no | none |
-| 7 | PricingRows | Horizontal pricing rows, not cards; divide-y between rows, native disclosure per row | no | no | BOOK x2, PLANS |
-| 8 | Quotes | Single oversized quote, second smaller quote offset to column 6 | no | no | none (text link to reviews) |
-| 9 | Safeguards | Definition list in two columns (dl/dt/dd) | yes (3: "Your site is safe with us") | no | none |
-| 10 | Faq | Two-column FAQ: heading plus CHAT left, disclosure group right | no | no | CHAT |
-| 11 | ClosingCta | Typographic closing statement plus the hero's URL form | no | no | BOOK |
+| 1 | Hero | split with overlapping offset image (6/6 at lg, image overlaps next section by 48px) | no | no | BOOK, CHAT |
+| 2 | Built on | static logo grid (4x2, 2 columns under 768px; no marquee in v3) | no | no | none |
+| 3 | What we fix | bento grid, 7 cells (4x3 at lg, 2 columns at md, 1 column below) | yes ("What we fix") | no | none (cells link to problem pages; cell 7 opens the problem palette) |
+| 4 | Four moves | tabbed showcase (Radix Tabs, sliding pill; panel = text 5 / image 7 at md, stacked below; tabs scroll-snap under 768px) | no | no | none |
+| 5 | Prevent the next one | interactive toggle comparison (radio pill toggle with sliding thumb; card = content left, photo right at md) | yes ("Prevent the next one") | no | BOOK or PLANS, following the toggle |
+| 6 | Pricing | pricing tiers with billing toggle (3 tiers, care plan centre at 1.04 with accent ring; scroll-snap cards under 768px, care plan first) | no | no | PLANS (care plan), BOOK (one-time fix), BOOK with service=malware-removal (cleanup) |
+| 7 | Quotes | masonry of quote cards (CSS columns 2 at md, 3 at xl; heights by content; no carousel) | no | no | none (third card links to case studies) |
+| 8 | Security | grouped icon list (3 groups x 2 items; group label 3 cols, items in 2 columns; one soft divider between groups) | yes ("Security") | no | none |
+| 9 | Guarantee | centered manifesto card (large numeral, H2, one sentence, text link). Renders nothing until brand.guarantee is set | no | no | none (text link to /legal/guarantee/) |
+| 10 | FAQ | searchable accordion inside a card (labelled filter input above 6 Radix accordion items; filtered-out items leave with layout animation; composed empty state) | no | no | CHAT (empty state only) |
+| 11 | Final CTA | gradient panel (the one gradient on the site, static radial green mesh; centred) | no | no | BOOK, CHAT |
 
-Eyebrows on this page: 3 section eyebrows of a permitted ceil(11 / 3) = 4.
-A strict mechanical count of uppercase micro-labels is 10, because PricingRows uses six uppercase
-field labels and Quotes carries two placeholder markers. See the V2.12 pre-flight report.
-Marquees: 0.
-Image-plus-text splits in a row: 1. Layout families spent: left-text / tall-right-image, 4-column fact strip,
-grouped directory columns, horizontal verb row, comparison matrix, before/after slider plus narrative, horizontal pricing rows, single oversized quote, two-column definition list, two-column FAQ, typographic closing statement.
-Below 768px the hero's right column becomes a full-bleed 16:9 band under the form.
-The hero draws no bottom border: the strip's top border is that single rule between them.
-The strip renders only confirmed promises, so it shows 3 of its 4 slots until `brand.promises.guaranteeDays` is set.
-The directory groups guides by SITEMAP hub (contract rule 16). Hubs with no guides are not problem
-categories and render nothing, so 4 of 6 hubs appear: 26, 5, 4 and 2 problems.
-HowItWorks quotes brand.promises for its Approve and Repair copy, so those claims sit under the
-same production gate as the fact strip rather than being a second, separate promise.
-ComparisonMatrix draws every cell in our column from brand.promises for the same reason, and its
-guarantee row is omitted while brand.promises.guaranteeDays is null: an empty cell in our own
-column would read as a no. The other three columns are categories, never named companies.
-Its scroll wrapper carries `contain: paint`; removing that makes the whole page scroll sideways.
-CaseFile renders null until public/screens/critical-error-on-this-website.png and restored.png both
-exist (`npm run capture`, needs Docker). It is built and verified but does not appear on the page yet.
-PricingRows reads priceFrom, typicalTurnaround, whoItsFor and deliverables from src/content/services.
-Every priceFrom is null, so the price cell shows "On quote" (the quoteFlow promise restated); every
-typicalTurnaround is null, so that column renders nothing at all. The care plan's included-fix line
-is driven by brand.promises.carePlanIncludedFix and is absent while that is null.
-Quotes renders the placeholders in src/content/testimonials.ts, each carrying a visible "Placeholder,
-not a real quote" marker, which is what that file requires of any variation that renders them.
-brand.promises.testimonials blocks a production deploy until real consented quotes replace them.
-The lead quote holds 3 lines from 768px up; at 375px it wraps to 6, because 25 words cannot fit
-three lines of oversized type in 327px at any readable size.
-Safeguards renders one pair per registered brand promise; a null promise renders no pair, so the
-guarantee pair and its link to /legal/guarantee/ are both absent while guaranteeDays is null.
-That page now reads brand.promises.guaranteeDays and 404s while it is null, so the link can never
-point at a dead route. Verified both ways: with a guarantee set, the pair renders and the page 200s.
-Faq composes all six answers from registered brand promises and feeds the same array to faqLd(),
-so the FAQPage JSON-LD can never drift from what the page shows. A null promise drops its question.
-ClosingCta reuses HeroUrlForm with location="home:closing" and chat={false}: one component, one
-label, one CTA label, one validation rule, because it is the same intent.
-SiteFooter is theme locked to --bg with a single --line top rule (taste 4.11). Its guarantee link
-is gated on brand.promises.guaranteeDays and the email is plain text until it is confirmed.
+Note for section 2: the hero photo hangs 48px into it at lg, so its first row needs at least 48px of clear space on the right half.
 
-## v2-swiss-precision / templates (P1)
+Eyebrow budget for this page: 11 sections, so ceil(11 / 3) = 3 eyebrows allowed, and 3 are used (sections 3, 5 and 8).
+Two unstyled foundation sections ("Site down or hacked right now", "What we do") sat after the final CTA until the
+QA pass; they duplicated the bento and the footer and were removed, which is what brings the page to 11 sections.
 
-Templates share one furniture set in `src/components/templates/parts.tsx`. None of these families is a
-home-page family: the home page keeps the hero split, the fact strip, the grouped directory, the verb
-row, the comparison matrix, the before/after slider, the pricing rows, the oversized quote, the
-two-column definition list, the two-column FAQ and the typographic closing statement.
+## v3 / service template (/<hub>/<service>/)
 
-| Template | Layout families used | Eyebrow | Marquee | CTA intents |
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Hero | 7/5 title block with photo | no | no | node intent, CHAT |
+| 2 | Lead + body column with sticky conversion rail (lg) | lead column with sticky rail | no | no | node intent, CHAT (rail) |
+| 3 | Symptoms (fix) or Who this is for (plan/project) | tick list, or prose | no | no | none |
+| 4 | What we do | verb-labelled tile pairs | no | no | none |
+| 5 | What you get | two-column tick list | no | no | none |
+| 6 | Errors we fix here | link rows | no | no | none |
+| 7 | Questions | plain disclosure list | no | no | none |
+| 8 | Related | chip row | no | no | none |
+| 9 | Closing | split band (text left, buttons right) | no | no | node intent, CHAT |
+
+Hero carries no subtext: the shortest service field is 25+ words, over the contract's 20-word hero cap, so
+service.summary renders as the lead paragraph below the hero.
+
+## v3 / guide template (/guides/<slug>/)
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Hero | single-column document header with mono error block | no | no | none |
+| 2 | Capture | device frame (renders only when the capture exists) | no | no | none |
+| 3 | What you are seeing | bullet list | no | no | none |
+| 4 | What usually causes it | cause tiles (bordered, 2 columns at sm) | no | no | none |
+| 5 | Safe things to try first | numbered steps with a warning note | no | no | none |
+| 6 | When to call us | prose with inline CTA row | no | no | BOOK (parent service), CHAT, CHECK |
+| 7 | Questions | plain disclosure list | no | no | none |
+| 8 | More errors | link rows | no | no | none |
+
+## v3 / hub template (/<hub>/)
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Hero | 7/5 title block with photo and lead paragraph | no | no | node intent, CHAT |
+| 2 | What we do here | link rows | no | no | none |
+| 3 | Most urgent problems | two-column tile list | no | no | none |
+| 4 | Closing | split band | no | no | node intent, CHAT |
+
+## v3 / city template (/wordpress-development/cities/<city>/)
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Hero | narrow document header | no | no | QUOTE, CHAT |
+| 2 | Local context | prose column | no | no | none |
+| 3 | What <city> clients ask for | link rows | no | no | none |
+| 4 | How working with us runs | three labelled fact tiles | no | no | none |
+| 5 | Questions | plain disclosure list | no | no | none |
+| 6 | Closing | split band | no | no | QUOTE, CHAT |
+
+## v3 / compare template (/compare/<slug>/)
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Hero | document header | no | no | none |
+| 2 | Which one fits | three verdict cards | no | no | none |
+| 3 | Side by side | real comparison table | no | no | none |
+| 4 | Closing | split band | no | no | collection intent, CHAT |
+
+## v3 / standalone pages
+
+| Page | Layout family | Eyebrow | Marquee | CTA intents |
 | --- | --- | --- | --- | --- |
-| Service | Stacked bands, 8/4 body grid with sticky rail, symptom checklist, labelled steps | no | no | node intent + CHAT |
-| Guide | Stacked bands, mono error block, caution panel, ordered checks | no | no | BOOK, CHECK, CHAT |
-| Hub | Stacked bands, two-column service rows | no | no | node intent + CHAT |
-| City | Stacked bands, service rows, remote-delivery definition list | no | no | QUOTE + CHAT |
-| CityHub | Stacked bands, four-column city index | no | no | QUOTE + CHAT |
-| Compare | Stacked bands, verdict definition list, neutral 3-column criteria table | no | no | compares intent + CHAT |
-| Free site check | Lead magnet: benefit hero, covers checklist, minimal form | no | no | CHECK (submit) + CHAT |
-| Case studies | Composed empty state | no | no | CHAT |
-| Pricing | Grouped compact index, price column | no | no | BOOK + CHAT |
-| About | Stacked bands, how-we-work definition list | no | no | node intent + CHAT |
+| /free-site-check/ | lead magnet: preview panel left, form card right | no | no | CHECK (form submit), CHAT |
+| /case-studies/ | composed empty state card | no | no | BOOK, CHAT |
+| /pricing/ | grouped price list by hub (not the home tier cards) | no | no | BOOK, PLANS, CHECK, CHAT |
+| /about/ | narrow document with link rows and fact tiles | no | no | BOOK, CHAT |
+| /guides/ | grouped tile index | no | no | BOOK, CHAT, CHECK |
+| /compare/ | link rows | no | no | BOOK, CHAT |
+| /wordpress-development/cities/ | link rows | no | no | QUOTE, CHAT |
 
-Zero eyebrows across every template, so the eyebrow cap is a home-page concern only.
+The booking form (src/app/contact/BookingFlow.tsx) is shared by /free-site-check/ and /contact/, so it carries one
+v3 style: 12px inputs on --line-strong, 44px targets, a step progress bar, and inline errors under each field.
 
-The compare table is deliberately NOT the home comparison matrix: no highlighted column, no accent
-top rule, no marks, because on that page we are not one of the two options being compared.
+## v3 / contact (/contact/)
 
-The service rail needs the body grid to be its containing block. Scoping it to the hero block gave it
-126px of travel against a 3000px article, which is not sticky in any useful sense; the body and the
-rail now share one grid and the card pins at nav height through the whole article.
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Intro column + form card | 5/7 split, intro left, tabbed flow card right | no | no | CHAT (intro) |
+| 2 | Booking flow | named-screen wizard inside the card (Problem, Your site, Contact, Confirm) | no | no | BOOK or QUOTE or CHECK on the last screen |
+| 3 | Success | confirmation state replacing the flow, with handoff and CHAT | no | no | CHAT |
 
-## v2-swiss-precision / booking (P2)
+Two flows share the page: Emergency ticket (routes.book) and Project enquiry (routes.quote, type=project), each
+keeping its own sessionStorage draft. /free-site-check/ runs the same component in "check" mode.
+Progress is shown by screen name only, never "Step 1 of 4". The generated booking override suggests red/orange/green
+step colours; the v3 colour lock wins, so every screen uses the single accent.
+/contact/thanks/ was deleted: the success screen is now part of the flow, so the redirect target was dead.
 
-| Screen | Contents | Validation |
-| --- | --- | --- |
-| Problem | Searchable select over matchProblem() plus "Something else"; textarea; budget and timeline on the project tab | description required when no service is picked; budget and timeline required for project |
-| Your site | Site address, host (optional), access method (secure link is the default) | site address parsed with the one shared rule |
-| Contact | Name, email, phone (optional), preferred contact method | phone required only when phone is the chosen method |
-| Confirm | Summary, price or "Quote before work begins", guarantee line when set, handoff | whole booking re-parsed before submit |
+## v3 / live chat
 
-Progress is the four screen names with aria-current="step", never "Step 1 of 4": contract rule 6 bans
-numbered step labels, and the ui-ux-pro-max Progress Indicators row suggests exactly that, so the row
-is overridden here.
-
-Two tabs on /contact/ are real links (routes.book() and routes.quote()), not a JS tablist, so each is
-a shareable server-rendered URL and switching never destroys the other tab's draft.
-
-State is a reducer mirrored into sessionStorage under booking-draft, so Back and a reload are both
-lossless. The draft is cleared only after a successful submit.
-
-src/lib/booking.ts holds the handoff adapter. The email adapter is the default and needs no account;
-Razorpay, Stripe Checkout or Cal.com drop in behind the same interface once
-brand.promises.bookingProvider names one.
-
-The Continue and submit buttons carry distinct React keys. Without them React reconciles them into
-one <button> node and flips type="button" to type="submit" mid-click, submitting a screen early.
-
-## v2-swiss-precision / live chat (P3)
-
-`src/lib/chat/providers.ts` holds four vendor adapters (Crisp, Intercom, Tawk, Chatwoot). Each knows
-only how to inject its script, open its panel, hide its own bubble and attach our context. Nothing
-else in the codebase names a vendor.
-
-`src/lib/chat/index.ts` picks one from `NEXT_PUBLIC_CHAT_PROVIDER` plus `NEXT_PUBLIC_CHAT_ID` (and
-`NEXT_PUBLIC_CHAT_BASE_URL` for a self-hosted Chatwoot). Set them in `.env.local`: a shell variable
-passed to `npm run build` is NOT inlined, which was measured, so the env file is the supported path.
-
-The vendor script is never in the critical path. It loads on the first launcher click, or earlier in
-a requestIdleCallback once the page is interactive. Measured with a provider configured: zero vendor
-requests at `load`, first request at +225ms once the browser went idle.
-
-Context attached to the session: page path, problem slug (prop or ?service=/?guide=), and the site
-URL only when the visitor typed it (?url= or their own booking draft). Never a guessed URL.
-
-Fallback: when no provider is configured, or the script is blocked or times out at 8s, openChat()
-dispatches CHAT_FALLBACK_EVENT and the launcher opens a native <dialog> carrying BOOK and
-brand.email. Escape closes it and focus returns to the launcher, both verified.
-
-getSiteStatus() still returns nulls. Crisp and Chatwoot expose operator availability over REST,
-Intercom exposes admin away status and Tawk has no public endpoint, but all of them need a server
-API key the owner has not issued. No "online" indicator renders anywhere until one does.
-
-Launcher clearance, measured: bottom 820 against a bar top of 835 at 375px and 767px, a 15px gap,
-including on /contact/. It never overlaps the booking form's buttons at 375, 768 or 1280.
-
-## v2-swiss-precision / collection indexes (post-QA)
-
-| Page | Layout families | Eyebrow | Marquee | CTA intents |
-| --- | --- | --- | --- | --- |
-| /guides/ | Search hero (Finder), single directory band with hairline-separated groups | no | no | BOOK, CHAT, CHECK (no-match only) |
-| /compare/ | Stacked bands, two-column comparison rows | no | no | compares intent + CHAT |
-
-Both were foundation leftovers missed by P1, which briefed the guide and compare *item* templates but
-not the two collection indexes. `/guides/` follows its persisted override
-(design-system/letsfixwp-v2/pages/guide.md: "Hero with search bar > Popular categories > ... > CTA").
-
-`Finder` lives on /guides/ and nowhere else. It was on the home page until the home directory section
-made it redundant; two free-text searches on one page would split the problem_search signal between
-them, and the duplicate hub list did the same to internal links. Both were deleted from the home page
-rather than restyled.
-
-The guide groups sit inside ONE band separated by hairlines, not one band each: sixteen full bands
-for groups of two or three guides left the page mostly air.
+Our own launcher (`src/components/sections/v3/ChatProvider.tsx`), never the vendor's bubble, which is hidden by
+CSS the adapter injects. Fixed bottom right, 24px insets, 44px tall, label from md up; hidden under 768px where the
+bottom bar already carries chat, and hidden on /contact/ and /free-site-check/ so it cannot sit on a submit button.
+The vendor script loads on first launcher click, or on requestIdleCallback after the window load event, never in
+the critical path. Blocked or missing script falls back to a dialog with BOOK and the support address.
+No provider is configured (NEXT_PUBLIC_CHAT_PROVIDER), so nothing third-party is requested and no presence dot renders.

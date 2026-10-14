@@ -1,123 +1,95 @@
 import { z } from "zod";
+import { accessValues, budgetValues, contactValues, timelineValues } from "@/content/booking-options";
 
 export const requestTypes = ["fix", "project", "check"] as const;
 export type RequestType = (typeof requestTypes)[number];
 
-/** How the visitor will give us access. Passwords are never collected in this form. */
-export const accessMethods = ["secure-link", "already-shared", "hosting-panel"] as const;
-export const ACCESS_LABEL: Record<(typeof accessMethods)[number], string> = {
-  "secure-link": "Send me a secure link after booking",
-  "already-shared": "An engineer already has access",
-  "hosting-panel": "I will add an admin user myself",
-};
-
-export const contactMethods = ["email", "phone"] as const;
-export const CONTACT_LABEL: Record<(typeof contactMethods)[number], string> = {
-  email: "Email",
-  phone: "Phone",
-};
-
-export const budgets = ["under-50k", "50k-150k", "150k-500k", "over-500k", "not-sure"] as const;
-export const BUDGET_LABEL: Record<(typeof budgets)[number], string> = {
-  "under-50k": "Under 50,000",
-  "50k-150k": "50,000 to 1,50,000",
-  "150k-500k": "1,50,000 to 5,00,000",
-  "over-500k": "Over 5,00,000",
-  "not-sure": "Not sure yet",
-};
-
-export const timelines = ["asap", "this-month", "this-quarter", "planning"] as const;
-export const TIMELINE_LABEL: Record<(typeof timelines)[number], string> = {
-  asap: "As soon as possible",
-  "this-month": "This month",
-  "this-quarter": "This quarter",
-  planning: "Still planning",
-};
-
 // Field names are part of the analytics and autofill contract. Do not rename silently.
+// One schema, shared by the client (per-screen validation) and the Server Action (whole payload).
 export const bookingSchema = z
   .object({
     type: z.enum(requestTypes),
     service: z.string().trim().max(80),
     guide: z.string().trim().max(80),
     description: z.string().trim().max(2000),
-    siteUrl: z
-      .string()
-      .trim()
-      .min(1, "Enter your site address")
-      .max(300)
-      .regex(/^(https?:\/\/)?[^\s/.]+(\.[^\s/.]+)+(\/\S*)?$/i, "Enter your site address, like example.com"),
-    host: z.string().trim().max(80),
-    access: z.enum(accessMethods),
+    siteUrl: z.string().trim().max(300),
+    host: z.string().trim().max(120),
+    access: z.enum(accessValues as [string, ...string[]]),
+    budget: z.string().trim().max(20),
+    timeline: z.string().trim().max(20),
     name: z.string().trim().min(1, "Enter your name").max(120),
     email: z.email("Enter a valid email address").max(254),
     phone: z.string().trim().max(40),
-    contactMethod: z.enum(contactMethods),
-    budget: z.string().trim().max(40),
-    timeline: z.string().trim().max(40),
+    contactMethod: z.enum(contactValues as [string, ...string[]]),
   })
-  // A fix with no service picked needs words, otherwise there is nothing to triage.
   .superRefine((b, ctx) => {
-    if (b.type !== "check" && !b.service && b.description.length < 10)
-      ctx.addIssue({ code: "custom", path: ["description"], message: "Tell us what you see, in a sentence or two" });
-    if (b.contactMethod === "phone" && !b.phone)
-      ctx.addIssue({ code: "custom", path: ["phone"], message: "Add a phone number, or choose email instead" });
-    if (b.type === "project") {
-      if (!budgets.includes(b.budget as (typeof budgets)[number]))
-        ctx.addIssue({ code: "custom", path: ["budget"], message: "Pick a budget range" });
-      if (!timelines.includes(b.timeline as (typeof timelines)[number]))
-        ctx.addIssue({ code: "custom", path: ["timeline"], message: "Pick a timeline" });
+    const need = (path: keyof typeof b, message: string) => ctx.addIssue({ code: "custom", path: [path], message });
+
+    // A site address is what we work on, so a fix and a check both need one. A project may not have a site yet.
+    if (b.type !== "project") {
+      if (!b.siteUrl) need("siteUrl", "Enter your site address");
+      else if (!/^(https?:\/\/)?[^\s/.]+(\.[^\s/.]+)+(\/\S*)?$/i.test(b.siteUrl)) need("siteUrl", "Enter your site address, like example.com");
     }
+    // An emergency ticket needs to say what is wrong: either a chosen problem or a description.
+    if (b.type === "fix" && !b.service && b.description.length < 10) need("description", "Tell us what the site is doing, in a sentence");
+    if (b.type === "project") {
+      if (!budgetValues.includes(b.budget as (typeof budgetValues)[number])) need("budget", "Pick a budget range");
+      if (!timelineValues.includes(b.timeline as (typeof timelineValues)[number])) need("timeline", "Pick a timeline");
+      if (b.description.length < 10) need("description", "Tell us what you need built, in a sentence");
+    }
+    // Asking to be called without a number is the most common dead end in this form.
+    if (b.contactMethod === "phone" && !b.phone) need("phone", "Add a phone number, or choose email instead");
   });
 
 export type Booking = z.infer<typeof bookingSchema>;
+export type BookingField = keyof Booking;
 
-/** The one site-address rule on the site. The hero field and the booking screen both parse with this. */
-export const siteUrlField = bookingSchema.shape.siteUrl;
+/** Screens are named, never numbered: the progress bar shows where you are, not how much is left. */
+export const SCREENS = {
+  problem: { id: "problem", label: "Problem", fields: ["service", "description"] },
+  project: { id: "project", label: "Project", fields: ["description", "budget", "timeline"] },
+  site: { id: "site", label: "Your site", fields: ["siteUrl", "host", "access"] },
+  contact: { id: "contact", label: "Contact", fields: ["name", "email", "phone", "contactMethod"] },
+  confirm: { id: "confirm", label: "Confirm", fields: [] },
+} as const satisfies Record<string, { id: string; label: string; fields: readonly BookingField[] }>;
 
-/**
- * "example.com" to "https://example.com". An existing http(s) scheme is left alone.
- * Parse with `siteUrlField` first: this only adds the scheme, it does not validate.
- */
-export const normaliseSiteUrl = (raw: string) => {
-  const v = raw.trim();
-  return /^https?:\/\//i.test(v) ? v : `https://${v}`;
-};
+export type Screen = (typeof SCREENS)[keyof typeof SCREENS];
 
-/**
- * Four named screens. Never "Step 1 of 4": contract rule 6 bans numbered step labels, and the
- * ui-ux-pro-max Progress Indicators row suggests exactly that, so the names carry the progress.
- */
-const allScreens = [
-  { id: "problem", label: "Problem", fields: ["service", "description", "budget", "timeline"] },
-  { id: "site", label: "Your site", fields: ["siteUrl", "host", "access"] },
-  { id: "contact", label: "Contact", fields: ["name", "email", "phone", "contactMethod"] },
-  { id: "confirm", label: "Confirm", fields: [] },
-] as const satisfies readonly { id: string; label: string; fields: readonly (keyof Booking)[] }[];
+export const screensFor = (type: RequestType): Screen[] =>
+  type === "project"
+    ? [SCREENS.project, SCREENS.contact, SCREENS.confirm]
+    : type === "check"
+      ? [SCREENS.site, SCREENS.contact, SCREENS.confirm]
+      : [SCREENS.problem, SCREENS.site, SCREENS.contact, SCREENS.confirm];
 
-export type ScreenId = (typeof allScreens)[number]["id"];
-
-/** A free site check skips the problem screen: the check itself is the service. */
-export const screensFor = (type: RequestType) =>
-  type === "check" ? allScreens.filter((s) => s.id !== "problem") : allScreens;
-
-export const emptyBooking = (type: RequestType, initial: { service: string; guide: string; url: string }): Booking => ({
+export const emptyBooking = (type: RequestType, initial: Partial<Booking> = {}): Booking => ({
   type,
-  service: initial.service,
-  guide: initial.guide,
+  service: "",
+  guide: "",
   description: "",
-  siteUrl: initial.url,
+  siteUrl: "",
   host: "",
   access: "secure-link",
+  budget: "",
+  timeline: "",
   name: "",
   email: "",
   phone: "",
   contactMethod: "email",
-  budget: "",
-  timeline: "",
+  ...initial,
 });
 
-/** sessionStorage key for the in-progress booking, so Back and a reload never lose data. */
+/** Validates one screen's fields only, so a visitor is never shown errors for a screen they have not reached. */
+export function validateScreen(b: Booking, fields: readonly BookingField[]): Partial<Record<BookingField, string>> {
+  const res = bookingSchema.safeParse(b);
+  if (res.success) return {};
+  const out: Partial<Record<BookingField, string>> = {};
+  for (const issue of res.error.issues) {
+    const f = issue.path[0] as BookingField;
+    if (fields.includes(f) && !out[f]) out[f] = issue.message;
+  }
+  return out;
+}
+
+/** sessionStorage key: Back, a reload or a bumped tab must never lose what was typed. */
 export const DRAFT_KEY = "booking-draft";
-/** sessionStorage key for the prepared handoff handed to /contact/thanks/. */
-export const HANDOFF_KEY = "booking-handoff";

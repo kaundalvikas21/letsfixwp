@@ -1,50 +1,32 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { BookLink, ChatButton } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
-import { Band, BandTitle, Breadcrumbs, CtaBand } from "@/components/templates/parts";
-import { primaryCtaFor } from "@/config/cta";
-import { nodeByPath, routes } from "@/config/routes";
+import { Breadcrumbs, h1, LinkRows, page } from "@/components/templates/parts";
+import { routes } from "@/config/routes";
 import { compares } from "@/content";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "WordPress Comparisons",
   description: "Neutral side-by-side comparisons: WordPress or Wix, WooCommerce or Shopify, a care plan or pay-as-you-go support.",
   alternates: { canonical: routes.compares },
-  openGraph: { title: "WordPress Comparisons", url: routes.compares, type: "website" },
 };
 
 export default function CompareIndex() {
   return (
-    <article>
-      <div className="mx-auto w-full max-w-[1200px] px-6 pt-8 pb-12 md:pb-16">
-        <Breadcrumbs items={nodeCrumbs(routes.compares)} />
-        <h1 className="mt-8 max-w-[18ch] text-[clamp(2rem,4.2vw,3.25rem)]">Comparisons</h1>
-        <p className="mt-6 max-w-[54ch] text-lg text-muted">
-          Factual side-by-side writeups, verdict first. We are not one of the options being compared.
-        </p>
+    <div className={cn(page, "max-w-3xl py-8 md:py-12")}>
+      <Breadcrumbs items={nodeCrumbs(routes.compares)} />
+      <h1 className={cn(h1, "mt-6")}>Comparisons</h1>
+      <p className="mt-5 max-w-[68ch] text-lg text-muted">
+        Each one sets out where the two differ and which fits a given scenario. No winner is declared, because it depends on what you are running.
+      </p>
+      <div className="mt-8">
+        <LinkRows items={compares.map((c) => ({ href: routes.compare(c.slug), title: `${c.a} vs ${c.b}`, summary: c.seo.description }))} />
       </div>
-
-      <Band labelledBy="compare-list">
-        <BandTitle id="compare-list">Side by side</BandTitle>
-        <ul className="mt-8">
-          {compares.map((c) => (
-            <li key={c.slug} className="border-t border-line">
-              <Link href={routes.compare(c.slug)} className="group grid gap-2 py-6 md:grid-cols-[24rem_1fr] md:gap-8">
-                <span className="font-bold transition-colors duration-200 group-hover:text-accent-text">
-                  {c.a} vs {c.b}
-                </span>
-                <span className="max-w-[60ch] text-[0.9375rem] text-muted">{c.seo.description}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </Band>
-
-      <CtaBand
-        intent={primaryCtaFor(nodeByPath.get(routes.compares)?.intent)}
-        location="compare-index"
-        title="Still deciding? Talk it through with an engineer."
-      />
-    </article>
+      <div className="mt-10 flex flex-wrap gap-3">
+        <BookLink location="compare-index" className="btn-primary" />
+        <ChatButton location="compare-index" className="btn-secondary" />
+      </div>
+    </div>
   );
 }

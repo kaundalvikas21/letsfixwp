@@ -1,18 +1,22 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { CheckIcon, WarningIcon } from "@phosphor-icons/react/ssr";
+import { CaretRightIcon, CheckIcon } from "@phosphor-icons/react/ssr";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { CtaPair } from "@/components/Cta";
 import { breadcrumbLd, JsonLd, type Crumb } from "@/components/JsonLd";
-import type { CtaIntent } from "@/config/cta";
 import { nodeByPath } from "@/config/routes";
 import { getCompare, getGuide } from "@/content";
+import { cn } from "@/lib/utils";
 
-// Shared template furniture in the v2-swiss-precision language. These are deliberately NOT the home
-// page's layout families (docs/layout-ledger.md): templates get stacked bands, checklists and
-// labelled lists, never the hero split, the verb row, the pricing rows or the two-column FAQ.
+// v3 template primitives. Visual language from design-system/letsfixwp-v3/MASTER.md: 20px cards, 12px inputs,
+// pill buttons, two-layer tinted shadows, one accent, Cabinet Grotesk display over Inter Tight body.
+
+export const page = "mx-auto w-full max-w-6xl px-4 md:px-6";
+export const prose = "max-w-[68ch] text-muted";
+export const h1 = "font-display text-[2rem] leading-[1.08] font-extrabold tracking-[-0.02em] text-balance sm:text-4xl lg:text-[2.75rem]";
+export const h2 = "font-display text-2xl leading-tight font-extrabold tracking-[-0.01em] md:text-3xl";
+export const card = "rounded-[20px] border border-line bg-surface p-6 shadow-card";
 
 export const pageMetadata = (seo: { title: string; description: string }, path: string): Metadata => ({
   title: { absolute: seo.title },
@@ -21,38 +25,14 @@ export const pageMetadata = (seo: { title: string; description: string }, path: 
   openGraph: { title: seo.title, description: seo.description, url: path, type: "website" },
 });
 
-/** One full-bleed band: top hairline, 1200px container, consistent vertical rhythm. */
-export function Band({
-  children,
-  labelledBy,
-  className = "",
-  bleed = true,
-}: {
-  children: React.ReactNode;
-  labelledBy?: string;
-  className?: string;
-  /** false when the band already sits inside a column, so it adds no second container. */
-  bleed?: boolean;
-}) {
-  if (!bleed) {
-    return (
-      <section aria-labelledby={labelledBy} className={`border-t border-line py-10 md:py-12 ${className}`}>
-        {children}
-      </section>
-    );
-  }
+export function Section({ id, title, children, className }: { id: string; title: string; children: React.ReactNode; className?: string }) {
   return (
-    <section aria-labelledby={labelledBy} className={`border-t border-line ${className}`}>
-      <div className="mx-auto w-full max-w-[1200px] px-6 py-12 md:py-16">{children}</div>
+    <section aria-labelledby={id} className={cn("mt-12 md:mt-16", className)}>
+      <h2 id={id} className={h2}>
+        {title}
+      </h2>
+      <div className="mt-5">{children}</div>
     </section>
-  );
-}
-
-export function BandTitle({ id, children }: { id: string; children: React.ReactNode }) {
-  return (
-    <h2 id={id} className="max-w-[24ch] text-[clamp(1.5rem,2.4vw,2rem)]">
-      {children}
-    </h2>
   );
 }
 
@@ -60,11 +40,11 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
   return (
     <>
       <JsonLd data={breadcrumbLd(items)} />
-      <nav aria-label="Breadcrumb" className="font-mono text-xs text-muted">
-        <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
+      <nav aria-label="Breadcrumb" className="text-sm text-muted">
+        <ol className="flex flex-wrap items-center gap-x-1 gap-y-1">
           {items.map((c, i) => (
-            <li key={c.path} aria-current={i === items.length - 1 ? "page" : undefined} className="flex items-center gap-2">
-              {i > 0 && <span aria-hidden>/</span>}
+            <li key={c.path} aria-current={i === items.length - 1 ? "page" : undefined} className="flex items-center gap-1">
+              {i > 0 && <CaretRightIcon weight="duotone" className="size-3.5 shrink-0" aria-hidden />}
               {i === items.length - 1 ? (
                 <span className="text-text">{c.name}</span>
               ) : (
@@ -80,53 +60,58 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
   );
 }
 
-/** Checklist with real marks. Used for symptoms, so a visitor can match what they see. */
-export function Checklist({ items }: { items: string[] }) {
+/** Plain disclosure list: no JS, and deliberately not the home page's searchable FAQ card. */
+export function Faqs({ faqs, title = "Questions" }: { faqs: { q: string; a: string }[]; title?: string }) {
   return (
-    <ul className="mt-6 grid gap-px sm:grid-cols-2 sm:gap-x-10">
+    <Section id="faq" title={title}>
+      <div className="divide-y divide-line border-y border-line">
+        {faqs.map((f) => (
+          <details key={f.q} className="group py-4">
+            <summary className="flex cursor-pointer items-center justify-between gap-4 font-display text-lg font-bold marker:content-none [&::-webkit-details-marker]:hidden">
+              {f.q}
+              <CaretRightIcon weight="duotone" className="size-5 shrink-0 text-muted transition-transform group-open:rotate-90 motion-reduce:transition-none" aria-hidden />
+            </summary>
+            <p className="mt-3 max-w-[70ch] text-muted">{f.a}</p>
+          </details>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+export function TickList({ items, cols = 1 }: { items: readonly string[]; cols?: 1 | 2 }) {
+  return (
+    <ul className={cn("grid gap-3", cols === 2 && "sm:grid-cols-2 sm:gap-x-8")}>
       {items.map((x) => (
-        <li key={x} className="flex gap-3 border-t border-line py-3">
-          <CheckIcon aria-hidden size={18} weight="bold" className="mt-1 shrink-0 text-accent-text" />
-          <span className="text-[0.9375rem]">{x}</span>
+        <li key={x} className="flex gap-3">
+          <CheckIcon weight="duotone" className="mt-1 size-5 shrink-0 text-accent-text" aria-hidden />
+          <span>{x}</span>
         </li>
       ))}
     </ul>
   );
 }
 
-/** Plain bordered list. One column, so it never reads as the home directory's grouped columns. */
-export function PlainList({ items }: { items: string[] }) {
+/** Link rows: title, optional summary, chevron. Used for service and guide directories. */
+export function LinkRows({ items }: { items: { href: string; title: string; summary?: string }[] }) {
   return (
-    <ul className="mt-6 max-w-[70ch]">
-      {items.map((x) => (
-        <li key={x} className="border-t border-line py-3 text-[0.9375rem] text-muted">
-          {x}
+    <ul className="divide-y divide-line border-y border-line">
+      {items.map((i) => (
+        <li key={i.href}>
+          <Link href={i.href} className="group flex items-start gap-4 py-4 hover:text-accent-text">
+            <span className="min-w-0 flex-1">
+              <span className="block font-display text-lg font-bold">{i.title}</span>
+              {i.summary && <span className="mt-1 block max-w-[70ch] text-sm text-muted">{i.summary}</span>}
+            </span>
+            <CaretRightIcon
+              weight="duotone"
+              className="mt-1 size-5 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
+              aria-hidden
+            />
+          </Link>
         </li>
       ))}
     </ul>
-  );
-}
-
-/** Verb-labelled steps, stacked. The home page spends the horizontal verb row; this is the vertical one. */
-export function LabelledSteps({ steps }: { steps: { verb: string; detail: string }[] }) {
-  return (
-    <ol className="mt-6 max-w-[80ch]">
-      {steps.map((s) => (
-        <li key={s.verb} className="grid gap-1 border-t border-line py-5 md:grid-cols-[12rem_1fr] md:gap-6">
-          <span className="font-bold">{s.verb}</span>
-          <span className="text-muted">{s.detail}</span>
-        </li>
-      ))}
-    </ol>
-  );
-}
-
-export function Caution({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="mt-6 flex max-w-[70ch] gap-3 border border-muted p-4 text-[0.9375rem]">
-      <WarningIcon aria-hidden size={18} weight="bold" className="mt-0.5 shrink-0 text-accent-text" />
-      <span>{children}</span>
-    </p>
   );
 }
 
@@ -145,12 +130,12 @@ export const titleForPath = (p: string) => {
 
 export function LinkList({ paths }: { paths: string[] }) {
   return (
-    <ul className="mt-6 grid gap-px sm:grid-cols-2 sm:gap-x-10">
+    <ul className="flex flex-wrap gap-2">
       {paths.map((p) => (
-        <li key={p} className="border-t border-line">
+        <li key={p}>
           <Link
             href={p}
-            className="flex min-h-11 items-center py-3 text-[0.9375rem] transition-colors duration-200 hover:text-accent-text"
+            className="inline-flex min-h-11 items-center rounded-full border border-line-strong px-4 text-sm font-medium hover:border-accent hover:text-accent-text"
           >
             {titleForPath(p)}
           </Link>
@@ -160,90 +145,23 @@ export function LinkList({ paths }: { paths: string[] }) {
   );
 }
 
-/** A real capture from scripts/capture-errors.mjs, rendered only once the file exists. */
-export function RealScreen({ slot, alt, priority = false }: { slot: string; alt: string; priority?: boolean }) {
+/** A real capture from scripts/capture-errors.mjs, in a device frame, rendered only once the file exists. */
+export function RealScreen({ slot, alt, preload = false }: { slot: string; alt: string; preload?: boolean }) {
   const src = `/screens/${slot}.png`;
   if (!existsSync(join(process.cwd(), "public", src))) return null;
   return (
-    <figure className="mt-10">
-      <Image
-        src={src}
-        alt={alt}
-        width={1600}
-        height={1000}
-        priority={priority}
-        sizes="(min-width: 1024px) 60vw, 100vw"
-        className="w-full border border-line"
-      />
+    <figure className="overflow-hidden rounded-[20px] bg-surface-2 p-2 shadow-card">
+      <Image src={src} alt={alt} width={1600} height={1000} preload={preload} sizes="(min-width: 1024px) 60vw, 100vw" className="rounded-[12px]" />
     </figure>
-  );
-}
-
-/** Single-column disclosure group. The home page spends the two-column FAQ family. */
-export function Faqs({
-  faqs,
-  title = "Questions",
-  bleed = true,
-}: {
-  faqs: { q: string; a: string }[];
-  title?: string;
-  bleed?: boolean;
-}) {
-  return (
-    <Band labelledBy="faq" bleed={bleed}>
-      <BandTitle id="faq">{title}</BandTitle>
-      <div className="mt-8 max-w-[80ch]">
-        {faqs.map((f) => (
-          <details key={f.q} className="group border-t border-line last:border-b last:border-b-line">
-            <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 font-medium [&::-webkit-details-marker]:hidden">
-              {f.q}
-              <span aria-hidden className="shrink-0 font-mono text-muted group-open:hidden">
-                +
-              </span>
-              <span aria-hidden className="hidden shrink-0 font-mono text-muted group-open:inline">
-                &minus;
-              </span>
-            </summary>
-            <p className="max-w-[70ch] pb-5 text-muted">{f.a}</p>
-          </details>
-        ))}
-      </div>
-    </Band>
-  );
-}
-
-/** Closing band. Short and horizontal, never the home page's oversized typographic statement. */
-export function CtaBand({
-  intent,
-  location,
-  service,
-  title,
-}: {
-  intent: CtaIntent;
-  location: string;
-  service?: string;
-  title: string;
-}) {
-  return (
-    <Band labelledBy="cta-band">
-      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-        <h2 id="cta-band" className="max-w-[24ch] text-[clamp(1.5rem,2.4vw,2rem)]">
-          {title}
-        </h2>
-        <CtaPair intent={intent} location={location} service={service} />
-      </div>
-    </Band>
   );
 }
 
 /** Shown instead of the fixmywp.com legal text while brand.legacy.enabled is false. */
 export function LegalPending({ title }: { title: string }) {
   return (
-    <Band>
-      <h1 className="text-[clamp(1.75rem,3vw,2.5rem)]">{title}</h1>
-      <p className="mt-6 max-w-[60ch] text-muted">
-        This page is being prepared. Until it is published, write to us with any question about it.
-      </p>
-    </Band>
+    <article className={cn(page, "py-16")}>
+      <h1 className={h1}>{title}</h1>
+      <p className={cn(prose, "mt-4")}>This page is being prepared. Until it is published, write to us with any question about it.</p>
+    </article>
   );
 }

@@ -1,121 +1,94 @@
-// Vendor adapters. Each one knows three things: how to inject its script, how to open its panel,
-// and how to attach our context to the session. Nothing else in the codebase knows a vendor name.
-
-export type ChatProviderId = "crisp" | "intercom" | "tawk" | "chatwoot";
+/**
+ * One row per supported chat vendor. Nothing here runs until a provider is selected with
+ * NEXT_PUBLIC_CHAT_PROVIDER and its id with NEXT_PUBLIC_CHAT_ID, so an unconfigured site ships no vendor code.
+ *
+ * Each vendor gets the same four jobs: load its script, hide its own bubble (we have our own launcher), open the
+ * panel, and attach context. `available` is optional: only a vendor that really exposes operator presence gets
+ * one, because getSiteStatus() must never invent an "online" state.
+ */
+export const CHAT_PROVIDERS = ["crisp", "intercom", "tawk", "chatwoot"] as const;
+export type ChatProviderId = (typeof CHAT_PROVIDERS)[number];
 
 export type ChatContext = {
-  /** The page the visitor opened chat from. */
+  /** Where the visitor opened chat from. */
   path: string;
-  /** Service or guide slug, when the visitor is on a problem page or came from one. */
+  /** The service or guide slug the page is about, when it is about one. */
   problem?: string;
-  /** Only when the visitor typed it themselves. We never guess it. */
+  /** The site address the visitor typed into the booking form, if they got that far. */
   siteUrl?: string;
 };
 
-export type ChatConfig = {
-  provider: ChatProviderId;
-  /** Crisp website id, Intercom app id, Tawk "property/widget", or the Chatwoot website token. */
-  id: string;
-  /** Chatwoot only: the base URL of the install. */
-  baseUrl?: string;
-};
-
-export type ChatAdapter = {
-  /** Injects the vendor script and resolves once its API is usable. Rejects if blocked or slow. */
-  load: (cfg: ChatConfig) => Promise<void>;
+export type ChatProvider = {
+  /** The vendor script. `id` is NEXT_PUBLIC_CHAT_ID: a website id, app id or property id depending on the vendor. */
+  src: (id: string) => string;
+  /** Runs before the script, to set whatever global the vendor reads on boot. */
+  boot?: (id: string) => void;
+  /** CSS that hides the vendor's own launcher. Ours replaces it. */
+  hideBubbleCss: string;
   open: () => void;
-  setContext: (c: ChatContext) => void;
+  /** Attach the page context to the conversation, so an engineer sees it without asking. */
+  setContext: (ctx: ChatContext) => void;
+  /** Only where the vendor exposes real operator presence. Undefined means "we do not know". */
+  available?: () => boolean | null;
 };
 
-/** One script tag, one timeout, one rejection path. A blocked script must fail fast, not hang. */
-function inject(src: string, timeoutMs = 8000): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const el = document.createElement("script");
-    el.src = src;
-    el.async = true;
-    const timer = setTimeout(() => reject(new Error("chat script timed out")), timeoutMs);
-    el.onload = () => {
-      clearTimeout(timer);
-      resolve();
-    };
-    el.onerror = () => {
-      clearTimeout(timer);
-      reject(new Error("chat script blocked"));
-    };
-    document.head.appendChild(el);
-  });
-}
-
-/** Vendor globals are untyped by design: each adapter is the only place that touches them. */
-type Win = Window & Record<string, unknown>;
-const w = () => window as unknown as Win;
-
-const crisp: ChatAdapter = {
-  load: async (cfg) => {
-    const win = w();
-    win.$crisp = win.$crisp ?? [];
-    win.CRISP_WEBSITE_ID = cfg.id;
-    await inject("https://client.crisp.chat/l.js");
-    // Our launcher is the only launcher. Hide the vendor bubble as soon as the API exists.
-    (win.$crisp as unknown[][]).push(["do", "chat:hide"]);
-  },
-  open: () => {
-    const q = w().$crisp as unknown[][];
-    q.push(["do", "chat:show"]);
-    q.push(["do", "chat:open"]);
-  },
-  setContext: (c) => {
-    const q = w().$crisp as unknown[][];
-    q.push(["set", "session:data", [Object.entries(c).filter(([, v]) => v)]]);
-  },
+type W = Window & Record<string, unknown>;
+const w = () => window as unknown as W;
+const call = (path: string, ...args: unknown[]) => {
+  const fn = path.split(".").reduce<unknown>((o, k) => (o as Record<string, unknown> | undefined)?.[k], w());
+  if (typeof fn === "function") (fn as (...a: unknown[]) => unknown)(...args);
 };
 
-const intercom: ChatAdapter = {
-  load: async (cfg) => {
-    const win = w();
-    win.intercomSettings = { app_id: cfg.id, hide_default_launcher: true };
-    await inject(`https://widget.intercom.io/widget/${encodeURIComponent(cfg.id)}`);
-    (win.Intercom as (...a: unknown[]) => void)("boot", { app_id: cfg.id, hide_default_launcher: true });
+export const providers: Record<ChatProviderId, ChatProvider> = {
+  crisp: {
+    src: () => "https://client.crisp.chat/l.js",
+    boot: (id) => {
+      w().$crisp = [];
+      w().CRISP_WEBSITE_ID = id;
+    },
+    hideBubbleCss: ".crisp-client .cc-kv6t, .crisp-client .cc-unoo { display: none !important; }",
+    open: () => (w().$crisp as unknown[])?.push(["do", "chat:open"]),
+    setContext: (ctx) => {
+      const c = w().$crisp as unknown[] | undefined;
+      c?.push(["set", "session:data", [Object.entries(ctx).filter(([, v]) => v)]]);
+    },
+    // Crisp exposes operator presence on the session.
+    available: () => {
+      const c = w().$crisp as { get?: (k: string) => unknown } | undefined;
+      const v = c?.get?.("website:availability:online");
+      return typeof v === "boolean" ? v : null;
+    },
   },
-  open: () => (w().Intercom as (...a: unknown[]) => void)("show"),
-  setContext: (c) => (w().Intercom as (...a: unknown[]) => void)("update", c),
+  intercom: {
+    src: (id) => `https://widget.intercom.io/widget/${id}`,
+    boot: (id) => {
+      w().intercomSettings = { app_id: id, hide_default_launcher: true };
+    },
+    hideBubbleCss: ".intercom-lightweight-app-launcher, .intercom-launcher { display: none !important; }",
+    open: () => call("Intercom", "show"),
+    setContext: (ctx) => call("Intercom", "update", ctx),
+  },
+  tawk: {
+    src: (id) => `https://embed.tawk.to/${id}`,
+    boot: () => {
+      w().Tawk_API = { ...((w().Tawk_API as object) ?? {}), customStyle: { visibility: { desktop: { xOffset: -9999 } } } };
+    },
+    hideBubbleCss: "#tawkchat-container, .tawk-min-container { display: none !important; }",
+    open: () => call("Tawk_API.maximize"),
+    setContext: (ctx) => call("Tawk_API.addEvent", "page-context", ctx),
+    available: () => {
+      const s = (w().Tawk_API as { getStatus?: () => string } | undefined)?.getStatus?.();
+      return s ? s === "online" : null;
+    },
+  },
+  chatwoot: {
+    src: () => `${process.env.NEXT_PUBLIC_CHAT_HOST ?? "https://app.chatwoot.com"}/packs/js/sdk.js`,
+    boot: (id) => {
+      w().chatwootSettings = { hideMessageBubble: true, position: "right" };
+      w().__chatwootToken = id;
+    },
+    hideBubbleCss: ".woot-widget-bubble { display: none !important; }",
+    open: () => call("$chatwoot.toggle", "open"),
+    setContext: (ctx) => call("$chatwoot.setCustomAttributes", ctx),
+  },
 };
-
-const tawk: ChatAdapter = {
-  load: async (cfg) => {
-    const win = w();
-    const api = (win.Tawk_API ?? {}) as Record<string, unknown>;
-    win.Tawk_API = api;
-    // Hide the vendor bubble the moment the widget is ready; ours is the only launcher.
-    api.onLoad = () => (api.hideWidget as (() => void) | undefined)?.();
-    await inject(`https://embed.tawk.to/${cfg.id}`);
-  },
-  open: () => {
-    const api = w().Tawk_API as Record<string, unknown>;
-    (api.showWidget as (() => void) | undefined)?.();
-    (api.maximize as (() => void) | undefined)?.();
-  },
-  setContext: (c) => {
-    const api = w().Tawk_API as Record<string, unknown>;
-    (api.setAttributes as ((a: Record<string, string>, cb?: unknown) => void) | undefined)?.(
-      Object.fromEntries(Object.entries(c).filter(([, v]) => v)) as Record<string, string>,
-    );
-  },
-};
-
-const chatwoot: ChatAdapter = {
-  load: async (cfg) => {
-    const win = w();
-    const base = cfg.baseUrl ?? "https://app.chatwoot.com";
-    win.chatwootSettings = { hideMessageBubble: true, position: "right", type: "standard" };
-    await inject(`${base}/packs/js/sdk.js`);
-    (win.chatwootSDK as { run: (o: Record<string, string>) => void }).run({ websiteToken: cfg.id, baseUrl: base });
-  },
-  open: () => (w().$chatwoot as { toggle: (s: string) => void }).toggle("open"),
-  setContext: (c) =>
-    (w().$chatwoot as { setCustomAttributes: (a: Record<string, string>) => void }).setCustomAttributes(
-      Object.fromEntries(Object.entries(c).filter(([, v]) => v)) as Record<string, string>,
-    ),
-};
-
-export const ADAPTERS: Record<ChatProviderId, ChatAdapter> = { crisp, intercom, tawk, chatwoot };

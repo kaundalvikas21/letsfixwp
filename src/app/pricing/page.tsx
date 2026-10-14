@@ -1,65 +1,68 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CtaPair } from "@/components/Cta";
+import { BookLink, ChatButton, CheckLink, PlansLink } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
-import { Band, BandTitle, Breadcrumbs } from "@/components/templates/parts";
-import { brand } from "@/config/brand";
-import { hubNodes, routes } from "@/config/routes";
+import { Breadcrumbs, h1, h2, page, Section } from "@/components/templates/parts";
+import { hubIdOf, hubNodes, routes } from "@/config/routes";
 import { services } from "@/content";
+import { hubLead } from "@/content/hubs";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Pricing",
   description: "WordPress fixes, care plans and projects. Each service shows its starting price once published.",
   alternates: { canonical: routes.pricing },
-  openGraph: { title: "Pricing", url: routes.pricing, type: "website" },
 };
 
-// A compact index, deliberately not the home page's pricing rows: no per-row CTA, no disclosure, no
-// who-it-is-for column. Prices come from src/content/services/*.ts and show only when set (rule 8).
+/**
+ * Grouped price list, one block per hub. Deliberately not the home page's three-tier card layout: this is the
+ * full catalogue. Prices come from each service's priceFrom and render nothing while null (contract rule 8).
+ */
 export default function Pricing() {
+  const priced = services.filter((s) => s.priceFrom).length;
+
   return (
-    <article>
-      <div className="mx-auto w-full max-w-[1200px] px-6 pt-8 pb-12 md:pb-16">
-        <Breadcrumbs items={nodeCrumbs(routes.pricing)} />
-        <h1 className="mt-8 max-w-[18ch] text-[clamp(2rem,4.2vw,3.25rem)]">Pricing</h1>
-        <p className="mt-6 max-w-[56ch] text-lg text-muted">
-          {brand.quoteFlow} Every service below has its own page with scope and inclusions.
-        </p>
-      </div>
+    <div className={cn(page, "max-w-4xl py-8 md:py-12")}>
+      <Breadcrumbs items={nodeCrumbs(routes.pricing)} />
+      <h1 className={cn(h1, "mt-6")}>Pricing</h1>
+      <p className="mt-5 max-w-[68ch] text-lg text-muted">
+        {priced > 0
+          ? "Every service with a published starting price is listed here. Work is quoted at a fixed price before it starts."
+          : "Each fix is quoted at a fixed price before any work starts, once an engineer has seen the problem. Starting prices appear here as each service publishes one."}
+      </p>
 
       {hubNodes.map((hub) => {
         const list = services.filter((s) => s.path.startsWith(hub.path));
-        if (!list.length) return null;
+        const id = hubIdOf(hub.path);
         return (
-          <Band key={hub.path} labelledBy={`p-${hub.path}`}>
-            <BandTitle id={`p-${hub.path}`}>{hub.title}</BandTitle>
-            <ul className="mt-6 grid gap-px sm:grid-cols-2 sm:gap-x-10">
+          <Section key={hub.path} id={`p-${id}`} title={hub.title}>
+            <p className="-mt-1 mb-5 max-w-[68ch] text-sm text-muted">{hubLead[id]}</p>
+            <ul className="divide-y divide-line border-y border-line">
               {list.map((s) => (
-                <li key={s.id} className="border-t border-line">
-                  <Link
-                    href={s.path}
-                    className="flex min-h-11 items-center gap-4 py-3 text-[0.9375rem] transition-colors duration-200 hover:text-accent-text"
-                  >
-                    <span>{s.title}</span>
-                    <span className="ml-auto shrink-0 font-mono text-sm text-muted">
-                      {s.priceFrom ? `from ${s.priceFrom}` : "On quote"}
-                    </span>
+                <li key={s.id} className="flex items-baseline justify-between gap-6 py-3">
+                  <Link href={s.path} className="font-medium hover:text-accent-text">
+                    {s.title}
                   </Link>
+                  {s.priceFrom && <span className="shrink-0 font-display text-sm font-bold">From {s.priceFrom}</span>}
                 </li>
               ))}
             </ul>
-          </Band>
+          </Section>
         );
       })}
 
-      <Band labelledBy="pricing-cta">
-        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <h2 id="pricing-cta" className="max-w-[24ch] text-[clamp(1.5rem,2.4vw,2rem)]">
-            Tell us what is wrong and we will price it.
-          </h2>
-          <CtaPair intent="BOOK" location="pricing" />
+      <section aria-labelledby="pricing-closing" className="mt-16 flex flex-col gap-5 border-t border-line pt-8 md:flex-row md:items-center md:justify-between">
+        <h2 id="pricing-closing" className={cn(h2, "max-w-[24ch]")}>
+          Get a price for your site
+        </h2>
+        <div className="flex shrink-0 flex-wrap gap-3">
+          <BookLink location="pricing" className="btn-primary" />
+          <PlansLink location="pricing" className="btn-secondary" />
         </div>
-      </Band>
-    </article>
+      </section>
+      <p className="mt-6 text-sm text-muted">
+        Not urgent? <CheckLink location="pricing" /> or <ChatButton location="pricing" />
+      </p>
+    </div>
   );
 }

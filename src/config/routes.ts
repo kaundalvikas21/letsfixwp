@@ -69,8 +69,7 @@ export const routes = {
   reviews: page("/case-studies/"),
   about: page("/about/"),
   contact: page("/contact/"),
-  contactThanks: "/contact/thanks/",
-  /** Internal chooser for the design variations. Noindex, and outside SITEMAP on purpose. */
+  /** Internal chooser for the design variations (main). Noindex, and outside SITEMAP on purpose. */
   preview: "/preview/",
   legal: { terms: "/legal/terms/", privacy: "/legal/privacy/", guarantee: "/legal/guarantee/" },
   /** Booking flow on /contact/. */
@@ -87,7 +86,7 @@ export const routes = {
 };
 
 /** Utility routes that live outside SITEMAP on purpose (route test whitelist). */
-export const utilityPaths = [routes.contactThanks, routes.preview, routes.legal.terms, routes.legal.privacy, routes.legal.guarantee];
+export const utilityPaths = [routes.preview, routes.legal.terms, routes.legal.privacy, routes.legal.guarantee];
 
 /** Home first, then each ancestor down to the node. */
 export const ancestry = (path: string): FlatNode[] => {

@@ -1,87 +1,64 @@
 import { brand } from "@/config/brand";
+import type { Booking } from "@/app/contact/booking-schema";
 
 /**
- * Handoff adapter for the Emergency Ticket.
+ * What happens after a ticket is confirmed. One adapter so a provider can be plugged in without touching the
+ * form: set brand.bookingProvider and fill in that provider's branch.
  *
- * The flow ends in one of three ways depending on what the owner signs up for: take payment
- * (Razorpay for UPI, cards and netbanking with GST invoices), take payment (Stripe Checkout), or
- * book a slot (Cal.com). None is wired yet, so the default adapter hands the request to the
- * visitor's own email client and nothing is lost.
- *
- * To plug one in: implement HandoffAdapter, add it to ADAPTERS, and set
- * brand.promises.bookingProvider to its key. Nothing else in the flow changes.
+ * Until a provider is chosen the handoff is "email": the visitor's own mail app opens with the ticket prepared,
+ * so no request is silently dropped. Nothing here charges a card or books a slot on its own.
  */
-export type HandoffKind = "payment" | "scheduling" | "email";
+export type Handoff =
+  | { kind: "email" | "payment" | "schedule"; label: string; href: string; note: string }
+  /** No support address is confirmed yet, so there is nothing honest to link to: show the ticket to copy. */
+  | { kind: "copy"; label: string; text: string; note: string };
 
-export type HandoffRequest = {
-  type: "fix" | "project" | "check";
-  service: string;
-  serviceTitle: string;
-  guide: string;
-  description: string;
-  siteUrl: string;
-  host: string;
-  access: string;
-  name: string;
-  email: string;
-  phone: string;
-  contactMethod: string;
-  budget: string;
-  timeline: string;
-};
+const line = (k: string, v: string | undefined) => (v ? `${k}: ${v}\n` : "");
 
-export type Handoff = {
-  kind: HandoffKind;
-  /** What the visitor is about to do, shown on the confirm screen before they commit. */
-  label: string;
-  /** Where the visitor goes next. A mailto: for the email adapter, a provider URL otherwise. */
-  href: string;
-};
+/** The ticket as plain text, used by the email handoff and by the confirmation stub. */
+export function bookingText(b: Booking, serviceTitle: string): string {
+  const kind = b.type === "project" ? "Project enquiry" : b.type === "check" ? "Free site check" : "Emergency ticket";
+  return (
+    `${kind}\n\n` +
+    line("Service", serviceTitle || (b.type === "fix" ? "Not sure yet" : undefined)) +
+    line("Guide", b.guide) +
+    line("Site", b.siteUrl) +
+    line("Host", b.host) +
+    line("Access", b.access) +
+    line("Budget", b.budget) +
+    line("Timeline", b.timeline) +
+    line("Name", b.name) +
+    line("Email", b.email) +
+    line("Phone", b.phone) +
+    line("Preferred contact", b.contactMethod) +
+    (b.description ? `\n${b.description}\n` : "")
+  );
+}
 
-export type HandoffAdapter = {
-  kind: HandoffKind;
-  label: string;
-  build: (r: HandoffRequest) => string;
-};
+export function getHandoff(b: Booking, serviceTitle: string): Handoff {
+  const subject = b.type === "project" ? "Project enquiry" : b.type === "check" ? "Free site check" : `Emergency ticket: ${serviceTitle || b.siteUrl}`;
 
-const SUBJECT: Record<HandoffRequest["type"], string> = {
-  fix: "Fix request",
-  project: "Project quote request",
-  check: "Free site check request",
-};
-
-const lines = (r: HandoffRequest) =>
-  [
-    `Request: ${SUBJECT[r.type]}`,
-    r.type !== "check" ? `Service: ${r.serviceTitle || "Not sure yet"}` : "",
-    r.guide ? `Guide: ${r.guide}` : "",
-    `Site: ${r.siteUrl}`,
-    r.host ? `Host: ${r.host}` : "",
-    `Access: ${r.access}`,
-    r.budget ? `Budget: ${r.budget}` : "",
-    r.timeline ? `Timeline: ${r.timeline}` : "",
-    `Name: ${r.name}`,
-    `Email: ${r.email}`,
-    r.phone ? `Phone: ${r.phone}` : "",
-    `Preferred contact: ${r.contactMethod}`,
-    r.description ? `\n${r.description}` : "",
-  ]
-    .filter(Boolean)
-    .join("\n");
-
-/** Default until a provider is chosen. No account, no keys, nothing to configure. */
-const emailAdapter: HandoffAdapter = {
-  kind: "email",
-  label: "Send this request to our engineers",
-  build: (r) =>
-    `mailto:${brand.email}?subject=${encodeURIComponent(`${SUBJECT[r.type]}: ${r.serviceTitle || r.siteUrl}`)}&body=${encodeURIComponent(lines(r))}`,
-};
-
-// Add "razorpay", "stripe" or "calcom" here when the owner has an account and keys.
-const ADAPTERS: Record<string, HandoffAdapter> = { email: emailAdapter };
-
-export function buildHandoff(r: HandoffRequest): Handoff {
-  const key = brand.promises.bookingProvider ?? "email";
-  const adapter = ADAPTERS[key] ?? emailAdapter;
-  return { kind: adapter.kind, label: adapter.label, href: adapter.build(r) };
+  switch (brand.bookingProvider) {
+    // Each branch returns the provider's own URL for this ticket. Amount and currency come from the service's
+    // published price, so none of these can run until prices exist (src/content/pricing.ts).
+    case "razorpay":
+    case "stripe":
+      throw new Error(`booking: brand.bookingProvider is "${brand.bookingProvider}" but no checkout session is created yet`);
+    case "cal":
+      throw new Error('booking: brand.bookingProvider is "cal" but no Cal.com link is configured yet');
+    default:
+      if (brand.email.includes("{{"))
+        return {
+          kind: "copy",
+          label: "Copy the ticket",
+          text: bookingText(b, serviceTitle),
+          note: "Copy this and send it to us. A support address goes here once the owner confirms one.",
+        };
+      return {
+        kind: "email",
+        label: "Send the ticket",
+        href: `mailto:${brand.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bookingText(b, serviceTitle))}`,
+        note: "This opens your email app with the ticket filled in. Send it and an engineer picks it up.",
+      };
+  }
 }

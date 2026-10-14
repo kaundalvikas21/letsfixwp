@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { CaseFile } from "@/components/sections/v2-swiss-precision/CaseFile";
-import { ClosingCta } from "@/components/sections/v2-swiss-precision/ClosingCta";
-import { ComparisonMatrix } from "@/components/sections/v2-swiss-precision/ComparisonMatrix";
-import { FactStrip } from "@/components/sections/v2-swiss-precision/FactStrip";
-import { Faq } from "@/components/sections/v2-swiss-precision/Faq";
-import { Hero } from "@/components/sections/v2-swiss-precision/Hero";
-import { HowItWorks } from "@/components/sections/v2-swiss-precision/HowItWorks";
-import { PricingRows } from "@/components/sections/v2-swiss-precision/PricingRows";
-import { ProblemDirectory } from "@/components/sections/v2-swiss-precision/ProblemDirectory";
-import { Quotes } from "@/components/sections/v2-swiss-precision/Quotes";
-import { Safeguards } from "@/components/sections/v2-swiss-precision/Safeguards";
+import { Bento } from "@/components/sections/v3/Bento";
+import { Faq } from "@/components/sections/v3/Faq";
+import { FinalCta } from "@/components/sections/v3/FinalCta";
+import { GuaranteeCard } from "@/components/sections/v3/GuaranteeCard";
+import { Hero } from "@/components/sections/v3/Hero";
+import { LogoGrid } from "@/components/sections/v3/LogoGrid";
+import { PlanCompare } from "@/components/sections/v3/PlanCompare";
+import { Pricing } from "@/components/sections/v3/Pricing";
+import { Quotes } from "@/components/sections/v3/Quotes";
+import { Security } from "@/components/sections/v3/Security";
+import { Steps } from "@/components/sections/v3/Steps";
 import { routes } from "@/config/routes";
 
 export const metadata: Metadata = {
@@ -18,23 +18,21 @@ export const metadata: Metadata = {
   alternates: { canonical: routes.home },
 };
 
-// Emergency-first. The problem finder and the hub list that used to sit at the bottom of this page
-// were foundation leftovers, duplicated by ProblemDirectory and by the header panel plus the footer.
-// Finder now lives on /guides/, where the page override asks for a search bar.
+/** Emergency-first: the hero and the bento lead, and every section below is a v3 section. */
 export default function Home() {
   return (
     <>
       <Hero />
-      <FactStrip />
-      <ProblemDirectory />
-      <HowItWorks />
-      <ComparisonMatrix />
-      <CaseFile />
-      <PricingRows />
+      <LogoGrid />
+      <Bento />
+      <Steps />
+      <PlanCompare />
+      <Pricing />
       <Quotes />
-      <Safeguards />
+      <Security />
+      <GuaranteeCard />
       <Faq />
-      <ClosingCta />
+      <FinalCta />
     </>
   );
 }

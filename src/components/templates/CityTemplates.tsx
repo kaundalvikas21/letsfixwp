@@ -1,52 +1,45 @@
 import Link from "next/link";
+import { ChatButton, QuoteLink } from "@/components/Cta";
 import { faqLd, JsonLd, nodeCrumbs, serviceLd } from "@/components/JsonLd";
-import { primaryCtaFor } from "@/config/cta";
 import { routes, type FlatNode } from "@/config/routes";
 import { cities, getService } from "@/content";
+import { citiesLead, remoteDelivery } from "@/content/notices";
 import type { City } from "@/content/schema";
-import { Band, BandTitle, Breadcrumbs, CtaBand, Faqs } from "./parts";
+import { cn } from "@/lib/utils";
+import { Breadcrumbs, Faqs, h1, h2, LinkRows, page, Section } from "./parts";
 
 /** /wordpress-development/cities/: every city, in build priority order. */
 export function CityHubTemplate({ node }: { node: FlatNode }) {
   return (
-    <article>
-      <div className="mx-auto w-full max-w-[1200px] px-6 pt-8 pb-12 md:pb-16">
-        <Breadcrumbs items={nodeCrumbs(node.path)} />
-        <h1 className="mt-8 max-w-[20ch] text-[clamp(2rem,4.2vw,3.25rem)]">WordPress development by city</h1>
-        <p className="mt-6 max-w-[56ch] text-lg text-muted">
-          We work remotely across India. Pick a city to see how delivery works from your side.
-        </p>
+    <article className={cn(page, "max-w-4xl py-8 md:py-12")}>
+      <Breadcrumbs items={nodeCrumbs(node.path)} />
+      <h1 className={cn(h1, "mt-6")}>WordPress development by city</h1>
+      <p className="mt-5 max-w-[68ch] text-lg text-muted">
+        {citiesLead}
+      </p>
+      <div className="mt-8">
+        <LinkRows items={cities.map((c) => ({ href: routes.city(c.slug), title: `WordPress development in ${c.city}`, summary: c.seo.description }))} />
       </div>
-
-      <Band labelledBy="cities">
-        <BandTitle id="cities">Cities</BandTitle>
-        <ul className="mt-6 grid gap-px sm:grid-cols-2 lg:grid-cols-4 sm:gap-x-10">
-          {cities.map((c) => (
-            <li key={c.slug} className="border-t border-line">
-              <Link
-                href={routes.city(c.slug)}
-                className="flex min-h-11 items-center py-3 font-medium transition-colors duration-200 hover:text-accent-text"
-              >
-                {c.city}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </Band>
-
-      <CtaBand intent={primaryCtaFor(node.intent)} location="city-hub" title="Tell us what you want built." />
+      <div className="mt-10 flex flex-wrap gap-3">
+        <QuoteLink location="city-hub" className="btn-primary" />
+        <ChatButton location="city-hub" className="btn-secondary" />
+      </div>
     </article>
   );
 }
 
-/** /wordpress-development/cities/<slug>/. Service JSON-LD with areaServed; no LocalBusiness: there is no local office. */
+/**
+ * /wordpress-development/cities/<slug>/. Layout family: local prose column with a service panel and a remote
+ * delivery strip. Service JSON-LD with areaServed; no LocalBusiness, because there is no office in the city.
+ */
 export function CityTemplate({ city: c, node }: { city: City; node: FlatNode }) {
   const highlighted = c.servicesHighlighted.map((id) => getService(id)!);
   const dev = getService("website-design")!;
   const path = routes.city(c.slug);
+  const loc = `city:${c.slug}`;
 
   return (
-    <article>
+    <article className={cn(page, "max-w-4xl py-8 md:py-12")}>
       <JsonLd
         data={[
           serviceLd(dev, {
@@ -57,64 +50,56 @@ export function CityTemplate({ city: c, node }: { city: City; node: FlatNode }) 
           faqLd(c.faqs),
         ]}
       />
+      <Breadcrumbs items={nodeCrumbs(node.path)} />
 
-      <div className="mx-auto w-full max-w-[1200px] px-6 pt-8 pb-12 md:pb-16">
-        <Breadcrumbs items={nodeCrumbs(node.path)} />
-        <h1 className="mt-8 max-w-[20ch] text-[clamp(2rem,4.2vw,3.25rem)]">WordPress development in {c.city}</h1>
-        <div className="mt-6 max-w-[62ch] space-y-5 text-muted">
-          {c.localContext.map((p) => (
-            <p key={p.slice(0, 32)}>{p}</p>
-          ))}
+      <header className="mt-6">
+        <h1 className={h1}>WordPress development in {c.city}</h1>
+        <div className="mt-7 flex flex-wrap gap-3">
+          <QuoteLink location={`${loc}:hero`} service={highlighted[0]?.id} className="btn-primary" />
+          <ChatButton location={`${loc}:hero`} service={highlighted[0]?.id} className="btn-secondary" />
         </div>
+      </header>
+
+      <div className="mt-10 space-y-5">
+        {c.localContext.map((p) => (
+          <p key={p.slice(0, 32)} className="max-w-[68ch] text-muted">
+            {p}
+          </p>
+        ))}
       </div>
 
-      <Band labelledBy="services">
-        <BandTitle id="services">What {c.city} clients ask us for</BandTitle>
-        <ul className="mt-8">
-          {highlighted.map((s) => (
-            <li key={s.id} className="border-t border-line">
-              <Link href={s.path} className="group grid gap-2 py-6 md:grid-cols-[22rem_1fr] md:gap-8">
-                <span className="font-bold transition-colors duration-200 group-hover:text-accent-text">{s.title}</span>
-                <span className="max-w-[60ch] text-[0.9375rem] text-muted">{s.summary}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </Band>
+      <Section id="services" title={`What ${c.city} clients ask for`}>
+        <LinkRows items={highlighted.map((s) => ({ href: s.path, title: s.title, summary: s.summary }))} />
+      </Section>
 
-      {/* No office, no local staff, no local clients: say plainly how remote delivery actually runs. */}
-      <Band labelledBy="remote">
-        <BandTitle id="remote">How we work with you from {c.city}</BandTitle>
-        <dl className="mt-8 grid gap-x-16 gap-y-px md:grid-cols-2">
-          <div className="border-t border-line py-5">
-            <dt className="font-bold">Where we work</dt>
-            <dd className="mt-2 max-w-[48ch] text-muted">
-              Remotely. We do not keep an office in {c.city}, and nobody will come to your premises.
-            </dd>
-          </div>
-          <div className="border-t border-line py-5">
-            <dt className="font-bold">Hours and time zone</dt>
-            <dd className="mt-2 max-w-[48ch] text-muted">India Standard Time, the same working day as yours.</dd>
-          </div>
-          <div className="border-t border-line py-5">
-            <dt className="font-bold">Meetings</dt>
-            <dd className="mt-2 max-w-[48ch] text-muted">Scheduled calls and screen shares, with written notes after each.</dd>
-          </div>
-          <div className="border-t border-line py-5">
-            <dt className="font-bold">Handover</dt>
-            <dd className="mt-2 max-w-[48ch] text-muted">You keep hosting, domain and admin. Files, database and build notes at the end.</dd>
-          </div>
+      <Section id="remote" title="How working with us runs">
+        <dl className="grid gap-4 sm:grid-cols-3">
+          {remoteDelivery.map((r) => (
+            <div key={r.label} className="rounded-[20px] border border-line bg-surface p-5">
+              <dt className="font-display text-sm font-bold tracking-wide text-accent-text">{r.label}</dt>
+              <dd className="mt-1.5 text-sm">{r.text}</dd>
+            </div>
+          ))}
         </dl>
-      </Band>
+      </Section>
 
       <Faqs faqs={c.faqs} />
 
-      <CtaBand
-        intent={primaryCtaFor(node.intent)}
-        location={`city:${c.slug}`}
-        service={highlighted[0]?.id}
-        title={`Planning a WordPress project in ${c.city}?`}
-      />
+      <section aria-labelledby="city-closing" className="mt-16 flex flex-col gap-5 border-t border-line pt-8 md:flex-row md:items-center md:justify-between">
+        <h2 id="city-closing" className={cn(h2, "max-w-[24ch]")}>
+          A WordPress team for {c.city}
+        </h2>
+        <div className="flex shrink-0 flex-wrap gap-3">
+          <QuoteLink location={`${loc}:closing`} service={highlighted[0]?.id} className="btn-primary" />
+          <ChatButton location={`${loc}:closing`} service={highlighted[0]?.id} className="btn-secondary" />
+        </div>
+      </section>
+
+      <p className="mt-8 text-sm text-muted">
+        <Link href={routes.cities} className="underline underline-offset-4 hover:no-underline">
+          Other cities we work with
+        </Link>
+      </p>
     </article>
   );
 }

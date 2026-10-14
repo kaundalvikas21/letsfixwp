@@ -1,100 +1,106 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useId, useReducer, useRef, useState, useTransition } from "react";
+import { ArrowLeftIcon, CheckCircleIcon, MagnifyingGlassIcon, WarningCircleIcon } from "@phosphor-icons/react/ssr";
+import { useEffect, useMemo, useReducer, useRef, useState, useTransition } from "react";
+import { ChatButton } from "@/components/Cta";
+import type { ProblemItem } from "@/components/sections/v3/ProblemSearch";
 import { brand } from "@/config/brand";
 import { CTA } from "@/config/cta";
-import { routes } from "@/config/routes";
-import { matchProblem, type MatchCandidate } from "@/lib/match-problem";
+import { accessMethods, budgets, contactMethods, timelines } from "@/content/booking-options";
+import { bookingText, getHandoff } from "@/lib/booking";
+import { matchProblem } from "@/lib/match-problem";
 import { track } from "@/lib/track";
+import { cn } from "@/lib/utils";
 import { submitBooking } from "./actions";
 import {
-  ACCESS_LABEL,
-  accessMethods,
-  BUDGET_LABEL,
-  budgets,
-  CONTACT_LABEL,
-  contactMethods,
-  DRAFT_KEY,
-  HANDOFF_KEY,
-  TIMELINE_LABEL,
-  timelines,
   type Booking,
-  bookingSchema,
+  type BookingField,
+  DRAFT_KEY,
   emptyBooking,
   type RequestType,
   screensFor,
+  validateScreen,
 } from "./booking-schema";
 
 type Option = { id: string; title: string };
+type Errors = Partial<Record<BookingField, string>>;
+type State = { booking: Booking; index: number; errors: Errors; serverError: string; done: { ref: string } | null };
 
-const SUBMIT_LABEL: Record<RequestType, string> = { fix: CTA.BOOK, project: CTA.QUOTE, check: CTA.CHECK };
-
-type State = { values: Booking; screen: number; errors: Record<string, string> };
 type Action =
-  | { t: "set"; field: keyof Booking; value: string }
-  | { t: "restore"; values: Booking }
-  | { t: "errors"; errors: Record<string, string> }
-  | { t: "go"; screen: number };
+  | { t: "set"; patch: Partial<Booking> }
+  | { t: "goto"; index: number }
+  | { t: "errors"; errors: Errors; serverError?: string }
+  | { t: "done"; ref: string }
+  | { t: "restore"; booking: Booking };
 
-// All flow state lives here, so Back is lossless by construction and a reload can be replayed
-// from sessionStorage without the fields ever being the source of truth.
 function reducer(s: State, a: Action): State {
   switch (a.t) {
     case "set":
-      return { ...s, values: { ...s.values, [a.field]: a.value }, errors: { ...s.errors, [a.field]: "" } };
-    case "restore":
-      return { ...s, values: a.values };
+      // Typing in a field clears that field's error: an error should describe the field as it is now.
+      return { ...s, booking: { ...s.booking, ...a.patch }, errors: Object.fromEntries(Object.entries(s.errors).filter(([k]) => !(k in a.patch))) };
+    case "goto":
+      return { ...s, index: a.index, errors: {}, serverError: "" };
     case "errors":
-      return { ...s, errors: a.errors };
-    case "go":
-      return { ...s, screen: a.screen, errors: {} };
+      return { ...s, errors: a.errors, serverError: a.serverError ?? "" };
+    case "done":
+      return { ...s, done: { ref: a.ref } };
+    case "restore":
+      return { ...s, booking: a.booking };
   }
 }
 
-/** Parse the whole booking, then keep only the issues belonging to this screen's fields. */
-function screenErrors(values: Booking, fields: readonly string[]): Record<string, string> {
-  const parsed = bookingSchema.safeParse(values);
-  if (parsed.success) return {};
-  const out: Record<string, string> = {};
-  for (const issue of parsed.error.issues) {
-    const key = String(issue.path[0] ?? "");
-    if (fields.includes(key) && !out[key]) out[key] = issue.message;
-  }
-  return out;
+const label = "block text-sm font-semibold";
+const help = "mt-1 text-sm text-muted";
+const field = "mt-1.5 min-h-11 w-full rounded-[12px] border border-line-strong bg-surface px-4 py-2.5 text-base";
+const errorText = "mt-1.5 flex items-start gap-1.5 text-sm font-semibold";
+const group = "mt-6 first:mt-0";
+
+function FieldError({ id, message }: { id: string; message?: string }) {
+  if (!message) return null;
+  return (
+    <p id={id} className={errorText}>
+      <WarningCircleIcon weight="duotone" className="mt-0.5 size-4 shrink-0" aria-hidden />
+      {message}
+    </p>
+  );
 }
 
-const field = "min-h-11 w-full border border-muted bg-surface px-3 py-2 text-base text-text transition-colors duration-200 placeholder:text-muted focus-visible:border-text aria-invalid:border-accent-text";
-
-function Field({
-  id,
-  label,
-  help,
-  error,
-  children,
+/** Radio list where each option can carry a line of help. Native radios: arrow keys and labels for free. */
+function RadioList<T extends string>({
+  name,
+  value,
+  onChange,
+  options,
 }: {
-  id: string;
-  label: string;
-  help?: string;
-  error?: string;
-  children: React.ReactNode;
+  name: string;
+  value: string;
+  onChange: (v: T) => void;
+  options: readonly { value: T; label: string; help?: string }[];
 }) {
   return (
-    <div className="mt-6">
-      <label htmlFor={id} className="block font-medium">
-        {label}
-      </label>
-      {help && (
-        <p id={`${id}-help`} className="mt-1 text-sm text-muted">
-          {help}
-        </p>
-      )}
-      <div className="mt-2">{children}</div>
-      {error && (
-        <p id={`${id}-error`} className="mt-2 font-mono text-sm text-accent-text">
-          {error}
-        </p>
-      )}
+    <div className="mt-2 grid gap-2">
+      {options.map((o) => (
+        <label
+          key={o.value}
+          className={cn(
+            "flex min-h-11 cursor-pointer gap-3 rounded-[12px] border p-3.5",
+            value === o.value ? "border-accent bg-accent-tint" : "border-line-strong bg-surface",
+          )}
+        >
+          <input
+            type="radio"
+            name={name}
+            value={o.value}
+            checked={value === o.value}
+            onChange={() => onChange(o.value)}
+            className="mt-1 size-4 shrink-0 accent-accent"
+          />
+          <span>
+            <span className="block text-sm font-semibold">{o.label}</span>
+            {o.help && <span className="mt-0.5 block text-sm text-muted">{o.help}</span>}
+          </span>
+        </label>
+      ))}
     </div>
   );
 }
@@ -102,460 +108,542 @@ function Field({
 export function BookingFlow({
   type,
   options,
-  index,
+  problems,
   initial,
 }: {
   type: RequestType;
   options: Option[];
-  index: MatchCandidate[];
+  problems: ProblemItem[];
   initial: { service: string; guide: string; url: string };
 }) {
-  const router = useRouter();
-  const screens = screensFor(type);
-  const uid = useId();
-  const [state, dispatch] = useReducer(reducer, undefined, (): State => ({
-    values: emptyBooking(type, initial),
-    screen: 0,
-    errors: {},
+  // Memoised: a fresh array each render made the focus effect below re-run on every keystroke, which pulled
+  // focus out of the field you were typing in and back to the heading after one character.
+  const screens = useMemo(() => screensFor(type), [type]);
+  const [state, dispatch] = useReducer(reducer, undefined, () => ({
+    booking: emptyBooking(type, { service: initial.service, guide: initial.guide, siteUrl: initial.url }),
+    index: 0,
+    errors: {} as Errors,
+    serverError: "",
+    done: null,
   }));
-  const [query, setQuery] = useState("");
-  const [serverError, setServerError] = useState("");
   const [pending, startTransition] = useTransition();
-  const submitted = useRef(false);
+  const sending = useRef(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const mounted = useRef(false);
-
-  const current = screens[state.screen];
-  const isLast = state.screen === screens.length - 1;
-  const v = state.values;
+  const firstRender = useRef(true);
+  const { booking: b, index, errors, serverError, done } = state;
+  const screen = screens[index];
+  const isLast = index === screens.length - 1;
   const titleOf = (id: string) => options.find((o) => o.id === id)?.title ?? "";
 
-  // Restore an in-progress booking after a reload. Done in an effect so the server and the first
-  // client render agree, then the draft replaces them.
+  // Restore a draft (Back, reload, or a tab that got bumped). Anything in the URL still wins.
   useEffect(() => {
     try {
-      const raw = sessionStorage.getItem(DRAFT_KEY);
+      const raw = sessionStorage.getItem(`${DRAFT_KEY}:${type}`);
       if (!raw) return;
-      const draft = JSON.parse(raw) as Partial<Booking>;
-      if (draft.type === type) dispatch({ t: "restore", values: { ...emptyBooking(type, initial), ...draft } });
+      const saved = JSON.parse(raw) as Booking;
+      dispatch({ t: "restore", booking: { ...saved, type, ...(initial.service ? { service: initial.service, guide: initial.guide } : {}), ...(initial.url ? { siteUrl: initial.url } : {}) } });
     } catch {
-      // Storage blocked or corrupt: carry on with a fresh form.
+      // Storage blocked or corrupt: start from an empty form rather than failing.
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [type, initial.service, initial.guide, initial.url]);
 
   useEffect(() => {
     try {
-      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(v));
+      sessionStorage.setItem(`${DRAFT_KEY}:${type}`, JSON.stringify(b));
     } catch {
-      // Storage blocked: the reducer still holds everything for this visit.
+      // Storage blocked: the draft is not kept, the form still works.
     }
-  }, [v]);
+  }, [b, type]);
+
+  // Move focus to the new screen's heading so a screen reader and the keyboard both land in the right place.
+  useEffect(() => {
+    track("booking_step", { step: `${type}:${screens[index].id}` });
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    headingRef.current?.focus();
+  }, [index, type, screens]);
 
   useEffect(() => {
-    track("booking_step", { step: `${type}:${current.id}` });
-    // Not on first paint: moving focus on load would steal it from the page.
-    if (mounted.current) headingRef.current?.focus();
-    mounted.current = true;
-  }, [type, current.id]);
-
-  const go = (n: number) => dispatch({ t: "go", screen: n });
+    if (done) headingRef.current?.focus();
+  }, [done]);
 
   const next = () => {
-    const errs = screenErrors(v, current.fields);
-    if (Object.keys(errs).length) return dispatch({ t: "errors", errors: errs });
-    go(state.screen + 1);
+    const found = validateScreen(b, screen.fields);
+    if (Object.keys(found).length) return dispatch({ t: "errors", errors: found });
+    dispatch({ t: "goto", index: index + 1 });
   };
 
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (pending || submitted.current) return; // double-submit guard
-    const errs = screenErrors(v, Object.keys(v));
-    if (Object.keys(errs).length) {
-      setServerError("Some details are missing. Go back and check the highlighted fields.");
-      return dispatch({ t: "errors", errors: errs });
-    }
-    submitted.current = true;
-    setServerError("");
+  const submit = () => {
+    if (sending.current || pending) return; // double-submit guard: a second click is ignored, not queued
+    sending.current = true;
     startTransition(async () => {
-      const res = await submitBooking(v, titleOf(v.service));
+      const res = await submitBooking(b);
+      sending.current = false;
       if (!res.ok) {
-        submitted.current = false;
-        dispatch({ t: "errors", errors: res.fieldErrors });
-        return setServerError(res.error);
+        // Send them back to the first screen that actually has a problem, then show the errors there.
+        const firstScreen = screens.findIndex((sc) => sc.fields.some((f) => f in res.fieldErrors));
+        if (firstScreen >= 0) dispatch({ t: "goto", index: firstScreen });
+        dispatch({ t: "errors", errors: res.fieldErrors, serverError: res.error });
+        return;
       }
       track("booking_complete", {});
       try {
-        sessionStorage.setItem(HANDOFF_KEY, JSON.stringify(res.handoff));
-        sessionStorage.removeItem(DRAFT_KEY);
+        sessionStorage.removeItem(`${DRAFT_KEY}:${type}`);
       } catch {
-        // Storage blocked: /contact/thanks/ falls back to the plain email address.
+        // Nothing to clean up if storage is blocked.
       }
-      router.push(routes.contactThanks);
+      dispatch({ t: "done", ref: res.ref });
     });
   };
 
-  // Ranked matches for the searchable problem select. Empty query shows everything.
-  const ids = new Set(options.map((o) => o.id));
-  const ranked = query.trim().length > 2 ? matchProblem(query, index, 20).map((r) => r.serviceSlug) : [];
-  const matches = query.trim()
-    ? [
-        ...ranked.filter((id) => ids.has(id)),
-        ...options.filter((o) => o.title.toLowerCase().includes(query.trim().toLowerCase())).map((o) => o.id),
-      ].filter((id, i, a) => a.indexOf(id) === i)
-    : options.map((o) => o.id);
+  if (done) return <Success booking={b} serviceTitle={titleOf(b.service)} reference={done.ref} type={type} headingRef={headingRef} />;
+
+  const errorCount = Object.keys(errors).length;
 
   return (
-    <form onSubmit={onSubmit} noValidate aria-labelledby={`${uid}-heading`}>
-      {/* Progress by name. Never "Step 1 of 4" (contract rule 6). */}
-      <ol className="flex flex-wrap gap-x-6 gap-y-1 font-mono text-xs text-muted">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (isLast) submit();
+        else next();
+      }}
+      noValidate
+      aria-labelledby="booking-heading"
+    >
+      <h2 id="booking-heading" ref={headingRef} tabIndex={-1} className="font-display text-xl font-bold outline-none">
+        {screen.label}
+      </h2>
+
+      {/* Progress by name, never a numbered counter: the names say what is being asked. */}
+      <ol className="mt-3 flex gap-1.5" aria-label="Where you are">
         {screens.map((s, i) => (
-          <li
-            key={s.id}
-            aria-current={i === state.screen ? "step" : undefined}
-            className={i === state.screen ? "text-accent-text" : i < state.screen ? "text-text" : ""}
-          >
-            {s.label}
+          <li key={s.id} className="flex-1" aria-current={i === index ? "step" : undefined}>
+            <span className={cn("block h-1 rounded-full", i <= index ? "bg-accent" : "bg-surface-2")} />
+            <span className={cn("mt-1.5 block text-xs", i === index ? "font-semibold text-text" : "text-muted")}>{s.label}</span>
           </li>
         ))}
       </ol>
 
-      <h2 id={`${uid}-heading`} ref={headingRef} tabIndex={-1} className="mt-4 text-2xl outline-none">
-        {current.label}
-      </h2>
-
-      {current.id === "problem" && (
-        <fieldset>
-          <legend className="sr-only">What do you need?</legend>
-          {initial.service && v.service === initial.service ? (
-            <p className="mt-6 border border-line bg-surface p-4">
-              <span className="font-medium">{titleOf(initial.service)}</span>
-              <button
-                type="button"
-                onClick={() => dispatch({ t: "set", field: "service", value: "" })}
-                className="ml-3 min-h-11 border-b border-muted text-sm text-muted hover:text-text"
-              >
-                Change
-              </button>
-            </p>
-          ) : (
-            <>
-              <Field id={`${uid}-q`} label="What is happening?" help="Type a few words, or pick from the list below.">
-                <input
-                  id={`${uid}-q`}
-                  type="search"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="white screen, checkout, redirect"
-                  autoComplete="off"
-                  aria-describedby={`${uid}-q-help`}
-                  className={field}
-                />
-              </Field>
-              <p aria-live="polite" className="mt-2 font-mono text-xs text-muted">
-                {query.trim() ? `${matches.length} ${matches.length === 1 ? "match" : "matches"}` : ""}
-              </p>
-              <ul className="mt-2 max-h-72 overflow-y-auto border-t border-line">
-                {matches.map((id) => (
-                  <li key={id} className="border-b border-line">
-                    <button
-                      type="button"
-                      onClick={() => dispatch({ t: "set", field: "service", value: id })}
-                      aria-pressed={v.service === id}
-                      className={`flex min-h-11 w-full items-center px-1 py-2 text-left text-[0.9375rem] transition-colors duration-200 hover:text-accent-text ${v.service === id ? "font-medium text-accent-text" : ""}`}
-                    >
-                      {titleOf(id)}
-                    </button>
-                  </li>
-                ))}
-                {matches.length === 0 && (
-                  <li className="px-1 py-4 text-[0.9375rem] text-muted">
-                    Nothing matches that wording. Describe it below and an engineer will read it.
-                  </li>
-                )}
-                <li className="border-b border-line">
-                  <button
-                    type="button"
-                    onClick={() => dispatch({ t: "set", field: "service", value: "" })}
-                    aria-pressed={!v.service}
-                    className={`flex min-h-11 w-full items-center px-1 py-2 text-left text-[0.9375rem] transition-colors duration-200 hover:text-accent-text ${!v.service ? "font-medium text-accent-text" : ""}`}
-                  >
-                    Something else
-                  </button>
-                </li>
-              </ul>
-            </>
-          )}
-
-          <Field
-            id={`${uid}-description`}
-            label={v.service ? "Anything else we should know? (optional)" : "Tell us what you see"}
-            help={v.service ? "The exact error text helps most." : "A sentence or two. Paste the exact error if you have it."}
-            error={state.errors.description}
-          >
-            <textarea
-              id={`${uid}-description`}
-              rows={4}
-              value={v.description}
-              onChange={(e) => dispatch({ t: "set", field: "description", value: e.target.value })}
-              aria-invalid={state.errors.description ? true : undefined}
-              aria-describedby={state.errors.description ? `${uid}-description-error` : `${uid}-description-help`}
-              className={field}
-            />
-          </Field>
-
-          {type === "project" && (
-            <div className="grid gap-x-6 sm:grid-cols-2">
-              <Field id={`${uid}-budget`} label="Budget range" help="In rupees. A range is fine." error={state.errors.budget}>
-                <select
-                  id={`${uid}-budget`}
-                  value={v.budget}
-                  onChange={(e) => dispatch({ t: "set", field: "budget", value: e.target.value })}
-                  aria-invalid={state.errors.budget ? true : undefined}
-                  aria-describedby={state.errors.budget ? `${uid}-budget-error` : `${uid}-budget-help`}
-                  className={field}
-                >
-                  <option value="">Choose a range</option>
-                  {budgets.map((b) => (
-                    <option key={b} value={b}>
-                      {BUDGET_LABEL[b]}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field id={`${uid}-timeline`} label="Timeline" help="When you want to start." error={state.errors.timeline}>
-                <select
-                  id={`${uid}-timeline`}
-                  value={v.timeline}
-                  onChange={(e) => dispatch({ t: "set", field: "timeline", value: e.target.value })}
-                  aria-invalid={state.errors.timeline ? true : undefined}
-                  aria-describedby={state.errors.timeline ? `${uid}-timeline-error` : `${uid}-timeline-help`}
-                  className={field}
-                >
-                  <option value="">Choose a timeline</option>
-                  {timelines.map((t) => (
-                    <option key={t} value={t}>
-                      {TIMELINE_LABEL[t]}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-            </div>
-          )}
-        </fieldset>
-      )}
-
-      {current.id === "site" && (
-        <fieldset>
-          <legend className="sr-only">Which site?</legend>
-          <Field
-            id={`${uid}-siteUrl`}
-            label="Site address"
-            help="With or without https."
-            error={state.errors.siteUrl}
-          >
-            <input
-              id={`${uid}-siteUrl`}
-              type="url"
-              inputMode="url"
-              autoComplete="url"
-              placeholder="example.com"
-              value={v.siteUrl}
-              onChange={(e) => dispatch({ t: "set", field: "siteUrl", value: e.target.value })}
-              aria-invalid={state.errors.siteUrl ? true : undefined}
-              aria-describedby={state.errors.siteUrl ? `${uid}-siteUrl-error` : `${uid}-siteUrl-help`}
-              className={field}
-            />
-          </Field>
-
-          <Field id={`${uid}-host`} label="Host (optional)" help="Who the site is hosted with, if you know.">
-            <input
-              id={`${uid}-host`}
-              value={v.host}
-              onChange={(e) => dispatch({ t: "set", field: "host", value: e.target.value })}
-              aria-describedby={`${uid}-host-help`}
-              className={field}
-            />
-          </Field>
-
-          <fieldset className="mt-8">
-            <legend className="font-medium">How will we get access?</legend>
-            <p className="mt-1 text-sm text-muted">
-              Never send passwords in this form, or by email. We will not ask for them here.
-            </p>
-            <div className="mt-3">
-              {accessMethods.map((a) => (
-                <label key={a} className="flex min-h-11 cursor-pointer items-center gap-3 border-t border-line py-2">
-                  <input
-                    type="radio"
-                    name="access"
-                    value={a}
-                    checked={v.access === a}
-                    onChange={() => dispatch({ t: "set", field: "access", value: a })}
-                    className="size-4 accent-[var(--accent)]"
-                  />
-                  <span className="text-[0.9375rem]">{ACCESS_LABEL[a]}</span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
-        </fieldset>
-      )}
-
-      {current.id === "contact" && (
-        <fieldset>
-          <legend className="sr-only">How do we reach you?</legend>
-          <div className="grid gap-x-6 sm:grid-cols-2">
-            <Field id={`${uid}-name`} label="Name" help="What we should call you." error={state.errors.name}>
-              <input
-                id={`${uid}-name`}
-                autoComplete="name"
-                value={v.name}
-                onChange={(e) => dispatch({ t: "set", field: "name", value: e.target.value })}
-                aria-invalid={state.errors.name ? true : undefined}
-                aria-describedby={state.errors.name ? `${uid}-name-error` : `${uid}-name-help`}
-                className={field}
-              />
-            </Field>
-            <Field id={`${uid}-email`} label="Email" help="Where the confirmation goes." error={state.errors.email}>
-              <input
-                id={`${uid}-email`}
-                type="email"
-                autoComplete="email"
-                value={v.email}
-                onChange={(e) => dispatch({ t: "set", field: "email", value: e.target.value })}
-                aria-invalid={state.errors.email ? true : undefined}
-                aria-describedby={state.errors.email ? `${uid}-email-error` : `${uid}-email-help`}
-                className={field}
-              />
-            </Field>
-            <Field id={`${uid}-phone`} label="Phone (optional)" help="Only used if you pick phone below." error={state.errors.phone}>
-              <input
-                id={`${uid}-phone`}
-                type="tel"
-                autoComplete="tel"
-                value={v.phone}
-                onChange={(e) => dispatch({ t: "set", field: "phone", value: e.target.value })}
-                aria-invalid={state.errors.phone ? true : undefined}
-                aria-describedby={state.errors.phone ? `${uid}-phone-error` : `${uid}-phone-help`}
-                className={field}
-              />
-            </Field>
-          </div>
-
-          <fieldset className="mt-8">
-            <legend className="font-medium">Preferred contact method</legend>
-            <div className="mt-3 max-w-[20rem]">
-              {contactMethods.map((m) => (
-                <label key={m} className="flex min-h-11 cursor-pointer items-center gap-3 border-t border-line py-2">
-                  <input
-                    type="radio"
-                    name="contactMethod"
-                    value={m}
-                    checked={v.contactMethod === m}
-                    onChange={() => dispatch({ t: "set", field: "contactMethod", value: m })}
-                    className="size-4 accent-[var(--accent)]"
-                  />
-                  <span className="text-[0.9375rem]">{CONTACT_LABEL[m]}</span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
-        </fieldset>
-      )}
-
-      {current.id === "confirm" && (
-        <div>
-          <dl className="mt-6">
-            {type !== "check" && (
-              <div className="grid gap-1 border-t border-line py-3 sm:grid-cols-[12rem_1fr]">
-                <dt className="text-muted">Service</dt>
-                <dd>{titleOf(v.service) || "Something else"}</dd>
-              </div>
-            )}
-            {v.description && (
-              <div className="grid gap-1 border-t border-line py-3 sm:grid-cols-[12rem_1fr]">
-                <dt className="text-muted">Details</dt>
-                <dd className="whitespace-pre-wrap">{v.description}</dd>
-              </div>
-            )}
-            {type === "project" && (
-              <>
-                <div className="grid gap-1 border-t border-line py-3 sm:grid-cols-[12rem_1fr]">
-                  <dt className="text-muted">Budget</dt>
-                  <dd>{BUDGET_LABEL[v.budget as (typeof budgets)[number]] ?? v.budget}</dd>
-                </div>
-                <div className="grid gap-1 border-t border-line py-3 sm:grid-cols-[12rem_1fr]">
-                  <dt className="text-muted">Timeline</dt>
-                  <dd>{TIMELINE_LABEL[v.timeline as (typeof timelines)[number]] ?? v.timeline}</dd>
-                </div>
-              </>
-            )}
-            <div className="grid gap-1 border-t border-line py-3 sm:grid-cols-[12rem_1fr]">
-              <dt className="text-muted">Site</dt>
-              <dd className="font-mono break-all">{v.siteUrl}</dd>
-            </div>
-            {v.host && (
-              <div className="grid gap-1 border-t border-line py-3 sm:grid-cols-[12rem_1fr]">
-                <dt className="text-muted">Host</dt>
-                <dd>{v.host}</dd>
-              </div>
-            )}
-            <div className="grid gap-1 border-t border-line py-3 sm:grid-cols-[12rem_1fr]">
-              <dt className="text-muted">Access</dt>
-              <dd>{ACCESS_LABEL[v.access]}</dd>
-            </div>
-            <div className="grid gap-1 border-t border-line py-3 sm:grid-cols-[12rem_1fr]">
-              <dt className="text-muted">Contact</dt>
-              <dd>
-                {v.name}, {v.email}
-                {v.phone ? `, ${v.phone}` : ""} ({CONTACT_LABEL[v.contactMethod]})
-              </dd>
-            </div>
-            <div className="grid gap-1 border-t border-line py-3 sm:grid-cols-[12rem_1fr]">
-              <dt className="text-muted">Price</dt>
-              <dd>{brand.promises.pricing ?? "Quote before work begins"}</dd>
-            </div>
-            {brand.promises.guaranteeDays !== null && (
-              <div className="grid gap-1 border-t border-line py-3 sm:grid-cols-[12rem_1fr]">
-                <dt className="text-muted">Guarantee</dt>
-                <dd>Every fix carries a {brand.promises.guaranteeDays} day guarantee.</dd>
-              </div>
-            )}
-          </dl>
-          <p className="mt-6 max-w-[60ch] text-sm text-muted">
-            Nothing is charged now. {brand.quoteFlow}
-          </p>
-        </div>
-      )}
-
-      <p aria-live="assertive" className="mt-6">
-        {serverError && (
-          <span className="block border border-accent-text p-4 font-mono text-sm text-accent-text">{serverError}</span>
-        )}
+      <p aria-live="polite" className="sr-only">
+        {errorCount ? `${errorCount} ${errorCount === 1 ? "detail needs" : "details need"} attention on this screen.` : ""}
       </p>
 
-      {/*
-        The keys matter. Without them React reconciles Continue and the submit button into the SAME
-        <button> node and flips type="button" to type="submit" while the click is still dispatching,
-        so the browser submits the form a screen early. Distinct keys force a fresh node.
-      */}
-      <div className="mt-8 flex flex-wrap gap-2">
-        {state.screen > 0 && (
-          <button key="back" type="button" onClick={() => go(state.screen - 1)} className="btn-secondary">
+      <div className="mt-7">
+        {screen.id === "problem" && <ProblemScreen b={b} errors={errors} problems={problems} dispatch={dispatch} />}
+        {screen.id === "project" && <ProjectScreen b={b} errors={errors} options={options} dispatch={dispatch} />}
+        {screen.id === "site" && <SiteScreen b={b} errors={errors} type={type} dispatch={dispatch} />}
+        {screen.id === "contact" && <ContactScreen b={b} errors={errors} dispatch={dispatch} />}
+        {screen.id === "confirm" && <ConfirmScreen b={b} serviceTitle={titleOf(b.service)} type={type} />}
+      </div>
+
+      {serverError && (
+        <p role="alert" className="mt-6 flex gap-2.5 rounded-[12px] border border-line-strong bg-surface-2 p-4 text-sm font-semibold">
+          <WarningCircleIcon weight="duotone" className="mt-0.5 size-5 shrink-0" aria-hidden />
+          {serverError}
+        </p>
+      )}
+
+      <div className="mt-8 flex flex-wrap items-center gap-3">
+        {index > 0 && (
+          <button type="button" onClick={() => dispatch({ t: "goto", index: index - 1 })} className="btn-secondary">
+            <ArrowLeftIcon weight="duotone" className="size-4" aria-hidden />
             Back
           </button>
         )}
-        {isLast ? (
-          <button key="submit" type="submit" disabled={pending} className="btn-primary disabled:opacity-60">
-            {pending ? "Sending" : SUBMIT_LABEL[type]}
-          </button>
-        ) : (
-          <button key="next" type="button" onClick={next} className="btn-primary">
-            Continue
-          </button>
-        )}
+        <button type="submit" disabled={pending} className="btn-primary disabled:opacity-70">
+          {isLast ? (pending ? "Sending" : CTA[type === "project" ? "QUOTE" : type === "check" ? "CHECK" : "BOOK"]) : "Continue"}
+        </button>
       </div>
     </form>
+  );
+}
+
+type ScreenProps = { b: Booking; errors: Errors; dispatch: React.Dispatch<Action> };
+
+function ProblemScreen({ b, errors, problems, dispatch }: ScreenProps & { problems: ProblemItem[] }) {
+  const [query, setQuery] = useState("");
+  const chosen = problems.find((p) => p.serviceSlug === b.service && (p.guideSlug ?? "") === b.guide);
+  const key = (p: { serviceSlug: string; guideSlug?: string }) => `${p.serviceSlug}:${p.guideSlug ?? ""}`;
+  const byKey = new Map(problems.map((p) => [key(p), p]));
+  const shown = query.trim() ? matchProblem(query, problems, 8).map((r) => byKey.get(key(r))!) : problems.slice(0, 8);
+  const somethingElse = !b.service;
+
+  return (
+    <fieldset>
+      <legend className={label}>What is your site doing?</legend>
+      <p className={help}>Pick the closest match. The engineer confirms it before any work starts.</p>
+
+      <div className="mt-3 flex items-center gap-3 rounded-[12px] border border-line-strong bg-surface px-4 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent">
+        <MagnifyingGlassIcon weight="duotone" className="size-5 shrink-0 text-muted" aria-hidden />
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="blank page, hacked, checkout"
+          aria-label="Filter problems"
+          autoComplete="off"
+          className="h-11 w-full bg-transparent text-base outline-none placeholder:text-muted"
+        />
+      </div>
+
+      {chosen && !query && (
+        <p className="mt-3 flex items-center justify-between gap-3 rounded-[12px] border border-accent bg-accent-tint p-3.5 text-sm">
+          <span className="font-semibold">{chosen.title}</span>
+          <button type="button" onClick={() => dispatch({ t: "set", patch: { service: "", guide: "" } })} className="shrink-0 min-h-11 font-semibold underline underline-offset-4">
+            Change
+          </button>
+        </p>
+      )}
+
+      {(!chosen || query) &&
+        (shown.length ? (
+          <div className="mt-2 grid gap-2">
+            {shown.map((p) => (
+              <label
+                key={key(p)}
+                className={cn(
+                  "flex min-h-11 cursor-pointer items-center gap-3 rounded-[12px] border p-3.5 text-sm",
+                  key(p) === `${b.service}:${b.guide}` ? "border-accent bg-accent-tint" : "border-line-strong bg-surface",
+                )}
+              >
+                <input
+                  type="radio"
+                  name="problem"
+                  checked={key(p) === `${b.service}:${b.guide}`}
+                  onChange={() => dispatch({ t: "set", patch: { service: p.serviceSlug, guide: p.guideSlug ?? "" } })}
+                  className="size-4 shrink-0 accent-accent"
+                />
+                <span className="font-medium">{p.title}</span>
+              </label>
+            ))}
+          </div>
+        ) : (
+          /* Designed empty state: a filter that matches nothing still has a way forward. */
+          <div className="mt-3 rounded-[12px] border border-dashed border-line-strong p-5 text-center">
+            <p className="font-semibold">No problem matches &ldquo;{query.trim()}&rdquo;</p>
+            <p className="mt-1 text-sm text-muted">Describe it in your own words instead. An engineer reads every ticket.</p>
+          </div>
+        ))}
+
+      <div className="mt-4 border-t border-line pt-4">
+        <label htmlFor="description" className={label}>
+          {somethingElse ? "Describe the problem" : "Anything else we should know? (optional)"}
+        </label>
+        <p className={help}>What you saw, when it started, and anything you already tried.</p>
+        <textarea
+          id="description"
+          rows={4}
+          value={b.description}
+          onChange={(e) => dispatch({ t: "set", patch: { description: e.target.value } })}
+          aria-invalid={!!errors.description}
+          aria-describedby={errors.description ? "description-error" : undefined}
+          className={field}
+        />
+        <FieldError id="description-error" message={errors.description} />
+      </div>
+    </fieldset>
+  );
+}
+
+function ProjectScreen({ b, errors, options, dispatch }: ScreenProps & { options: Option[] }) {
+  return (
+    <fieldset>
+      <legend className="sr-only">About the project</legend>
+
+      <div className={group}>
+        <label htmlFor="service" className={label}>
+          What do you need? (optional)
+        </label>
+        <p className={help}>Pick the closest, or leave it and describe the work below.</p>
+        <select id="service" value={b.service} onChange={(e) => dispatch({ t: "set", patch: { service: e.target.value } })} className={field}>
+          <option value="">Not sure yet</option>
+          {options.map((o) => (
+            <option key={o.id} value={o.id}>
+              {o.title}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className={group}>
+        <label htmlFor="description" className={label}>
+          What are you building?
+        </label>
+        <p className={help}>What the site has to do, and anything it has to connect to.</p>
+        <textarea
+          id="description"
+          rows={5}
+          value={b.description}
+          onChange={(e) => dispatch({ t: "set", patch: { description: e.target.value } })}
+          aria-invalid={!!errors.description}
+          aria-describedby={errors.description ? "description-error" : undefined}
+          className={field}
+        />
+        <FieldError id="description-error" message={errors.description} />
+      </div>
+
+      <div className={group} role="group" aria-labelledby="budget-label" aria-describedby={errors.budget ? "budget-error" : undefined}>
+        <span id="budget-label" className={label}>
+          Budget range
+        </span>
+        <p className={help}>A range is enough. It tells us what is worth proposing.</p>
+        <RadioList name="budget" value={b.budget} onChange={(v) => dispatch({ t: "set", patch: { budget: v } })} options={budgets} />
+        <FieldError id="budget-error" message={errors.budget} />
+      </div>
+
+      <div className={group} role="group" aria-labelledby="timeline-label" aria-describedby={errors.timeline ? "timeline-error" : undefined}>
+        <span id="timeline-label" className={label}>
+          Timeline
+        </span>
+        <RadioList name="timeline" value={b.timeline} onChange={(v) => dispatch({ t: "set", patch: { timeline: v } })} options={timelines} />
+        <FieldError id="timeline-error" message={errors.timeline} />
+      </div>
+    </fieldset>
+  );
+}
+
+function SiteScreen({ b, errors, type, dispatch }: ScreenProps & { type: RequestType }) {
+  return (
+    <fieldset>
+      <legend className="sr-only">Your site</legend>
+
+      <div className={group}>
+        <label htmlFor="siteUrl" className={label}>
+          Site address
+        </label>
+        <p className={help}>The address visitors use, even if it is down right now.</p>
+        <input
+          id="siteUrl"
+          type="text"
+          inputMode="url"
+          autoComplete="url"
+          placeholder="example.com"
+          value={b.siteUrl}
+          onChange={(e) => dispatch({ t: "set", patch: { siteUrl: e.target.value } })}
+          aria-invalid={!!errors.siteUrl}
+          aria-describedby={errors.siteUrl ? "siteUrl-error" : undefined}
+          className={field}
+        />
+        <FieldError id="siteUrl-error" message={errors.siteUrl} />
+      </div>
+
+      <div className={group}>
+        <label htmlFor="host" className={label}>
+          Who hosts it? (optional)
+        </label>
+        <p className={help}>Hostinger, GoDaddy, Cloudways, your own server. Skip it if you do not know.</p>
+        <input
+          id="host"
+          type="text"
+          autoComplete="organization"
+          value={b.host}
+          onChange={(e) => dispatch({ t: "set", patch: { host: e.target.value } })}
+          className={field}
+        />
+      </div>
+
+      {type === "fix" && (
+        <div className={group} role="group" aria-labelledby="access-label">
+          <span id="access-label" className={label}>
+            How will you share access?
+          </span>
+          <p className={help}>Never type a password into this form. We will not ask for one here.</p>
+          <RadioList name="access" value={b.access} onChange={(v) => dispatch({ t: "set", patch: { access: v } })} options={accessMethods} />
+        </div>
+      )}
+    </fieldset>
+  );
+}
+
+function ContactScreen({ b, errors, dispatch }: ScreenProps) {
+  return (
+    <fieldset>
+      <legend className="sr-only">How we reach you</legend>
+
+      <div className={group}>
+        <label htmlFor="name" className={label}>
+          Name
+        </label>
+        <input
+          id="name"
+          autoComplete="name"
+          value={b.name}
+          onChange={(e) => dispatch({ t: "set", patch: { name: e.target.value } })}
+          aria-invalid={!!errors.name}
+          aria-describedby={errors.name ? "name-error" : undefined}
+          className={field}
+        />
+        <FieldError id="name-error" message={errors.name} />
+      </div>
+
+      <div className={group}>
+        <label htmlFor="email" className={label}>
+          Email
+        </label>
+        <p className={help}>Where the confirmation and the written summary go.</p>
+        <input
+          id="email"
+          type="email"
+          autoComplete="email"
+          value={b.email}
+          onChange={(e) => dispatch({ t: "set", patch: { email: e.target.value } })}
+          aria-invalid={!!errors.email}
+          aria-describedby={errors.email ? "email-error" : undefined}
+          className={field}
+        />
+        <FieldError id="email-error" message={errors.email} />
+      </div>
+
+      <div className={group}>
+        <label htmlFor="phone" className={label}>
+          Phone {b.contactMethod === "phone" ? "" : "(optional)"}
+        </label>
+        <input
+          id="phone"
+          type="tel"
+          autoComplete="tel"
+          value={b.phone}
+          onChange={(e) => dispatch({ t: "set", patch: { phone: e.target.value } })}
+          aria-invalid={!!errors.phone}
+          aria-describedby={errors.phone ? "phone-error" : undefined}
+          className={field}
+        />
+        <FieldError id="phone-error" message={errors.phone} />
+      </div>
+
+      <div className={group} role="group" aria-labelledby="contact-label">
+        <span id="contact-label" className={label}>
+          How should we reply?
+        </span>
+        <RadioList name="contactMethod" value={b.contactMethod} onChange={(v) => dispatch({ t: "set", patch: { contactMethod: v } })} options={contactMethods} />
+      </div>
+    </fieldset>
+  );
+}
+
+const labelFor = <T extends { value: string; label: string }>(list: readonly T[], v: string) => list.find((x) => x.value === v)?.label ?? "";
+
+function ConfirmScreen({ b, serviceTitle, type }: { b: Booking; serviceTitle: string; type: RequestType }) {
+  const rows = [
+    type !== "check" && { k: type === "project" ? "Project" : "Problem", v: serviceTitle || "Described below" },
+    b.description && { k: "Details", v: b.description },
+    b.siteUrl && { k: "Site", v: b.siteUrl },
+    b.host && { k: "Host", v: b.host },
+    type === "fix" && { k: "Access", v: labelFor(accessMethods, b.access) },
+    type === "project" && { k: "Budget", v: labelFor(budgets, b.budget) },
+    type === "project" && { k: "Timeline", v: labelFor(timelines, b.timeline) },
+    { k: "Name", v: b.name },
+    { k: "Email", v: b.email },
+    b.phone && { k: "Phone", v: b.phone },
+    { k: "Reply by", v: labelFor(contactMethods, b.contactMethod) },
+  ].filter((r): r is { k: string; v: string } => !!r);
+
+  return (
+    <div>
+      <dl className="divide-y divide-line border-y border-line text-sm">
+        {rows.map((r) => (
+          <div key={r.k} className="flex gap-4 py-3">
+            <dt className="w-28 shrink-0 text-muted">{r.k}</dt>
+            <dd className="min-w-0 flex-1 font-medium break-words whitespace-pre-line">{r.v}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <div className="mt-5 rounded-[12px] bg-surface-2 p-4 text-sm">
+        <p className="font-semibold">{type === "check" ? "No charge for a site check." : "Quote before work begins."}</p>
+        {type !== "check" && <p className="mt-1 text-muted">An engineer reviews this, then sends a fixed price. Nothing is charged until you approve it.</p>}
+        {brand.guarantee && (
+          <p className="mt-2 text-muted">
+            {brand.guarantee.placeholder && <span className="font-semibold">Placeholder: </span>}
+            {brand.guarantee.summary}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CopyButton({ text, label }: { text: string; label: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      className="btn-primary mt-3 w-full"
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          setCopied(true);
+        } catch {
+          setCopied(false); // Clipboard blocked: the full ticket is printed below, so it can still be selected.
+        }
+      }}
+    >
+      {copied ? "Copied" : label}
+    </button>
+  );
+}
+
+function Success({
+  booking,
+  serviceTitle,
+  reference,
+  type,
+  headingRef,
+}: {
+  booking: Booking;
+  serviceTitle: string;
+  reference: string;
+  type: RequestType;
+  headingRef: React.RefObject<HTMLHeadingElement | null>;
+}) {
+  const handoff = getHandoff(booking, serviceTitle);
+  const nextLines = [
+    `Your ticket reference is ${reference}. Keep it for any reply.`,
+    type === "check"
+      ? `An engineer checks the site and emails the summary to ${booking.email} within ${brand.claims.checkTurnaround}.`
+      : `An engineer reads it and replies to ${booking.email} with a fixed price before any work starts.`,
+    booking.access === "secure-link" && type === "fix"
+      ? "A secure link for hosting or admin access comes with that reply. Nothing sensitive goes through this form."
+      : "If anything is unclear, we ask before touching the site.",
+  ];
+
+  return (
+    <div>
+      <CheckCircleIcon weight="duotone" className="size-10 text-accent-text" aria-hidden />
+      <h2 ref={headingRef} tabIndex={-1} className="mt-4 font-display text-2xl font-bold outline-none">
+        Ticket ready
+      </h2>
+      <ol className="mt-5 space-y-3">
+        {nextLines.map((l) => (
+          <li key={l} className="flex gap-3 text-sm">
+            <span aria-hidden className="mt-2 size-1.5 shrink-0 rounded-full bg-accent" />
+            <span>{l}</span>
+          </li>
+        ))}
+      </ol>
+
+      <div className="mt-7 rounded-[12px] border border-line-strong bg-surface-2 p-4">
+        <p className="text-sm text-muted">{handoff.note}</p>
+        {handoff.kind === "copy" ? (
+          <CopyButton text={handoff.text} label={handoff.label} />
+        ) : (
+          <a href={handoff.href} className="btn-primary mt-3 w-full">
+            {handoff.label}
+          </a>
+        )}
+      </div>
+
+      {/* Email confirmation stub: nothing is sent from the server yet, so the copy is shown rather than claimed. */}
+      <details className="mt-5">
+        <summary className="cursor-pointer text-sm font-semibold">See exactly what gets sent</summary>
+        <pre className="mt-3 overflow-x-auto rounded-[12px] bg-surface-2 p-4 font-mono text-xs whitespace-pre-wrap">{bookingText(booking, serviceTitle)}</pre>
+      </details>
+
+      <p className="mt-6 text-sm text-muted">
+        Rather talk it through? <ChatButton location={`booking:${type}:success`} service={booking.service || undefined} />
+      </p>
+    </div>
   );
 }

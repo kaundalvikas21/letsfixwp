@@ -1,104 +1,104 @@
+import { WarningIcon } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import { BookLink, ChatButton, CheckLink } from "@/components/Cta";
 import { faqLd, guideLd, JsonLd } from "@/components/JsonLd";
 import { routes } from "@/config/routes";
 import { getService, guidesFor } from "@/content";
+import { coreFileWarning } from "@/content/notices";
 import type { Guide } from "@/content/schema";
-import { Band, BandTitle, Breadcrumbs, Caution, Faqs, PlainList, RealScreen } from "./parts";
+import { cn } from "@/lib/utils";
+import { Breadcrumbs, Faqs, h1, LinkRows, page, RealScreen, Section } from "./parts";
 
-/** /guides/<slug>/: one specific error. Info intent, so BOOK (into the parent service) + CHAT, and CHECK. */
+/**
+ * /guides/<slug>/. Layout family: single-column troubleshooting document, measured for reading, with the error
+ * text set in mono exactly as WordPress prints it. Informational intent, so the page answers first and books second.
+ */
 export function GuideTemplate({ guide: g }: { guide: Guide }) {
   const parent = getService(g.parentService)!;
   const loc = `guide:${g.slug}`;
   const siblings = guidesFor(g.parentService).filter((x) => x.slug !== g.slug);
 
   return (
-    <article data-urgency={g.urgency}>
+    <article data-urgency={g.urgency} className={cn(page, "max-w-3xl py-8 md:py-12")}>
       <JsonLd data={[guideLd(g), faqLd(g.faqs)]} />
+      <Breadcrumbs
+        items={[
+          { name: "Home", path: routes.home },
+          { name: "Knowledge Base", path: routes.guides },
+          { name: g.title, path: routes.guide(g.slug) },
+        ]}
+      />
 
-      <div className="mx-auto w-full max-w-[1200px] px-6 pt-8 pb-12 md:pb-16">
-        <Breadcrumbs
-          items={[
-            { name: "Home", path: routes.home },
-            { name: "Knowledge Base", path: routes.guides },
-            { name: g.title, path: routes.guide(g.slug) },
-          ]}
-        />
-
-        <h1 className="mt-8 max-w-[22ch] text-[clamp(1.875rem,3.6vw,3rem)]">{g.h1}</h1>
-
+      <header className="mt-6">
+        <h1 className={h1}>{g.h1}</h1>
         {g.errorText && (
-          <p className="mt-6 max-w-[70ch] border-l-2 border-accent bg-surface p-4 font-mono text-[0.9375rem] break-words">
-            {g.errorText}
+          <p className="mt-6 overflow-x-auto rounded-[12px] border border-line-strong bg-surface-2 px-4 py-3 font-mono text-sm">
+            <code>{g.errorText}</code>
           </p>
         )}
+      </header>
 
-        <p className="mt-8 flex flex-wrap items-center gap-2">
-          <BookLink location={`${loc}:hero`} service={parent.id} guide={g.slug} className="btn-primary" />
-          <ChatButton location={`${loc}:hero`} service={parent.id} className="btn-secondary" />
-        </p>
-
-        <RealScreen slot={g.image.slot} alt={g.image.alt} priority />
+      <div className="mt-8">
+        <RealScreen slot={g.image.slot} alt={g.image.alt} preload />
       </div>
 
-      <Band labelledBy="symptoms">
-        <BandTitle id="symptoms">What you are seeing</BandTitle>
-        <PlainList items={g.symptoms} />
-      </Band>
+      <Section id="symptoms" title="What you are seeing">
+        <ul className="ml-5 list-disc space-y-2 text-muted marker:text-accent-text">
+          {g.symptoms.map((x) => (
+            <li key={x}>{x}</li>
+          ))}
+        </ul>
+      </Section>
 
-      <Band labelledBy="causes">
-        <BandTitle id="causes">What usually causes it</BandTitle>
-        <PlainList items={g.likelyCauses} />
-      </Band>
-
-      <Band labelledBy="safe-checks">
-        <BandTitle id="safe-checks">Safe things to try first</BandTitle>
-        <Caution>
-          Do not edit WordPress core files, and do not paste code from a forum into functions.php to see what happens.
-          A wrong edit on a live site turns one error into two. If a check below does not clear it, stop there.
-        </Caution>
-        <ol className="mt-6 max-w-[70ch]">
-          {g.safeChecks.map((x) => (
-            <li key={x} className="border-t border-line py-3 text-[0.9375rem]">
+      <Section id="causes" title="What usually causes it">
+        {/* Tiles, not a second bullet list: no layout family repeats on a page (contract rule 3). */}
+        <ul className="grid gap-3 sm:grid-cols-2">
+          {g.likelyCauses.map((x) => (
+            <li key={x} className="rounded-[20px] border border-line bg-surface p-4 text-sm text-muted">
               {x}
             </li>
           ))}
-        </ol>
-      </Band>
+        </ul>
+      </Section>
 
-      <Band labelledBy="call-us">
-        <BandTitle id="call-us">When to call us</BandTitle>
-        <p className="mt-6 max-w-[60ch] text-muted">{g.whenToCallUs}</p>
-        <p className="mt-6 text-[0.9375rem]">
+      <Section id="safe-checks" title="Safe things to try first">
+        <ol className="space-y-4">
+          {g.safeChecks.map((x, i) => (
+            <li key={x} className="flex gap-4">
+              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent-tint font-display text-sm font-bold text-accent-text">{i + 1}</span>
+              <span className="pt-0.5">{x}</span>
+            </li>
+          ))}
+        </ol>
+        <p className="mt-6 flex gap-3 rounded-[20px] border border-line-strong bg-surface-2 p-4 text-sm">
+          <WarningIcon weight="duotone" className="mt-0.5 size-5 shrink-0 text-accent-text" aria-hidden />
+          <span>{coreFileWarning}</span>
+        </p>
+      </Section>
+
+      <Section id="call-us" title="When to call us">
+        <p className="max-w-[68ch] text-muted">{g.whenToCallUs}</p>
+        <p className="mt-4">
           How we fix it:{" "}
-          <Link href={parent.path} className="border-b border-muted transition-colors duration-200 hover:text-accent-text">
+          <Link href={parent.path} className="font-semibold text-accent-text underline underline-offset-4 hover:no-underline">
             {parent.title}
           </Link>
         </p>
-        <p className="mt-8 flex flex-wrap items-center gap-2">
+        <div className="mt-6 flex flex-wrap gap-3">
           <BookLink location={`${loc}:call-us`} service={parent.id} guide={g.slug} className="btn-primary" />
-          <CheckLink location={`${loc}:call-us`} service={parent.id} className="btn-secondary" />
+          <ChatButton location={`${loc}:call-us`} service={parent.id} className="btn-secondary" />
+        </div>
+        <p className="mt-4 text-sm text-muted">
+          Nothing down right now? <CheckLink location={`${loc}:call-us`} service={parent.id} />
         </p>
-      </Band>
+      </Section>
 
       <Faqs faqs={g.faqs} />
 
       {siblings.length > 0 && (
-        <Band labelledBy="related-guides">
-          <BandTitle id="related-guides">Other errors on {parent.title.toLowerCase()}</BandTitle>
-          <ul className="mt-6 grid gap-px sm:grid-cols-2 sm:gap-x-10">
-            {siblings.map((x) => (
-              <li key={x.slug} className="border-t border-line">
-                <Link
-                  href={routes.guide(x.slug)}
-                  className="flex min-h-11 items-center py-3 text-[0.9375rem] transition-colors duration-200 hover:text-accent-text"
-                >
-                  {x.title}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </Band>
+        <Section id="related-guides" title={`More ${parent.title.toLowerCase()} errors`}>
+          <LinkRows items={siblings.map((x) => ({ href: routes.guide(x.slug), title: x.title }))} />
+        </Section>
       )}
     </article>
   );

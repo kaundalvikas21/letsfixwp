@@ -4,9 +4,8 @@
 //   npx playwright install chromium   (once)
 //   node scripts/capture-errors.mjs
 //
-// Starts a throwaway WordPress with @wordpress/env (http://localhost:8888), captures the healthy site,
-// then breaks it one way at a time, screenshots the result at 1600x1000 into public/screens/<slot>.png,
-// and undoes each break before the next.
+// Starts a throwaway WordPress with @wordpress/env (http://localhost:8888), breaks it one way at a time,
+// screenshots the result at 1600x1000 into public/screens/<guide-slug>.png, and undoes each break before the next.
 // The names match image.slot in src/content/guides/*.ts; GuideTemplate shows a capture once its file exists.
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
@@ -31,13 +30,6 @@ const inContainer = (cmd) => wpEnv("run", "wordpress", "sh", "-c", cmd);
 const setMu = (php) => writeFileSync(join(muDir, "break.php"), php ? `<?php\n${php}\n` : "<?php\n");
 
 const states = [
-  {
-    // The healthy site, captured before anything is broken. This is the "after" half of the
-    // before/after slider on the home page; without it there is nothing to compare a break against.
-    slot: "restored",
-    break: () => {},
-    fix: () => {},
-  },
   {
     slot: "white-screen-of-death",
     // A PHP fatal with WordPress's recovery handler disabled, so the page is truly blank.
@@ -81,6 +73,10 @@ wpEnv("start");
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 try {
+  // The healthy site before anything is broken: the "after" frame (src/components/sections/v3/Steps.tsx).
+  await page.goto(URL, { waitUntil: "load" });
+  await page.screenshot({ path: join(out, "restored.png") });
+  console.log("captured restored");
   for (const s of states) {
     s.break();
     try {
