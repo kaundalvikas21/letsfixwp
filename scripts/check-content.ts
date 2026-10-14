@@ -19,7 +19,8 @@ const is = (f: string, ...parts: string[]) => f.endsWith(join(...parts));
 const fail: string[] = [];
 const banned = /\b(elevate|seamless|unleash|revolutionize|robust|leverage|cutting-edge|delve|empower|streamline|unlock|supercharge|game-changer)\b/i;
 const legacyClaim = /day or less|30[- ]day|\$150|Garrity|Kwak|Eugene|fixmywp\.com/i;
-const hardcodedPath = /["'`]\/(?!screens\/)[a-z][a-z0-9-]*\//; // "/something/..." string literal
+// "/something/..." string literal. Page links must come from routes.ts; public asset folders are not page links.
+const hardcodedPath = /["'`]\/(?!screens\/|previews\/)[a-z][a-z0-9-]*\//;
 
 for (const f of files) {
   readFileSync(f, "utf8")
