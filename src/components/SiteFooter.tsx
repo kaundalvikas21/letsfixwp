@@ -16,7 +16,7 @@ const link = "inline-block py-0.5 hover:text-text";
 export function SiteFooter() {
   const facts = brand.legacy.facts;
   return (
-    <footer className="border-t border-line bg-bg">
+    <footer className="border-t border-line bg-surface">
       <div className="mx-auto max-w-6xl px-4 py-14 md:px-6">
         <nav aria-label="Footer" className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           {hubs.map((hub) => (

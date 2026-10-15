@@ -9,14 +9,16 @@ import { nodeByPath } from "@/config/routes";
 import { getCompare, getGuide } from "@/content";
 import { cn } from "@/lib/utils";
 
-// v3 template primitives. Visual language from design-system/letsfixwp-v3/MASTER.md: 20px cards, 12px inputs,
-// pill buttons, two-layer tinted shadows, one accent, Cabinet Grotesk display over Inter Tight body.
+// Template primitives for the active variation. Visual language from design-system/letsfixwp-v4/MASTER.md:
+// dark locked, one ember accent, 14px on everything, Bricolage Grotesque display over Geist body, Geist Mono
+// for error strings only. Density 3, so sections breathe further apart than they did on v3.
 
 export const page = "mx-auto w-full max-w-6xl px-4 md:px-6";
 export const prose = "max-w-[68ch] text-muted";
-export const h1 = "font-display text-[2rem] leading-[1.08] font-extrabold tracking-[-0.02em] text-balance sm:text-4xl lg:text-[2.75rem]";
-export const h2 = "font-display text-2xl leading-tight font-extrabold tracking-[-0.01em] md:text-3xl";
-export const card = "rounded-[20px] border border-line bg-surface p-6 shadow-card";
+export const h1 =
+  "font-display text-[2.125rem] leading-[1.05] font-extrabold tracking-[-0.04em] text-balance [font-variation-settings:'opsz'_34] sm:text-5xl sm:[font-variation-settings:'opsz'_48] lg:text-[3.5rem] lg:[font-variation-settings:'opsz'_56]";
+export const h2 = "font-display text-2xl leading-tight font-extrabold tracking-[-0.04em] md:text-3xl";
+export const card = "rounded-[14px] border border-line bg-surface p-6 shadow-card";
 
 export const pageMetadata = (seo: { title: string; description: string }, path: string): Metadata => ({
   title: { absolute: seo.title },
@@ -27,11 +29,11 @@ export const pageMetadata = (seo: { title: string; description: string }, path: 
 
 export function Section({ id, title, children, className }: { id: string; title: string; children: React.ReactNode; className?: string }) {
   return (
-    <section aria-labelledby={id} className={cn("mt-12 md:mt-16", className)}>
+    <section aria-labelledby={id} className={cn("mt-14 md:mt-20", className)}>
       <h2 id={id} className={h2}>
         {title}
       </h2>
-      <div className="mt-5">{children}</div>
+      <div className="mt-6">{children}</div>
     </section>
   );
 }
@@ -60,7 +62,7 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
   );
 }
 
-/** Plain disclosure list: no JS, and deliberately not the home page's searchable FAQ card. */
+/** Plain disclosure list: no JS, and deliberately not the home page's tabbed Motion accordion. */
 export function Faqs({ faqs, title = "Questions" }: { faqs: { q: string; a: string }[]; title?: string }) {
   return (
     <Section id="faq" title={title}>
@@ -135,7 +137,7 @@ export function LinkList({ paths }: { paths: string[] }) {
         <li key={p}>
           <Link
             href={p}
-            className="inline-flex min-h-11 items-center rounded-full border border-line-strong px-4 text-sm font-medium hover:border-accent hover:text-accent-text"
+            className="inline-flex min-h-11 items-center rounded-[14px] border border-line-strong px-4 text-[15px] font-medium hover:border-accent hover:text-accent-text"
           >
             {titleForPath(p)}
           </Link>
@@ -150,8 +152,8 @@ export function RealScreen({ slot, alt, preload = false }: { slot: string; alt: 
   const src = `/screens/${slot}.png`;
   if (!existsSync(join(process.cwd(), "public", src))) return null;
   return (
-    <figure className="overflow-hidden rounded-[20px] bg-surface-2 p-2 shadow-card">
-      <Image src={src} alt={alt} width={1600} height={1000} preload={preload} sizes="(min-width: 1024px) 60vw, 100vw" className="rounded-[12px]" />
+    <figure className="overflow-hidden rounded-[14px] bg-surface-2 p-2">
+      <Image src={src} alt={alt} width={1600} height={1000} preload={preload} sizes="(min-width: 1024px) 60vw, 100vw" className="rounded-[14px]" />
     </figure>
   );
 }

@@ -1,21 +1,17 @@
 import type { Metadata } from "next";
-import { Inter_Tight } from "next/font/google";
-import localFont from "next/font/local";
+import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import { JsonLd, organizationLd } from "@/components/JsonLd";
 import { SiteFooter } from "@/components/SiteFooter";
-import { SiteShell } from "@/components/sections/v3/SiteShell";
+import { SiteShell } from "@/components/sections/v4/SiteShell";
 import { brand } from "@/config/brand";
 import { SITE_URL } from "@/config/sitemap";
 import "./globals.css";
 
-const display = localFont({
-  src: [
-    { path: "../fonts/CabinetGrotesk-Bold.woff2", weight: "700" },
-    { path: "../fonts/CabinetGrotesk-Extrabold.woff2", weight: "800" },
-  ],
-  variable: "--font-cabinet",
-});
-const body = Inter_Tight({ subsets: ["latin"], variable: "--font-inter-tight" });
+// opsz is the only extra axis the site actually sets; wght comes with the variable font. Dropping wdth,
+// which nothing uses, takes the display face from 129KB to the size measured in docs/qa-report.md.
+const display = Bricolage_Grotesque({ subsets: ["latin"], axes: ["opsz"], variable: "--font-bricolage" });
+const body = Geist({ subsets: ["latin"], variable: "--font-geist" });
+const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -27,7 +23,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable}`}>
+    <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <body className="pb-[calc(4.75rem+env(safe-area-inset-bottom))] font-sans antialiased md:pb-0">
         <JsonLd data={organizationLd()} />
         <SiteShell>

@@ -3,12 +3,11 @@
 import { ArrowLeftIcon, CheckCircleIcon, MagnifyingGlassIcon, WarningCircleIcon } from "@phosphor-icons/react/ssr";
 import { useEffect, useMemo, useReducer, useRef, useState, useTransition } from "react";
 import { ChatButton } from "@/components/Cta";
-import type { ProblemItem } from "@/components/sections/v3/ProblemSearch";
 import { brand } from "@/config/brand";
 import { CTA } from "@/config/cta";
 import { accessMethods, budgets, contactMethods, timelines } from "@/content/booking-options";
 import { bookingText, getHandoff } from "@/lib/booking";
-import { matchProblem } from "@/lib/match-problem";
+import { matchProblem, type ProblemItem } from "@/lib/match-problem";
 import { track } from "@/lib/track";
 import { cn } from "@/lib/utils";
 import { submitBooking } from "./actions";
@@ -51,7 +50,7 @@ function reducer(s: State, a: Action): State {
 
 const label = "block text-sm font-semibold";
 const help = "mt-1 text-sm text-muted";
-const field = "mt-1.5 min-h-11 w-full rounded-[12px] border border-line-strong bg-surface px-4 py-2.5 text-base";
+const field = "mt-1.5 min-h-11 w-full rounded-[14px] border border-line-strong bg-surface px-4 py-2.5 text-base";
 const errorText = "mt-1.5 flex items-start gap-1.5 text-sm font-semibold";
 const group = "mt-6 first:mt-0";
 
@@ -83,7 +82,7 @@ function RadioList<T extends string>({
         <label
           key={o.value}
           className={cn(
-            "flex min-h-11 cursor-pointer gap-3 rounded-[12px] border p-3.5",
+            "flex min-h-11 cursor-pointer gap-3 rounded-[14px] border p-3.5",
             value === o.value ? "border-accent bg-accent-tint" : "border-line-strong bg-surface",
           )}
         >
@@ -220,7 +219,7 @@ export function BookingFlow({
       <ol className="mt-3 flex gap-1.5" aria-label="Where you are">
         {screens.map((s, i) => (
           <li key={s.id} className="flex-1" aria-current={i === index ? "step" : undefined}>
-            <span className={cn("block h-1 rounded-full", i <= index ? "bg-accent" : "bg-surface-2")} />
+            <span className={cn("block h-1 rounded-[14px]", i <= index ? "bg-accent" : "bg-surface-2")} />
             <span className={cn("mt-1.5 block text-xs", i === index ? "font-semibold text-text" : "text-muted")}>{s.label}</span>
           </li>
         ))}
@@ -239,7 +238,7 @@ export function BookingFlow({
       </div>
 
       {serverError && (
-        <p role="alert" className="mt-6 flex gap-2.5 rounded-[12px] border border-line-strong bg-surface-2 p-4 text-sm font-semibold">
+        <p role="alert" className="mt-6 flex gap-2.5 rounded-[14px] border border-line-strong bg-surface-2 p-4 text-sm font-semibold">
           <WarningCircleIcon weight="duotone" className="mt-0.5 size-5 shrink-0" aria-hidden />
           {serverError}
         </p>
@@ -275,7 +274,7 @@ function ProblemScreen({ b, errors, problems, dispatch }: ScreenProps & { proble
       <legend className={label}>What is your site doing?</legend>
       <p className={help}>Pick the closest match. The engineer confirms it before any work starts.</p>
 
-      <div className="mt-3 flex items-center gap-3 rounded-[12px] border border-line-strong bg-surface px-4 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent">
+      <div className="mt-3 flex items-center gap-3 rounded-[14px] border border-line-strong bg-surface px-4 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent">
         <MagnifyingGlassIcon weight="duotone" className="size-5 shrink-0 text-muted" aria-hidden />
         <input
           type="search"
@@ -289,7 +288,7 @@ function ProblemScreen({ b, errors, problems, dispatch }: ScreenProps & { proble
       </div>
 
       {chosen && !query && (
-        <p className="mt-3 flex items-center justify-between gap-3 rounded-[12px] border border-accent bg-accent-tint p-3.5 text-sm">
+        <p className="mt-3 flex items-center justify-between gap-3 rounded-[14px] border border-accent bg-accent-tint p-3.5 text-sm">
           <span className="font-semibold">{chosen.title}</span>
           <button type="button" onClick={() => dispatch({ t: "set", patch: { service: "", guide: "" } })} className="shrink-0 min-h-11 font-semibold underline underline-offset-4">
             Change
@@ -304,7 +303,7 @@ function ProblemScreen({ b, errors, problems, dispatch }: ScreenProps & { proble
               <label
                 key={key(p)}
                 className={cn(
-                  "flex min-h-11 cursor-pointer items-center gap-3 rounded-[12px] border p-3.5 text-sm",
+                  "flex min-h-11 cursor-pointer items-center gap-3 rounded-[14px] border p-3.5 text-sm",
                   key(p) === `${b.service}:${b.guide}` ? "border-accent bg-accent-tint" : "border-line-strong bg-surface",
                 )}
               >
@@ -321,7 +320,7 @@ function ProblemScreen({ b, errors, problems, dispatch }: ScreenProps & { proble
           </div>
         ) : (
           /* Designed empty state: a filter that matches nothing still has a way forward. */
-          <div className="mt-3 rounded-[12px] border border-dashed border-line-strong p-5 text-center">
+          <div className="mt-3 rounded-[14px] border border-dashed border-line-strong p-5 text-center">
             <p className="font-semibold">No problem matches &ldquo;{query.trim()}&rdquo;</p>
             <p className="mt-1 text-sm text-muted">Describe it in your own words instead. An engineer reads every ticket.</p>
           </div>
@@ -551,7 +550,7 @@ function ConfirmScreen({ b, serviceTitle, type }: { b: Booking; serviceTitle: st
         ))}
       </dl>
 
-      <div className="mt-5 rounded-[12px] bg-surface-2 p-4 text-sm">
+      <div className="mt-5 rounded-[14px] bg-surface-2 p-4 text-sm">
         <p className="font-semibold">{type === "check" ? "No charge for a site check." : "Quote before work begins."}</p>
         {type !== "check" && <p className="mt-1 text-muted">An engineer reviews this, then sends a fixed price. Nothing is charged until you approve it.</p>}
         {brand.guarantee && (
@@ -618,13 +617,13 @@ function Success({
       <ol className="mt-5 space-y-3">
         {nextLines.map((l) => (
           <li key={l} className="flex gap-3 text-sm">
-            <span aria-hidden className="mt-2 size-1.5 shrink-0 rounded-full bg-accent" />
+            <span aria-hidden className="mt-2 size-1.5 shrink-0 rounded-[14px] bg-accent" />
             <span>{l}</span>
           </li>
         ))}
       </ol>
 
-      <div className="mt-7 rounded-[12px] border border-line-strong bg-surface-2 p-4">
+      <div className="mt-7 rounded-[14px] border border-line-strong bg-surface-2 p-4">
         <p className="text-sm text-muted">{handoff.note}</p>
         {handoff.kind === "copy" ? (
           <CopyButton text={handoff.text} label={handoff.label} />
@@ -638,7 +637,7 @@ function Success({
       {/* Email confirmation stub: nothing is sent from the server yet, so the copy is shown rather than claimed. */}
       <details className="mt-5">
         <summary className="cursor-pointer text-sm font-semibold">See exactly what gets sent</summary>
-        <pre className="mt-3 overflow-x-auto rounded-[12px] bg-surface-2 p-4 font-mono text-xs whitespace-pre-wrap">{bookingText(booking, serviceTitle)}</pre>
+        <pre className="mt-3 overflow-x-auto rounded-[14px] bg-surface-2 p-4 font-mono text-xs whitespace-pre-wrap">{bookingText(booking, serviceTitle)}</pre>
       </details>
 
       <p className="mt-6 text-sm text-muted">

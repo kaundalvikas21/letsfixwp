@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { ChatButton } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
-import type { ProblemItem } from "@/components/sections/v3/ProblemSearch";
 import { Breadcrumbs, h1, page } from "@/components/templates/parts";
 import { brand } from "@/config/brand";
 import { serviceForOldSlug } from "@/config/redirects";
 import { nodeByPath, routes, serviceIds } from "@/config/routes";
 import { getGuide, getService, matchIndex, services } from "@/content";
+import type { ProblemItem } from "@/lib/match-problem";
 import { cn } from "@/lib/utils";
 import { BookingFlow } from "./BookingFlow";
 import { ContactTabs } from "./ContactTabs";
@@ -72,7 +72,7 @@ export default async function Contact({ searchParams }: PageProps<"/contact">) {
         </div>
 
         <div className="lg:col-span-7">
-          <div className="rounded-[20px] border border-line bg-surface p-6 shadow-card md:p-8">
+          <div className="rounded-[14px] border border-line bg-surface p-6 shadow-card md:p-8">
             <ContactTabs
               initial={initialTab}
               fix={<BookingFlow type="fix" options={optionsFor("fix")} problems={problems} initial={initial} />}

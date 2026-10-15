@@ -37,7 +37,7 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
       <Section id="verdict" title="Which one fits">
         <ul className="grid gap-4 md:grid-cols-3">
           {c.verdictByScenario.map((v) => (
-            <li key={v.scenario} className="rounded-[20px] border border-line bg-surface p-5 shadow-card">
+            <li key={v.scenario} className="rounded-[14px] border border-line bg-surface p-5 shadow-card">
               <p className="font-display text-base font-bold">{v.scenario}</p>
               <p className="mt-2 text-sm text-muted">{v.verdict}</p>
             </li>
@@ -46,7 +46,7 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
       </Section>
 
       <Section id="table" title="Side by side">
-        <div className="overflow-x-auto rounded-[20px] border border-line bg-surface shadow-card">
+        <div className="overflow-x-auto rounded-[14px] border border-line bg-surface shadow-card">
           <table className="w-full min-w-[40rem] border-collapse">
             <caption className="sr-only">
               {c.a} compared with {c.b}

@@ -1,4 +1,4 @@
-import { ChatPresence } from "@/components/sections/v3/ChatPresence";
+import { ChatPresence } from "@/components/chat/ChatPresence";
 import { getSiteStatus } from "@/lib/status";
 
 // Renders only the fields that have real values. The server fields are all null until a provider exposes them;

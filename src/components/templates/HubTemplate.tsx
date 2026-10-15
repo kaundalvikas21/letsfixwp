@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { BookLink, ChatButton, PlansLink, QuoteLink } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
-import { Photo } from "@/components/sections/v3/Photo";
+import { Photo } from "@/components/Photo";
 import { primaryCtaFor } from "@/config/cta";
 import { hubIdOf, nodes, routes, serviceIdOf, type FlatNode } from "@/config/routes";
 import { getService, guidesFor } from "@/content";
@@ -43,7 +43,7 @@ export function HubTemplate({ node }: { node: FlatNode }) {
           </div>
         </div>
         <div className="lg:col-span-5">
-          <div className="aspect-[4/3] overflow-hidden rounded-[20px] shadow-card">
+          <div className="aspect-[4/3] overflow-hidden rounded-[14px] shadow-card">
             <Photo id={hubPhotos[id]} decorative preload sizes="(min-width: 1024px) 40vw, 100vw" />
           </div>
         </div>
@@ -73,7 +73,7 @@ export function HubTemplate({ node }: { node: FlatNode }) {
               <li key={g.slug}>
                 <Link
                   href={routes.guide(g.slug)}
-                  className="flex h-full items-center rounded-[20px] border border-line bg-surface px-5 py-4 font-medium hover:text-accent-text"
+                  className="flex h-full items-center rounded-[14px] border border-line bg-surface px-5 py-4 font-medium hover:text-accent-text"
                 >
                   {g.title}
                 </Link>

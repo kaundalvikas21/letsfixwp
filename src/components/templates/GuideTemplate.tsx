@@ -32,7 +32,7 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
       <header className="mt-6">
         <h1 className={h1}>{g.h1}</h1>
         {g.errorText && (
-          <p className="mt-6 overflow-x-auto rounded-[12px] border border-line-strong bg-surface-2 px-4 py-3 font-mono text-sm">
+          <p className="mt-6 overflow-x-auto rounded-[14px] border border-line-strong bg-surface-2 px-4 py-3 font-mono text-sm">
             <code>{g.errorText}</code>
           </p>
         )}
@@ -54,7 +54,7 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
         {/* Tiles, not a second bullet list: no layout family repeats on a page (contract rule 3). */}
         <ul className="grid gap-3 sm:grid-cols-2">
           {g.likelyCauses.map((x) => (
-            <li key={x} className="rounded-[20px] border border-line bg-surface p-4 text-sm text-muted">
+            <li key={x} className="rounded-[14px] border border-line bg-surface p-4 text-sm text-muted">
               {x}
             </li>
           ))}
@@ -65,12 +65,12 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
         <ol className="space-y-4">
           {g.safeChecks.map((x, i) => (
             <li key={x} className="flex gap-4">
-              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent-tint font-display text-sm font-bold text-accent-text">{i + 1}</span>
+              <span className="grid size-8 shrink-0 place-items-center rounded-[14px] bg-accent-tint font-display text-sm font-bold text-accent-text">{i + 1}</span>
               <span className="pt-0.5">{x}</span>
             </li>
           ))}
         </ol>
-        <p className="mt-6 flex gap-3 rounded-[20px] border border-line-strong bg-surface-2 p-4 text-sm">
+        <p className="mt-6 flex gap-3 rounded-[14px] border border-line-strong bg-surface-2 p-4 text-sm">
           <WarningIcon weight="duotone" className="mt-0.5 size-5 shrink-0 text-accent-text" aria-hidden />
           <span>{coreFileWarning}</span>
         </p>
