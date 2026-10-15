@@ -6,7 +6,7 @@ export default serviceSchema.parse({
   hub: "wordpress-fix",
   intent: "fix",
   title: "WordPress critical error fix",
-  h1: "Fix \"There has been a critical error on this website\"",
+  h1: "The WordPress critical error, fixed by an engineer",
   summary:
     "WordPress shows the critical error message when PHP hits a fatal error, usually from a plugin, the theme, a syntax mistake or exhausted memory. We find the exact error in the logs, fix the code or setting behind it and bring the site back.",
   whoItsFor:

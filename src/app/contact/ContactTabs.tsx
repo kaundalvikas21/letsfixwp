@@ -11,11 +11,11 @@ import { useState, type ReactNode } from "react";
 export function ContactTabs({ initial, fix, project }: { initial: "fix" | "project"; fix: ReactNode; project: ReactNode }) {
   const [tab, setTab] = useState(initial);
   const trigger =
-    "min-h-11 flex-1 cursor-pointer rounded-full px-4 text-sm font-semibold text-muted transition-colors hover:text-text data-[state=active]:bg-accent data-[state=active]:text-on-accent";
+    "min-h-11 flex-1 cursor-pointer rounded-[14px] px-4 text-sm font-semibold text-muted transition-colors hover:text-text data-[state=active]:bg-accent data-[state=active]:text-on-accent";
 
   return (
     <Tabs.Root value={tab} onValueChange={(v) => setTab(v as "fix" | "project")}>
-      <Tabs.List aria-label="What do you need?" className="flex gap-1 rounded-full border border-line-strong bg-surface-2 p-1">
+      <Tabs.List aria-label="What do you need?" className="flex gap-1 rounded-[14px] border border-line-strong bg-surface-2 p-1">
         <Tabs.Trigger value="fix" className={trigger}>
           Emergency ticket
         </Tabs.Trigger>

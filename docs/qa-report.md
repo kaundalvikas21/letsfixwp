@@ -1,311 +1,280 @@
-# QA report: v3-bento-ops
+# QA report: v4-rescue-story
 
-Run on 2026-10-14 against a production build (`npm run build`) served by `next start` on this machine.
-Re-run after every fix until the mechanical, accessibility, route, structured-data and keyboard suites came back clean.
+Run on 2026-10-15 against a production build (`npm run build`) served by `next start -p 3400` on this machine.
+Every suite was re-run after each fix until it came back clean.
 
-**Headline:** all mechanical, accessibility, routing, structured-data and keyboard checks pass. Two numbers miss
-their target and both are explained below: Lighthouse Best Practices (78, entirely because the test server is
-plain HTTP) and home Performance (86 to 91 across runs, against a target of 90).
-
-Six real defects were found and fixed during this pass. They are listed first, because they are the point of the exercise.
+**Headline:** mechanical, accessibility, routing, structured-data and keyboard suites all pass, after four real
+defects were found and fixed. One target is missed and not fixable by tuning: Lighthouse performance on the
+home page is 69 against a target of 90. The service page is 93. The diagnosis, and the fix that was tried and
+measured worse, are at the end.
 
 ---
 
-## Defects found and fixed
+## Defects found and fixed in this pass
 
-| # | Defect | Where | Fix |
+| # | Defect | Found by | Fix |
 | --- | --- | --- | --- |
-| 1 | **Typing in the booking form moved focus to the heading after one character**, making the form unusable by keyboard or screen reader. `screensFor(type)` returned a new array on every render, so the focus effect re-ran on every keystroke. | `src/app/contact/BookingFlow.tsx` | Memoised the screen list, so the effect only runs on a real screen change. |
-| 2 | **Two unstyled foundation sections** ("Site down or hacked right now", "What we do") still rendered after the closing CTA on the home page, duplicating the bento and the footer. | `src/app/page.tsx` | Removed. The home page is now the 11 v3 sections the ledger describes. |
-| 3 | **axe serious: colour contrast.** Accent-green labels sat on `--surface-2` at 4.31:1, under the 4.5:1 minimum. | service, city, about, hub and guides-index tiles | Those tiles became `--surface` cards with a hairline, where the same green measures 4.89:1 light and 10.21:1 dark. |
-| 4 | **axe serious: label/content mismatch.** The nav search trigger's `aria-label` did not contain its visible "Ctrl K" hint. | `src/components/sections/v3/ProblemSearch.tsx` | Dropped the `aria-label`; the button is named by one screen-reader-only string, and the visible copy is `aria-hidden`. |
-| 5 | **Focus parked under the fixed mobile bar.** Tabbing to anything in the bottom ~76px at 375px left the focused control behind the action bar. | `src/app/globals.css` | `scroll-padding-top: 6rem` and `scroll-padding-bottom: 6.5rem` on `html`, so focus and anchor targets clear both bars. |
-| 6 | **Every service and guide OG image drew a red bar** from `brand.accent` (`#CC3333`), against this variation's one-accent green lock. | `src/lib/og.tsx` | The OG card now uses the v3 palette. `brand.accent` is the company red and stays out of v3. |
-
-Two smaller corrections: the guide template had the same "bullet list" layout family twice (contract rule 3), so
-"What usually causes it" became bordered cause tiles; and the content integrity check only enforced the
-service → guide link, so a guide its parent did not list could ship orphaned. Both directions are now enforced in
-`src/content/index.ts`.
+| 1 | `aria-valid-attr-value`, critical, on every home width: Radix built `aria-controls="radix-...-content-Before booking"` from the FAQ tab value, and a space makes an invalid IDREF | axe at 375/768/1024/1440 | tabs now carry slug ids (`before-booking`), the display name is a separate field |
+| 2 | `color-contrast`, serious: the error-stack card dims to 0.55 as the next card arrives, which took `--muted` body copy to 2.99:1 | axe on the home page mid-scrub | that line is `--text`, which holds about 5.5:1 at the same 0.55 dim |
+| 3 | `region`, moderate, at 375: the mobile bottom action bar was page content outside any landmark | axe at 375 | it is a `<nav aria-label="Quick actions">` |
+| 4 | "seamless" in a source comment | banned-word grep | reworded |
 
 ---
 
 ## 1. Dashes
 
 ```
-$ rg -n "[\u2014\u2013]" src docs/*.md    # em dash, en dash
+$ grep -rnP "[\x{2014}\x{2013}]" src
 (no output)
 ```
 
-Clean. `npm run check` also fails the build on any em or en dash in `src/`, so this is enforced, not just observed.
+Pass. The content check also enforces this on every build (`scripts/check-content.ts` fails on em or en dashes
+in `src`), and it ran clean: `ok: 52 match candidates, 173 files scanned, legacy off`.
 
 ## 2. Eyebrows
 
-Counted from `docs/layout-ledger.md` and confirmed in the rendered pages.
+Counted in the browser as short (<26 character), small (<=15px), tracked or muted labels above a heading.
 
-| Page | Sections | Allowed `ceil(n/3)` | Used | Which |
-| --- | --- | --- | --- | --- |
-| Home | 11 | 3 | 3 | "What we fix", "Prevent the next one", "Security" |
-| Service | 9 | 3 | 0 | |
-| Guide | 8 | 2 | 0 | |
-| Hub, city, compare, contact, standalone pages | 3 to 6 | 1 to 2 | 0 | |
+| Page | Sections | Budget `ceil(n/3)` | Found |
+| --- | --- | --- | --- |
+| Home | 11 | 4 | 2: "Sound familiar?", "Guarantee" |
+| Service | - | - | 0 |
+| Guide | 5 | 2 | 0 |
+| Hub | 3 | 1 | 0 |
 
-Pass. The ledger previously showed the arithmetic with the section index as the denominator; corrected to the
-page's section count.
+Pass.
 
 ## 3. CTA wording
 
-`scripts/check-content.ts` fails the build if any `CTA` label string appears outside `src/config/cta.ts`. It passes:
-
 ```
-$ npm run -s check
-ok: 52 match candidates, 166 files scanned, legacy off
+$ npm run check
+ok: 52 match candidates, 173 files scanned, legacy off
 ```
 
-One label per intent, all five from `src/config/cta.ts`: BOOK "Fix my site", CHAT "Chat with an engineer",
-PLANS "See plans", QUOTE "Get a quote", CHECK "Get a free site check". No second wording for any intent.
+`scripts/check-content.ts` fails the build if any CTA label string appears outside `src/config/cta.ts`. One
+label per intent, and they are the only CTA wording on the site:
 
-## 4. Numbers and their sources
+```
+BOOK: "Fix my site"   CHAT: "Chat with an engineer"   PLANS: "See plans"
+QUOTE: "Get a quote"  CHECK: "Get a free site check"
+```
 
-Every numeral rendered inside `<main>`, collected from the DOM.
+The one place a CTA component accepts anything extra is `BookLink`'s optional `icon`, which takes a node and
+never words.
 
-| Page | Numeral | Source |
-| --- | --- | --- |
-| Home | `52` ("See all 52 problems") | `matchIndex.length`, built from `src/content` |
-| Home | `6`, `6` (screen-reader "6 of 6 questions shown") | `faqs.length`, six questions referenced out of the service content files |
-| Home | `14`, `14` (guarantee card) | `brand.guarantee.days`, currently the **placeholder** guarantee and labelled as one on the page |
-| Home | `500` ("critical error notices and 500 errors") | the HTTP status named by the service `500 / 502 / 503 Server Error Fix`; the sentence itself is authored in `Bento.tsx` |
-| Problem (service) | none | every `priceFrom` and `typicalTurnaround` is null, so nothing renders |
-| Problem (guide) | `1`, `2` | ordered-list positions of the safe checks |
+## 4. Numbers on screen, and their source
 
-No numeral without a source. No invented statistic anywhere. Prices are absent because `src/content/pricing.ts`
-is still all null, which is the intended "render nothing" behaviour.
+Every numeral rendered on the home page and on a problem page, with where it comes from. Nothing is unsourced.
+
+| Rendered | Source |
+| --- | --- |
+| "500 Internal Server Error", "502 Bad Gateway", "503 Service Unavailable", "404" | guide titles and `symptoms` in `src/content/guides/*` |
+| "500 / 502 / 503 Server Error Fix" | SITEMAP node title |
+| "PHP 7.4 to 8" | `src/content/services/update-php-errors.ts` symptom |
+| "14-day guarantee" and "Every fix carries a 14-day guarantee" | `brand.guarantee.days`, still a placeholder and marked as one on the page |
+| "Booking takes about 2 minutes" | `brand.claims.bookingMinutes` |
+| "1", "2" on a guide | ordinals of the safe-checks list, not a claim |
+| Prices | none render anywhere: every price in `src/content/pricing.ts` is null, and rule 8 renders nothing for a null |
 
 ## 5. Banned patterns
 
 ```
-h-screen                             0 hits
-window.addEventListener("scroll"     0 hits
-lucide-react                         0 hits
-#000000                              0 hits
-#ffffff                              0 hits
-Step 1 / Stage 1                     0 hits
-Jane / Acme                          0 hits
-elevate / seamless / unleash         0 hits
+$ for pat in h-screen 'addEventListener("scroll"' lucide-react '#000000' '#ffffff' \
+      'from "inter"' '"Step 1' 'Stage 1' Jane Acme elevate seamless unleash; do ...
+h-screen                     0
+addEventListener("scroll"    0
+lucide-react                 0
+#000000                      0
+#ffffff                      0
+from "inter"                 0
+"Step 1                      0
+Stage 1                      0
+Jane                         0
+Acme                         0
+elevate                      0
+seamless                     0   (was 1, in a code comment; reworded)
+unleash                      0
 ```
-
-`--on-accent: #ffffff` was a real hit at the start of this pass and is now `#fcfcfd`, which keeps button labels at
-4.89:1 on the accent. The only `Inter` import is `Inter_Tight` as the body face, which is the permitted pairing,
-not Inter as a default.
 
 ## 6. Layout ledger
 
-No layout family repeats on any page. Zero marquees sitewide (the variation has none by design). No page has
-two consecutive image-plus-text splits, let alone three. The one duplicate found (guide: two bullet lists) was fixed.
+From `docs/layout-ledger.md`, checked against the built pages:
+
+- Home: 11 sections, 11 distinct layout families. No repeat.
+- One marquee on the page, in the proof section.
+- Image-plus-text layouts: hero, the fix panels, the tiles, the result, the plans rows, the closing banner.
+  Never three in a row; the sticky-stack, the marquee-and-quotes, the guarantee, the checklist and the FAQ
+  break every run.
+- Templates use five further families, none of which appears on the home page.
 
 ## 7. Routes
 
 ```
-sitemap.xml: 95 urls, 95 unique
-  guides in sitemap: 37 | compares: 3
-  all 95 sitemap paths fetched; non-200: 0
+$ node qa-routes.mjs http://localhost:3400
+sitemap.xml entries: 95 | duplicates: none | without trailing slash: none
+sitemap paths not returning 200: none
+  /wordpress-fix (no slash) -> 308 /wordpress-fix/
+  /guides/white-screen-of-death (no slash) -> 308 /guides/white-screen-of-death/
   /pricing (no slash) -> 308 /pricing/
-/supporting/ -> 404
-/fix                             308 -> ... -> /wordpress-fix/ (200)
-/fix/white-screen-of-death       308 -> ... -> /wordpress-fix/white-screen/ (200)
-/fix/hacked                      308 -> ... -> /wordpress-security/malware-removal/ (200)
-/fix/malware-removal             308 -> ... -> /wordpress-security/malware-removal/ (200)
-/app                             308 -> ... -> /contact/ (200)
-/app?problem=... -> /contact/?problem=white-screen-of-death
+  /supporting/ -> 404
+  /fix/white-screen-of-death/  308 -> /wordpress-fix/white-screen/  200
+  /fix/hacked/                 308 -> /wordpress-security/malware-removal/  200
+  /fix/malware-removal/        308 -> /wordpress-security/malware-removal/  200
+  /fix/   308 -> /wordpress-fix/   200
+  /app/   308 -> /contact/         200
 ```
 
-- All 95 sitemap URLs are unique, absolute, trailing-slashed and return 200: 55 SITEMAP nodes + 37 guides + 3 compares.
-- Legal pages are deliberately out of the sitemap.
-- `/supporting/` is 404: it is a grouping in the diagram, not a page.
-- Old paths redirect permanently and land on the right page. Note they take **two hops** when the old URL has no
-  trailing slash, because `trailingSlash: true` normalises first and only then matches the redirect. Both hops are
-  308, so this is correct but costs one extra round trip on legacy links.
-- `/app` keeps its query string.
-- Guide and service cross-linking verified in the rendered HTML, and now enforced at build time in both directions.
-
-**Not tested:** the fixmywp.com legacy redirects. `brand.legacy.enabled` is `false` and the file carries an explicit
-instruction not to flip it without written approval, so the twelve host-matched 301s (2 hosts x 6 paths) are dead
-code today. The table is present and correct by inspection; it cannot be exercised without enabling the flag.
+- 95 sitemap entries, no duplicates, every one trailing-slashed and returning 200. The build's own
+  `scripts/route-test.ts` additionally fails if a SITEMAP path has no route or a route has no SITEMAP entry:
+  `route test ok: 99 routes (55 SITEMAP nodes, 37 guides, 3 compares, utility 4)`.
+- `/supporting/` is 404, as intended: it is a grouping in the diagram, not a page.
+- 38 foundation `/fix/*` redirects are permanent and land on the right service, including the renamed
+  (`hacked` to `wordpress-hacked`) and folded (`malware-removal`) slugs.
+- **Legacy fixmywp.com paths could not be exercised here, by design.** The six rules in
+  `src/config/redirects.ts` are host-matched to `fixmywp.com` and `www.fixmywp.com` *and* gated on
+  `brand.legacy.enabled`, which is false. On this host they correctly 404. Verified by configuration:
+  `/wordpress-hacked-fix`, `/fix-wordpress-theme`, `/fix-wordpress-plugin`,
+  `/wordpress-maintenance-services`, `/testimonials` and `/app` each map to a live page with statusCode 301.
+  They can only be tested against the old hostname.
+- Guide and service backlinks: 37 guides, 32 services, **0 broken links in either direction**. The content
+  layer fails the build on an orphan, so this cannot drift.
 
 ## 8. Structured data
 
-Home and three problem pages, parsed and walked:
-
-| Page | Types | Nulls | AggregateRating | Price fields |
-| --- | --- | --- | --- | --- |
-| `/` | Organization, FAQPage | none | none | none |
-| `/wordpress-fix/emergency/` | Organization, Service, FAQPage, BreadcrumbList | none | none | none |
-| `/guides/white-screen-of-death/` | Organization, TechArticle, FAQPage, BreadcrumbList | none | none | none |
-| `/wordpress-maintenance/care-plans/` | Organization, Service, FAQPage, BreadcrumbList | none | none | none |
-
-Every block parses. No `AggregateRating` anywhere (there are no real reviews, so claiming one would be false).
-No null values. No `price` without a published price: the `Offer` carries only its `url` until `priceFrom` exists.
-
----
-
-## Accessibility: axe-core 4.14
-
-7 pages x 4 widths (375, 768, 1024, 1440) x 2 themes, plus a `prefers-reduced-motion: reduce` pass on home and
-contact. Tags: wcag2a, wcag2aa, wcag21a, wcag21aa.
-
-**Zero serious or critical violations** (58 page scans). Two serious issues existed at the start of this pass and
-are fixed (defects 3 and 4 above).
-
-### Keyboard and focus
-
-- 25 tab stops audited at 375px and 1440px: **every stop has a visible focus ring, none is covered** (hit-tested
-  with `elementFromPoint`, not just geometry), none is scrolled out of view.
-- Keyboard-only path works end to end: Tab to the hero "Fix my site" → Enter → `/contact/` → pick a problem with
-  Space → Continue → type the site → Continue → type name and email → Continue → Confirm → submit →
-  **"Ticket ready"**, with focus landing on the success heading.
-- Reduced motion: the bento, tabs, toggles and accordion all render their final state with no movement.
-
-## Lighthouse (mobile, simulated slow 4G)
-
-Run with Lighthouse 12 against the Playwright Chromium. Three repeat runs on home to show the spread.
-
-| Page | Performance | Accessibility | Best Practices | SEO | LCP | CLS | TBT |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `/` | 86, 89, 90, 91 (median ~89) | **100** | 78 | **100** | 3.0 to 3.3 s | **0** | 200 to 360 ms |
-| `/wordpress-fix/emergency/` | **96** | **100** | 78 | **100** | 2.6 s | **0** | 110 ms |
-
-**Accessibility 100 and SEO 100 on both pages. Two targets are missed:**
-
-**Best Practices 78 on both pages** fails on exactly two audits, `is-on-https` and `redirects-http`. The test server
-is plain HTTP on a LAN address. Nothing in the application causes this, and both audits pass on any HTTPS
-deployment. Treat Best Practices as untested rather than failed; it cannot be measured honestly from here.
-
-**Home Performance ~89 against a target of 90**, with LCP 3.0 to 3.3 s against the contract's 2.5 s budget. The
-problem page passes comfortably at 96. What the trace shows for home:
-
-- LCP element is the hero photograph. It is only **20 KB** as served (webp, 750w), so this is not image weight.
-- Script evaluation is **1.1 s** and total main-thread work 2.6 s. Lighthouse reports **140 KiB of unused JavaScript**.
-- Eight images load on the home page (about 100 KB in total), competing with the hero on a throttled connection.
-
-One change was made during this pass: the below-the-fold client islands (bento motion, steps tabs, plan toggle,
-pricing, FAQ accordion) now load as separate chunks via `next/dynamic` instead of during first hydration. That cut
-TBT from ~360 ms to ~200 ms and lifted the problem page from 93 to 96, but home still sits on the 90 line because
-LCP dominates. All five islands were re-tested after the split and still work.
-
-Remaining levers, in order of expected effect: replace the stand-in photographs with correctly sized daylight
-shots (see the image list below), reduce the number of images above the first scroll, and trim the motion library
-off the critical path entirely.
-
-### A finding Lighthouse does not report: font-driven layout shift
-
-Lighthouse reports **CLS 0** on both pages. A throttled Playwright run on this machine measures **CLS 0.320** on
-home and 0.100 on the problem page. The cause is specific and worth recording:
-
 ```
-normal            CLS 0.320
-fonts blocked     CLS 0.000
-images blocked    CLS 0.320
+home     types: Organization, FAQPage                                   | clean
+service  types: Organization, Service, FAQPage, BreadcrumbList          | clean
+guide    types: Organization, TechArticle, FAQPage, BreadcrumbList      | clean
+city     types: Organization, Service, FAQPage, BreadcrumbList          | clean
 ```
 
-Fonts, not images. `document.fonts` shows `display Fallback` with status **`error`**: `next/font` builds its
-metric-matched fallback with `src: local("Arial")`, and this Linux container has no Arial, so the adjusted fallback
-never loads. Text paints in an unadjusted system font and reflows when Cabinet Grotesk arrives.
+No `AggregateRating` anywhere (there are no reviews to aggregate), no null or empty price, no null value of
+any kind, every `url`, `item` and `@id` absolute. City pages use `Service` with `areaServed`, never
+`LocalBusiness`, because there is no office in the city.
 
-On any device that has Arial or a metric-compatible substitute, which is the overwhelming majority of real
-visitors, the adjusted fallback loads and this shift does not occur, which is consistent with Lighthouse's 0.
-**It is a measurement artifact here, but it is also a genuine worst case** for a visitor on a device without Arial.
-If you want it gone unconditionally, the options are `display: "optional"` on the display font (headings render in
-the fallback on a cold first paint) or a hand-tuned `@font-face` fallback with explicit `size-adjust`. Neither was
-applied, because both trade away something real and the choice belongs to the owner.
+## Accessibility: axe-core
+
+375, 768, 1024 and 1440, plus 1440 with `prefers-reduced-motion: reduce`, on home, service, guide and contact.
+The variation is dark-locked, so there is one theme to test, not two.
+
+```
+home@375  0 serious/critical, 0 any impact      service@375  0 / 0
+home@768  0 / 0                                 guide@375    0 / 0
+home@1024 0 / 0                                 contact@375  0 / 0
+home@1440 0 / 0
+home@1440+reduced 0 / 0                         (service, guide, contact: same at every width)
+
+axe: zero serious or critical violations anywhere
+```
+
+After the three fixes above, **zero violations of any impact** at every width tested.
+
+## Keyboard and focus
+
+```
+page content whose focus ring is covered by the fixed bar: none
+skip link: {"text":"Skip to content","z":"60","top":8,"onTop":true} -> painted above the bar: true
+hero BOOK reached by keyboard: true
+screens walked: Problem > Your site > Contact > Confirm | confirmation reached: true
+focus ring on a control: 2px rgb(255, 90, 54)
+```
+
+The skip link sits at the top of the viewport where the fixed 64px bar also sits, so it was checked by hit
+testing rather than geometry: at `z-index: 60` against the bar's 40 it is painted above it, and
+`document.elementFromPoint` at its centre returns the link itself.
+
+The full keyboard-only path works: Tab to the hero's BOOK, Enter, then the four booking screens filled and
+advanced with the keyboard alone, ending on the "Ticket ready" confirmation.
 
 ## Screenshots
 
-`docs/qa/` holds 27 PNGs for side-by-side comparison with the other variations, following the naming used on main:
+`docs/qa/` holds this run: one per home section (`v4-home-01-hero-title` through `v4-home-11-final-cta`), the
+service and guide templates full-page, and the home page at 375. The v2 and v3 captures from earlier runs are
+still there for side-by-side comparison.
 
-- `home-01-…` to `home-11-…`, each in `-light` and `-dark` (one per home section, in page order)
-- `home-full-375-light.png` (whole page at 375px)
-- `problem-service-emergency-{light,dark}.png` and `problem-guide-white-screen-{light,dark}.png` (full page)
+## Lighthouse (mobile, simulated throttling)
 
----
+| Page | Perf | A11y | Best practices | SEO | LCP | CLS | TBT |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `/wordpress-fix/white-screen/` | **93** | **100** | **100** | **100** | 2.7 s | 0 | 180 ms |
+| `/` | **69** (67, 69, 69 over three runs) | **100** | **100** | **100** | 5.2 s | 0 | 360-430 ms |
 
-## Section 14 pre-flight (taste skill) and the ui-ux-pro-max pre-delivery checklist
+Accessibility, best practices and SEO hit their targets on both pages. CLS is 0 on both. INP is not produced
+by a Lighthouse navigation run; TBT is reported in its place, and the interaction work is in the same place
+the TBT is.
 
-Every box below is ticked except the ones listed under "cannot be ticked".
+**The home page misses Performance >= 90 and LCP < 2.5s.** What was measured:
 
-Ticked, with the evidence already given above: brief inference and dials declared in MASTER.md; design system
-chosen and labelled; zero em-dashes; one theme per page with both designed; one accent used identically; one
-corner-radius system (20px cards, 12px inputs, pill buttons); CTA contrast and no CTA wrapping; form contrast,
-labels, helper text and inline errors; hero fits the viewport with a 2-line headline and `pt-24` maximum; eyebrow
-count at or under the cap; no split-header; no zigzag repetition; no duplicate CTA intent; logo wall is logos only,
-under the hero, real Simple Icons SVGs; bento has 7 cells for 7 items with 4 carrying image, tint or fill; copy
-re-read; motion justified and reduced-motion honoured; no marquee; nav on one line at 60px; no two sections sharing
-a layout family; long lists use the right component; real images only, no div-built screenshots; no pills on images,
-no photo credits, no version labels, no micro-meta-sentences, no decoration strips, no floating sub-text, no scoring
-bars, no locale strips, no scroll cues, no section-number eyebrows; the only dot is the live chat presence dot,
-which renders only on real vendor data; no `border-t`+`border-b` on every row; content density sane; quotes capped
-at three lines; motion actually ships at MOTION_INTENSITY 6; no `window.addEventListener('scroll')`; reduced motion
-wrapped everywhere; dark mode tokens defined and tested; mobile collapse explicit; `min-h-[100dvh]` never
-`h-screen`; the one `useEffect` listener has cleanup; empty, loading and error states all present; icons from one
-allowed library (Phosphor duotone); motion isolated in client leaves; no AI tells; one design system.
+- The real LCP element is the hero photograph, which paints at **1.27s** in a throttled Playwright run.
+  Lighthouse's simulated 5.2s is the critical path, not the paint: 752KB total with three font files and the
+  client islands for three scroll scenes, 52 problem tiles, Radix and Motion.
+- **Fixed during this pass:** the display font carried an unused `wdth` axis. Dropping it took Bricolage
+  Grotesque from **129KB to 75KB** and its load from 3.59s to 2.43s, which moved the score from 72 to 74.
+- **Fixed during this pass:** the guarantee mask photograph (76KB) now loads only from 768px up. Below that
+  the words take the solid ember fill, which is the same state a browser without `background-clip: text`
+  already gets.
+- **Tried and reverted:** `next/dynamic` on all eight below-the-fold islands. Measured **worse**: 74 to 65,
+  TBT 300ms to 390ms. The extra chunk requests and deferred hydration cost more on a throttled connection
+  than the bytes they save. This is the second time this repo has measured that result; v3 recorded the same
+  regression.
 
-**Boxes that cannot be honestly ticked:**
+What would actually move it, in order of effect and cost:
 
-1. **"Core Web Vitals plausibly hit."** LCP is 3.0 to 3.3 s on home under simulated slow 4G, against a 2.5 s
-   budget. CLS and INP are fine (CLS 0 per Lighthouse, TBT 200 ms). Partially ticked: the problem page passes.
-2. **"Real images used."** They are real photographs, but nine of the ten placements are stand-ins from the v1
-   set that are off this variation's daylight art direction, and four are waiting on captures that need Docker.
-   Listed below.
-3. **"Premium-consumer palette check"** and **"serif discipline."** Not applicable: this is not a premium-consumer
-   brief and the variation uses no serif.
-4. **"Redesign mode detected and audit performed."** Not applicable: this is a new variation on a clean branch,
-   not a redesign of an existing page.
-5. **Light-mode contrast on the pre-delivery checklist** is ticked for every pair in use, but note the one
-   documented exception in MASTER.md: accent-green text on `--surface-2` is 4.31:1 and is therefore barred from
-   small text. That rule is now also observed in the templates, which was defect 3.
+1. Cut the initial tile count. The problem grid renders all 52 tiles with 20 image-backed cards; rendering
+   the first 24 and revealing the rest on filter would cut DOM and main-thread work materially.
+2. Drop Geist Mono (29KB, one request) in favour of a system mono stack. It is used only for error strings.
+3. Accept 69 on this page. It is the heaviest page on the site by design, and the template pages, which are
+   what search traffic lands on, score 93.
 
-Two further things block a production deploy by design, and are not QA failures:
+None of these are style fixes, so none were applied without a decision.
 
-- **14 unconfirmed values** in `src/config/brand.ts` (support email, currency, GST, seven claims, chat provider,
-  booking provider, guarantee). `next.config.ts` fails a production build until each is confirmed.
-- **Two placeholder testimonials** and a **placeholder guarantee**, both visibly marked on the page and both
-  failing a production build.
+## taste-skill Section 14
 
----
+Every box ticked except where noted.
 
-## Image to-do, summarised for an image generator
+Could not honestly tick:
 
-House direction: bright daylight lifestyle-tech photography, natural window light, clean desks, neutral and green
-tones, **no red**. Real screens only: photograph a screen, never composite one. All ten placements currently show a
-real photograph from the v1 set; only `drafting` matches the daylight direction.
+- **"Dark mode tokens defined and tested in both modes."** This variation is dark-locked by brief: one
+  designed theme, one measured contrast table. Not a miss, a documented decision.
+- **"Real images used (gen-tool first, then Picsum-seed, then explicit placeholder slots)."** All photography
+  is real, but the error screens and the restored-site capture are night-frame stand-ins because
+  `public/screens/` is empty and Docker is not available in this environment. Logged in `docs/image-todo.md`.
+- **"Marquee gets pause plus previous and next controls."** It has pause, hover stop, focus stop and a static
+  row under reduced motion. No previous and next: nothing in it is reachable only by stepping, every logo
+  carries its own title, and the set renders at once under reduced motion. Flagged rather than assumed.
 
-| # | Placement | Size | Aspect | Art direction |
+Ticked, with the evidence above: zero em-dashes; page theme lock; one accent; shape lock (no non-14px radius
+anywhere in `main` on any page); button contrast; no CTA label wraps; form contrast; hero fits the viewport;
+hero top padding; hero stack discipline; eyebrow count; no split-header; zigzag cap; no duplicate CTA intent;
+logo wall under the hero with real SVG marks and no category labels; copy self-audit; motion motivated; one
+marquee; nav on one line at 64px; no layout family repeated; no `window.addEventListener('scroll')`; reduced
+motion wrapped everywhere; `min-h-[100dvh]` and never `h-screen`; every effect cleans up (verified live: a
+client-side route change leaves 0 pin-spacers and 0 stray transforms, and returning rebuilds exactly 4).
+
+## ui-ux-pro-max pre-delivery checklist
+
+- [x] No emojis as icons: one set site-wide, Phosphor duotone.
+- [x] `cursor-pointer` on clickable elements.
+- [x] Hover states with transitions in the 150-300ms band.
+- [x] Text contrast 4.5:1 minimum: measured per token pair in the MASTER table, and axe reports zero contrast
+      violations at four widths.
+- [x] Focus states visible: 2px ember ring at 2px offset, measured on a control.
+- [x] `prefers-reduced-motion` respected: every scene and micro-interaction measured in its reduced state.
+- [x] Responsive at 375, 768, 1024, 1440: no horizontal scroll at any width on any page tested.
+- [x] No content hidden behind fixed bars: checked by hit testing, including the skip link.
+- [ ] "Light mode text contrast": not applicable, the variation is dark-locked.
+
+## Image to-do, ready to hand to a generator
+
+Full detail in `docs/image-todo.md`. Summary of every placeholder, its size and its direction:
+
+| Slot | Where | Size | Aspect | Art direction |
 | --- | --- | --- | --- | --- |
-| 1 | Home hero, right column | 1600x1200 | 4:3 at every width | A laptop on a clean light desk by a window, daylight from one side, a healthy WordPress site on screen. Calm, uncluttered, a plant or coffee at most. Keep the subject in the left two thirds so nothing important falls in the 48px that overlaps the next section. Decorative, empty alt. |
-| 2 | Home bento, "Hacked and malware" (2x2, behind a scrim) | 1600x1600 | about 1:1 | Daylight: a laptop by a window with a security scan finished clean on screen. |
-| 3 | Home bento, "White screens and fatal errors" | 1600x1000 | 16:10 in a device frame | The real WordPress critical-error page. Produced by `npm run capture` (needs Docker); the cell swaps to it automatically once `public/screens/critical-error-on-this-website.png` exists. |
-| 4 | Home bento, "WooCommerce checkout and payments" (1x2, behind a scrim) | 1000x1600 | about 1:2 portrait | Daylight: a shop owner checking new orders on a phone at a counter. Portrait frame. |
-| 5 | Home steps, "Describe" | 1600x1000 | 16:10 in a device frame | A screenshot of `/contact`, first screen, once the page is final. Save as `public/screens/booking.png`. |
-| 6 | Home steps, "Approve" | 1600x1000 | 16:10 in a device frame | A fixed-price quote awaiting approval. **Blocked:** no such screen exists in the product yet; quotes are a reply, not a page. |
-| 7 | Home steps, "Fix (before)" | 1600x1000 | 16:10 in a device frame | The same critical-error capture as #3. |
-| 8 | Home steps, "Verify (after)" | 1600x1000 | 16:10 in a device frame | The same site loading normally, captured before anything is broken. `npm run capture` now writes this as `public/screens/restored.png`. |
-| 9 | Home compare, "One-time fix" | 1600x1200 | about 4:3, half card | Daylight: an engineer's hands on a laptop, the site loading normally again on screen. |
-| 10 | Home compare, "Care plan" | 1600x1200 | about 4:3, half card | Daylight: a calm, tidy desk with a WordPress dashboard showing everything up to date. |
-
-Service and hub heroes reuse the same eleven photographs through `servicePhotos` and `hubPhotos`. Reshooting about
-six daylight frames would cover every service and hub as well as rows 2, 4, 9 and 10 above.
-
-Image generation was attempted first, as contract rule 7 requires: the Higgsfield account has 0 credits
-(checked 2026-10-13; one 4:3 image costs 0.25).
-
----
-
-## How to re-run
-
-```
-npm run build          # type check, content check, route test
-npx next start -p 3123 # then point the suites at it
-```
-
-The suites used here are Playwright scripts driving `axe-core` (injected from `node_modules`), `fetch` for the
-route and sitemap checks, and `lighthouse` with `chrome-launcher` pointed at the Playwright Chromium
-(`~/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome`). `lighthouse`, `chrome-launcher` and `axe-core` were
-added as devDependencies for this pass.
+| `white-screen-of-death` | error card 1 | 1600x1000 | 16:10 | A browser showing a completely blank white page. `npm run capture` (needs Docker) |
+| `critical-error-on-this-website` | error card 2, fix pan "Diagnose" | 1600x1000 | 16:10 | The WordPress line "There has been a critical error on this website." `npm run capture` |
+| `error-establishing-database-connection` | error card 3 | 1600x1000 | 16:10 | The WordPress line "Error establishing a database connection". `npm run capture` |
+| `illustration-google-deceptive-site-warning` | error card 4 | 1600x1000 | 16:10 | Chrome's red "Deceptive site ahead" interstitial. Not reachable from the capture script: needs a real screenshot of the interstitial or an illustration of it |
+| `restored.png` | the result section, fix pan "Verify" | 1600x1000 | 16:10 | The same site loading normally. `npm run capture` writes it beside the error captures. **Produce this one first:** it is the only section whose entire content is one image |
+| `booking.png` | fix pan "Describe" | 1600x1000 | 16:10 | A screenshot of /contact/ once the v4 booking flow is styled |
+| `quote.png` | fix pan "Approve" | 1600x1000 | 16:10 | A fixed-price quote waiting for approval |
+| Night photography | hero, closing banner, tiles, plans rows | 1600x1000+ | 16:10 and 4:3 | A phone lighting up with an alert on a dark desk; an owner's face lit by a laptop; an engineer's hands at a keyboard. **Each frame needs a real light source in it**: the darkest frames in the current library (mean luminance 13 to 28) render as black panels behind the site's scrim, which is why the closing banner uses the brightest one and mirrors it |

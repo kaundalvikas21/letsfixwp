@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useChat } from "@/components/sections/v3/ChatProvider";
+import type { ReactNode } from "react";
+import { useChat } from "@/components/chat/ChatProvider";
 import { CTA, type CtaIntent } from "@/config/cta";
 import { routes } from "@/config/routes";
 import { track } from "@/lib/track";
@@ -10,14 +11,20 @@ import { track } from "@/lib/track";
 
 type Loc = { location: string; service?: string };
 
-export function BookLink({ location, service, guide, url, className }: Loc & { guide?: string; url?: string; className?: string }) {
+// onClick runs alongside the tracking call, so a host that is in the way (the full-screen menu) can close itself.
+export function BookLink({ location, service, guide, url, className, onClick, icon }: Loc & { guide?: string; url?: string; className?: string; onClick?: () => void; icon?: ReactNode }) {
   return (
     <Link
       href={routes.book({ service, guide, url })}
       className={className}
-      onClick={() => track("cta_book_click", { location, service })}
+      onClick={() => {
+        onClick?.();
+        track("cta_book_click", { location, service });
+      }}
     >
       {CTA.BOOK}
+      {/* Decoration only, never words: the label still comes from CTA and nothing else may. */}
+      {icon}
     </Link>
   );
 }
@@ -46,10 +53,18 @@ export function CheckLink({ location, service, className }: Loc & { className?: 
   );
 }
 
-export function ChatButton({ location, service, className }: Loc & { className?: string }) {
+// onClick runs before the chat opens, so a host that is in the way (the full-screen menu) can close itself.
+export function ChatButton({ location, service, className, onClick }: Loc & { className?: string; onClick?: () => void }) {
   const openChat = useChat();
   return (
-    <button type="button" className={className} onClick={() => openChat(location, service)}>
+    <button
+      type="button"
+      className={className}
+      onClick={() => {
+        onClick?.();
+        openChat(location, service);
+      }}
+    >
       {CTA.CHAT}
     </button>
   );

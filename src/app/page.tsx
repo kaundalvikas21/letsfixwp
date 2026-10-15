@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Bento } from "@/components/sections/v3/Bento";
-import { Faq } from "@/components/sections/v3/Faq";
-import { FinalCta } from "@/components/sections/v3/FinalCta";
-import { GuaranteeCard } from "@/components/sections/v3/GuaranteeCard";
-import { Hero } from "@/components/sections/v3/Hero";
-import { LogoGrid } from "@/components/sections/v3/LogoGrid";
-import { PlanCompare } from "@/components/sections/v3/PlanCompare";
-import { Pricing } from "@/components/sections/v3/Pricing";
-import { Quotes } from "@/components/sections/v3/Quotes";
-import { Security } from "@/components/sections/v3/Security";
-import { Steps } from "@/components/sections/v3/Steps";
+import { Faq } from "@/components/sections/v4/Faq";
+import { FinalCta } from "@/components/sections/v4/FinalCta";
+import { ErrorStack } from "@/components/sections/v4/ErrorStack";
+import { FixPan } from "@/components/sections/v4/FixPan";
+import { Guarantee } from "@/components/sections/v4/Guarantee";
+import { Hero } from "@/components/sections/v4/Hero";
+import { Plans } from "@/components/sections/v4/Plans";
+import { Practices } from "@/components/sections/v4/Practices";
+import { ProblemTiles } from "@/components/sections/v4/ProblemTiles";
+import { Proof } from "@/components/sections/v4/Proof";
+import { Restored } from "@/components/sections/v4/Restored";
 import { routes } from "@/config/routes";
 
 export const metadata: Metadata = {
@@ -18,19 +18,20 @@ export const metadata: Metadata = {
   alternates: { canonical: routes.home },
 };
 
-/** Emergency-first: the hero and the bento lead, and every section below is a v3 section. */
+/** Emergency-first, and every section is v4: the break, the fix, the list of problems, proof, the
+ *  result, the three ways to work with us, the guarantee, how we work and the ask. */
 export default function Home() {
   return (
     <>
       <Hero />
-      <LogoGrid />
-      <Bento />
-      <Steps />
-      <PlanCompare />
-      <Pricing />
-      <Quotes />
-      <Security />
-      <GuaranteeCard />
+      <ErrorStack />
+      <FixPan />
+      <ProblemTiles />
+      <Proof />
+      <Restored />
+      <Plans />
+      <Guarantee />
+      <Practices />
       <Faq />
       <FinalCta />
     </>

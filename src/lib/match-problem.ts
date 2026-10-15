@@ -8,6 +8,9 @@ export type MatchCandidate = {
 
 export type MatchResult = { guideSlug?: string; serviceSlug: string; score: number };
 
+/** A match candidate plus what a list shows and where Enter goes. Built on the server, passed to client islands. */
+export type ProblemItem = MatchCandidate & { title: string; href: string; category: string };
+
 const STOP = new Set([
   "the", "and", "for", "with", "my", "our", "site", "website", "wordpress", "wp",
   "is", "it", "its", "not", "after", "this", "that", "page", "pages", "on", "in",

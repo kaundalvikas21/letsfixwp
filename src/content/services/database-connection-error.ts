@@ -6,7 +6,7 @@ export default serviceSchema.parse({
   hub: "wordpress-fix",
   intent: "fix",
   title: "Error establishing a database connection fix",
-  h1: "Fix \"Error establishing a database connection\" in WordPress",
+  h1: "Database connection errors, fixed by an engineer",
   summary:
     "This error means WordPress cannot reach its MySQL or MariaDB database, because of wrong credentials, a database server that is down or overloaded, or corrupted tables. We find which one it is, fix it and check your data is intact.",
   whoItsFor:

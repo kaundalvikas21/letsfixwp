@@ -26,7 +26,7 @@ export default function GuidesIndex() {
           <ul className="grid gap-2 sm:grid-cols-2">
             {gs.map((g) => (
               <li key={g.slug}>
-                <Link href={routes.guide(g.slug)} className="flex h-full items-center rounded-[20px] border border-line bg-surface px-5 py-3 text-sm font-medium hover:text-accent-text">
+                <Link href={routes.guide(g.slug)} className="flex h-full items-center rounded-[14px] border border-line bg-surface px-5 py-3 text-sm font-medium hover:text-accent-text">
                   {g.title}
                 </Link>
               </li>

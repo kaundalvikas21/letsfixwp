@@ -35,7 +35,7 @@ export default function FreeSiteCheck() {
             For sites that work today. Tell us the address and an engineer looks at updates, backups, security basics and speed.
           </p>
 
-          <section aria-labelledby="covered" className="mt-8 rounded-[20px] bg-surface-2 p-6">
+          <section aria-labelledby="covered" className="mt-8 rounded-[14px] bg-surface-2 p-6">
             <h2 id="covered" className="font-display text-lg font-bold">
               What the check covers
             </h2>
@@ -58,7 +58,7 @@ export default function FreeSiteCheck() {
         </div>
 
         <div className="lg:col-span-6">
-          <div className="rounded-[20px] border border-line bg-surface p-6 shadow-card md:p-8">
+          <div className="rounded-[14px] border border-line bg-surface p-6 shadow-card md:p-8">
             <BookingFlow type="check" options={[]} problems={[]} initial={{ service: "", guide: "", url: "" }} />
           </div>
         </div>

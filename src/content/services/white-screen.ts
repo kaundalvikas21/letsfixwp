@@ -6,7 +6,7 @@ export default serviceSchema.parse({
   hub: "wordpress-fix",
   intent: "fix",
   title: "WordPress white screen of death fix",
-  h1: "Fix the WordPress white screen of death",
+  h1: "The WordPress white screen of death, fixed by an engineer",
   summary:
     "A blank white page with no error usually means PHP stopped with its error output hidden. We find the hidden error in the server logs, fix the plugin, theme or setting that caused it and bring your pages back.",
   whoItsFor:

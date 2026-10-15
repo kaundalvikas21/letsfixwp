@@ -75,7 +75,7 @@ export function CityTemplate({ city: c, node }: { city: City; node: FlatNode }) 
       <Section id="remote" title="How working with us runs">
         <dl className="grid gap-4 sm:grid-cols-3">
           {remoteDelivery.map((r) => (
-            <div key={r.label} className="rounded-[20px] border border-line bg-surface p-5">
+            <div key={r.label} className="rounded-[14px] border border-line bg-surface p-5">
               <dt className="font-display text-sm font-bold tracking-wide text-accent-text">{r.label}</dt>
               <dd className="mt-1.5 text-sm">{r.text}</dd>
             </div>
