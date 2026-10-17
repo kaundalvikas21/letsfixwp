@@ -35,9 +35,10 @@ export function CommandPalette() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        // Another dialog (the mega menu) owns focus: do not stack a second trap on top of it.
+        // Another dialog (the mega menu) owns focus: do not stack a second trap on top of it,
+        // and leave the browser's own shortcut alone when ours is ignored.
         if (!open && document.querySelector('[role="dialog"]')) return;
+        e.preventDefault();
         setOpen(!open);
       }
     };
@@ -69,12 +70,12 @@ export function CommandPalette() {
   const noMatch = shown?.length === 0 && !found?.failed && query.trim() !== "";
   useEffect(() => {
     if (!noMatch) return;
-    const t = setTimeout(() => track("problem_search", { query }), 800);
+    const t = setTimeout(() => track("problem_search", { query: query.slice(0, 200) }), 800);
     return () => clearTimeout(t);
   }, [noMatch, query]);
 
   const go = (p: PaletteResult) => {
-    track("problem_search", { query });
+    track("problem_search", { query: query.slice(0, 200) });
     setOpen(false);
     setQuery("");
     router.push(p.href);
@@ -82,9 +83,9 @@ export function CommandPalette() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger className="hidden min-h-11 cursor-pointer items-center gap-2.5 rounded-[14px] border border-line-strong bg-surface px-4 text-muted transition-colors duration-200 hover:text-text md:inline-flex">
+      <DialogTrigger aria-label="What is it doing?" className="hidden min-h-11 min-w-11 cursor-pointer items-center justify-center gap-2.5 rounded-[14px] border border-line-strong bg-surface px-3 text-muted lg:px-4 transition-colors duration-200 hover:text-text md:inline-flex">
         <MagnifyingGlassIcon weight="duotone" className="size-4 shrink-0" aria-hidden />
-        {"What is it doing?"}
+        <span className="hidden lg:inline">{"What is it doing?"}</span>
         {mac !== null && (
           <kbd aria-hidden className="rounded-[14px] border border-line px-1.5 py-0.5 font-sans text-xs">
             {mac ? "⌘K" : "Ctrl K"}
@@ -108,7 +109,9 @@ export function CommandPalette() {
             {shown === null ? null : shown.length === 0 ? (
               <div className="px-4 py-8 text-center">
                 <p className="text-sm text-muted">
-                  Nothing matches that yet. Try the words your site is showing you, or the error it prints.
+                  {found?.failed
+                    ? "Search did not load. You can still ask us or run the check."
+                    : "Nothing matches that yet. Try the words your site is showing you, or the error it prints."}
                 </p>
                 <div
                   className="mt-4 flex flex-wrap items-center justify-center gap-2"
