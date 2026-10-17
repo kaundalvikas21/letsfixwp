@@ -191,6 +191,18 @@
 @keyframes rise {
   from { opacity: 0; transform: translateY(12px); }
 }
+
+/* The hero headline's second line, one word at a time. CSS rather than Motion so the promise is
+   painted by the stylesheet, not by hydration: a blocked or slow bundle used to leave the line
+   blank, because the server shipped opacity:0 inline and only JS cleared it. 600ms is where the
+   stiffness 100 / damping 20 spring settles; the per-word delay is set inline, 60ms apart. */
+@utility hero-word {
+  display: inline-block;
+  animation: rise 600ms var(--ease-spring) backwards;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
 @keyframes settle {
   from { opacity: 0; transform: scale(0.98); }
 }

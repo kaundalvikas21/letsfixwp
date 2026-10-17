@@ -18,7 +18,7 @@ export function Guarantee() {
 
   return (
     <section aria-labelledby="guarantee" className="mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
-      <h2 id="guarantee" className="text-sm font-semibold tracking-[0.02em] text-muted">
+      <h2 id="guarantee" className="font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_30] sm:text-5xl sm:[font-variation-settings:'opsz'_48]">
         Guarantee
       </h2>
 
