@@ -1,20 +1,10 @@
 import type { ReactNode } from "react";
 import { ChatProvider } from "@/components/chat/ChatProvider";
-import { hubNodes, routes, serviceNodes } from "@/config/routes";
+import { HUB_LABELS, hubNodes, routes, serviceNodes } from "@/config/routes";
+import { problemItems } from "@/content";
 import { NavBar } from "./NavBar";
 import type { MenuCategory } from "./MegaMenu";
 
-// Short labels for the SITEMAP hubs, whose own titles are written for search, not for a 48px heading
-// or a filter chip. Order is the SITEMAP order: fixes first, development never ahead of them.
-// Exported because the problem tiles filter by the same six names.
-export const HUB_LABELS: Record<string, string> = {
-  [routes.hub("wordpress-fix")]: "Fixes",
-  [routes.hub("wordpress-security")]: "Security",
-  [routes.hub("wordpress-maintenance")]: "Care plans",
-  [routes.hub("wordpress-performance-migration")]: "Speed and migration",
-  [routes.hub("wordpress-development")]: "Development",
-  [routes.hub("woocommerce")]: "WooCommerce",
-};
 
 const categories: MenuCategory[] = hubNodes
   .filter((h) => h.inNav !== false)
@@ -51,7 +41,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
       >
         Skip to content
       </a>
-      <NavBar categories={categories} support={support} />
+      <NavBar categories={categories} support={support} problems={problemItems} />
       {children}
     </ChatProvider>
   );

@@ -3,8 +3,7 @@ import Image from "next/image";
 import { hasScreen, Photo } from "@/components/Photo";
 import { getGuide, getService, matchIndex } from "@/content";
 import { servicePhotos } from "@/content/photos";
-import { nodeByPath, routes } from "@/config/routes";
-import { HUB_LABELS } from "./SiteShell";
+import { HUB_LABELS, nodeByPath, routes } from "@/config/routes";
 import { TileGrid, type Tile } from "./TileGrid";
 
 const keyOf = (r: { serviceSlug: string; guideSlug?: string }) => `${r.serviceSlug}:${r.guideSlug ?? ""}`;

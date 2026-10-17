@@ -4,9 +4,8 @@ import { nodeCrumbs } from "@/components/JsonLd";
 import { Breadcrumbs, h1, page } from "@/components/templates/parts";
 import { brand } from "@/config/brand";
 import { serviceForOldSlug } from "@/config/redirects";
-import { nodeByPath, routes, serviceIds } from "@/config/routes";
-import { getGuide, getService, matchIndex, services } from "@/content";
-import type { ProblemItem } from "@/lib/match-problem";
+import { routes, serviceIds } from "@/config/routes";
+import { getGuide, problemItems, services } from "@/content";
 import { cn } from "@/lib/utils";
 import { BookingFlow } from "./BookingFlow";
 import { ContactTabs } from "./ContactTabs";
@@ -19,17 +18,6 @@ export const metadata: Metadata = {
 
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 
-// Every problem the matcher knows, labelled for the picker on the first screen.
-const problems: ProblemItem[] = matchIndex.map((c) => {
-  const svc = getService(c.serviceSlug)!;
-  const guide = c.guideSlug ? getGuide(c.guideSlug) : undefined;
-  return {
-    ...c,
-    title: guide?.title ?? svc.title,
-    href: guide ? routes.guide(guide.slug) : svc.path,
-    category: nodeByPath.get(routes.hub(svc.hub))!.title,
-  };
-});
 
 const optionsFor = (kind: "fix" | "project") =>
   services.filter((s) => (kind === "project" ? s.intent !== "fix" : s.intent === "fix")).map((s) => ({ id: s.id, title: s.title }));
@@ -75,8 +63,8 @@ export default async function Contact({ searchParams }: PageProps<"/contact">) {
           <div className="rounded-[14px] border border-line bg-surface p-6 shadow-card md:p-8">
             <ContactTabs
               initial={initialTab}
-              fix={<BookingFlow type="fix" options={optionsFor("fix")} problems={problems} initial={initial} />}
-              project={<BookingFlow type="project" options={optionsFor("project")} problems={problems} initial={initial} />}
+              fix={<BookingFlow type="fix" options={optionsFor("fix")} problems={problemItems} initial={initial} />}
+              project={<BookingFlow type="project" options={optionsFor("project")} problems={problemItems} initial={initial} />}
             />
           </div>
         </div>
