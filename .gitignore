@@ -46,3 +46,7 @@ next-env.d.ts
 
 # python bytecode from skill scripts
 __pycache__/
+
+# agent tooling residue (per-machine, written by skill launchers)
+.agents/
+.codex/

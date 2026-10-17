@@ -1,0 +1,232 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-17T00:00:00.000Z",
+  "title": "Design System: LetsFixWP",
+  "extensions": {
+    "colorMeta": {
+      "ember": {
+        "role": "primary",
+        "displayName": "Ember",
+        "canonical": "#ff5a36",
+        "tonalRamp": ["oklch(15% 0.07 34)", "oklch(25% 0.11 34)", "oklch(35% 0.15 34)", "oklch(45% 0.19 34)", "oklch(55% 0.21 34)", "oklch(68.4% 0.207 34)", "oklch(80% 0.15 34)", "oklch(92% 0.07 34)"]
+      },
+      "on-ember": {
+        "role": "primary",
+        "displayName": "On Ember",
+        "canonical": "#0c0c0e",
+        "tonalRamp": ["oklch(13.5% 0.003 285)", "oklch(19% 0.003 285)", "oklch(23% 0.003 285)", "oklch(35% 0.003 285)", "oklch(50% 0.003 285)", "oklch(70% 0.003 285)", "oklch(85% 0.003 285)", "oklch(96% 0.003 285)"]
+      },
+      "bg": {
+        "role": "neutral",
+        "displayName": "Lights Out",
+        "canonical": "#0c0c0e",
+        "tonalRamp": ["oklch(13.5% 0.003 285)", "oklch(19% 0.003 285)", "oklch(23% 0.003 285)", "oklch(35% 0.003 285)", "oklch(50% 0.003 285)", "oklch(70% 0.003 285)", "oklch(85% 0.003 285)", "oklch(96% 0.003 285)"]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Lifted Charcoal",
+        "canonical": "#141417",
+        "tonalRamp": ["oklch(13.5% 0.004 285)", "oklch(19% 0.004 285)", "oklch(26% 0.004 285)", "oklch(38% 0.004 285)", "oklch(52% 0.004 285)", "oklch(68% 0.004 285)", "oklch(84% 0.004 285)", "oklch(95% 0.004 285)"]
+      },
+      "surface-2": {
+        "role": "neutral",
+        "displayName": "Inset Charcoal",
+        "canonical": "#1c1c21",
+        "tonalRamp": ["oklch(14% 0.006 285)", "oklch(23% 0.006 285)", "oklch(31% 0.006 285)", "oklch(42% 0.006 285)", "oklch(55% 0.006 285)", "oklch(70% 0.006 285)", "oklch(85% 0.006 285)", "oklch(95% 0.006 285)"]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Warm Paper",
+        "canonical": "#f1f0ee",
+        "tonalRamp": ["oklch(15% 0.003 90)", "oklch(25% 0.003 90)", "oklch(38% 0.003 90)", "oklch(50% 0.003 90)", "oklch(64% 0.003 90)", "oklch(78% 0.003 90)", "oklch(88% 0.003 90)", "oklch(95.7% 0.003 90)"]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Cold Slate",
+        "canonical": "#a3a3ad",
+        "tonalRamp": ["oklch(15% 0.011 285)", "oklch(25% 0.011 285)", "oklch(36% 0.011 285)", "oklch(48% 0.011 285)", "oklch(59% 0.011 285)", "oklch(70% 0.011 285)", "oklch(83% 0.011 285)", "oklch(94% 0.011 285)"]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "rgb(255 255 255 / 0.08)",
+        "tonalRamp": ["rgb(255 255 255 / 0.02)", "rgb(255 255 255 / 0.04)", "rgb(255 255 255 / 0.06)", "rgb(255 255 255 / 0.08)", "rgb(255 255 255 / 0.12)", "rgb(255 255 255 / 0.2)", "rgb(255 255 255 / 0.36)", "rgb(255 255 255 / 0.6)"]
+      },
+      "line-strong": {
+        "role": "neutral",
+        "displayName": "Control Line",
+        "canonical": "rgb(255 255 255 / 0.36)",
+        "tonalRamp": ["rgb(255 255 255 / 0.02)", "rgb(255 255 255 / 0.04)", "rgb(255 255 255 / 0.06)", "rgb(255 255 255 / 0.08)", "rgb(255 255 255 / 0.12)", "rgb(255 255 255 / 0.2)", "rgb(255 255 255 / 0.36)", "rgb(255 255 255 / 0.6)"]
+      },
+      "accent-tint": {
+        "role": "secondary",
+        "displayName": "Ember Tint",
+        "canonical": "color-mix(in srgb, #ff5a36 10%, #141417)",
+        "tonalRamp": ["oklch(16% 0.02 34)", "oklch(22% 0.03 34)", "oklch(28% 0.04 34)", "oklch(36% 0.05 34)", "oklch(48% 0.06 34)", "oklch(62% 0.06 34)", "oklch(78% 0.05 34)", "oklch(92% 0.03 34)"]
+      },
+      "photo-scrim": {
+        "role": "neutral",
+        "displayName": "Photo Scrim",
+        "canonical": "rgb(12 12 14 / 0.66)",
+        "tonalRamp": ["rgb(12 12 14 / 0.2)", "rgb(12 12 14 / 0.32)", "rgb(12 12 14 / 0.44)", "rgb(12 12 14 / 0.55)", "rgb(12 12 14 / 0.66)", "rgb(12 12 14 / 0.72)", "rgb(12 12 14 / 0.86)", "rgb(12 12 14 / 1)"]
+      },
+      "scrim": {
+        "role": "neutral",
+        "displayName": "Overlay Scrim",
+        "canonical": "rgb(12 12 14 / 0.72)",
+        "tonalRamp": ["rgb(12 12 14 / 0.2)", "rgb(12 12 14 / 0.32)", "rgb(12 12 14 / 0.44)", "rgb(12 12 14 / 0.55)", "rgb(12 12 14 / 0.66)", "rgb(12 12 14 / 0.72)", "rgb(12 12 14 / 0.86)", "rgb(12 12 14 / 1)"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero headline and kinetic words only. opsz steps with the size: 30, 36, 48, 60, 72." },
+      "headline": { "displayName": "Headline", "purpose": "Section headings. Bricolage 700 at 3rem, opsz 48." },
+      "title": { "displayName": "Title", "purpose": "Card and panel headings." },
+      "body": { "displayName": "Body", "purpose": "All running copy, Geist 17px / 1.6, measure capped at 68ch." },
+      "label": { "displayName": "Label", "purpose": "Eyebrows, field labels and help text, in Cold Slate. Sentence case, never uppercase." },
+      "mono": { "displayName": "Mono", "purpose": "Error strings, HTTP codes, file paths and log lines, exactly as WordPress prints them. Never UI copy." }
+    },
+    "shadows": [
+      { "name": "shadow-card", "value": "inset 0 1px 0 rgb(255 255 255 / 0.05), 0 1px 2px rgb(0 0 0 / 0.6)", "purpose": "Resting state of any raised surface. The inset top highlight is the depth; the drop only seats the box." },
+      { "name": "shadow-lift", "value": "inset 0 1px 0 rgb(255 255 255 / 0.07), 0 2px 4px rgb(0 0 0 / 0.7)", "purpose": "Hover, and only on something that actually navigates or submits. Applied to a wrapper so layout never shifts." }
+    ],
+    "motion": [
+      { "name": "ease-spring", "value": "linear(0, 0.09 8%, 0.264 17%, 0.442 25%, 0.594 33%, 0.713 42%, 0.801 50%, 0.908 67%, 0.96 83%, 1)", "purpose": "The contract spring (stiffness 100, damping 20, settles in about 600ms) sampled for CSS. The system's default easing." },
+      { "name": "ease-out-quint", "value": "cubic-bezier(0.23, 1, 0.32, 1)", "purpose": "Closing-block reveal over 500ms: headline, then line, then actions, 60ms apart." },
+      { "name": "press", "value": "transform 150ms ease", "purpose": "Button compression to scale(0.98) on active." },
+      { "name": "lift", "value": "box-shadow 200ms ease", "purpose": "Hover shadow change on links and buttons." },
+      { "name": "underline", "value": "transform 200ms ease-out", "purpose": "Wordmark rule scaling in from the left on hover and focus-visible." },
+      { "name": "stagger-words", "value": "60ms", "purpose": "Gap between word spans in the hero reveal, and between the closing block's three parts." },
+      { "name": "stagger-categories", "value": "50ms", "purpose": "Gap between mega-menu categories on reveal." },
+      { "name": "fade-in", "value": "160ms ease-out", "purpose": "Dialog, sheet and mobile menu entrance, and the reduced-motion fallback for the mega menu." },
+      { "name": "marquee", "value": "42s linear infinite", "purpose": "Logo marquee translating a duplicated track by -50%. One per page, pausable, static under reduced motion." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The only high-emphasis element on a screen. Ember fill, near-black label, never white.",
+      "html": "<button class='ds-btn-primary'>Fix my site</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 44px; padding-inline: 1.25rem; border: none; border-radius: 14px; background: var(--accent, #ff5a36); color: var(--on-accent, #0c0c0e); font-family: var(--font-geist, ui-sans-serif, system-ui, sans-serif); font-size: 17px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: transform 150ms ease, box-shadow 200ms ease; } .ds-btn-primary:hover { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 2px 4px rgb(0 0 0 / 0.7); } .ds-btn-primary:focus-visible { outline: 2px solid var(--accent, #ff5a36); outline-offset: 2px; } .ds-btn-primary:active { transform: scale(0.98); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "The always-available alternative, most often Chat with an engineer. Control Line border marks it as operable.",
+      "html": "<button class='ds-btn-secondary'>Chat with an engineer</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 44px; padding-inline: 1.25rem; border: 1px solid var(--line-strong, rgb(255 255 255 / 0.36)); border-radius: 14px; background: var(--surface, #141417); color: var(--text, #f1f0ee); font-family: var(--font-geist, ui-sans-serif, system-ui, sans-serif); font-size: 17px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: transform 150ms ease; } .ds-btn-secondary:focus-visible { outline: 2px solid var(--accent, #ff5a36); outline-offset: 2px; } .ds-btn-secondary:active { transform: scale(0.98); }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Booking and finder field. 16px type so iOS does not zoom on focus, even though body copy is 17px.",
+      "html": "<label class='ds-field-wrap'><span class='ds-field-label'>Your site address</span><input class='ds-field' type='url' placeholder='https://example.com' /></label>",
+      "css": ".ds-field-wrap { display: block; font-family: var(--font-geist, ui-sans-serif, system-ui, sans-serif); } .ds-field-label { display: block; font-size: 14px; font-weight: 600; letter-spacing: 0.02em; color: var(--muted, #a3a3ad); } .ds-field { margin-top: 0.375rem; min-height: 44px; width: 100%; box-sizing: border-box; padding: 10px 16px; border: 1px solid var(--line-strong, rgb(255 255 255 / 0.36)); border-radius: 14px; background: var(--surface, #141417); color: var(--text, #f1f0ee); font-family: inherit; font-size: 16px; } .ds-field::placeholder { color: var(--muted, #a3a3ad); } .ds-field:focus-visible { outline: 2px solid var(--accent, #ff5a36); outline-offset: 2px; }"
+    },
+    {
+      "name": "Option Row",
+      "kind": "chip",
+      "refersTo": "option-row",
+      "description": "The booking flow's choice pattern. Selection is carried by an ember border as well as the tint, so it survives without colour.",
+      "html": "<div class='ds-options'><label class='ds-option is-selected'><input type='radio' name='ds-access' checked /><span>Send a secure login link</span></label><label class='ds-option'><input type='radio' name='ds-access' /><span>I have credentials ready</span></label></div>",
+      "css": ".ds-options { display: flex; flex-direction: column; gap: 0.5rem; font-family: var(--font-geist, ui-sans-serif, system-ui, sans-serif); } .ds-option { display: flex; align-items: center; gap: 0.75rem; min-height: 44px; padding: 14px; border: 1px solid var(--line-strong, rgb(255 255 255 / 0.36)); border-radius: 14px; background: var(--surface, #141417); color: var(--text, #f1f0ee); font-size: 15px; cursor: pointer; } .ds-option.is-selected { border-color: var(--accent, #ff5a36); background: color-mix(in srgb, var(--accent, #ff5a36) 10%, var(--surface, #141417)); } .ds-option:focus-within { outline: 2px solid var(--accent, #ff5a36); outline-offset: 2px; } .ds-option input { accent-color: var(--accent, #ff5a36); width: 18px; height: 18px; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Default raised surface. Fully readable at rest; it only responds to the pointer when it is a link.",
+      "html": "<article class='ds-card'><h3 class='ds-card-title'>Site down after an update</h3><p class='ds-card-body'>A plugin or core update left the site blank or throwing a fatal error. We roll it back and find what broke.</p></article>",
+      "css": ".ds-card { padding: 32px; border: 1px solid var(--line, rgb(255 255 255 / 0.08)); border-radius: 14px; background: var(--surface, #141417); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 1px 2px rgb(0 0 0 / 0.6); font-family: var(--font-geist, ui-sans-serif, system-ui, sans-serif); } .ds-card-title { margin: 0; font-family: var(--font-bricolage, ui-sans-serif, system-ui, sans-serif); font-size: 1.25rem; font-weight: 700; letter-spacing: -0.04em; color: var(--text, #f1f0ee); } .ds-card-body { margin: 0.5rem 0 0; max-width: 52ch; font-size: 17px; line-height: 1.6; color: var(--muted, #a3a3ad); }"
+    },
+    {
+      "name": "Nav Bar (scrolled)",
+      "kind": "nav",
+      "refersTo": "nav-blur",
+      "description": "The system's one translucent surface, and only once the page has scrolled past 8px. Carries the ember scroll-progress rail.",
+      "html": "<header class='ds-nav'><a class='ds-wordmark' href='#'>LetsFixWP<span class='ds-wordmark-rule'></span></a><div class='ds-nav-actions'><button class='ds-btn-primary'>Fix my site</button><button class='ds-btn-secondary'><span class='ds-menu-icon' aria-hidden='true'><span></span><span></span></span>Menu</button></div><span class='ds-nav-rail' aria-hidden='true'></span></header>",
+      "css": ".ds-nav { position: relative; display: flex; align-items: center; gap: 0.5rem; height: 64px; padding-inline: 1.5rem; border-bottom: 1px solid var(--line, rgb(255 255 255 / 0.08)); background: color-mix(in srgb, var(--bg, #0c0c0e) 90%, transparent); backdrop-filter: blur(12px); font-family: var(--font-geist, ui-sans-serif, system-ui, sans-serif); } @media (prefers-reduced-transparency: reduce) { .ds-nav { background: var(--bg, #0c0c0e); backdrop-filter: none; } } .ds-wordmark { position: relative; display: flex; align-items: center; height: 44px; font-family: var(--font-bricolage, ui-sans-serif, system-ui, sans-serif); font-size: 1.25rem; font-weight: 800; letter-spacing: -0.04em; font-variation-settings: 'opsz' 20; color: var(--text, #f1f0ee); text-decoration: none; } .ds-wordmark-rule { position: absolute; inset-inline: 0; bottom: 0.375rem; height: 2px; transform: scaleX(0); transform-origin: left; background: var(--accent, #ff5a36); transition: transform 200ms ease-out; } .ds-wordmark:hover .ds-wordmark-rule, .ds-wordmark:focus-visible .ds-wordmark-rule { transform: scaleX(1); } .ds-nav-actions { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; } .ds-menu-icon { position: relative; display: block; width: 16px; height: 12px; } .ds-menu-icon span { position: absolute; inset-inline: 0; height: 2px; border-radius: 14px; background: currentColor; } .ds-menu-icon span:first-child { top: 2px; } .ds-menu-icon span:last-child { bottom: 2px; } .ds-nav-rail { position: absolute; inset-inline: 0; bottom: 0; height: 2px; transform: scaleX(0.32); transform-origin: left; background: var(--accent, #ff5a36); }"
+    },
+    {
+      "name": "Capture Frame",
+      "kind": "custom",
+      "refersTo": "capture-frame",
+      "description": "The proof device. A real 1600x1000 screenshot in an Inset Charcoal bezel, 14px outside and 14px inside. The restored capture uses the identical frame at the identical size.",
+      "html": "<figure class='ds-capture'><div class='ds-capture-plate'>1600 x 1000 capture from public/screens/</div></figure>",
+      "css": ".ds-capture { margin: 0; padding: 8px; border-radius: 14px; background: var(--surface-2, #1c1c21); } .ds-capture-plate { display: grid; place-items: center; aspect-ratio: 16 / 10; border-radius: 14px; background: var(--bg, #0c0c0e); color: var(--muted, #a3a3ad); font-family: var(--font-geist-mono, ui-monospace, monospace); font-size: 13px; text-align: center; }"
+    },
+    {
+      "name": "Error String",
+      "kind": "custom",
+      "refersTo": "error-string",
+      "description": "The quoted machine voice, as real selectable text. The only place mono appears.",
+      "html": "<p class='ds-error-string'>Error establishing a database connection</p>",
+      "css": ".ds-error-string { margin: 0; padding: 12px 16px; border: 1px solid var(--line, rgb(255 255 255 / 0.08)); border-radius: 14px; background: var(--surface-2, #1c1c21); color: var(--text, #f1f0ee); font-family: var(--font-geist-mono, ui-monospace, monospace); font-size: 15px; line-height: 1.5; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The 2AM Rescue",
+    "overview": "Dark is not a theme here, it is the condition. Someone's site went down in the middle of the night and they are on a phone, in the dark, looking for one competent voice. So the page is the room they are sitting in: near-black, quiet, with a single warm light in it. That light is ember, and it falls only on the thing they should touch next. Everything else is tonal: three charcoal steps and a hairline, doing the work that colour would do in a brighter system.\n\nThe register is urgent but calm. Urgency comes from the storytelling, not from the styling: real error captures stacked and scrubbed under the scroll, a horizontal pan that walks through the fix, a zoom that lands on the restored site. Calm comes from everything holding still around it. One radius. One accent. One translucent surface on the whole site. Body copy at 17px and 1.6, muted text set in a real muted colour rather than at reduced opacity. The composition is bold and asymmetric, the palette is almost monastic, and that tension is the point: the design is loud about the story and silent about itself.\n\nThree worlds were considered and rejected on the record. Not the alert-red-plus-safety-blue dashboard the brief's generator first returned: two hues and a destructive red make every section look like an error state. Not generic dark SaaS, so no purple, no neon, no glow, no glass beyond the scrolled nav bar, no gradient outside two measured exceptions. Not status-colour UI: broken and restored are told with real photographs of the real screens and with plain words, never with hue, which also means a colour-blind visitor loses nothing.",
+    "keyCharacteristics": [
+      "Dark only, locked. No prefers-color-scheme branch, so one designed theme and one contrast table.",
+      "A single accent, ember, carrying every button, focus ring and active indicator.",
+      "One radius, 14px, on every box including nested ones.",
+      "Flat surfaces separated by tonal stepping and a lit top edge, never by drop shadows.",
+      "Motion that tells the rescue story and is motivated case by case; nothing else moves.",
+      "Night-time real photography and real error captures. No illustration, no div-built fake screens."
+    ],
+    "rules": [
+      { "name": "The One Voice Rule", "body": "There is exactly one accent hue in the system and no second one may be introduced, including for status. No green \"fixed\", no blue \"safe\", no amber \"warning\". If a state needs telling, tell it with a real capture and a sentence.", "section": "colors" },
+      { "name": "The Never White On Ember Rule", "body": "White on ember measures 3.10:1 and fails AA. Every ember fill carries the #0C0C0E label, which measures 6.30:1. This is not a preference; shipping white on ember is a bug.", "section": "colors" },
+      { "name": "The Two Lines Rule", "body": "A 1px edge that is decoration uses Hairline (1.19 to 1.26:1, decorative only). A 1px edge that tells you something is operable uses Control Line (3.26 to 3.36:1, clears the 3:1 that non-text UI requires). Choosing by appearance instead of by function is how this system breaks.", "section": "colors" },
+      { "name": "The Optical Size Rule", "body": "Bricolage's opsz axis is set to match the rendered size at every breakpoint rather than left at its default. Faking large-size optics with tracking alone is not acceptable here; the axis exists, so use it.", "section": "typography" },
+      { "name": "The Quoted Error Rule", "body": "Mono appears only when the site is quoting the machine. Error establishing a database connection, 502, wp-config.php. The moment mono is used for a label or a heading, it stops meaning \"this is what your site said\".", "section": "typography" },
+      { "name": "The No Opacity Dimming Rule", "body": "Secondary text uses Cold Slate, a real colour with a measured 7.82:1 on the page. It is never produced by lowering the opacity of Warm Paper, which would make the ratio a function of whatever sits behind it.", "section": "typography" },
+      { "name": "The One Idea Rule", "body": "At this density a section gets a headline, up to 25 words, and one visual or one CTA. A section that needs two ideas is two sections.", "section": "layout" },
+      { "name": "The Measure Over Container Rule", "body": "Line length is set by ch on the text, never by narrowing the container. The container is the page's spine and stays constant.", "section": "layout" },
+      { "name": "The Lit Edge Rule", "body": "Depth is the inset top highlight, not the drop. Adding a larger or softer drop shadow does not add depth on this page, it adds grey.", "section": "elevation" },
+      { "name": "The Hover Earns It Rule", "body": "Lift appears only on an element that navigates or submits. A card that is not a link does not respond to the pointer, and a hover never changes layout, so lift sits on a wrapper rather than on the box that holds the text.", "section": "elevation" },
+      { "name": "The One Glass Rule", "body": "Exactly one surface in the system is translucent: the nav bar once the page has scrolled past 8px, at 90% Lights Out with blur(12px), with a prefers-reduced-transparency fallback to solid. It is a scroll state, not a material, and nothing else may use backdrop-filter.", "section": "elevation" },
+      { "name": "The One Radius Rule", "body": "14px, or 0 because the edge is bleeding, or a true circle. There is no fourth answer, and \"the nested thing needs a slightly smaller radius\" is not one.", "section": "shapes" }
+    ],
+    "dos": [
+      "Do put the near-black #0C0C0E label on every ember fill. It measures 6.30:1.",
+      "Do use Control Line (rgb(255 255 255 / 0.36)) on every boundary that identifies a control, and Hairline (0.08) only for decoration.",
+      "Do set every radius to 14px, including nested boxes, and drop the radius only on an edge that bleeds off the viewport.",
+      "Do step the opsz axis with the font size at every breakpoint (30, 36, 48, 60, 72).",
+      "Do keep body copy at 17px / 1.6 in Geist, and cap prose measure at 68ch.",
+      "Do give every kinetic element a static, fully readable final state that useReducedMotion() and gsap.matchMedia('(prefers-reduced-motion: reduce)') both render immediately.",
+      "Do put a visually-hidden skip link immediately before each pinned scene.",
+      "Do carry depth with the inset top highlight and tonal stepping.",
+      "Do tell broken versus restored with a real capture and a sentence.",
+      "Do take call-to-action wording from src/config/cta.ts and nowhere else."
+    ],
+    "donts": [
+      "Don't put white text on ember anywhere. It measures 3.10:1 and fails.",
+      "Don't introduce a second hue, including a status set. One accent, no green, blue or amber state.",
+      "Don't add a light theme or a prefers-color-scheme branch. This system has one designed theme and one contrast table.",
+      "Don't use any radius other than 14px, and never a pill or a 0px corner on an edge that is not bleeding.",
+      "Don't use backdrop-filter or glass anywhere except the scrolled nav bar.",
+      "Don't add a gradient. The only two in the system are the hero's left-to-right legibility scrim and the flat ember veil inside the guarantee text mask, which is written as a gradient purely because that is how CSS layers a flat colour over an image.",
+      "Don't add ember glows, coloured shadows, 3D effects, or a third shadow token.",
+      "Don't pin more than two scenes per page, or run more than one marquee.",
+      "Don't mix GSAP and Motion in one component tree, or reach for GSAP for a simple in-view reveal.",
+      "Don't animate anything beyond transform and opacity, with the single exception of accordion height.",
+      "Don't use a typing effect, character-split body copy, or text rendered as an image.",
+      "Don't dim secondary text with opacity; use Cold Slate.",
+      "Don't attach window.addEventListener('scroll'); scroll-linked values come from useScroll or ScrollTrigger.",
+      "Don't build a fake error screen or dashboard out of divs; use a real capture.",
+      "Don't ship an emoji as an icon. One set site-wide, Phosphor via @phosphor-icons/react/ssr.",
+      "Don't let a hover change layout, or ship an invisible focus state."
+    ]
+  }
+}
