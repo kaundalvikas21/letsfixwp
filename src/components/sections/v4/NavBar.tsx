@@ -10,7 +10,6 @@ import { brand } from "@/config/brand";
 import { CTA } from "@/config/cta";
 import { routes } from "@/config/routes";
 import { useChat } from "@/components/chat/ChatProvider";
-import type { ProblemItem } from "@/lib/match-problem";
 import { CommandPalette } from "./CommandPalette";
 import { MegaMenu, type MenuCategory, type MenuLink } from "./MegaMenu";
 
@@ -46,7 +45,7 @@ const Wordmark = ({ onClick }: { onClick?: () => void }) => (
  * One client leaf, Motion only: `useScroll` reads the scroll position without a scroll listener.
  * The bar carries no link list, so every page is reached through the menu.
  */
-export function NavBar({ categories, support, problems }: { categories: MenuCategory[]; support: MenuLink[]; problems: ProblemItem[] }) {
+export function NavBar({ categories, support }: { categories: MenuCategory[]; support: MenuLink[] }) {
   const [open, setOpen] = useState(false);
   const { scrollY, scrollYProgress } = useScroll();
 
@@ -71,7 +70,7 @@ export function NavBar({ categories, support, problems }: { categories: MenuCate
         <div className="relative mx-auto flex h-16 w-full max-w-6xl items-center gap-2 px-4 md:px-6">
           <Wordmark />
           <div className="ml-auto flex items-center gap-2">
-            <CommandPalette problems={problems} />
+            <CommandPalette />
             {/* Under 768px the bottom bar carries BOOK, so the bar does not show it twice. */}
             <BookLink location="nav" className="btn-primary hidden md:inline-flex" />
             <DialogTrigger className="btn-secondary gap-2.5">

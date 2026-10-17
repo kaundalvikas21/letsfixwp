@@ -2,13 +2,11 @@
 
 import { MagnifyingGlassIcon } from "@phosphor-icons/react/ssr";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { Command, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { matchProblem, type ProblemItem } from "@/lib/match-problem";
+import { searchProblems, type PaletteResult } from "@/app/palette-search";
 import { track } from "@/lib/track";
-
-const keyOf = (p: { serviceSlug: string; guideSlug?: string }) => `${p.serviceSlug}:${p.guideSlug ?? ""}`;
 
 /** Which modifier to print. Same store pattern as Magnetic's pointer check; the platform never changes,
  *  so there is nothing to subscribe to, and the server assumes the commoner of the two. */
@@ -25,9 +23,11 @@ const useIsMac = () =>
  * bookable. Keyboard only by design: under 768px there is no hardware keyboard and the bottom action
  * bar already carries the primary route, so the trigger is hidden there rather than crowding a 64px bar.
  */
-export function CommandPalette({ problems }: { problems: ProblemItem[] }) {
+export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  // Results are tagged with the query they answer: a stale or in-flight answer simply never matches `query`.
+  const [found, setFound] = useState<{ q: string; items: PaletteResult[] } | null>(null);
   const mac = useIsMac();
   const router = useRouter();
 
@@ -42,18 +42,23 @@ export function CommandPalette({ problems }: { problems: ProblemItem[] }) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const byKey = useMemo(() => new Map(problems.map((p) => [keyOf(p), p])), [problems]);
+  // Ranking happens on the server (matchProblem); cmdk's own substring filter would fight it, hence
+  // shouldFilter={false} below. Debounced for typing, immediate for the empty query shown on open.
+  useEffect(() => {
+    if (!open) return;
+    let live = true;
+    const t = setTimeout(() => {
+      searchProblems(query).then((items) => live && setFound({ q: query, items }));
+    }, query.trim() ? 150 : 0);
+    return () => {
+      live = false;
+      clearTimeout(t);
+    };
+  }, [open, query]);
 
-  // matchProblem does the ranking (titles, error strings, symptoms). cmdk's own substring filter would
-  // fight it, hence shouldFilter={false} below.
-  const shown = useMemo(() => {
-    if (!query.trim()) return problems.slice(0, 6);
-    return matchProblem(query, problems, 8)
-      .map((r) => byKey.get(keyOf(r)))
-      .filter((p): p is ProblemItem => Boolean(p));
-  }, [query, problems, byKey]);
+  const shown = found?.q === query ? found.items : null;
 
-  const go = (p: ProblemItem) => {
+  const go = (p: PaletteResult) => {
     track("problem_search", { query });
     setOpen(false);
     setQuery("");
@@ -85,13 +90,13 @@ export function CommandPalette({ problems }: { problems: ProblemItem[] }) {
             aria-label="Describe what your site is doing"
           />
           <CommandList>
-            {shown.length === 0 ? (
+            {shown === null ? null : shown.length === 0 ? (
               <p className="px-4 py-8 text-center text-sm text-muted">
                 Nothing matches that yet. Try the words your site is showing you, or the error it prints.
               </p>
             ) : (
               shown.map((p) => (
-                <CommandItem key={keyOf(p)} value={keyOf(p)} onSelect={() => go(p)}>
+                <CommandItem key={p.key} value={p.key} onSelect={() => go(p)}>
                   <span className="flex-1">{p.title}</span>
                   <span className="shrink-0 text-xs text-muted">{p.category}</span>
                 </CommandItem>

@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { ChatProvider } from "@/components/chat/ChatProvider";
 import { HUB_LABELS, hubNodes, routes, serviceNodes } from "@/config/routes";
-import { problemItems } from "@/content";
 import { NavBar } from "./NavBar";
 import type { MenuCategory } from "./MegaMenu";
 
@@ -41,7 +40,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
       >
         Skip to content
       </a>
-      <NavBar categories={categories} support={support} problems={problemItems} />
+      <NavBar categories={categories} support={support} />
       {children}
     </ChatProvider>
   );
