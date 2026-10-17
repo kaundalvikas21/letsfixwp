@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -57,7 +58,17 @@ export function StickyStack({ cards }: { cards: ReactNode[] }) {
       {cards.map((card, i) => (
         <div
           key={i}
-          className="stack-card flex items-center justify-center py-10 motion-safe:md:sticky motion-safe:md:top-0 md:min-h-[100dvh] md:py-0"
+          className={cn(
+            "stack-card flex items-center justify-center py-10 motion-safe:md:sticky motion-safe:md:top-0 md:py-0",
+            // A full viewport per card, centred, is what makes the stack read: the card you have read
+            // needs room to shrink and dim before the next one covers it, and both are centred so the
+            // smaller one sits concentrically inside the arriving one. Shortening the box to roughly a
+            // card's height leaves ~50px of travel, and the two cards then overlap by a hair instead
+            // of replacing each other, which reads as a rendering fault.
+            // The last card is the exception: nothing stacks over it, so a full viewport only centred
+            // it and left ~180px of dead space before the section's closing CTA.
+            i < cards.length - 1 && "md:min-h-[100dvh]",
+          )}
         >
           {card}
         </div>

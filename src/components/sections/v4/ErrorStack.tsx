@@ -90,7 +90,7 @@ export function ErrorStack() {
   return (
     <section
       aria-labelledby="sound-familiar"
-      className="relative py-16 md:py-24"
+      className="relative py-16 md:pt-24 md:pb-16"
     >
       <div className="mx-auto max-w-4xl px-4 md:px-6">
         <h2 id="sound-familiar" className="font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_30] sm:text-5xl sm:[font-variation-settings:'opsz'_48]">
@@ -104,7 +104,10 @@ export function ErrorStack() {
         Skip the error screens
       </a>
 
-      <div className="mt-8">
+      {/* The first card centres itself in a full viewport, so it carries ~170px of unused space above
+          its content. Pull the stack up into that space on md rather than leaving the heading
+          stranded above a void; below md there is no min-height and nothing to absorb. */}
+      <div className="mt-8 md:-mt-28">
         <StickyStack
           cards={CARDS.map((c) => (
             <Card key={c.slug} slug={c.slug} quote={c.quote} />
@@ -114,7 +117,7 @@ export function ErrorStack() {
 
       <div
         id="seeing-one-of-these"
-        className="mx-auto mt-16 flex max-w-4xl flex-wrap items-center gap-4 px-4 md:px-6"
+        className="mx-auto mt-12 flex max-w-4xl flex-wrap items-center gap-4 px-4 md:px-6"
       >
         <p className="text-lg">Seeing one of these?</p>
         <BookLink location="home:error-stack" className="btn-primary" />

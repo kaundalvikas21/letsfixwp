@@ -302,13 +302,41 @@ This section replaced the v3 GuaranteeCard, which was deleted.
 
 | # | Section | Layout family | Eyebrow | Marquee | CTA intents |
 | --- | --- | --- | --- | --- | --- |
-| 9 | How we work on your site | compact two-column checklist | no | no | none |
+| 9 | How we work on your site | divided practice rows (icon rail, promise, sentence) | no | no | none |
 
-Section 9 measurements (1440, against the production build rather than the dev server): five items, five
-ShieldCheck icons at 20px in ember, two columns of 404px, one column at 375 with no horizontal scroll.
-Deliberately quiet: the heading is 24px against the 136px guarantee directly above it, the body is 15px,
-there is no card, no border and no motion. It sits after the guarantee, which is what "quiet after the loud
-section" asks for; the v3 Security section it replaced sat before it, and has been deleted.
+Section 9 measurements (1440, dev server): five rows on a 20px / 304px / 716px grid with 32px gutters, the
+icon rail at x=168, the promise at x=220 and the sentence at x=556 capped to 58ch (580px), each row 81px
+tall between hairlines, section 700px. At 768 the sentence column is 332px and wraps to two lines, 106px
+rows. At 375 the grid collapses to 20px / 311px, the sentence sits under the promise at the same x=48, rows
+are 119px, no horizontal scroll. Heading 48px / w800 / -1.92px at the spine (x=168), 30px at 375. axe 0
+violations at 1440 and 375, detector clean.
+
+It was a two-column checklist until this pass. Five items in two columns leaves an empty sixth cell at the
+bottom right, which is a planning error rather than whitespace, and the two short columns hugged the left
+half under a heading that runs the full width. Rows carry the promise left and its one sentence right, so
+each line reads across the whole spine and the five read as one set. Hairlines do the grouping, not cards:
+there is no elevation here to communicate. Promise and sentence used to share 15px and were told apart by
+weight alone, which is not a hierarchy under a 48px heading; the promise is now 17px.
+
+Motion (PracticeRows, the one client island in this section): the five rows arrive 55ms apart the first time
+the list crosses 20% into view, opacity 0 to 1 and translateY 14px to 0 over 500ms on cubic-bezier(0.23, 1,
+0.32, 1). What it communicates: five separate promises rather than one block of reassurance to skip. Sampled
+against the production build at 1440, from the frame the list enters: row 1 at 0.36/8.9px while rows 2 to 5
+are still at 0/14px, then 0.89/1.5, 0.77/3.2, 0.51/6.8, 0.11/12.4, 0/14 across the five, settled by about
+750ms. once: true, so it never replays. Under reduced motion all five are opacity 1 with no transform from
+the first paint, carried by motion-reduce:opacity-100! and motion-reduce:transform-none! rather than by
+hydration, so a blocked bundle cannot leave the section blank.
+
+Hover: the row's own hairline is replaced by an ember one that scales from scale-x 0 to 1 from the left over
+260ms on the same curve, measured at 0.969 after 120ms and back to 0 on leave. It is the fix scene's ember
+rail, one row wide, travelling in the reading direction. It says "this line" without claiming the row is a
+link, which it is not (DESIGN.md's Hover Earns It Rule). Tailwind v4 gates every hover: variant behind
+(hover: hover), so a tap on a phone does not fire it. Transform only, 1px tall, sitting on the hairline
+rather than beside it, so the row does not grow by a pixel.
+
+Still deliberately quiet in content: no image, no card, no call to action. It sits after the guarantee, which
+is what "quiet after the loud section" asks for; the v3 Security section it replaced sat before it, and has
+been deleted.
 
 Each line is a claim gated in brand.claims, which is what {{CONFIRM}} means in this repo: a production
 deploy fails until the owner confirms all five, and setting one to false removes its line rather than

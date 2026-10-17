@@ -141,6 +141,16 @@
   }
 }
 
+/* The guarantee heading's fill. Solid ember by default, so a phone never downloads the 76KB frame
+   and a browser that cannot paint the pattern still gets legible words; the photograph takes over
+   from md up, which is where the CSS mask used to switch too. */
+@utility guarantee-fill {
+  fill: var(--accent);
+  @media (width >= 48rem) {
+    fill: url(#guarantee-photo);
+  }
+}
+
 /* The guarantee words, with a real photograph showing through them.
    background-blend-mode does not apply once a background is clipped to text in Chromium, so the
    luminance floor is a flat ember veil layered over the photograph instead: at 0.72 the darkest
@@ -169,9 +179,25 @@
   }
 }
 
-/* Logo marquee: the track holds the set twice, so -50% lands on the seam. */
+/* The marquee's two ends, softened so logos arrive and leave instead of being cut off at the clip
+   edge. A mask, not a painted gradient: it removes alpha rather than adding a colour, so the page
+   background still shows through unchanged. Percentages rather than a fixed length, so the fade is
+   the same proportion of a 343px phone window as of a 1104px desktop one. Switched off under reduced
+   motion, where the row is a static wrapped block and there is nothing travelling past an edge. */
+@utility marquee-fade {
+  mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+  @media (prefers-reduced-motion: reduce) {
+    mask-image: none;
+  }
+}
+
+/* Logo marquee: the track holds the set three times and each copy carries its own trailing gap, so
+   one third of the track is exactly one repeat unit and -33.3333% lands on the seam with no drift.
+   Three copies rather than two because after the shift the remainder still has to fill the window:
+   two 768px copies left a 327px blank strip on the right of a 1104px container near the end of each
+   loop. Changing the copy count means changing this percentage to match. */
 @keyframes marquee {
-  to { transform: translateX(-50%); }
+  to { transform: translateX(-33.3333%); }
 }
 
 @keyframes dialog-in {

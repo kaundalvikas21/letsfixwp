@@ -52,7 +52,10 @@ const PANELS: {
   },
 ];
 
-const panel = "flex w-full shrink-0 flex-col rounded-[14px] border border-line bg-surface p-5 shadow-card md:w-[26rem] md:p-6";
+// min-h so the panned row shares one baseline: the panels measured 431, 431, 455, 431, 431, and a
+// centred row of unequal cards misaligns top and bottom by 12px as each one passes.
+const panel =
+  "flex w-full shrink-0 flex-col rounded-[14px] border border-line bg-surface p-5 shadow-card md:min-h-[29rem] md:w-[26rem] md:p-6";
 const sizes = "(min-width: 768px) 26rem, 92vw";
 
 /**

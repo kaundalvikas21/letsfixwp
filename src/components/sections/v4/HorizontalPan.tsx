@@ -26,20 +26,28 @@ export function HorizontalPan({ children }: { children: ReactNode }) {
     () => {
       const mm = gsap.matchMedia();
       mm.add("(min-width: 768px) and (prefers-reduced-motion: no-preference)", () => {
-        const distance = track.current!.scrollWidth - window.innerWidth;
-        if (distance <= 0) return;
+        // Measured fresh every refresh rather than captured once. It used to be a const read at setup,
+        // so invalidateOnRefresh re-ran `end` and the tween against a stale number: resize the window
+        // and the track under- or over-travelled, leaving the last panel short of the viewport.
+        const distance = () => track.current!.scrollWidth - window.innerWidth;
+        if (distance() <= 0) return;
         gsap
           .timeline({
             scrollTrigger: {
               trigger: wrap.current,
               start: "top top",
-              end: () => `+=${distance}`,
+              end: () => `+=${distance()}`,
               pin: true,
+              // ScrollTrigger pins by switching the element to position: fixed, and that switch is a
+              // layout change the browser scores as a shift. This one scene was the whole page's CLS:
+              // 1.84 against a 0.1 budget, in two jumps as the pin engaged and released. Pinning by
+              // transform keeps the element in flow and moves it instead.
+              pinType: "transform",
               scrub: 1,
               invalidateOnRefresh: true,
             },
           })
-          .to(track.current, { x: -distance, ease: "none" }, 0)
+          .to(track.current, { x: () => -distance(), ease: "none" }, 0)
           .fromTo(rail.current, { scaleX: 0 }, { scaleX: 1, ease: "none" }, 0);
         void document.fonts.ready.then(() => ScrollTrigger.refresh());
       });
