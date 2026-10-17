@@ -6,6 +6,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { Command, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { searchProblems, type PaletteResult } from "@/app/palette-search";
+import { ChatButton, CheckLink } from "@/components/Cta";
 import { track } from "@/lib/track";
 
 /** Which modifier to print. Same store pattern as Magnetic's pointer check; the platform never changes,
@@ -27,7 +28,7 @@ export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   // Results are tagged with the query they answer: a stale or in-flight answer simply never matches `query`.
-  const [found, setFound] = useState<{ q: string; items: PaletteResult[] } | null>(null);
+  const [found, setFound] = useState<{ q: string; items: PaletteResult[]; failed?: boolean } | null>(null);
   const mac = useIsMac();
   const router = useRouter();
 
@@ -35,12 +36,14 @@ export function CommandPalette() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((o) => !o);
+        // Another dialog (the mega menu) owns focus: do not stack a second trap on top of it.
+        if (!open && document.querySelector('[role="dialog"]')) return;
+        setOpen(!open);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [open]);
 
   // Ranking happens on the server (matchProblem); cmdk's own substring filter would fight it, hence
   // shouldFilter={false} below. Debounced for typing, immediate for the empty query shown on open.
@@ -48,7 +51,10 @@ export function CommandPalette() {
     if (!open) return;
     let live = true;
     const t = setTimeout(() => {
-      searchProblems(query).then((items) => live && setFound({ q: query, items }));
+      searchProblems(query)
+        .then((items) => live && setFound({ q: query, items }))
+        // A dropped request lands on the empty state, which still offers chat and the check.
+        .catch(() => live && setFound({ q: query, items: [], failed: true }));
     }, query.trim() ? 150 : 0);
     return () => {
       live = false;
@@ -57,6 +63,15 @@ export function CommandPalette() {
   }, [open, query]);
 
   const shown = found?.q === query ? found.items : null;
+
+  // Missing guides show up as searches that found nothing. Fires once the visitor stops typing
+  // (800ms after the zero-result response arrived); a failed request is not a no-match.
+  const noMatch = shown?.length === 0 && !found?.failed && query.trim() !== "";
+  useEffect(() => {
+    if (!noMatch) return;
+    const t = setTimeout(() => track("problem_search", { query }), 800);
+    return () => clearTimeout(t);
+  }, [noMatch, query]);
 
   const go = (p: PaletteResult) => {
     track("problem_search", { query });
@@ -91,9 +106,18 @@ export function CommandPalette() {
           />
           <CommandList>
             {shown === null ? null : shown.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-muted">
-                Nothing matches that yet. Try the words your site is showing you, or the error it prints.
-              </p>
+              <div className="px-4 py-8 text-center">
+                <p className="text-sm text-muted">
+                  Nothing matches that yet. Try the words your site is showing you, or the error it prints.
+                </p>
+                <div
+                  className="mt-4 flex flex-wrap items-center justify-center gap-2"
+                  onClick={() => setOpen(false)}
+                >
+                  <ChatButton location="palette:no-match" className="btn-primary" />
+                  <CheckLink location="palette:no-match" className="btn-secondary" />
+                </div>
+              </div>
             ) : (
               shown.map((p) => (
                 <CommandItem key={p.key} value={p.key} onSelect={() => go(p)}>

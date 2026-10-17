@@ -10,7 +10,8 @@ const byKey = new Map(problemItems.map((p) => [keyOf(p), p]));
 const slim = (p: (typeof problemItems)[number]): PaletteResult => ({ key: keyOf(p), title: p.title, href: p.href, category: p.category });
 
 /** Header palette search. Runs on the server so the match index (head/body scoring text) never ships to the client. */
-export async function searchProblems(query: string): Promise<PaletteResult[]> {
+export async function searchProblems(raw: string): Promise<PaletteResult[]> {
+  const query = raw.slice(0, 200); // publicly callable: bound what the tokenizer sees
   if (!query.trim()) return problemItems.slice(0, 6).map(slim);
   return matchProblem(query, problemItems, 8)
     .map((r) => byKey.get(keyOf(r)))
