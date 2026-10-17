@@ -10,6 +10,7 @@ import { brand } from "@/config/brand";
 import { CTA } from "@/config/cta";
 import { routes } from "@/config/routes";
 import { useChat } from "@/components/chat/ChatProvider";
+import { CommandPalette } from "./CommandPalette";
 import { MegaMenu, type MenuCategory, type MenuLink } from "./MegaMenu";
 
 /**
@@ -66,9 +67,10 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
           style={{ scaleX: scrollYProgress, opacity: backdrop }}
           className="absolute inset-x-0 bottom-0 h-[2px] origin-left bg-accent"
         />
-        <div className="relative flex h-16 items-center gap-2 px-4 md:px-6">
+        <div className="relative mx-auto flex h-16 w-full max-w-6xl items-center gap-2 px-4 md:px-6">
           <Wordmark />
           <div className="ml-auto flex items-center gap-2">
+            <CommandPalette />
             {/* Under 768px the bottom bar carries BOOK, so the bar does not show it twice. */}
             <BookLink location="nav" className="btn-primary hidden md:inline-flex" />
             <DialogTrigger className="btn-secondary gap-2.5">
@@ -85,7 +87,7 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
       >
         <DialogTitle className="sr-only">Menu</DialogTitle>
         <DialogDescription className="sr-only">Everything on the site, by what has gone wrong</DialogDescription>
-        <div className="flex h-16 shrink-0 items-center gap-2 px-4 md:px-6">
+        <div className="mx-auto flex h-16 w-full max-w-6xl shrink-0 items-center gap-2 px-4 md:px-6">
           <Wordmark onClick={close} />
           <button type="button" onClick={close} className="btn-secondary ml-auto gap-2.5">
             <Rules crossed />

@@ -11,18 +11,20 @@ import { QuotePair } from "./QuotePair";
 const LOGOS = [siWordpress, siWoocommerce, siElementor, siGutenberg, siPhp, siMysql, siCpanel, siCloudflare];
 
 // Every icon is drawn inside a 24x24 square, so wide wordmarks come out short. Hand-tuned so they read
-// at the same optical weight as the round marks; a logo not listed here uses size-9.
+// at the same optical weight as the round marks; a logo not listed here uses size-10. Every entry
+// moved up one step together, so the balance between them is the one that was tuned. The row is
+// h-20 because the clip window crops anything taller, and the largest mark now draws an 80px box.
 const OPTICAL: Record<string, string> = {
-  woocommerce: "size-[4.5rem]",
-  cpanel: "size-16",
-  mysql: "size-12",
-  php: "size-12",
-  cloudflare: "size-11",
+  woocommerce: "size-20",
+  cpanel: "size-[4.5rem]",
+  mysql: "size-14",
+  php: "size-14",
+  cloudflare: "size-12",
 };
 
 const logos = LOGOS.map((icon) => (
-  <li key={icon.slug} className="flex h-12 shrink-0 items-center justify-center">
-    <svg role="img" aria-label={icon.title} viewBox="0 0 24 24" className={`${OPTICAL[icon.slug] ?? "size-9"} fill-muted`}>
+  <li key={icon.slug} className="flex h-20 shrink-0 items-center justify-center">
+    <svg role="img" aria-label={icon.title} viewBox="0 0 24 24" className={`${OPTICAL[icon.slug] ?? "size-10"} fill-muted`}>
       <title>{icon.title}</title>
       <path d={icon.path} />
     </svg>
@@ -50,7 +52,7 @@ export function Proof() {
         className="group mt-12 inline-flex min-h-11 items-center gap-2 font-semibold text-accent-text"
       >
         Read the case studies
-        <ArrowUpRightIcon weight="duotone" className="size-5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none" aria-hidden />
+        <ArrowUpRightIcon weight="duotone" className="size-5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:translate-none!" aria-hidden />
       </Link>
     </section>
   );

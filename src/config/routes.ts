@@ -94,3 +94,17 @@ export const ancestry = (path: string): FlatNode[] => {
   for (let n = nodeByPath.get(path); n; n = n.parentPath ? nodeByPath.get(n.parentPath) : undefined) out.unshift(n);
   return out;
 };
+
+/**
+ * Short labels for the SITEMAP hubs, whose own titles are written for search, not for a 48px heading,
+ * a filter chip or a result row. Order is the SITEMAP order: fixes first, development never ahead of
+ * them. Lives here so the nav, the problem tiles and the matcher index all read the same six names.
+ */
+export const HUB_LABELS: Record<string, string> = {
+  [routes.hub("wordpress-fix")]: "Fixes",
+  [routes.hub("wordpress-security")]: "Security",
+  [routes.hub("wordpress-maintenance")]: "Care plans",
+  [routes.hub("wordpress-performance-migration")]: "Speed and migration",
+  [routes.hub("wordpress-development")]: "Development",
+  [routes.hub("woocommerce")]: "WooCommerce",
+};

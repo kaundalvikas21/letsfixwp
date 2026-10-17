@@ -3,8 +3,7 @@ import Image from "next/image";
 import { hasScreen, Photo } from "@/components/Photo";
 import { getGuide, getService, matchIndex } from "@/content";
 import { servicePhotos } from "@/content/photos";
-import { nodeByPath, routes } from "@/config/routes";
-import { HUB_LABELS } from "./SiteShell";
+import { HUB_LABELS, nodeByPath, routes } from "@/config/routes";
 import { TileGrid, type Tile } from "./TileGrid";
 
 const keyOf = (r: { serviceSlug: string; guideSlug?: string }) => `${r.serviceSlug}:${r.guideSlug ?? ""}`;
@@ -25,24 +24,37 @@ const tiles: Tile[] = matchIndex.map((c) => {
     node: (
       <a
         href={guide ? routes.guide(guide.slug) : service.path}
-        className={`group relative flex size-full flex-col justify-end overflow-hidden rounded-[14px] border border-line p-5 ${
+        // Hover is earned here: the tile is a link. Three signals, all inside the world's rules.
+        // The lift is --shadow-lift, the token DESIGN.md reserves for a link answering the pointer.
+        // The arrow travels, the same "this is a door, not a label" move the closing CTA already
+        // makes. The photograph breathes behind the clip. Nothing changes layout and nothing but
+        // transform and opacity animates, so the grid never reflows under the cursor. Keyboard gets
+        // the identical treatment through focus-visible, and reduced motion keeps the lift but drops
+        // the movement. Note the cancels are scale-100 and translate-none, not transform-none:
+        // Tailwind v4 emits these utilities as the `scale` and `translate` properties, so a
+        // transform-none override silently does nothing.
+        className={`group relative flex size-full flex-col justify-end overflow-hidden rounded-[14px] border border-line p-5 hover:shadow-lift focus-visible:shadow-lift transition-shadow duration-200 motion-reduce:transition-none ${
           critical ? "bg-surface-2" : "bg-surface"
         }`}
       >
         {critical &&
           (hasScreen(capture) ? (
-            <Image src={capture} alt="" width={1600} height={1000} sizes="(min-width: 1024px) 30vw, 92vw" className="absolute inset-0 size-full object-cover" />
+            <Image src={capture} alt="" width={1600} height={1000} sizes="(min-width: 1024px) 30vw, 92vw" className="absolute inset-0 size-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 group-focus-visible:scale-105 motion-reduce:transition-none motion-reduce:scale-100!" />
           ) : (
             // No capture yet (docs/image-todo.md): the service's own night frame stands in, so the
             // tile still reads as a screen you would recognise rather than an empty box.
-            <Photo id={servicePhotos[service.id]} decorative sizes="(min-width: 1024px) 30vw, 92vw" className="absolute inset-0" />
+            <Photo id={servicePhotos[service.id]} decorative sizes="(min-width: 1024px) 30vw, 92vw" className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-105 group-focus-visible:scale-105 motion-reduce:transition-none motion-reduce:scale-100!" />
           ))}
         {/* Flat scrim, never a gradient. --text over it measures 5.6:1 against the brightest photo,
             which is why both lines on an image tile use --text and not --muted (2.55:1 there). */}
         {critical && <span aria-hidden className="absolute inset-0 bg-photo-scrim" />}
         <span className="relative flex items-start justify-between gap-3">
           <span className="line-clamp-2 font-display text-lg leading-tight font-bold text-balance">{title}</span>
-          <ArrowUpRightIcon weight="duotone" className="mt-1 size-5 shrink-0 text-accent-text" aria-hidden />
+          <ArrowUpRightIcon
+            weight="duotone"
+            className="mt-1 size-5 shrink-0 text-accent-text transition-transform duration-150 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-focus-visible:translate-x-0.5 group-focus-visible:-translate-y-0.5 motion-reduce:transition-none motion-reduce:translate-none!"
+            aria-hidden
+          />
         </span>
         <span className={`relative mt-2 line-clamp-3 text-[15px] ${critical ? "text-text" : "text-muted"}`}>{symptom}</span>
       </a>
@@ -71,7 +83,7 @@ export function ProblemTiles() {
       >
         Pick your problem. We take it from there.
       </h2>
-      <TileGrid tiles={ordered} categories={categories} index={matchIndex} />
+      <TileGrid tiles={ordered} categories={categories} />
     </section>
   );
 }

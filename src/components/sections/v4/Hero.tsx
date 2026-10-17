@@ -22,7 +22,7 @@ const SUBTEXT =
 export function Hero() {
   return (
     <section aria-labelledby="hero-title" className="relative isolate flex min-h-[100dvh] items-center overflow-hidden">
-      <div className="mx-auto w-full max-w-6xl px-4 pt-24 pb-16 md:px-6">
+      <div className="mx-auto w-full max-w-6xl px-4 pt-20 pb-16 [@media(min-height:700px)]:pt-24 md:px-6">
         <div className="grid grid-cols-4 gap-x-6 md:grid-cols-12">
           <div className="relative z-10 col-span-4 md:col-span-8">
             <h1
@@ -40,9 +40,13 @@ export function Hero() {
           </div>
 
           {/* One image, placed twice: a block that bleeds off the right edge under 1024px, the
-              columns 7 to 12 panel above it. Two elements would preload two sizes of the LCP. */}
+              columns 7 to 12 panel above it. Two elements would preload two sizes of the LCP.
+              sizes at lg is 83vw, not the 50vw the panel is wide: the panel is 50vw by 100dvh and
+              object-cover scales a 4:3 source by its height, so the painted width is dvh * 1.333,
+              which on a 16:10 window is about 83vw. Advertising 50vw made the browser fetch a 750px
+              candidate and paint it across 1200px, and the preload link inherited the same number. */}
           <div className="col-span-4 mt-12 -mr-4 aspect-[4/3] overflow-hidden rounded-l-[14px] md:col-span-12 md:-mr-6 lg:absolute lg:inset-y-0 lg:right-0 lg:left-1/2 lg:mt-0 lg:mr-0 lg:aspect-auto lg:rounded-none">
-            <Photo id="hero-console" preload sizes="(min-width: 1024px) 50vw, 100vw" className="object-[60%_50%]" />
+            <Photo id="hero-console" preload sizes="(min-width: 1024px) 83vw, 100vw" className="object-[60%_50%]" />
           </div>
         </div>
       </div>

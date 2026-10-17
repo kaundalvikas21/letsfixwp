@@ -1,0 +1,137 @@
+"use client";
+
+import { MagnifyingGlassIcon } from "@phosphor-icons/react/ssr";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { Command, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { searchProblems, type PaletteResult } from "@/app/palette-search";
+import { ChatButton, CheckLink } from "@/components/Cta";
+import { track } from "@/lib/track";
+
+/** Which modifier to print. Same store pattern as Magnetic's pointer check; the platform never changes,
+ *  so there is nothing to subscribe to, and the server assumes the commoner of the two. */
+const useIsMac = () =>
+  useSyncExternalStore(
+    () => () => {},
+    () => /Mac|iPhone|iPad|iPod/.test(navigator.userAgent),
+    () => false,
+  );
+
+/**
+ * The header asks the visitor what their site is doing, from any page, without making them learn the
+ * nav. Same matcher as the home finder and the booking flow, so what they type resolves to something
+ * bookable. Keyboard only by design: under 768px there is no hardware keyboard and the bottom action
+ * bar already carries the primary route, so the trigger is hidden there rather than crowding a 64px bar.
+ */
+export function CommandPalette() {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  // Results are tagged with the query they answer: a stale or in-flight answer simply never matches `query`.
+  const [found, setFound] = useState<{ q: string; items: PaletteResult[]; failed?: boolean } | null>(null);
+  const mac = useIsMac();
+  const router = useRouter();
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
+        // Another dialog (the mega menu) owns focus: do not stack a second trap on top of it,
+        // and leave the browser's own shortcut alone when ours is ignored.
+        if (!open && document.querySelector('[role="dialog"]')) return;
+        e.preventDefault();
+        setOpen(!open);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  // Ranking happens on the server (matchProblem); cmdk's own substring filter would fight it, hence
+  // shouldFilter={false} below. Debounced for typing, immediate for the empty query shown on open.
+  useEffect(() => {
+    if (!open) return;
+    let live = true;
+    const t = setTimeout(() => {
+      searchProblems(query)
+        .then((items) => live && setFound({ q: query, items }))
+        // A dropped request lands on the empty state, which still offers chat and the check.
+        .catch(() => live && setFound({ q: query, items: [], failed: true }));
+    }, query.trim() ? 150 : 0);
+    return () => {
+      live = false;
+      clearTimeout(t);
+    };
+  }, [open, query]);
+
+  const shown = found?.q === query ? found.items : null;
+
+  // Missing guides show up as searches that found nothing. Fires once the visitor stops typing
+  // (800ms after the zero-result response arrived); a failed request is not a no-match.
+  const noMatch = shown?.length === 0 && !found?.failed && query.trim() !== "";
+  useEffect(() => {
+    if (!noMatch) return;
+    const t = setTimeout(() => track("problem_search", { query: query.slice(0, 200) }), 800);
+    return () => clearTimeout(t);
+  }, [noMatch, query]);
+
+  const go = (p: PaletteResult) => {
+    track("problem_search", { query: query.slice(0, 200) });
+    setOpen(false);
+    setQuery("");
+    router.push(p.href);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger aria-label="What is it doing?" className="hidden min-h-11 min-w-11 cursor-pointer items-center justify-center gap-2.5 rounded-[14px] border border-line-strong bg-surface px-3 text-muted lg:px-4 transition-colors duration-200 hover:text-text md:inline-flex">
+        <MagnifyingGlassIcon weight="duotone" className="size-4 shrink-0" aria-hidden />
+        <span className="hidden lg:inline">{"What is it doing?"}</span>
+        {mac !== null && (
+          <kbd aria-hidden className="rounded-[14px] border border-line px-1.5 py-0.5 font-sans text-xs">
+            {mac ? "⌘K" : "Ctrl K"}
+          </kbd>
+        )}
+      </DialogTrigger>
+
+      <DialogContent showCloseButton={false} className="p-0">
+        <DialogTitle className="sr-only">Find your problem</DialogTitle>
+        <DialogDescription className="sr-only">
+          Type what your site is doing. Results are the guides and fixes that match.
+        </DialogDescription>
+        <Command shouldFilter={false} loop>
+          <CommandInput
+            value={query}
+            onValueChange={setQuery}
+            placeholder="Describe what your site is doing"
+            aria-label="Describe what your site is doing"
+          />
+          <CommandList>
+            {shown === null ? null : shown.length === 0 ? (
+              <div className="px-4 py-8 text-center">
+                <p className="text-sm text-muted">
+                  {found?.failed
+                    ? "Search did not load. You can still ask us or run the check."
+                    : "Nothing matches that yet. Try the words your site is showing you, or the error it prints."}
+                </p>
+                <div
+                  className="mt-4 flex flex-wrap items-center justify-center gap-2"
+                  onClick={() => setOpen(false)}
+                >
+                  <ChatButton location="palette:no-match" className="btn-primary" />
+                  <CheckLink location="palette:no-match" className="btn-secondary" />
+                </div>
+              </div>
+            ) : (
+              shown.map((p) => (
+                <CommandItem key={p.key} value={p.key} onSelect={() => go(p)}>
+                  <span className="flex-1">{p.title}</span>
+                  <span className="shrink-0 text-xs text-muted">{p.category}</span>
+                </CommandItem>
+              ))
+            )}
+          </CommandList>
+        </Command>
+      </DialogContent>
+    </Dialog>
+  );
+}

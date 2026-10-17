@@ -1,18 +1,27 @@
 "use client";
 
+import { CaretDownIcon } from "@phosphor-icons/react/ssr";
 import { useId, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export type Row = { name: string; who: string; price: ReactNode; items: string[]; image: ReactNode; cta: ReactNode };
 
 /**
- * Three rows, one open at a time: the pointer or the keyboard opens one and the others compress.
- * The row header is a real button with aria-expanded, so a tap opens it too and a screen reader is
- * told what happened; the panel is `hidden` while closed, so nothing inside it is focusable.
+ * Three rows, one open at a time. The row header is a real button with aria-expanded, so a tap opens
+ * it too and a screen reader is told what happened; the panel is `hidden` while closed, so nothing
+ * inside it is focusable.
  *
- * Nothing animates: the motion budget for this page is spent on the scroll scenes, and a height
- * transition is neither transform nor opacity (contract rule 10). The row that is open stays open
- * until another takes over, so focus never lands in a panel that is closing under it.
+ * Opening is a click, a tap or focus, never hover. It used to open on pointerenter, which meant a
+ * mouse crossing the section collapsed whatever the visitor was reading and swapped in a different
+ * row underneath them. On a page where the next thing is a price, that is the one place content must
+ * not move on its own.
+ *
+ * The caret is the affordance: before it, nothing told a sighted visitor these rows opened at all,
+ * only aria-expanded told a screen reader. It turns 180 degrees, the same chevron the FAQ uses.
+ *
+ * The height still snaps, because contract rule 10 allows transform and opacity only and the
+ * accordion-height exception is spent on the FAQ. What animates is the panel's content arriving:
+ * opacity and a 12px rise, the `rise` keyframe the hero headline uses.
  */
 export function ExpandingRows({ rows, checkIcon }: { rows: Row[]; checkIcon: ReactNode }) {
   const [active, setActive] = useState(0);
@@ -26,7 +35,6 @@ export function ExpandingRows({ rows, checkIcon }: { rows: Row[]; checkIcon: Rea
         return (
           <li
             key={row.name}
-            onPointerEnter={() => setActive(i)}
             className={cn(
               "overflow-hidden rounded-[14px] border bg-surface",
               open ? "border-accent" : "border-line",
@@ -39,17 +47,31 @@ export function ExpandingRows({ rows, checkIcon }: { rows: Row[]; checkIcon: Rea
                 aria-controls={panelId}
                 onClick={() => setActive(i)}
                 onFocus={() => setActive(i)}
-                className="flex w-full cursor-pointer flex-col gap-1 p-5 text-left md:flex-row md:items-baseline md:gap-6 md:p-6"
+                className="flex w-full cursor-pointer items-start gap-4 p-5 text-left md:p-6"
               >
-                <span className="font-display text-2xl leading-tight font-extrabold tracking-[-0.04em] md:text-3xl">
-                  {row.name}
+                <span className="flex flex-1 flex-col gap-1 md:flex-row md:items-baseline md:gap-6">
+                  <span className="font-display text-2xl leading-tight font-extrabold tracking-[-0.04em] md:text-3xl">
+                    {row.name}
+                  </span>
+                  <span className="text-muted">{row.who}</span>
+                  {row.price && <span className="md:ml-auto">{row.price}</span>}
                 </span>
-                <span className="text-muted">{row.who}</span>
-                {row.price && <span className="md:ml-auto">{row.price}</span>}
+                <CaretDownIcon
+                  weight="bold"
+                  aria-hidden
+                  className={cn(
+                    "mt-1 size-5 shrink-0 text-accent-text transition-transform duration-200 ease-out motion-reduce:transition-none",
+                    open && "rotate-180",
+                  )}
+                />
               </button>
             </h3>
 
-            <div id={panelId} hidden={!open} className="px-5 pb-5 md:px-6 md:pb-6">
+            <div
+              id={panelId}
+              hidden={!open}
+              className={cn("px-5 pb-5 md:px-6 md:pb-6", open && "motion-safe:animate-[rise_320ms_var(--ease-spring)]")}
+            >
               <div className="grid gap-6 md:grid-cols-12 md:items-center">
                 <ul className="space-y-3 text-[15px] md:col-span-7">
                   {row.items.map((item) => (

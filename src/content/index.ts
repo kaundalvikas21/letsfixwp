@@ -1,5 +1,5 @@
-import { citySlugs, nodeByPath, serviceIdOf, serviceIds, serviceNodes, hubIdOf } from "../config/routes";
-import type { MatchCandidate } from "../lib/match-problem";
+import { HUB_LABELS, citySlugs, nodeByPath, routes, serviceIdOf, serviceIds, serviceNodes, hubIdOf } from "../config/routes";
+import type { MatchCandidate, ProblemItem } from "../lib/match-problem";
 import { citiesList, comparesList, guidesList, servicesList } from "./all";
 import type { City, Compare, Guide, Service } from "./schema";
 
@@ -72,3 +72,15 @@ export const matchIndex: MatchCandidate[] = [
     .filter((s) => s.intent === "fix")
     .map((s) => ({ serviceSlug: s.id, head: s.title, body: s.symptoms.join(" ") })),
 ];
+
+/** matchIndex plus what a list shows and where Enter goes. Used by the contact picker and the header palette. */
+export const problemItems: ProblemItem[] = matchIndex.map((c) => {
+  const svc = getService(c.serviceSlug)!;
+  const guide = c.guideSlug ? getGuide(c.guideSlug) : undefined;
+  return {
+    ...c,
+    title: guide?.title ?? svc.title,
+    href: guide ? routes.guide(guide.slug) : svc.path,
+    category: HUB_LABELS[routes.hub(svc.hub)] ?? nodeByPath.get(routes.hub(svc.hub))!.title,
+  };
+});
