@@ -14,7 +14,7 @@ const urgencyRank = { critical: 0, high: 1, standard: 2 } as const;
 
 /**
  * /<hub>/. Layout family: a full-width lead block over a two-column service directory, with a weighted
- * problem grid beside it. Neither the home bento nor the home command palette, and not the service
+ * problem grid below it. Neither the home bento nor the home command palette, and not the service
  * page's sticky rail.
  *
  * Rhythm, which departs from the inner-template baseline on purpose (docs/layout-ledger.md records
@@ -22,7 +22,7 @@ const urgencyRank = { critical: 0, high: 1, standard: 2 } as const;
  * running them all at one interval leaves the page with no cadence at all. Desktop reads 128 / 64 / 112,
  * which needs the override written at both modifiers (`mt-16 md:mt-16`): tailwind-merge only resolves a
  * conflict within one modifier, so a bare `mt-16` leaves the base `md:mt-24` standing and ships 96.
- * the directory opens wide because it is what the page is for, the problem grid sits close under it
+ * The directory opens wide because it is what the page is for, the problem grid sits close under it
  * because those problems belong to the services above, and the closing band opens again. Stacked, every
  * interval stays at or above the 64 the ledger set as the floor, because at 375 anything less merges
  * two sections into one.
@@ -98,7 +98,8 @@ export function HubTemplate({ node }: { node: FlatNode }) {
 
       {topGuides.length > 0 && (
         // Sits close under the directory at desktop: these are the errors the services above fix, not
-        // a third subject. Four of the six hubs have no guides at all and render nothing here.
+        // a third subject. Four of the six hubs have guides and render the grid (fix 6 panels, security 5, performance-migration 4,
+        // woocommerce 2); maintenance and development have none and render nothing here.
         <Section id="guides" title="Most urgent problems" className="mt-16 md:mt-16">
           <ul className="grid items-start gap-4 sm:grid-cols-2">
             {topGuides.map((g, i) => (

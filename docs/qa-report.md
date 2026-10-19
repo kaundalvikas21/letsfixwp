@@ -352,8 +352,8 @@ Verified against a production build (`.next` deleted, `npm run build`, then `nex
 dev server, and not against an existing `.next`: a stale build gave one false reading earlier in this pass
 and every number below was taken after a clean rebuild.
 
-Eleven pages now, the nine from P4 plus two the hub and contact work made load-bearing: a six-service hub
-(`/wordpress-fix/`, which renders the problem grid with no lead panel) and a three-service hub
+Eleven pages now, the nine from P4 plus two the hub and contact work made load-bearing: an eleven-service hub
+(`/wordpress-fix/`, the widest directory, which renders a six-panel problem grid with no lead panel) and a three-service hub
 (`/wordpress-performance-migration/`), and `/contact/`.
 
 ## Automated sweep
@@ -380,7 +380,7 @@ Heading left edges at 1440, unchanged from P4 for the nine pages it measured:
 ```
 service+capture  168    guide          360    cityhub        296
 service+photo    168    compare        168    guides-index   296
-hub (6 svc)      168    city           296    compare-index  360
+hub (11 svc)     168    city           296    compare-index  360
 hub (3 svc)      168    contact        232
 ```
 

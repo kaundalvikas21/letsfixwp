@@ -1082,7 +1082,7 @@ The lead panel is gated on `topGuides.length > 2 && topGuides[0].urgency === "cr
 so the worst one carries no error string and the lead panel disappears with no warning and no failing check.
 It is in because a 1104px box holding one 18px line reads as a broken state rather than as weighting, which
 is what gating on urgency alone gave the fix hub. Today only `/wordpress-security/` qualifies, measured:
-1104px lead panel there, 544px panels on the other two hubs that render the grid.
+1104px lead panel there, 544px panels on the other three hubs that render the grid.
 
 `/wordpress-fix/` therefore renders a uniform 2x3 grid with no lead panel, **deliberately**. All six of its
 guides are equally critical, so widening one because it happens to carry an error string would be emphasis
