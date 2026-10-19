@@ -3,6 +3,7 @@
 import { ChatCircleIcon } from "@phosphor-icons/react/ssr";
 import { motion, useScroll, useTransform } from "motion/react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { BookLink } from "@/components/Cta";
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -49,6 +50,15 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
   const [open, setOpen] = useState(false);
   const { scrollY } = useScroll();
 
+  // No bottom bar on /contact/: its BOOK already points here, so the bar would sit a no-op button and a
+  // second chat trigger on top of the one form the page exists for. `data-action-bar` on the header is
+  // what globals.css reserves the bar's space from, so the space goes with it. The header renders on
+  // every route and never unmounts, so the reservation does not flicker when the mega menu opens.
+  // routes.contact carries the trailing slash next.config sets; compared both ways so a pathname
+  // without one cannot put the bar back.
+  const path = usePathname();
+  const actionBar = path !== routes.contact && `${path}/` !== routes.contact;
+
   // 8px of scroll is the switch: transparent over the hero, --bg at 90% with blur after that. The
   // backdrop is its own layer and only its opacity moves, so there is no state and no scroll listener.
   const backdrop = useTransform(scrollY, [0, 8], [0, 1]);
@@ -57,7 +67,7 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <header className="fixed inset-x-0 top-0 z-40 h-16">
+      <header data-action-bar={actionBar ? "" : undefined} className="fixed inset-x-0 top-0 z-40 h-16">
         <motion.div aria-hidden style={{ opacity: backdrop }} className="nav-blur absolute inset-0 border-b border-line" />
         <div className="relative mx-auto flex h-16 w-full max-w-6xl items-center gap-2 px-4 md:px-6">
           <Wordmark />
@@ -89,7 +99,7 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
         <MegaMenu categories={categories} support={support} onNavigate={close} />
       </DialogContent>
 
-      {!open && (
+      {actionBar && !open && (
         // A landmark, so the bar is not page content sitting outside one (axe: region).
         <nav
           aria-label="Quick actions"

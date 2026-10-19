@@ -57,14 +57,21 @@
     /* Focus and anchor targets scroll clear of the floating nav and the fixed mobile action bar, so a
        keyboard tab stop is never parked underneath either of them. */
     scroll-padding-top: 6rem;
-    scroll-padding-bottom: 6.5rem;
+    scroll-padding-bottom: 2rem;
     /* Lets block-size: auto take part in a transition, which is what opens an FAQ answer without
        measuring it in JS. Inherited, and nothing else on the site transitions a size to a keyword. */
     interpolate-size: allow-keywords;
   }
-  @media (width >= 48rem) {
-    html {
-      scroll-padding-bottom: 2rem;
+  /* The mobile action bar's own space, reserved only where the bar renders. NavBar marks the header
+     with data-action-bar on every route that has one, so /contact/, which has none, keeps neither the
+     bottom padding nor the deeper scroll padding and gains no dead space on a phone. The header itself
+     never unmounts, so the reservation holds steady while the mega menu is open. */
+  @media (width < 48rem) {
+    html:has(header[data-action-bar]) {
+      scroll-padding-bottom: 6.5rem;
+    }
+    body:has(header[data-action-bar]) {
+      padding-bottom: calc(4.75rem + env(safe-area-inset-bottom));
     }
   }
   body {

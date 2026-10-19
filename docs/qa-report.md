@@ -345,3 +345,95 @@ not been done, because chrome-launcher cannot reach a browser from this WSL shel
 run Lighthouse should redo that row rather than trust the trace numbers as a substitute.
 
 The home page was not touched and its 69 stands as the documented decision above.
+
+# Hub pages and contact: cadence pass (P5)
+
+Verified against a production build (`.next` deleted, `npm run build`, then `next start -p 3400`), not the
+dev server, and not against an existing `.next`: a stale build gave one false reading earlier in this pass
+and every number below was taken after a clean rebuild.
+
+Eleven pages now, the nine from P4 plus two the hub and contact work made load-bearing: a six-service hub
+(`/wordpress-fix/`, which renders the problem grid with no lead panel) and a three-service hub
+(`/wordpress-performance-migration/`), and `/contact/`.
+
+## Automated sweep
+
+Script: the same throwaway Playwright plus axe-core runner in the session scratchpad, extended with those
+pages. Still nothing committed and still no `npm run` target for axe or Lighthouse.
+
+Eleven pages x four widths (375, 768, 1024, 1440), plus each page again at 1440 under
+`prefers-reduced-motion: reduce` and again with JavaScript disabled.
+
+| Check | Result |
+| --- | --- |
+| axe-core, violations of any impact | 0 |
+| Exactly one h1 | pass |
+| No horizontal page scroll | pass |
+| Targets: 44px for controls, WCAG 2.5.8's 24px for links | pass |
+| No border-radius inside `main` other than 14px | pass |
+| No element in `main` at `opacity: 0` while in the reading area, with JS disabled | pass |
+| Reduced motion: every `.reveal` and `.rise-in` at opacity 1, transform none | pass |
+| Every h1 and h2 within a page sharing one left edge | pass on ten, **reported on `/contact/`**, see below |
+
+Heading left edges at 1440, unchanged from P4 for the nine pages it measured:
+
+```
+service+capture  168    guide          360    cityhub        296
+service+photo    168    compare        168    guides-index   296
+hub (6 svc)      168    city           296    compare-index  360
+hub (3 svc)      168    contact        232
+```
+
+### Two instrument limits the two new pages exposed
+
+Both were read as findings first and checked in the browser before being called instrument limits.
+
+1. **Touch targets on `/contact/`: eight 16x16 `INPUT`s at every width.** The booking flow's radios are
+   16px by design and each is wrapped in a `<label>` measuring 293x50 or 293x70 at 375, which is what a
+   visitor taps. The check walked inputs directly and never looked at the label. The check now measures the
+   associated label for a radio or a checkbox; the page was not changed. This is why the row above reads
+   pass: on the raw-input reading it never could, on any form page.
+2. **The spine check cannot pass on `/contact/`, and the page is not misaligned.** It reports three distinct
+   heading left edges: 232 / 695 / 256 at 1440, 16 / 41 / 40 at 375. The h1 is on the spine at 232, "Problem"
+   is inside the form card (232 + 1px border + 24px padding, and at 1440 the card is the right-hand column,
+   hence 695), and "What we promise" is inside the promises panel (232 + 24px padding). Both panels have
+   their own left edge on the spine; their headings are inset by their own padding, which is what a card
+   does. The check assumes a single-column page with no panelled headings, which is true of the other ten and
+   cannot be true of a two-column page with a form card. Left as-is rather than taught to ignore panels,
+   because a check quietly widened to pass is worth less than a result that needs one line of explanation.
+
+Nothing else in the sweep flagged, so nothing in Task 1, Task 2 or the action-bar change introduced a
+regression the sweep can see.
+
+## The action bar change, measured
+
+At 375 on the production build:
+
+| Route | Bar | `body` padding-bottom | `html` scroll-padding-bottom | Gap below footer | Visible chat triggers |
+| --- | --- | --- | --- | --- | --- |
+| `/contact/` | none | 0px | 32px | 0px | 1 (the page's own, was 2) |
+| `/wordpress-fix/` | 73px | 76px | 104px | 76px (the bar's own space) | 3 (hero, closing band, bar) |
+| `/free-site-check/` | 73px | 76px | 104px | 76px | 2 (the page's own, bar) |
+
+With the mega menu open on `/wordpress-fix/` at 375 the bar unmounts and `body` still holds 76px, so the
+reservation does not move behind the overlay. At 1440 the bar is absent on all three and padding is 0 on all
+three, unchanged.
+
+## Performance
+
+Measured with a Chrome DevTools trace over CDP at 150ms / 1.6Mbps and 4x CPU throttling, **not** a
+Lighthouse simulated run, so these are not comparable with the Lighthouse table earlier in this file. Same
+instrument and the same caveat as P4: chrome-launcher still cannot reach a browser from this WSL shell.
+
+| Page | LCP 1440 | CLS 1440 | LCP 375 | CLS 375 |
+| --- | --- | --- | --- | --- |
+| `/wordpress-fix/` | 1024 ms | 0.001 | 1716 ms | 0.009 |
+| `/wordpress-performance-migration/` | 1272 ms | 0.002 | 1260 ms | 0.010 |
+| `/contact/` | 1024 ms | 0.008 | 1732 ms | 0.000 |
+
+All inside the 2.5s LCP and 0.1 CLS budgets. `/contact/` at 375 measures 0.000, which is the width the
+action bar change affects: releasing 76px of `body` padding on that route shifts nothing, because the
+padding is gone before first paint rather than removed after it. The 0.008 on `/contact/` at 1440 is the
+largest CLS figure here and no before-figure exists for it, so it is recorded rather than attributed.
+
+A like-for-like Lighthouse re-run is still owed, for the same reason P4 records.

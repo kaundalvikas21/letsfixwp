@@ -24,7 +24,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
-      <body className="pb-[calc(4.75rem+env(safe-area-inset-bottom))] font-sans antialiased md:pb-0">
+      {/* The mobile action bar's space is reserved in globals.css, keyed on the bar being there at all. */}
+      <body className="font-sans antialiased">
         <JsonLd data={organizationLd()} />
         <SiteShell>
           <main id="main">{children}</main>

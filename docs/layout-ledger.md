@@ -1021,3 +1021,139 @@ Geist Mono is still 29KB for error strings only. `RealScreen` passes `preload` s
 guide's safe-check ordinals are a 32px box carrying the 14px shape lock, which at that size reads as a
 squircle. The four closing bands have four different heading ids for one thing. `prose` is exported from
 parts.tsx and used only by LegalPending while six call sites inline the identical two classes.
+
+## v4 / hub pages: cadence and directory (P5)
+
+Six hub routes (`/wordpress-fix/`, `/wordpress-security/`, `/wordpress-performance-migration/`,
+`/wordpress-maintenance/`, `/wordpress-development/`, `/woocommerce/`), one template,
+`src/components/templates/HubTemplate.tsx`. The contact page's entry for the same pass is under
+**v3 / contact** above, where the rest of that page is recorded; this section covers the hubs and the one
+shell change the pass made.
+
+### Layout families, per section
+
+| # | Section | Family | Full bleed | Changed |
+| --- | --- | --- | --- | --- |
+| 1 | Hero | h1 on the whole 1104px spine, then a 6 / empty / 5 lead-and-photograph split under it | no | yes, the headline was inside the 7/5 split and read as a service page's opening |
+| 2 | Service directory ("What we do here") | divided full-width rows, two columns from md up: 368 / 620 / 20 at 1440, one stacked column at 375 | no | yes, new `split` variant on `LinkRows` |
+| 3 | Problem grid ("Most urgent problems") | 2-up card grid, optionally one full-width lead panel | no | yes, sort order and the lead panel |
+| 4 | Closing band | hairline over a heading-left, buttons-right row | no | yes, copy |
+
+The directory is the reason the pass existed. Eleven stacked title-over-paragraph rows read as one block of
+text, so the summary moved into a column of its own and the titles became a single scannable column on the
+spine with the summaries answering across the gutter. `LinkRows` is one grid with three cells now and
+`split` only re-places them, so the five existing call sites render exactly what they rendered before. The
+title column is `minmax(0,18rem)` at md and `minmax(0,23rem)` at lg, a measure rather than a fraction: a
+23rem column at 768 would leave the summary at 38ch, under what a sentence needs.
+
+### Rhythm: 128 / 64 / 112 at desktop, 80 / 64 / 80 stacked
+
+Measured on a production build, `margin-top` of each section at 1440 and at 375:
+
+| Interval | 1440 | 375 | Why |
+| --- | --- | --- | --- |
+| Hero to directory | 128px | 80px | The directory is what the page is for, so it opens at the home page's between-section value, not the reading document's |
+| Directory to problem grid | 64px | 64px | These are the errors the services above fix, not a third subject, so the grid sits close under them |
+| Problem grid to closing band | 112px | 80px | The last beat still out-ranks a section, as on every other template |
+
+The inner-template baseline recorded under **P4** is `mt-16 md:mt-24` on every `Section`, which is right for
+a seven-section guide and wrong here: a hub is three or four beats, and running them all at one interval
+leaves the page with no cadence at all. Stacked, every interval stays at or above the 64 that P4 set as the
+floor, because at 375 anything less merges two sections into one.
+
+**tailwind-merge only resolves a conflict within the same modifier.** The middle interval shipped at 96px
+for one commit while a code comment above it asserted 64. `className="mt-16"` on a component whose base is
+`mt-16 md:mt-24` leaves `md:mt-24` standing: the two classes do not conflict, because one is bare and one is
+`md:`. The built class string was `reveal md:mt-24 mt-16`, and nothing in the source read as wrong. Write
+both modifiers (`mt-16 md:mt-16`), and check an overridden responsive utility in the built HTML rather than
+in the JSX.
+
+### Urgency drives order and weight, and is never printed
+
+`guide.urgency` sorts the problem grid (critical, high, standard) and decides whether the first panel takes
+the full 1104px. The word itself came out of the row entirely. It could not be made to read well on any hub:
+on `/wordpress-fix/` all six guides are `critical`, so it said nothing; on `/wordpress-security/` it printed
+"Critical" on four of five panels; and on `/wordpress-performance-migration/` it labelled three of four
+panels "Standard" directly under a heading reading "Most urgent problems", which contradicts the heading. A
+ranked list under that heading does not need every row to restate its rank.
+
+The lead panel is gated on `topGuides.length > 2 && topGuides[0].urgency === "critical" && !!topGuides[0].errorText`.
+**The `errorText` half of that gate is a silent dependency on content order**: reorder or reword the guides
+so the worst one carries no error string and the lead panel disappears with no warning and no failing check.
+It is in because a 1104px box holding one 18px line reads as a broken state rather than as weighting, which
+is what gating on urgency alone gave the fix hub. Today only `/wordpress-security/` qualifies, measured:
+1104px lead panel there, 544px panels on the other two hubs that render the grid.
+
+`/wordpress-fix/` therefore renders a uniform 2x3 grid with no lead panel, **deliberately**. All six of its
+guides are equally critical, so widening one because it happens to carry an error string would be emphasis
+the data does not support, and six panels fill a 2x3 grid with no tile stranded beside a hole. The monotony
+this pass existed to remove was the section cadence, and that is what the 128 / 64 / 112 interval ships.
+
+### Motion
+
+No new motion was invented. Each primitive is the one already recorded under **P4**, and all of it is CSS.
+
+| Element | Primitive | Communicates |
+| --- | --- | --- |
+| Hero lead, hero button row | `rise-in`, 600ms on `--ease-spring`, inline delay 70 / 140ms | The headline is already there, and what it means and the buttons that act on it arrive under it |
+| Directory, problem grid | `reveal` on `animation-timeline: view()` | Each section is its own answer, met one at a time |
+| Directory row hover | ember hairline, scaleX from the left over 260ms, `(hover: hover)` only | This row, and it is a door |
+| Problem panel hover | border and shadow to `--line-strong` / `--shadow-lift` over 200ms | The panel is a door too, but a quieter one than the row |
+| Closing band | `reveal` | The page's last beat arrives with the reader |
+
+The h1 carries nothing, for the reason P4 records: it is the LCP element and an element at `opacity: 0` is
+not painted.
+
+Reduced motion: `rise-in` resolves to `animation: none`, so the lead and the buttons are simply present;
+`reveal` is inside `@media (prefers-reduced-motion: no-preference)`, so under `reduce` no view timeline is
+created and every section renders at its final state; the hover hairline and chevron nudge carry
+`motion-reduce:transition-none`. Verified at 1440 under `prefers-reduced-motion: reduce` on a production
+build: every `.reveal` and `.rise-in` at opacity 1 and transform none.
+
+### The mobile action bar does not render on /contact/
+
+The fixed bottom bar under 768px (`NavBar`, recorded under **v4 / header refinement**) carries BOOK and a
+chat icon. BOOK navigates to `/contact/`, so on `/contact/` itself the bar sat a no-op button and a second
+chat trigger on top of the one form the page exists for. It is suppressed there: `NavBar` compares
+`usePathname()` against `routes.contact` and, on every route that keeps the bar, marks the header with
+`data-action-bar`.
+
+That attribute is what reserves the bar's space, so the space goes with the bar. The reservation used to be
+a `pb-[calc(4.75rem+env(safe-area-inset-bottom))] md:pb-0` on `body` in the root layout plus
+`html { scroll-padding-bottom: 6.5rem }` in globals.css, neither of which can see the route. Both are now one
+`@media (width < 48rem)` block keyed on `html:has(header[data-action-bar])` and `body:has(...)`, so
+`/contact/` releases 76px of bottom padding and goes back to the desktop 2rem scroll padding instead of
+gaining dead space on a phone. The marker sits on the header rather than on the bar itself because the bar
+unmounts while the mega menu is open: measured, `body` holds 76px of padding with the menu both closed and
+open, so nothing shifts behind the overlay.
+
+Measured at 375 on a production build: `/contact/` has no bar, `padding-bottom: 0px`,
+`scroll-padding-bottom: 32px`, no gap below the footer, and one chat trigger rather than two.
+`/wordpress-fix/` has a 73px bar, 76px of padding and 104px of scroll padding, unchanged.
+
+**`/free-site-check/` keeps its bar, deliberately.** It runs the same `BookingFlow` in `check` mode, but the
+bar's BOOK is a real navigation there, to the paid booking flow, which is the escalation that page exists to
+offer. The duplicate-trigger argument is weaker too: the chat launcher is already hidden under md on both
+form pages, so the only other trigger on the page is a word inside a sentence. Nothing about the bar is
+wrong on that route, so nothing changed.
+
+### Correction to the contact entry above
+
+That entry's claim that CHAT is "the house `btn-secondary`" is right about the contact page and should not be
+read as a claim about the site. Counted: 25 `ChatButton` call sites, 17 with `btn-secondary`. The exceptions
+are `/free-site-check/`, `/pricing/` and `BookingFlow`'s success screen, where CHAT is still a bare word
+inside a sentence, and the home page's `FinalCta`, which is a deliberate large underlined text link beside
+the primary. A later pass should take the three sentence-inline ones; they were out of scope here, and
+`CtaPair` in `src/components/Cta.tsx`, which pairs the two the same way, has zero importers.
+
+### Deliberately not done
+
+- **No change to the five existing `LinkRows` call sites.** `split` is opt-in for that reason.
+- **No guide counts, badges or "N problems" anywhere.** The content has no count that is true across hubs.
+- **The heading "Most urgent problems" stays.** As a superlative over the guides a hub actually has it stays
+  true even when the most urgent one is only `high`. "Problems we see most" would be an invented statistic.
+- **The container width is untouched.** The hub stays at `max-w-6xl`, x=168, the spine P4 recorded.
+- **`sizes="432px"` on the hub hero photograph over-declares by about 14% at 1024.** Exact at 1440, on a
+  non-LCP image, and costs one candidate step. Left.
+- **`Section`'s baseline interval was not changed** to fit the hub. The hub overrides it at both modifiers;
+  the other ~90 routes keep 64 / 96.
