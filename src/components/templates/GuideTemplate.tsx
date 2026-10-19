@@ -13,16 +13,24 @@ import { Breadcrumbs, Faqs, LinkRows, RealScreen, Section, h1, page, pageY } fro
 import { ReadingRail } from "./ReadingRail";
 
 /**
- * The banner box: 432px from 1152 up (col-span-5 of a 12-column grid on a 1104px inner container
- * with 48px gutters, the same box the service hero measures), the full container width below 1024,
- * and a real fraction in between, where the container is still narrower than its max.
+ * The banner box: 336px from 1152 up (col-span-4 of a 12-column grid on a 1104px inner container
+ * with 48px gutters), the full container width below 1024, and a real fraction in between, where
+ * the container is still narrower than its max.
  *
- * The middle condition is not pedantry: measured at 1024 the box is 372px, and declaring the 1152
- * figure there asks a 2x tablet for the 1080w candidate instead of the 828w one. 38vw carries about
- * 4% of headroom at both ends of that band, because under-declaring `sizes` is the failure that
- * shows (a blurred LCP image) and over-declaring is only bytes.
+ * It was col-span-5, 432px, which is the box the service hero measures. That was the wrong number
+ * here for a structural reason: the header ran 7/5 over a body that runs 8/4, so the banner and the
+ * rail card under it were two different widths sharing a right edge, and the right column stepped
+ * 96px sideways between them. One grid, 8/4 in both, is what makes the two panels one column. The
+ * reading column is unaffected at 720px either way, and the h1 now sits on the same 720px as the
+ * document under it.
+ *
+ * The middle condition is not pedantry: measured at 1024 the box is 288px, and declaring the 1152
+ * figure there costs a 2x tablet a candidate step. 30vw carries 3 to 7% of headroom across that
+ * band, because under-declaring `sizes` is the failure that shows (a blurred LCP image) and
+ * over-declaring is only bytes. Both figures describe the grid cell; the image inside it is 16px
+ * narrower than the cell, because the frame holds it in `p-2`.
  */
-const bannerSizes = "(min-width: 1152px) 432px, (min-width: 1024px) 38vw, 100vw";
+const bannerSizes = "(min-width: 1152px) 336px, (min-width: 1024px) 30vw, 100vw";
 
 /**
  * This page's own heading scale, one step under the shared inner h2 (26/32), set here as a scoped
@@ -58,7 +66,7 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
       />
 
       <header className="mt-6 grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
-        <div className="lg:col-span-7">
+        <div className="lg:col-span-8">
           {/* The headline paints at once: it is an LCP candidate, so it is one of the two things on
               the page that never fade in. */}
           <h1 className={h1}>{g.h1}</h1>
@@ -66,8 +74,8 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
               the visitor pasted into a search box. Mono at 16px on the inset surface, not a thin
               14px line under the headline. It wraps rather than scrolls, so there is no scrollable
               region to strand a keyboard visitor in at 375, and anywhere is the only break rule that
-              holds a 90-character file path inside a 648px column. The plate is sized to the string
-              (`w-fit`, capped at the column): "502 Bad Gateway" in a 648px box read as an empty
+              holds a 90-character file path inside the 720px column. The plate is sized to the string
+              (`w-fit`, capped at the column): "502 Bad Gateway" in a 720px box read as an empty
               panel with a few characters in the corner. 20 of 37 guides have one. */}
           {g.errorText && (
             <p
@@ -78,7 +86,7 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
             </p>
           )}
         </div>
-        <div className="lg:col-span-5">
+        <div className="lg:col-span-4">
           {/* The real capture of this error when one has been written, the parent service's own night
               frame until then (contract rule 7, docs/image-todo.md): the pattern the service hero
               already uses, which is what gives all 37 guides a banner rather than 4 of them. The
@@ -88,7 +96,11 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
           {hasScreen(`/screens/${g.image.slot}.png`) ? (
             <RealScreen slot={g.image.slot} alt={g.image.alt} sizes={bannerSizes} preload />
           ) : (
-            // Same frame, same 16:10 box as the capture, so the banner is one height across 37 pages.
+            // Same frame as the capture arm, and 16:10 because that is the photographs' own ratio
+            // (1600x1000 in src/content/photos.ts), so the frame crops nothing. Deliberately not
+            // "the same height as the capture": the four captures are 2.13, 1.78, 1.66 and 1.78,
+            // measured from the files, so there is no single capture height to match. What is
+            // constant across all 37 pages is the frame and the column, not the height.
             <figure className="overflow-hidden rounded-[14px] bg-surface-2 p-2">
               <div className="aspect-[16/10] overflow-hidden rounded-[14px]">
                 <Photo id={servicePhotos[g.parentService]} decorative preload sizes={bannerSizes} />

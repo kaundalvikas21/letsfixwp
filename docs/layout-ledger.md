@@ -1202,17 +1202,32 @@ Three container widths are still three on purpose; this changes which bucket the
 All 37 guides declare an `image.slot` and 4 captures exist, so `RealScreen` returned `null` on 33 of them
 and those pages had no image at all. The guide now uses the fallback the service hero already uses: the
 real capture when the file exists, otherwise `servicePhotos[g.parentService]` through `Photo`, in the same
-`p-2` frame on the same 16:10 box, so the banner is one shape across all 37. The photograph carries **no
-alt**: `g.image.alt` describes the capture that does not exist on those pages, and lending it to a stock
+`p-2` frame in the same column, so the banner is one shape across all 37. One **shape**, not one height: the
+photograph's box is 16:10 because that is the photographs' own ratio (1600x1000), so the frame crops
+nothing, while the four captures measure 2.13, 1.78, 1.66 and 1.78 and each keeps its own. An earlier
+version of this entry claimed one height; it was wrong, and the code comment that claimed it has been
+corrected too. The photograph carries **no alt**: `g.image.alt` describes the capture that does not exist on those pages, and lending it to a stock
 frame would describe the wrong picture. The capture arm emits a real `<link rel=preload as=image>`; the
 photo arm is `loading=eager` with `fetchpriority=high`, which is what `Photo` has always done. Neither
 fades, and neither does the h1.
 
-`sizes` is `(min-width: 1152px) 432px, (min-width: 1024px) 38vw, 100vw`. Measured: the box is 432px from
-1152 up, 372px at 1024, full width below. The hub photograph's recorded 14% over-declaration at 1024 is the
-same shape of error and would have been 16% here; the middle condition costs one media query and keeps a 2x
-tablet on the 828w candidate instead of the 1080w one. At 375/2x the page fetches 750w into a 327px box,
-which is the right candidate.
+`sizes` is `(min-width: 1152px) 336px, (min-width: 1024px) 30vw, 100vw`. Measured on the production build:
+the cell is 336px from 1152 up, 288px at 1024, full width below, and the image inside it is 16px narrower
+than the cell because the frame holds it in `p-2`. The hub photograph's recorded 14% over-declaration at
+1024 is the same shape of error; the middle condition costs one media query and keeps a 2x tablet a
+candidate step cheaper. At 1440 the page fetches the 384w candidate into a 320px box and at 375/2x the 750w
+into a 343px one, which are the right candidates in both cases.
+
+The first version of this pass declared 432px, because the banner was `col-span-5` of a 7/5 header. That was
+the wrong structure, for a reason a screenshot caught: the header ran 7/5 over a body that runs 8/4, so the
+banner and the rail card beneath it shared a right edge, were 431px and 335px wide, and the right column
+stepped 96px sideways between the two. **The page is one 8/4 grid now**, header and body, which is what puts
+the banner and the card on one left edge. The alternative was moving the body to 7/5, which was rejected on
+the measure: a 648px reading column is under the 68ch cap, so the measure would have become
+container-bound rather than `ch`-bound, which is the one thing constraint 8 forbids. Measured after the
+change at 1440: banner and card both `left: 929, width: 336`, 48px apart, h1 720px wide on the same spine as
+the 720px reading column. At 1024: both `left: 697, width: 288`, 48px apart. At 375 the aside is
+`display: none` and nothing moved.
 
 ### The error string is the anchor, and it is sized to itself
 
