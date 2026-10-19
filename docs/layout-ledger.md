@@ -184,18 +184,120 @@ offset; no horizontal scroll at 375, 768, 1024 or 1440.
 | # | Section | Layout family | Eyebrow | Marquee | CTA intents |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Hero | kinetic type with bleeding image (type on columns 1 to 8, night photograph on 7 to 12 and off the right edge, --bg scrim between them) | no | no | BOOK, CHAT |
-| 2 | Funnel stage one, the break | GSAP sticky-stack, 4 full-viewport cards (taste skeleton 5.A) | yes ("Sound familiar?") | no | BOOK (mini-CTA after the last card) |
-| 3 | Funnel stage two, the fix | GSAP horizontal pan, heading plus 5 panels plus the CTA beat (taste skeleton 5.B), ember progress rail | no | no | BOOK (the last beat of the track, label only) |
+| 2 | Funnel stage one, the break | expanding screen panels, 4 across (stacked below md) | no | no | BOOK (on the heading line) |
+| 3 | Funnel stage two, the fix | GSAP horizontal pan, heading plus 5 panels plus the CTA beat (taste skeleton 5.B) | no | no | BOOK (the last beat of the track, label only) |
 
 Sections 4 and up are still v3 components until they are rebuilt, so their rows stay in the v3 tables.
-Budgets used so far: 2 pinned scenes of 2 (the budget is now spent, so the restored-site scene that
-follows scrubs without pinning), 0 marquees, 1 eyebrow, 2 image-plus-text layouts, never consecutive.
+Budgets used so far: 1 pinned scene of 2, section 3's horizontal pan. Section 2 gave its pin back when the
+sticky-stack became the panel row below, and the restored-site scene still scrubs without pinning. 0 marquees,
+0 eyebrows on this stretch, 2 image-plus-text layouts, never consecutive.
 
-Section 2 measurements (1440): 4 cards, 3 pin-spacers (the last card never pins), each previous card scrubbed
-to scale 0.92 and opacity 0.55 by the next card's trigger, scene height 3952px. Under 768px and under reduced
-motion: 0 pin-spacers, `position: static`, no transforms, a plain vertical list, which the CSS does on its own
-(`motion-safe:md:sticky`) so it holds even if the GSAP leaf never runs. A focusable skip link before the scene
-jumps to the mini-CTA row. The capture panel is 70% of the card width at 375, 768 and 1440.
+Section 2 measurements (production build). "Seeing one of these?" and BOOK sit on the heading's line at the
+far end of the spine rather than under the row: measured at 1440 the heading starts at x=168 and the button
+ends at x=1272, both blocks on a bottom edge of 609. The heading otherwise ran the full width with nothing
+beside it. Below md they stack, and the DOM order stays heading, ask, screens, so the question still comes
+after the heading and before the thing it is asking about.
+
+At 1440 the row is a 107 / 748 / 107 / 107 grid, 480px tall, on the page spine; at 768 it is 68 / 479 / 68 / 68; below md it turns and runs down the page, 343px wide with
+rows of 74 / 297 / 74 / 74, so every closed panel still clears the 44px target. Section height 977px at 1440
+and 949px at 375, no horizontal scroll, axe 0 violations at 1440, 768 and 375.
+
+This replaced the GSAP sticky-stack: 4 cards, 3 pin-spacers, a 3952px scene that scrolled the same four
+screens past the visitor one at a time. The content is unchanged, down to the guide each line is read from.
+What changed is that the visitor picks the screen that is theirs instead of waiting for it to arrive, which
+is what the section is for, and the page gets back a pin budget and about 3000px of height. StickyStack.tsx
+was deleted with it; the page's one remaining pinned scene is the horizontal pan in section 3.
+
+The open panel takes 7 shares against 1 each for the closed ones, 4 against 1 when stacked: seven at 375
+would leave closed rows 34px tall and squeeze the open one to 182px, too narrow to set an error message in.
+
+A panel opens on hover on a real pointer, not on click. Click stays for touch, where pointerenter only fires
+on the tap anyway, and focus stays for the keyboard, so tabbing the row still walks through the screens. This
+is the opposite call to the one the plans rows make, where hover was removed because a mouse crossing the
+section collapsed whatever the visitor was reading; here it is what the owner asked for, and the cost is
+lower because the panels sit above a question rather than above a price.
+
+Motion: one `grid-template-rows`/`grid-template-columns` value on the list, 640ms on `--ease-spring`, the
+stiffness 100 / damping 20 spring sampled into a CSS `linear()` in globals.css. It is the curve the hero words
+and the FAQ panels already settle on, so the panel opens the way everything else on this page arrives, and it
+is a real spring rather than a bezier approximating one. One property on one element rather than a growth
+factor on each of four children.
+
+The two lines in the strip each have their own clip box and travel their own full height, so they come up
+from under the edge of the strip rather than appearing on the spot, and they arrive on separate clocks. That
+staging is the fix for a reveal that read as jerky.
+
+The name is two or three words set `whitespace-nowrap`, so no opening width can drag it through a re-flow; it
+goes first, at 420ms for 420ms. The sentence under it wraps, and while the panel was widening it re-wrapped on
+every frame. Its delay is now the width's own duration to the millisecond, 640ms, so it never begins while
+the box it wraps into is still changing size.
+
+Measured on one hover of the white-screen panel, which carries the longest line: at 150ms the panel was 331px
+and the sentence was laid out over **four** lines, at 350ms it had settled to two, and it did not reach any
+visible opacity until 800ms, by which point the panel had been at its full 748px for a frame and the line
+count had been stable for 450ms. The whole re-wrap happens where nobody can see it. The error's own words keep
+their own wait for the same reason. The chip wears `--shadow-card`, the house inset highlight and soft drop,
+so the mark sits on the strip rather than being pasted onto it. Panels arrive 55ms apart the first time the row crosses 20% into view, never on mount, because
+the row sits below the fold. Under reduced motion the list has transition-property none, the panels are
+opacity 1 with animation none, and every swap is instant.
+
+Each panel carries its own name and the line explaining it, inside the frame under the icon, rather than in a
+strip below the row: the panel is the thing being chosen, so what it is should be on it. Closed, only the icon
+is left, centred, 44px at 14px radius like every chip on the site. Three layout facts hold that together and
+each one was a real defect first: the words are taken out of the flex track with `position: absolute` when
+closed, because a zero-width box still wraps its text one character per line and that grew the strip on the
+white-screen panel from 112px to 432px of scrim over what is meant to be a blank white screen; the strip takes
+p-3 and no height floor when stacked, because a 44px chip in 32px of padding is 76px and a closed row only
+gets 74px at 375, which cut the chip in half; and the screen area carries no padding when closed, because
+`flex-1` and `min-h-0` let a box shrink but padding does not shrink with it, and 40px of it plus a 68px strip
+overflowed the same 74px row. A fourth: the open panel hung its chip from the top of its strip while the
+closed ones centred theirs in a strip of the same height, so the four marks sat on two different lines across
+the row; they are all centred at md now. Measured after: strips 112px at 1440 with every chip 0px off the
+middle of its 107px sliver and all four mid-heights on the same pixel, 57px up from the panel floor; 68px
+closed and 126px open at 375, with nothing clipped.
+
+Each panel is one stretched button with aria-expanded rather than a Radix tab, the same shape the plans rows
+use: the accessible name stays the screen's name while the line explaining it is content rather than part of a
+label that would read out as a paragraph. Focus opens a panel as well as clicking it, so tabbing through the
+row reveals each screen in turn.
+
+Contract rule 10 reserves animation for transform and opacity, so the track-list transition is this section's
+recorded exception, the second on the site after the FAQ's accordion height.
+
+Each panel is the screen itself. All four slots were filled by the owner on 2026-10-19. The deceptive-site
+panel is a real screenshot of Chrome's interstitial, dropped into the slot docs/image-todo.md had open for it:
+Google cannot be made to flag a site on demand, so that one is never produced by `npm run capture`. The other
+three carry designed graphics of their errors rather than captures of them, and all three slots are ones
+`scripts/capture-errors.mjs` can write, so a capture run would overwrite them.
+
+They render with `fill` rather than a declared 1600x1000, because a hand-supplied screen is whatever shape it
+was. The sizes hint is 48rem, not the 72rem container: the open panel is 748px at its widest and all four
+share one hint, so 72rem had every one asking for a 1200w variant, three of them to fill a 107px sliver. The
+section's images now weigh 76KB of webp at 1440 and 40KB at 375.
+
+A sliver crops to the left edge, not the middle: all four graphics set their words across the centre, so a
+107px centre crop landed halfway through one and read as broken rather than as a glimpse of a screen. The
+left edge is the quiet part of all four. The white-screen panel used to be the one that read as itself at
+sliver width, a strip of blinding white among three dark ones; with a graphic behind it that is gone, and all
+four slivers are dark now.
+Its panel then stops setting the quoted words, since the capture is already showing them rather than having
+them printed on top. The other three have no capture yet, so they are plain dark panels carrying
+the error's own words in mono, and for the white screen a plain white one, which is also the one panel that
+reads as itself at sliver width. Never a div-built browser window. The label strip is solid
+--bg. It was flat --scrim at 0.72, chosen so it could hold --on-photo over a blank white screen as well as a
+dark one, and it did: over white that lands on #4C4C4D, where --on-photo measures 7.55:1. What it could not
+survive was the graphics themselves. All four set their own caption across the bottom third, exactly where
+the strip sits, so "White Screen of Death" and "Failed to connect to MySQL database" ghosted through it beside
+our own name for the same screen. Opaque hides whatever falls behind, takes --on-photo to 17:1, and happens
+to cover the "Diagnose & Fix" button baked into the critical-error graphic, which was a non-functioning
+control sitting inside a clickable panel. The explaining line is --on-photo at full strength, told apart from
+the name by size and weight rather than by colour: --muted on that same surface measures 3.40:1, and a
+reduced opacity is what the MASTER rules out for muted copy. One
+Phosphor icon per
+screen, since four identical warning marks would carry no information in the one place a closed panel has
+room for a mark. The section opens on the critical error
+rather than the white screen: it is the screen the fix scene and the result section already follow, and it
+opens with words instead of a white slab.
 
 Hero measurements (1440 unless stated): h1 72px, leading 1.1 (79.2px), tracking -0.04em (-2.88px), opsz 72;
 two lines at every width from 320 to 1440; "today." in ember on --bg at 6.30:1; the clip mask keeps 0.16em
@@ -206,9 +308,10 @@ both lines at opacity 1 with no transform from the first paint.
 
 Section 3 measurements (1440): heading leads the track, then Diagnose, Back up, Repair, Verify, Harden, then
 the BOOK beat; 1 pin-spacer; track 1624px wider than the viewport, so the scene is 2524px tall and the pin
-releases exactly where the pan ends. The ember rail is `scaleX` 0 to 1 on the same scrubbed timeline, measured
-at 0.08, 0.54 and 1.00 across the scene. Under 768px and under reduced motion: 0 pin-spacers, panels stacked
-vertically in DOM order, the rail hidden (it has nothing to report without a pan), no horizontal page scroll.
+releases exactly where the pan ends. The scene carried a 2px ember rail along its bottom edge, scrubbed on the
+same timeline; it was removed on 2026-10-19 at the owner's request, along with the nav's scroll-progress rail,
+so no ember hairline runs across the page any more. Under 768px and under reduced motion: 0 pin-spacers,
+panels stacked vertically in DOM order, no horizontal page scroll.
 A focusable skip link precedes the scene, and the one focusable element inside the track, the BOOK link, was
 tested: focusing it from the top of the page leaves it inside the viewport, so a keyboard user is not carried
 somewhere they cannot see.
@@ -345,16 +448,35 @@ your own login, and access removed when the job is done.
 
 | # | Section | Layout family | Eyebrow | Marquee | CTA intents |
 | --- | --- | --- | --- | --- | --- |
-| 10 | Questions people ask first | accordion with category tabs | no | no | none |
+| 10 | Questions people ask first | category rail left, accordion right (two columns) | no | no | none |
 
-Section 10 measurements (1440, production build): three tabs (Before booking, During the fix, After the
-fix), two questions each, six in total. Radix Tabs carries the arrow keys and roving focus, measured by
-pressing ArrowRight twice and watching the selected tab and its questions change. Each question is a plain
-button with aria-expanded and its own region: collapsing removes the region from the accessibility tree,
-reopening restores the same 78px panel. The chevron reads matrix(-1, 0, 0, -1) when open, which is the
-180-degree turn. Reduced motion: the panel is already at full height 120ms after opening, so it swaps
-instantly. Tabs are 44px on mobile, no horizontal scroll. FAQPage JSON-LD carries all six questions,
-including the four sitting in closed tabs.
+Section 10 measurements (1440, production build): the section runs on the page spine at x=168 and the block
+is a 224px / 768px grid with a 48px gutter, the three categories down the left and the two questions of the
+open one on the right. At 768 the grid is 224px / 448px; below md it stacks, the rail still vertical, rows
+343px wide, section 710px tall, no horizontal scroll. Each rail row is exactly 48px, which is what lets the
+pill be positioned by index rather than by measuring the DOM.
+
+It was a wrapping row of pills above the questions inside a max-w-4xl section. That was the last block on the
+page still at max-w-4xl, so its heading sat at x=296 while every heading above and below it sat at x=168; the
+width the section gets back goes to the rail rather than to longer question rows, because a question with its
+chevron 1100px away reads as two separate things. At 375 the pills also wrapped to a ragged two lines, which
+a vertical rail ends.
+
+Motion: the pill behind the active category slides on translateY, 240ms on cubic-bezier(0.23, 1, 0.32, 1),
+measured at 85.3px of its 96px travel after 100ms. What it communicates: three categories are one list being
+pointed at, not three separate buttons. It is --surface-2 rather than an ember fill, so no label is ever
+mid-travel under a colour it cannot be read on; the active label carries the ember instead, at 5.47:1 on that
+surface. The pill sits at -z-10, so the 2px ember focus ring draws over it. Switching category plays the
+`rise` keyframe on the panel, 320ms, because Radix mounts only the open category. Under reduced motion the
+keyframe is none and the pill's transition-property is none, so both swap instantly.
+
+Radix Tabs is orientation="vertical", which matches what the rail looks like: Up/Down and Home/End move the
+selection, measured by pressing ArrowUp and then Home and watching aria-selected and the pill follow. Each
+question is a plain button with aria-expanded and its own region, now labelled by that button's id rather
+than unnamed; collapsing removes the region from the accessibility tree. The chevron turns 180 degrees and
+goes from --muted to ember, on hover as well as when open, which is the first thing that told a sighted
+visitor these rows open at all. axe 0 violations at 1440, 768 and 375. FAQPage JSON-LD carries all six
+questions, including the four sitting in closed categories.
 
 The six are referenced from the service pages by id and exact wording, so rewording a question in the
 content file fails the build here instead of letting the two drift apart. This replaced the v3 Faq and
@@ -563,9 +685,10 @@ The bar was a wordmark and two buttons with a thousand pixels of nothing between
 inside the V4.1 spec (64px, transparent over the hero, --bg at 90% with blur after 8px, wordmark left, BOOK
 and Menu right) and all measured on the production build:
 
-- **A scroll-progress rail**: 2px ember along the bottom edge, `scaleX` bound to `scrollYProgress`, fading in
-  with the backdrop. Measured 0.00 at the top, 0.25, 0.60 and 1.00 at those points in the page. It earns its
-  place: the home page is about 18,000px and the two pinned scenes make the native scrollbar misreport it.
+- ~~**A scroll-progress rail**: 2px ember along the bottom edge, `scaleX` bound to `scrollYProgress`.~~
+  **Removed 2026-10-19** at the owner's request, together with the horizontal pan's rail. Its case was that
+  the home page ran to about 18,000px with two pinned scenes making the native scrollbar misreport it; the
+  page is nearer 12,000px with one pinned scene now, so the case had thinned anyway.
 - **A mark on the menu buttons**: two level rules on Menu, the same two crossed on the menu's own Close.
   Measured `rotate: 45deg` and `-45deg` on the crossed pair.
 - **An ember underline on the wordmark**, `scale: 0 1` at rest to `scale: 1` on hover and on focus-visible.

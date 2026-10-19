@@ -47,7 +47,7 @@ const Wordmark = ({ onClick }: { onClick?: () => void }) => (
  */
 export function NavBar({ categories, support }: { categories: MenuCategory[]; support: MenuLink[] }) {
   const [open, setOpen] = useState(false);
-  const { scrollY, scrollYProgress } = useScroll();
+  const { scrollY } = useScroll();
 
   // 8px of scroll is the switch: transparent over the hero, --bg at 90% with blur after that. The
   // backdrop is its own layer and only its opacity moves, so there is no state and no scroll listener.
@@ -59,14 +59,6 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
     <Dialog open={open} onOpenChange={setOpen}>
       <header className="fixed inset-x-0 top-0 z-40 h-16">
         <motion.div aria-hidden style={{ opacity: backdrop }} className="nav-blur absolute inset-0 border-b border-line" />
-        {/* How far through the page you are. The page runs to about 18,000px and the two pinned scenes
-            make the scrollbar lie about it, so the bar says it instead. Scale only, and it tracks the
-            visitor's own scrolling 1:1, which is why reduced motion keeps it. */}
-        <motion.div
-          aria-hidden
-          style={{ scaleX: scrollYProgress, opacity: backdrop }}
-          className="absolute inset-x-0 bottom-0 h-[2px] origin-left bg-accent"
-        />
         <div className="relative mx-auto flex h-16 w-full max-w-6xl items-center gap-2 px-4 md:px-6">
           <Wordmark />
           <div className="ml-auto flex items-center gap-2">

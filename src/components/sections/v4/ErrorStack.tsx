@@ -1,127 +1,98 @@
+import { BrowserIcon, DatabaseIcon, ShieldWarningIcon, WarningOctagonIcon } from "@phosphor-icons/react/ssr";
 import Image from "next/image";
 import { BookLink } from "@/components/Cta";
 import { hasScreen } from "@/components/Photo";
 import { getGuide } from "@/content";
-import { StickyStack } from "./StickyStack";
+import { ErrorPanels, type ErrorPanel } from "./ErrorPanels";
 
 // What you see, in the software's own words. These are quotes of WordPress and Chrome, not our copy,
 // which is why they are the only mono text here. The white screen has no words at all, so its line is
 // the guide's first symptom instead, set in the body face.
 // What it usually means is each guide's most likely cause, so this section cannot drift from the guide.
+// One icon per screen, from Phosphor, the site's one icon family: four identical warning triangles
+// would carry no information in the one place a closed panel has room for a mark and a name.
 const CARDS = [
-  { slug: "white-screen-of-death", quote: null },
+  { slug: "white-screen-of-death", name: "White screen", quote: null, Icon: BrowserIcon },
   {
     slug: "critical-error-on-this-website",
+    name: "Critical error",
     quote: "There has been a critical error on this website.",
+    Icon: WarningOctagonIcon,
   },
   {
     slug: "error-establishing-database-connection",
+    name: "Database error",
     quote: "Error establishing a database connection",
+    Icon: DatabaseIcon,
   },
   // Chrome's interstitial, not a WordPress screen, so scripts/capture-errors.mjs cannot produce it:
   // its slot is prefixed `illustration-` and needs a drawn asset dropped at
   // /screens/illustration-google-deceptive-site-warning.png. Logged in docs/image-todo.md. Until then
-  // this card keeps the quoted-words fallback while the other three become real captures.
-  { slug: "google-deceptive-site-warning", quote: "Deceptive site ahead" },
+  // this panel keeps the quoted-words fallback while the other three become real captures.
+  { slug: "google-deceptive-site-warning", name: "Deceptive site", quote: "Deceptive site ahead", Icon: ShieldWarningIcon },
 ] as const;
 
-function Card({ slug, quote }: { slug: string; quote: string | null }) {
+const panels: ErrorPanel[] = CARDS.map(({ slug, name, quote, Icon }) => {
   const guide = getGuide(slug)!;
   const src = `/screens/${guide.image.slot}.png`;
   const captured = hasScreen(src);
-  return (
-    <article className="mx-auto w-full max-w-4xl px-4 md:px-6">
-      <div className="rounded-[14px] border border-line bg-surface p-6 shadow-card md:p-10">
-        {/* 70% of the card itself, so the padding does not eat into the capture's share. */}
-        <div className="-mx-6 md:-mx-10">
-          {/* The MASTER's capture frame: --surface-2 bezel, 14px outside and in, 1px --line. It is
-              what the real captures will sit in, so the fallbacks already wear it and the swap is
-              seamless; it also seats the white-screen panel instead of leaving a raw bright rectangle
-              floating on the page. */}
-          <div className="mx-auto w-[70%] rounded-[14px] border border-line bg-surface-2 p-2 shadow-card">
-            {captured ? (
-              <Image
-                src={src}
-                alt={guide.image.alt}
-                width={1600}
-                height={1000}
-                sizes="(min-width: 768px) 50vw, 70vw"
-                className="rounded-[14px]"
-              />
-            ) : quote ? (
-              // No capture written yet (docs/image-todo.md). Never a div-built browser window: the
-              // error's own words, at the size the screen shows them, on a plain panel.
-              <p className="flex aspect-[16/10] items-center justify-center rounded-[14px] bg-bg p-6 text-center font-mono text-base leading-snug text-text md:text-xl">
-                {quote}
-              </p>
-            ) : (
-              // The white screen has nothing on it, so the panel has nothing on it.
-              <div aria-hidden className="aspect-[16/10] rounded-[14px] bg-text" />
-            )}
-          </div>
-        </div>
-        {/* What you see, then what it usually means. The capture repeats the words, so the quoted
-            line only appears once the capture is there to need a caption. */}
-        {quote ? (
-          captured && <p className="mt-8 max-w-[52ch] font-mono text-base text-text md:text-lg">{quote}</p>
-        ) : (
-          <p className="mt-8 max-w-[52ch] text-base text-text md:text-lg">{guide.symptoms[0]}</p>
-        )}
-        {/* The card is "what you see, then what it usually means". That structure used to live only
-            in the comment above, so a non-technical reader met a line like "Wrong DB_NAME, DB_USER,
-            DB_PASSWORD or DB_HOST values in wp-config.php" with nothing marking it as the
-            explanation rather than more error text. The label is --text, not --muted, for the same
-            reason the cause is: this card dims to 0.55, where --muted measures 3.07:1. */}
-        <p className="mt-6 text-sm font-semibold tracking-[0.02em]">Usually means</p>
-        {/* --text, not --muted: this card dims to 0.55 as the next one arrives, and --muted at that
-            opacity measures 2.99:1 while --text holds about 5.5:1. */}
-        <p className="mt-1.5 max-w-[52ch]">{guide.likelyCauses[0]}</p>
-      </div>
-    </article>
-  );
-}
+  return {
+    id: slug,
+    name,
+    quote,
+    captured,
+    symptom: guide.symptoms[0],
+    cause: guide.likelyCauses[0],
+    icon: <Icon weight="duotone" className="size-5" />,
+    screen: captured ? (
+      // fill, not a declared width and height: the captures from scripts/capture-errors.mjs are
+      // 1600x1000 but a hand-supplied screen is whatever shape it was, and the panel crops it either
+      // way. 48rem, not the 72rem container: the open panel is 748px at its widest and every panel
+      // shares one sizes hint, so 72rem had all four of them asking for a 1200w variant, three of
+      // them to fill a 107px sliver.
+      <Image src={src} alt="" fill sizes="(min-width: 768px) 48rem, 92vw" className="object-cover" />
+    ) : quote ? (
+      // No capture yet, so the panel is a plain dark screen and ErrorPanels sets the error's own
+      // words on it. Never a div-built browser window.
+      <span className="block bg-bg" />
+    ) : (
+      // The white screen has nothing on it, so the panel has nothing on it. It is also the one panel
+      // that reads as itself at sliver width: a strip of blinding white among three dark ones.
+      <span className="block bg-text" />
+    ),
+  };
+});
 
 /**
- * Funnel stage one, the break: four full-viewport cards that stack as you scroll, so the visitor
- * recognises their own screen before anything is asked of them. Server component; the pinning is an
- * isolated GSAP leaf, and this section is the first of the page's two pinned scenes.
+ * Funnel stage one, the break: the four screens people actually arrive with, side by side, with the
+ * one you pick opened and the rest still legible as slivers.
+ *
+ * This used to be a pinned GSAP sticky-stack that scrolled the same four screens past the visitor one
+ * at a time. Same content, but the visitor now picks the screen that is theirs instead of scrolling
+ * until it appears, which also returns one of the page's two pin budgets and about 3400px of height.
  */
 export function ErrorStack() {
   return (
-    <section
-      aria-labelledby="sound-familiar"
-      className="relative py-16 md:pt-24 md:pb-16"
-    >
-      <div className="mx-auto max-w-4xl px-4 md:px-6">
-        <h2 id="sound-familiar" className="font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_30] sm:text-5xl sm:[font-variation-settings:'opsz'_48]">
+    <section aria-labelledby="sound-familiar" className="mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
+      {/* The ask sits on the heading's line, at the far end of the spine, rather than under the row.
+          The heading ran the full width with nothing beside it, and the question only makes sense
+          once you have seen the screens, so below md it stays in reading order: heading, ask,
+          screens. On one line from md up, both blocks sharing a bottom edge. */}
+      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between md:gap-10">
+        <h2
+          id="sound-familiar"
+          className="font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_30] sm:text-5xl sm:[font-variation-settings:'opsz'_48]"
+        >
           Sound familiar?
         </h2>
-      </div>
-      <a
-        href="#seeing-one-of-these"
-        className="sr-only focus:not-sr-only focus:mx-auto focus:mt-4 focus:block focus:w-fit focus:rounded-[14px] focus:bg-surface focus:px-4 focus:py-2"
-      >
-        Skip the error screens
-      </a>
 
-      {/* The first card centres itself in a full viewport, so it carries ~170px of unused space above
-          its content. Pull the stack up into that space on md rather than leaving the heading
-          stranded above a void; below md there is no min-height and nothing to absorb. */}
-      <div className="mt-8 md:-mt-28">
-        <StickyStack
-          cards={CARDS.map((c) => (
-            <Card key={c.slug} slug={c.slug} quote={c.quote} />
-          ))}
-        />
+        <div className="flex shrink-0 flex-wrap items-center gap-4">
+          <p className="text-lg">Seeing one of these?</p>
+          <BookLink location="home:error-stack" className="btn-primary" />
+        </div>
       </div>
 
-      <div
-        id="seeing-one-of-these"
-        className="mx-auto mt-12 flex max-w-4xl flex-wrap items-center gap-4 px-4 md:px-6"
-      >
-        <p className="text-lg">Seeing one of these?</p>
-        <BookLink location="home:error-stack" className="btn-primary" />
-      </div>
+      <ErrorPanels panels={panels} />
     </section>
   );
 }
