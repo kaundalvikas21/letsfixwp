@@ -43,10 +43,15 @@ const groups: FaqGroup[] = REFS.map((g) => ({
   }),
 }));
 
-/** The same six questions carry the FAQPage JSON-LD, whichever tab is open. */
+/**
+ * The same six questions carry the FAQPage JSON-LD, whichever tab is open.
+ *
+ * max-w-6xl, like every other section: this block was the last one left at max-w-4xl, which put its
+ * heading 128px inboard of the heading above it and the closing statement below it.
+ */
 export function Faq() {
   return (
-    <section aria-labelledby="faq" className="mx-auto max-w-4xl px-4 py-16 md:px-6 md:py-24">
+    <section aria-labelledby="faq" className="mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
       <JsonLd data={faqLd(groups.flatMap((g) => g.faqs))} />
       <h2
         id="faq"

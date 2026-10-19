@@ -148,8 +148,9 @@ A near-monochrome dark palette in warm-neutral charcoals, interrupted by exactly
 ### Primary
 
 - **Ember** (`#FF5A36`): the only accent in the system. It fills buttons, draws the 2px focus ring, marks
-  the active nav indicator, scales the nav progress rail and the horizontal-pan rail, and tints a
-  selected option. As text it is reserved for one or two display words and for link accent, never for a
+  the active nav indicator, borders the open screen panel, and tints a selected option. It no longer runs
+  as a hairline across anything: the nav's scroll-progress rail and the horizontal pan's rail were both
+  removed on 2026-10-19. As text it is reserved for one or two display words and for link accent, never for a
   run of copy. It is a deliberately warmer evolution of the registered brand red (`brand.accent`,
   `#CC3333`), which does not appear anywhere in this system.
 - **On Ember** (`#0C0C0E`): the near-black label that sits on every ember fill.
