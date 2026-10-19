@@ -139,13 +139,33 @@ export function TickList({ items, cols = 1 }: { items: readonly string[]; cols?:
   );
 }
 
-/** Link rows: title, optional summary, chevron. Used for service and guide directories. */
-export function LinkRows({ items }: { items: { href: string; title: string; summary?: string }[] }) {
+/**
+ * Link rows: title, optional summary, chevron. Used for service and guide directories.
+ *
+ * The row is a grid rather than a flex pair so that `split` can move the summary into a column of
+ * its own from md up without a second component: title, summary and chevron are already three cells
+ * and the variant only re-places them. Default is the stacked row every existing call site renders
+ * today (title, summary under it, chevron right), which is why `split` is opt-in rather than a
+ * changed default.
+ *
+ * `split` is for a hub directory, where eleven stacked title-over-paragraph rows read as one block
+ * of text: with the summary in its own column the titles form a single scannable column on the page
+ * spine and the summaries answer them across the gutter.
+ */
+export function LinkRows({ items, split = false }: { items: { href: string; title: string; summary?: string }[]; split?: boolean }) {
   return (
     <ul className="divide-y divide-line border-y border-line">
       {items.map((i) => (
         <li key={i.href}>
-          <Link href={i.href} className="group relative flex items-start gap-4 py-4 transition-colors duration-200 hover:text-accent-text">
+          <Link
+            href={i.href}
+            className={cn(
+              "group relative grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 gap-y-1 py-4 transition-colors duration-200 hover:text-accent-text",
+              // The title column is a measure, not a third of the container: at 768 a 23rem column
+              // would leave the summary at 38ch, which is under what a sentence needs.
+              split && "md:grid-cols-[minmax(0,18rem)_minmax(0,1fr)_auto] md:gap-x-8 md:py-5 lg:grid-cols-[minmax(0,23rem)_minmax(0,1fr)_auto] lg:gap-x-12",
+            )}
+          >
             {/* The practice rows' ember rule, which belongs here more than it does there: that row is
                 not a link and this one is. It replaces the row's own hairline rather than sitting
                 beside it, so nothing moves. Mouse only, or a tap would leave it lit. */}
@@ -153,15 +173,20 @@ export function LinkRows({ items }: { items: { href: string; title: string; summ
               aria-hidden
               className="pointer-events-none absolute inset-x-0 -bottom-px h-px origin-left scale-x-0 bg-accent transition-transform duration-[260ms] ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none [@media(hover:hover)]:group-hover:scale-x-100"
             />
-            <span className="min-w-0 flex-1">
-              {/* Capped on the same measure as the summary beneath it: uncapped, a short title on a
-                  1104px hub row sat with its chevron 1104px away and read as two separate things. */}
-              <span className="block max-w-[70ch] font-display text-lg font-bold [font-variation-settings:'opsz'_18]">{i.title}</span>
-              {i.summary && <span className="mt-1 block max-w-[70ch] text-sm text-muted">{i.summary}</span>}
-            </span>
+            {/* Capped on the same measure as the summary beside it: uncapped, a short title on a
+                1104px hub row sat with its chevron 1104px away and read as two separate things. */}
+            <span className="col-start-1 row-start-1 block max-w-[70ch] font-display text-lg font-bold [font-variation-settings:'opsz'_18]">{i.title}</span>
+            {i.summary && (
+              <span className={cn("col-start-1 row-start-2 block max-w-[70ch] text-sm text-muted", split && "md:col-start-2 md:row-start-1 md:mt-1")}>
+                {i.summary}
+              </span>
+            )}
             <CaretRightIcon
               weight="duotone"
-              className="mt-1 size-5 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
+              className={cn(
+                "col-start-2 row-start-1 mt-1 size-5 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none",
+                split && "md:col-start-3",
+              )}
               aria-hidden
             />
           </Link>
