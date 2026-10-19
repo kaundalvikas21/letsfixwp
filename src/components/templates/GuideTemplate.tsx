@@ -175,8 +175,17 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
             lg-only; under 768px the global bottom action bar is the persistent CTA and between the
             two the page's own "When to call us" is. ReadingRail is the one client island on the
             template: where you are in a six-section document cannot be known at build time, and it
-            derives its ticks from the rendered h2[id] so it cannot drift from the sections. */}
-        <aside className="hidden lg:col-span-4 lg:block">
+            derives its ticks from the rendered h2[id] so it cannot drift from the sections.
+
+            `lg:mt-12` is the one piece of spacing this column needs and the grid cannot give it. The
+            body grid carries no top margin because the lead column's first `Section` brings its own
+            64/96; the aside has no such child, so it started flush against the bottom of the header,
+            whose right cell ends in the banner. Card and banner touched on all 37 pages from lg up.
+            48px is the gutter both grids already run between their columns, so the gap under the
+            banner is the same rule as the gap beside it rather than a new number, and it is on the
+            aside alone so the lead column's rhythm is untouched. Margin on the sticky element's
+            containing block, not on the sticky element, so the card still pins at `top-28`. */}
+        <aside className="hidden lg:col-span-4 lg:mt-12 lg:block">
           <div className="sticky top-28 rounded-[14px] border border-line bg-surface p-6 shadow-card">
             {/* The service that fixes this error, named and linked: the card's own heading, and the
                 third route out of the rail. Deliberately not the service rail's facts list
