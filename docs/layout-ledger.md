@@ -15,6 +15,68 @@ One row per section, recorded before coding (docs/section-contract.md rule 3). O
 | --- | --- | --- | --- | --- | --- |
 | 0 | SiteShell: floating glass pill nav (md+), top bar + fixed bottom action bar (<768px), problem command palette | shell (not counted against page layout families) | no | no | BOOK (nav, bottom bar, palette footer with the highlighted problem's slug), CHAT (bottom bar icon, palette no-match) |
 
+## Page rhythm (every route)
+
+The header is `fixed` and 64px tall, so a page that starts at the top of the document starts underneath it.
+Every page but the home page was carrying `py-8 md:py-12` on its shell, which is 32 and 48: less than the
+header on both counts, so the first 32px of every stacked page and the first 16px of every desktop one were
+behind the bar. The breadcrumb is what lives there, which is why it looked welded to the header on every
+service, guide, hub, city, compare and utility page on the site, 98 routes of 99.
+
+`pageY` in `src/components/templates/parts.tsx` is the one place that number lives now: `pt-24 pb-8
+md:pt-28 md:pb-12`. 96 and 112 are the same 32 and 48 those pages were always asking for, with the 64 they
+have to clear added on. Thirteen literals became one constant, so the next page cannot quietly reintroduce
+it. `LegalPending` was its own case at `py-16`, exactly the header's height, which put its h1 flush against
+the bar with no gap at all; `/preview/` was the same.
+
+Measured after, as the first painted element's distance below the header, across 13 inner routes at three
+widths: 48px at 1440, 48px at 1024, 32px at 375, one value per width with no outlier. The home page is the
+deliberate exception at -40px stacked and 159px at 1440: its hero is full-bleed and the bar is transparent
+over it, which is the design.
+
+One thing the whole-document audit caught that section-scoped runs had been missing for the entire build:
+the command palette's trigger carried `aria-label="What is it doing?"`, which is also its visible label from
+lg up. A name that merely repeats the visible text trips WCAG 2.5.3 Label in Name, and axe reported
+`label-content-name-mismatch` at serious impact on every page of the site. The label was load-bearing,
+though: below lg the span is `display:none` and the button is the icon alone, so removing it outright would
+have left it with no name. It names itself from its own contents now, with an `sr-only` copy for the
+icon-only case and only that case. axe is 0 on whole documents at home, service, guide and contact.
+
+## v4 / global shell (footer)
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| F | SiteFooter: the whole sitemap in balanced columns, then a brand and disclaimer bar | balanced CSS columns (not counted against a page's layout families) | no | no | none (CHAT only through the floating trigger, which is the shell's) |
+
+Footer measurements (production build): 912px at 1440, 1402px at 768, 2484px at 375. Eight blocks, six hubs
+plus Company and Legal, 43 list links and 6 hub headings. At 1440 the blocks flow into four 246px columns on
+a 40px gap with the deepest and shallowest column ending 171px apart; at 768, two columns 40px apart; at 375,
+one. axe 0 violations at all three, no horizontal scroll.
+
+It was a four-up grid, which dealt the eight blocks into two rows of four. The first hub has eleven children
+against its row-mates' four, four and three, and a grid row is as tall as its tallest cell, so that row left
+about 250px of nothing under each of the other three. CSS columns balance their own height, so the blocks
+flow and the voids close; `break-inside-avoid` on each block is what keeps a heading in the same column as
+its own links.
+
+The links were 17px tall, on `py-0.5`, which is a real miss against the contract's 44px target on the one
+block of the site that is almost entirely links. They are 36px now, on a 38px pitch, measured as 43 of 43
+at or above 36 with none below. 36 is not 44, and the reason is written in the component: 44 across these
+links adds about 900px to the footer on a phone, and at 2484px it is already the longest thing on the page
+there. That is the trade, taken deliberately rather than missed.
+
+Two things in the bar at the bottom. The disclaimer was right-aligned against the brand line under a 46ch
+cap, where it broke across two lines mid-phrase, on "WordPress Open / Source project"; it is one line at
+1440 now, left-aligned with its own measure and `text-pretty`. And the floating chat trigger, which is the
+shell's and sits bottom-right over whatever is beneath it, was landing on top of that sentence on every page
+of the site: the footer carries 112px of bottom padding at md so the button ends up in air. Measured as no
+overlap at 1440, 768 and 375.
+
+Headings are 15px in `--text` against the links' 14px in `--muted`; the two were both 14px and told apart by
+weight alone, which is not a hierarchy across eight headings and fifty links. Links take a 2px nudge and a
+colour change on hover, which is DESIGN.md's Hover Earns It rule being satisfied rather than broken: every
+one of them goes somewhere.
+
 ## v3 / home
 
 | # | Section | Layout family | Eyebrow | Marquee | CTA intents |
@@ -185,12 +247,13 @@ offset; no horizontal scroll at 375, 768, 1024 or 1440.
 | --- | --- | --- | --- | --- | --- |
 | 1 | Hero | kinetic type with bleeding image (type on columns 1 to 8, night photograph on 7 to 12 and off the right edge, --bg scrim between them) | no | no | BOOK, CHAT |
 | 2 | Funnel stage one, the break | expanding screen panels, 4 across (stacked below md) | no | no | BOOK (on the heading line) |
-| 3 | Funnel stage two, the fix | GSAP horizontal pan, heading plus 5 panels plus the CTA beat (taste skeleton 5.B) | no | no | BOOK (the last beat of the track, label only) |
+| 3 | Funnel stage two, the fix | scroll-driven rail, 5 panels on one line, bleeding to the edge | no | no | BOOK (on the heading line) |
 
 Sections 4 and up are still v3 components until they are rebuilt, so their rows stay in the v3 tables.
-Budgets used so far: 1 pinned scene of 2, section 3's horizontal pan. Section 2 gave its pin back when the
-sticky-stack became the panel row below, and the restored-site scene still scrubs without pinning. 0 marquees,
-0 eyebrows on this stretch, 2 image-plus-text layouts, never consecutive.
+Budgets used so far: 0 pinned scenes of 2. Section 2 gave its pin back when the sticky-stack became the panel
+row, section 3 gave the other one back when the horizontal pan became a rail, and the restored-site scene
+always scrubbed without pinning. 0 marquees, 0 eyebrows on this stretch, 2 image-plus-text layouts, never
+consecutive.
 
 Section 2 measurements (production build). "Seeing one of these?" and BOOK sit on the heading's line at the
 far end of the spine rather than under the row: measured at 1440 the heading starts at x=168 and the button
@@ -306,15 +369,49 @@ the scrim opaque to 68%, so every word sits on solid --bg; CTA above the fold at
 768, 1024, 1280 and 1440; one preload and one image request for the LCP photograph; reduced motion renders
 both lines at opacity 1 with no transform from the first paint.
 
-Section 3 measurements (1440): heading leads the track, then Diagnose, Back up, Repair, Verify, Harden, then
-the BOOK beat; 1 pin-spacer; track 1624px wider than the viewport, so the scene is 2524px tall and the pin
-releases exactly where the pan ends. The scene carried a 2px ember rail along its bottom edge, scrubbed on the
-same timeline; it was removed on 2026-10-19 at the owner's request, along with the nav's scroll-progress rail,
-so no ember hairline runs across the page any more. Under 768px and under reduced motion: 0 pin-spacers,
-panels stacked vertically in DOM order, no horizontal page scroll.
-A focusable skip link precedes the scene, and the one focusable element inside the track, the BOOK link, was
-tested: focusing it from the top of the page leaves it inside the viewport, so a keyboard user is not carried
-somewhere they cannot see.
+Section 3 measurements (production build). The section is 761px tall at 1440 and 689px at 375, on the page
+spine with the heading at x=168 and BOOK at the far end of its line. The rail bleeds to the container edge at
+x=144 while the first card stays on the spine at x=168, so the card after the fold is visibly cut off, which
+is the affordance that it scrolls. scrollWidth 2256 against a 1152 viewport. Five cards, all 464px, equal
+because of the 29rem floor. No horizontal page overflow at 1440, 768 or 375. axe 0 violations at all three.
+
+The row walks sideways as the page scrolls past it, and the page keeps scrolling vertically the whole way.
+What is driven is `scrollLeft`, not a transform, and that is the whole reason it composes: a transform would
+be a second position on top of the one the rail already has, so a swipe and the scroll would each move the
+row and the two would add up into somewhere unreachable. Sharing one value means the browser clamps it, the
+scrollbar agrees with it, and a swipe simply takes over. The mapping runs through a spring at the contract's
+stiffness 100 and damping 20, so the row eases toward where the scroll says it should be rather than arriving
+in wheel-sized steps.
+
+The two numbers that are the whole feel of it are the window the travel is mapped onto, 0.33 to 0.78 of the
+section's crossing. Mapped across the full crossing it was already 219px along by the time the cards reached
+the bottom of the screen, so the first card slid away before anyone had read it. Measured at 0.33/0.78: the
+rail sits at 0 with card one on the spine at x=168 while the cards come up the screen, starts at 272 once
+they are mid-viewport, and reaches its full 1104 as they leave the top, with card five's right edge at 1272
+inside the 1296 viewport edge. It travels about one and a half times the page's own speed through that
+window.
+
+Touch the rail and the drive stops for good: measured, one ArrowRight moved it to 40 and a further 400px of
+page scroll left it at 40. Without the pin there is not enough page scroll to walk 1104px of row at a reading
+pace, so the drive gets it moving and the visitor's own hand gets the rest. The one thing a scroll-linked
+rail must never do is carry a card away from someone in the middle of reading it. Under reduced motion
+nothing is driven at all and the rail is scrolled only by hand.
+
+It was a pinned GSAP scene that converted 1528px of vertical scroll into the same sideways move, and the
+content is unchanged. What went is the scroll hijack. Traced through the old section in 100px steps, the
+shape of it was: 278px of cards rising into place, then 1528px of scrolling during which nothing moved
+vertically at all, then the whole band scrolling away. Scrolling the page now moves the page.
+
+A scrollable region needs a name and a tab stop of its own, or a keyboard visitor can reach the cards and
+never the scrolling: role="region", aria-label and tabIndex 0, confirmed as the activeElement after focus,
+with the house 2px ember ring. The native scrollbar is hidden because the cut-off card already says the same
+thing without a grey rule under the row. No scroll-snap: the drive sets scrollLeft on every frame and
+snapping would fight it for the last few pixels of every one.
+
+The page has no pinned scene left: 0 pin-spacers at every width, where the budget allowed 2. It is also
+1423px shorter, 11,257 to 9,834, and this section alone went from 2184px to 761px. ScrollTrigger is no longer
+imported anywhere; GSAP itself stays for the guarantee heading. The skip link before the scene went with the
+pin, since there is no longer a hijacked scroll to skip.
 
 | # | Section | Layout family | Eyebrow | Marquee | CTA intents |
 | --- | --- | --- | --- | --- | --- |
@@ -486,11 +583,27 @@ FaqAccordion, both deleted.
 | --- | --- | --- | --- | --- | --- |
 | 11 | Closing statement | full-viewport closing statement | no | no | BOOK (magnetic), CHAT (plain text) |
 
-Section 11 measurements (production build, after the second pass): a full-width banner, 461px tall at
-1440 and 431px at 375, with the photograph edge to edge at 1440x461 and 375x431. The section carries no
-min-height and no viewport unit: its height is the content plus 96px of padding above and below at desktop,
-80px at mobile. The headline is 112px at 1440 and 48px at 375, leading 0.9, left edge on the same 168px
-measure as every other section. BOOK is 56px tall at 14px radius with a 40x40 chip at 14px holding the
+Section 11 measurements (production build, after the third pass): a full-width banner, 549px tall at 1440
+and 1920, 492px at 768 and 435px at 375, with the photograph edge to edge. The section carries no
+min-height and no viewport unit: its height is the content plus 128px of padding above and below at
+desktop, 80px at mobile. The headline is 128px at 1440 and 1920, 69px at 768 and 48px at 375, one line at
+every one of them, leading 0.9, left edge on the same 168px measure as every other section. It ran at 112px
+in a 461px band before: it is the last thing the page says and the only line on it, so it is set at the
+scale that earns, filling 825px of the spine rather than 594px of it.
+
+It is also the only authored moment in the section, which is why it sits outside CtaReveal rather than
+taking that block's 14px nudge with everything else: it rises out of a clip box of its own, the same move
+the error row's labels and the FAQ's answers make, so the closing line arrives in the page's own vocabulary.
+Spring stiffness 100 and damping 20.
+
+One trap is worth writing down, because it cost a pass and it is invisible in code review. The line starts
+at translateY(100%) inside an overflow-hidden box, so it is entirely clipped, and an IntersectionObserver
+measures what is left after an ancestor clips it: nothing. With `whileInView` on the inner span its ratio
+is zero for exactly as long as it is hidden, so it is never told to appear, and the measurement came back
+`opacity 0` at every width with the closing line simply absent from the page. The trigger belongs on the
+clip box, which is doing the clipping rather than being clipped and therefore sees the viewport honestly.
+The reduced-motion override is `transform-none`, not `translate-none`, for the related reason: Motion
+writes a real `transform` where Tailwind's own utilities write `translate`. BOOK is 56px tall at 14px radius with a 40x40 chip at 14px holding the
 arrow; the magnet pulls to [8, 4] and the chip moves 2px on hover while the label stays put. Reduced
 motion renders the block at opacity 1 with no transform. No horizontal scroll, no console errors.
 

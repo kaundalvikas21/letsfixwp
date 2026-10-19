@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { BookLink, ChatButton } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
-import { Breadcrumbs, h1, LinkRows, page } from "@/components/templates/parts";
+import { Breadcrumbs, LinkRows, h1, page, pageY } from "@/components/templates/parts";
 import { routes } from "@/config/routes";
 import { compares } from "@/content";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default function CompareIndex() {
   return (
-    <div className={cn(page, "max-w-3xl py-8 md:py-12")}>
+    <div className={cn(page, pageY, "max-w-3xl")}>
       <Breadcrumbs items={nodeCrumbs(routes.compares)} />
       <h1 className={cn(h1, "mt-6")}>Comparisons</h1>
       <p className="mt-5 max-w-[68ch] text-lg text-muted">

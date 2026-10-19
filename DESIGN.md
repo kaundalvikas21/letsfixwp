@@ -119,8 +119,8 @@ the thing they should touch next. Everything else is tonal: three charcoal steps
 the work that colour would do in a brighter system.
 
 The register is urgent but calm. Urgency comes from the storytelling, not from the styling: real error
-captures stacked and scrubbed under the scroll, a horizontal pan that walks through the fix, a zoom that
-lands on the restored site. Calm comes from everything holding still around it. One radius. One accent.
+the broken screens side by side for you to open, a rail that walks through the fix, a zoom that lands on
+the restored site. Calm comes from everything holding still around it. One radius. One accent.
 One translucent surface on the whole site. Body copy at 17px and 1.6, muted text set in a real muted
 colour rather than at reduced opacity. The composition is bold and asymmetric, the palette is almost
 monastic, and that tension is the point: the design is loud about the story and silent about itself.
@@ -244,8 +244,8 @@ right edge, full-bleed under `lg` and absolutely positioned from `lg` up. The pr
 `auto-rows-[9rem]` with `grid-flow-row-dense`, one column on mobile, two at `md`, three at `lg`, and a
 critical tile spans two rows so the grid is never a tidy matrix.
 
-Breakpoints are Tailwind's defaults, with the meaningful decisions at `md` (768px, where the pinned
-scenes switch on, section rhythm opens up and the mobile action bar is dropped) and `lg` (1024px, where
+Breakpoints are Tailwind's defaults, with the meaningful decisions at `md` (768px, where the rail turns
+from a column into a line, section rhythm opens up and the mobile action bar is dropped) and `lg` (1024px, where
 the hero photograph becomes an absolute right-hand panel). The body carries bottom padding of
 `4.75rem + env(safe-area-inset-bottom)` below `md` to clear the fixed mobile action bar, and the document
 sets `scroll-padding-top: 6rem` with `scroll-padding-bottom: 6.5rem` so a keyboard tab stop never parks
@@ -386,7 +386,8 @@ The quoted machine voice: Geist Mono at 15px, Warm Paper on Inset Charcoal, 1px 
 - **Do** keep body copy at 17px / 1.6 in Geist, and cap prose measure at `68ch`.
 - **Do** give every kinetic element a static, fully readable final state that `useReducedMotion()` and
   `gsap.matchMedia('(prefers-reduced-motion: reduce)')` both render immediately.
-- **Do** put a visually-hidden skip link immediately before each pinned scene.
+- **Do** give a scrollable rail a name, a tab stop and a visible focus ring; nothing on this site hijacks
+  the page scroll any more, so there is no pinned scene left to skip.
 - **Do** carry depth with the inset top highlight and tonal stepping.
 - **Do** tell broken versus restored with a real capture and a sentence.
 - **Do** take call-to-action wording from `src/config/cta.ts` and nowhere else.

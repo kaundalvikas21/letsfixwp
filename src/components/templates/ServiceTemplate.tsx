@@ -9,7 +9,7 @@ import { testimonials } from "@/content/testimonials";
 import { servicePhotos } from "@/content/photos";
 import type { Service } from "@/content/schema";
 import { cn } from "@/lib/utils";
-import { Breadcrumbs, Faqs, h1, h2, LinkList, LinkRows, page, RealScreen, Section, TickList } from "./parts";
+import { Breadcrumbs, Faqs, LinkList, LinkRows, RealScreen, Section, TickList, h1, h2, page, pageY } from "./parts";
 
 const Primary = ({ intent, ...rest }: { intent: ReturnType<typeof primaryCtaFor>; location: string; service: string; className?: string }) =>
   intent === "PLANS" ? <PlansLink {...rest} /> : intent === "QUOTE" ? <QuoteLink {...rest} /> : <BookLink {...rest} />;
@@ -34,7 +34,7 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
   ].filter((x): x is { k: string; v: string } => !!x);
 
   return (
-    <article data-intent={s.intent} className={cn(page, "py-8 md:py-12")}>
+    <article data-intent={s.intent} className={cn(page, pageY)}>
       <JsonLd data={[serviceLd(s), faqLd(s.faqs)]} />
       <Breadcrumbs items={nodeCrumbs(s.path)} />
 

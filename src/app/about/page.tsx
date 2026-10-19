@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { BookLink, ChatButton } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
-import { Breadcrumbs, h1, LinkRows, page, Section } from "@/components/templates/parts";
+import { Breadcrumbs, LinkRows, Section, h1, page, pageY } from "@/components/templates/parts";
 import { brand } from "@/config/brand";
 import { hubIdOf, hubNodes, routes } from "@/config/routes";
 import { hubLead } from "@/content/hubs";
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function About() {
   return (
-    <div className={cn(page, "max-w-3xl py-8 md:py-12")}>
+    <div className={cn(page, pageY, "max-w-3xl")}>
       <Breadcrumbs items={nodeCrumbs(routes.about)} />
       <h1 className={cn(h1, "mt-6")}>About {brand.name}</h1>
       <p className="mt-5 max-w-[68ch] text-lg text-muted">

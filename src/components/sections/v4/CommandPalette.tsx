@@ -83,8 +83,16 @@ export function CommandPalette() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger aria-label="What is it doing?" className="hidden min-h-11 min-w-11 cursor-pointer items-center justify-center gap-2.5 rounded-[14px] border border-line-strong bg-surface px-3 text-muted lg:px-4 transition-colors duration-200 hover:text-text md:inline-flex">
+      {/* No aria-label. It carried one reading "What is it doing?", which is also the visible label
+          from lg up, and a name that merely repeats the visible text is what trips WCAG 2.5.3 Label
+          in Name: the name has to contain what is on screen, and axe reported the mismatch on every
+          page of the site. Naming the button from its own contents makes that true by construction.
+          The label was there for a real reason, though: below lg the span is display:none and the
+          button is the icon alone, so it would have had no name at all. The sr-only copy is that
+          case, and only that case. */}
+      <DialogTrigger className="hidden min-h-11 min-w-11 cursor-pointer items-center justify-center gap-2.5 rounded-[14px] border border-line-strong bg-surface px-3 text-muted lg:px-4 transition-colors duration-200 hover:text-text md:inline-flex">
         <MagnifyingGlassIcon weight="duotone" className="size-4 shrink-0" aria-hidden />
+        <span className="sr-only lg:hidden">{"What is it doing?"}</span>
         <span className="hidden lg:inline">{"What is it doing?"}</span>
         {mac !== null && (
           <kbd aria-hidden className="rounded-[14px] border border-line px-1.5 py-0.5 font-sans text-xs">

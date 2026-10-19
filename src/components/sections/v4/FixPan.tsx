@@ -1,7 +1,7 @@
 import { BookLink } from "@/components/Cta";
 import { hasScreen, Photo } from "@/components/Photo";
 import type { PhotoId } from "@/content/photos";
-import { HorizontalPan } from "./HorizontalPan";
+import { FixRail } from "./FixRail";
 import { Screen } from "./Screen";
 
 // Every "you get" line is a claim gated in brand.claims (src/config/brand.ts), or the note of what
@@ -52,35 +52,39 @@ const PANELS: {
   },
 ];
 
-// min-h so the panned row shares one baseline: the panels measured 431, 431, 455, 431, 431, and a
-// centred row of unequal cards misaligns top and bottom by 12px as each one passes.
+// min-h so the row shares one baseline: the panels measured 431, 431, 455, 431, 431, and a rail of
+// unequal cards misaligns top and bottom by 12px as it moves past.
 const panel =
-  "flex w-full shrink-0 flex-col rounded-[14px] border border-line bg-surface p-5 shadow-card md:min-h-[29rem] md:w-[26rem] md:p-6";
-const sizes = "(min-width: 768px) 26rem, 92vw";
+  "flex shrink-0 flex-col rounded-[14px] border border-line bg-surface p-5 shadow-card md:min-h-[29rem] md:p-6 w-[84vw] max-w-[26rem] md:w-[26rem]";
+const sizes = "(min-width: 768px) 26rem, 84vw";
 
 /**
- * Funnel stage two, the fix: the heading leads the track, five panels pan past, and the last panel is
- * the ask. Server component; the pinning and the progress rail are an isolated GSAP leaf.
+ * Funnel stage two, the fix: the five moves on one line that walks sideways as the page scrolls
+ * past it, and the ask on the heading's line.
+ *
+ * It was a pinned GSAP scene that converted 1528px of vertical scroll into the same sideways move.
+ * The content is unchanged and so is the sideways move; what went is the scroll hijack. The section
+ * is an ordinary block in the flow now, the page keeps scrolling vertically the whole way through
+ * it, and the rail reads that scroll rather than taking it. FixRail holds the mapping.
  */
 export function FixPan() {
   return (
-    <section aria-labelledby="the-fix" className="py-16 md:py-0">
-      <a
-        href="#after-the-fix"
-        className="sr-only focus:not-sr-only focus:mx-auto focus:mb-4 focus:block focus:w-fit focus:rounded-[14px] focus:bg-surface focus:px-4 focus:py-2"
-      >
-        Skip the fix
-      </a>
-      <HorizontalPan>
-        <div className="shrink-0 md:w-[22rem] md:pr-4">
-          <h2
-            id="the-fix"
-            className="font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_30] sm:text-5xl sm:[font-variation-settings:'opsz'_48]"
-          >
-            Here is what we do next.
-          </h2>
-        </div>
+    // Full width, so the rail can run off the right edge of the window rather than stopping at the
+    // 72rem container. Only the heading block is held to the spine.
+    <section aria-labelledby="the-fix" className="py-16 md:py-24">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 md:flex-row md:items-end md:justify-between md:gap-10 md:px-6">
+        <h2
+          id="the-fix"
+          className="font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_30] sm:text-5xl sm:[font-variation-settings:'opsz'_48]"
+        >
+          Here is what we do next.
+        </h2>
+        {/* The ask was the last beat of the track, which meant reaching the end of the row to find
+            it. On the heading's line it is there from the first glance. */}
+        <BookLink location="home:fix-pan" className="btn-primary shrink-0" />
+      </div>
 
+      <FixRail label="The five moves of a fix">
         {PANELS.map((p) => (
           <article key={p.verb} className={panel}>
             {p.capture && hasScreen(p.capture) ? (
@@ -99,14 +103,7 @@ export function FixPan() {
             </p>
           </article>
         ))}
-
-        {/* The last beat of the track is the ask itself: the BOOK label, no card around it and no
-            second piece of CTA wording. */}
-        <div className="flex shrink-0 items-center md:w-[20rem] md:justify-center">
-          <BookLink location="home:fix-pan" className="btn-primary" />
-        </div>
-      </HorizontalPan>
-      <div id="after-the-fix" className="sr-only" />
+      </FixRail>
     </section>
   );
 }

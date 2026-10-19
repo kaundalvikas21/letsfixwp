@@ -21,7 +21,7 @@ export default function Preview() {
   const deployed = variations.filter((v) => v.url).length;
 
   return (
-    <article className="mx-auto w-full max-w-[1200px] px-6 py-16">
+    <article className="mx-auto w-full max-w-[1200px] px-6 pt-24 pb-16 md:pt-28">
       <h1 className="max-w-[20ch] text-[clamp(2rem,4.2vw,3.25rem)]">Design variations</h1>
       <p className="mt-6 max-w-[62ch] text-lg text-muted">
         The same site, built three ways. Open one to browse it as a visitor would, then come back and compare.
