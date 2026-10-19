@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { CaretRightIcon, CheckIcon } from "@phosphor-icons/react/ssr";
+import { CaretDownIcon, CaretRightIcon, CheckIcon } from "@phosphor-icons/react/ssr";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -28,7 +28,15 @@ export const pageY = "pt-24 pb-8 md:pt-28 md:pb-12";
 export const prose = "max-w-[68ch] text-muted";
 export const h1 =
   "font-display text-[2.125rem] leading-[1.05] font-extrabold tracking-[-0.04em] text-balance [font-variation-settings:'opsz'_34] sm:text-5xl sm:[font-variation-settings:'opsz'_48] lg:text-[3.5rem] lg:[font-variation-settings:'opsz'_56]";
-export const h2 = "font-display text-2xl leading-tight font-extrabold tracking-[-0.04em] md:text-3xl";
+/**
+ * Deliberately quieter than a home section heading (30 to 48), because an inner h2 is subordinate to
+ * a 56px h1 and must not shout across a seven-section reading page. What was missing was the optical
+ * axis: every other display string on the site steps `opsz` with its own size (h1 runs 34/48/56) and
+ * this one set none, so Bricolage rendered a 24px heading at its default optics and read as a
+ * different face from the h1 above it.
+ */
+export const h2 =
+  "font-display text-[1.625rem] leading-[1.15] font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_26] md:text-[2rem] md:[font-variation-settings:'opsz'_32]";
 export const card = "rounded-[14px] border border-line bg-surface p-6 shadow-card";
 
 export const pageMetadata = (seo: { title: string; description: string }, path: string): Metadata => ({
@@ -40,7 +48,10 @@ export const pageMetadata = (seo: { title: string; description: string }, path: 
 
 export function Section({ id, title, children, className }: { id: string; title: string; children: React.ReactNode; className?: string }) {
   return (
-    <section aria-labelledby={id} className={cn("mt-14 md:mt-20", className)}>
+    // 64/96 is exactly half the home page's 128/192 between-section value: the same system at half
+    // density, which is what a seven-section reading document wants. It was 56/80 against a 24px
+    // heading-to-body gap, which at 375 let adjacent sections merge into one another.
+    <section aria-labelledby={id} className={cn("reveal mt-16 md:mt-24", className)}>
       <h2 id={id} className={h2}>
         {title}
       </h2>
@@ -61,7 +72,14 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
               {i === items.length - 1 ? (
                 <span className="text-text">{c.name}</span>
               ) : (
-                <Link href={c.path} className="hover:text-text">
+                // py-1.5 takes the crumb from a 20px tap target to 32px, which clears WCAG 2.5.8's
+                // 24px floor; it was the smallest target on the site and the one axe does not flag.
+                // Deliberately not the contract's 44: a 44px row of 14px crumbs reads as a second
+                // nav bar under the real one, and the same trade is already recorded for the footer.
+                // Vertical padding only, so the first crumb's left edge stays on the page spine.
+                // Nothing more than a colour fade: orientation furniture that performs is furniture
+                // competing with the page.
+                <Link href={c.path} className="inline-flex items-center py-1.5 transition-colors duration-150 hover:text-text">
                   {c.name}
                 </Link>
               )}
@@ -79,12 +97,28 @@ export function Faqs({ faqs, title = "Questions" }: { faqs: { q: string; a: stri
     <Section id="faq" title={title}>
       <div className="divide-y divide-line border-y border-line">
         {faqs.map((f) => (
-          <details key={f.q} className="group py-4">
-            <summary className="flex cursor-pointer items-center justify-between gap-4 font-display text-lg font-bold marker:content-none [&::-webkit-details-marker]:hidden">
-              {f.q}
-              <CaretRightIcon weight="duotone" className="size-5 shrink-0 text-muted transition-transform group-open:rotate-90 motion-reduce:transition-none" aria-hidden />
+          // The question is a real heading. It was display type inside a bare summary, so the same
+          // content had a proper outline on the home page's FaqTabs and a flat one on every
+          // template route. summary's content model allows heading content intermixed with phrasing.
+          // The padding belongs to the summary, not to the details around it: summary is the click
+          // target, and with the padding one level up it was a 28px row inside a 60px box, under the
+          // 44px the contract asks for. Same rendered height, a target you can actually hit.
+          <details key={f.q} className="faq-row group">
+            <summary className="flex cursor-pointer items-center justify-between gap-4 py-4 marker:content-none [&::-webkit-details-marker]:hidden">
+              <h3 className="font-display text-lg font-bold [font-variation-settings:'opsz'_18]">{f.q}</h3>
+              {/* CaretDown turning 180, which is the gesture and the mark the home FAQ already uses.
+                  CaretRight turning 90 was a second vocabulary for one move; LinkRows keeps
+                  CaretRight, so "go there" and "open this" are now two marks on purpose. */}
+              <CaretDownIcon
+                weight="duotone"
+                // transition-[rotate,...], not transition-[transform,...]: Tailwind v4 writes
+                // rotate-180 to the standalone `rotate` property, so naming `transform` transitions
+                // nothing and the caret snaps while the colour fades. Measured in the browser.
+                className="size-5 shrink-0 text-muted transition-[rotate,color] duration-[240ms] ease-[var(--ease-spring)] group-open:rotate-180 group-open:text-accent-text motion-reduce:transition-none"
+                aria-hidden
+              />
             </summary>
-            <p className="mt-3 max-w-[70ch] text-muted">{f.a}</p>
+            <p className="max-w-[70ch] pb-4 text-muted">{f.a}</p>
           </details>
         ))}
       </div>
@@ -111,9 +145,18 @@ export function LinkRows({ items }: { items: { href: string; title: string; summ
     <ul className="divide-y divide-line border-y border-line">
       {items.map((i) => (
         <li key={i.href}>
-          <Link href={i.href} className="group flex items-start gap-4 py-4 hover:text-accent-text">
+          <Link href={i.href} className="group relative flex items-start gap-4 py-4 transition-colors duration-200 hover:text-accent-text">
+            {/* The practice rows' ember rule, which belongs here more than it does there: that row is
+                not a link and this one is. It replaces the row's own hairline rather than sitting
+                beside it, so nothing moves. Mouse only, or a tap would leave it lit. */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 -bottom-px h-px origin-left scale-x-0 bg-accent transition-transform duration-[260ms] ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none [@media(hover:hover)]:group-hover:scale-x-100"
+            />
             <span className="min-w-0 flex-1">
-              <span className="block font-display text-lg font-bold">{i.title}</span>
+              {/* Capped on the same measure as the summary beneath it: uncapped, a short title on a
+                  1104px hub row sat with its chevron 1104px away and read as two separate things. */}
+              <span className="block max-w-[70ch] font-display text-lg font-bold [font-variation-settings:'opsz'_18]">{i.title}</span>
               {i.summary && <span className="mt-1 block max-w-[70ch] text-sm text-muted">{i.summary}</span>}
             </span>
             <CaretRightIcon
@@ -148,7 +191,7 @@ export function LinkList({ paths }: { paths: string[] }) {
         <li key={p}>
           <Link
             href={p}
-            className="inline-flex min-h-11 items-center rounded-[14px] border border-line-strong px-4 text-[15px] font-medium hover:border-accent hover:text-accent-text"
+            className="inline-flex min-h-11 items-center rounded-[14px] border border-line-strong px-4 text-[15px] font-medium transition-colors duration-200 hover:border-accent hover:text-accent-text"
           >
             {titleForPath(p)}
           </Link>
@@ -158,13 +201,21 @@ export function LinkList({ paths }: { paths: string[] }) {
   );
 }
 
-/** A real capture from scripts/capture-errors.mjs, in a device frame, rendered only once the file exists. */
-export function RealScreen({ slot, alt, preload = false }: { slot: string; alt: string; preload?: boolean }) {
+/**
+ * A real capture from scripts/capture-errors.mjs, in a device frame, rendered only once the file exists.
+ *
+ * `sizes` is required because this component sits in two containers of very different widths and is
+ * preloaded in both: 432px in the service hero (col-span-5 of a 12-column grid on a 1104px inner
+ * container with 48px gutters) and 720px in the guide (max-w-3xl less px-6). The single hardcoded
+ * `(min-width: 1024px) 60vw` it used to carry declared 864px at 1440, so the service page preloaded
+ * the 1080w candidate into a 432px box, a 2.5x over-fetch on its own LCP element.
+ */
+export function RealScreen({ slot, alt, sizes, preload = false }: { slot: string; alt: string; sizes: string; preload?: boolean }) {
   const src = `/screens/${slot}.png`;
   if (!existsSync(join(process.cwd(), "public", src))) return null;
   return (
     <figure className="overflow-hidden rounded-[14px] bg-surface-2 p-2">
-      <Image src={src} alt={alt} width={1600} height={1000} preload={preload} sizes="(min-width: 1024px) 60vw, 100vw" className="rounded-[14px]" />
+      <Image src={src} alt={alt} width={1600} height={1000} preload={preload} sizes={sizes} className="rounded-[14px]" />
     </figure>
   );
 }

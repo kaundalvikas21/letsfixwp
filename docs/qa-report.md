@@ -278,3 +278,70 @@ Full detail in `docs/image-todo.md`. Summary of every placeholder, its size and 
 | `booking.png` | fix pan "Describe" | 1600x1000 | 16:10 | A screenshot of /contact/ once the v4 booking flow is styled |
 | `quote.png` | fix pan "Approve" | 1600x1000 | 16:10 | A fixed-price quote waiting for approval |
 | Night photography | hero, closing banner, tiles, plans rows | 1600x1000+ | 16:10 and 4:3 | A phone lighting up with an alert on a dark desk; an owner's face lit by a laptop; an engineer's hands at a keyboard. **Each frame needs a real light source in it**: the darkest frames in the current library (mean luminance 13 to 28) render as black panels behind the site's scrim, which is why the closing banner uses the brightest one and mirrors it |
+
+---
+
+# Inner page templates: craft pass (P4)
+
+Verified against a production build (`npm run build` then `next start`), not the dev server. Nine pages
+covering all five inner templates and all three container widths: service with a real capture, service
+falling through to a photograph, hub, guide, compare, city, city hub, guides index, compare index.
+
+## Automated sweep
+
+Script: a throwaway Playwright plus axe-core runner in the session scratchpad, the same ad-hoc approach that
+produced the numbers above. Nothing was committed; there is still no `npm run` target for axe or Lighthouse.
+
+Nine pages x four widths (375, 768, 1024, 1440), plus each page again at 1440 under
+`prefers-reduced-motion: reduce` and again with JavaScript disabled. Asserted on every run:
+
+| Check | Result |
+| --- | --- |
+| axe-core, violations of any impact | 0 |
+| Exactly one h1 | pass |
+| No horizontal page scroll | pass |
+| Targets: 44px for controls, WCAG 2.5.8's 24px for links | pass |
+| No border-radius inside `main` other than 14px | pass |
+| **No element in `main` at `opacity: 0` while in the reading area, with JS disabled** | pass |
+| Reduced motion: every `.reveal` and `.rise-in` at opacity 1, transform none | pass |
+| Every h1 and h2 within a page sharing one left edge | pass |
+
+The JS-disabled opacity check is the regression guard this pass exists to pass, and the reason the motion
+system is CSS-only: it is the test that would have caught the blank hero line recorded in the `hero-word`
+comment in globals.css.
+
+Heading left edges, measured at 1440 and matching the three documented container widths exactly:
+
+```
+service+capture  168    guide          360    cityhub        296
+service+photo    168    compare        168    guides-index   296
+hub              168    city           296    compare-index  360
+```
+
+## Two defects the sweep caught in this pass's own work
+
+1. **axe `color-contrast`, serious, four nodes, guide page, 1440 only.** Foreground `#717178`, which is no
+   token in the system: it is `--muted` blended with `--bg` by a part-finished fade. A view timeline is
+   scrubbed rather than played, so a reader who stops scrolling parks the animation wherever they left it,
+   and parked body copy measured 4.03:1 against a 4.5:1 floor. Fixed by giving `reveal` its own keyframe
+   that finishes opacity by a third of the range and spends the rest on transform alone.
+2. **The h1 was being faded in**, which holds back the paint of the page's LCP element. Removed from every
+   template; the headline now paints at once and everything else rises under it.
+
+## Performance
+
+Measured with a Chrome DevTools trace at Slow 4G and 4x CPU throttling, **not** a Lighthouse simulated run,
+so these are not directly comparable with the Lighthouse table above. Recorded as the instrument says.
+
+| Page | LCP | CLS |
+| --- | --- | --- |
+| `/wordpress-fix/white-screen/` | 810 ms | 0.00 |
+| `/guides/white-screen-of-death/` | 765 ms | 0.00 |
+
+Both are well inside the 2.5s LCP and 0.1 CLS budgets. The one change expected to move LCP is `RealScreen`
+taking a real `sizes` per call site instead of one hardcoded `60vw`: the service page had been preloading
+the 1080w candidate into a 432px box. A like-for-like Lighthouse re-run against the 2.7s figure above has
+not been done, because chrome-launcher cannot reach a browser from this WSL shell; the next pass that can
+run Lighthouse should redo that row rather than trust the trace numbers as a substitute.
+
+The home page was not touched and its 69 stands as the documented decision above.

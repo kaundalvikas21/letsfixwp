@@ -30,16 +30,21 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
       />
 
       <header className="mt-6">
+        {/* The error the visitor searched for, then the machine's own words for it, one beat later. */}
         <h1 className={h1}>{g.h1}</h1>
         {g.errorText && (
-          <p className="mt-6 overflow-x-auto rounded-[14px] border border-line-strong bg-surface-2 px-4 py-3 font-mono text-sm">
+          <p
+            className="rise-in mt-6 overflow-x-auto rounded-[14px] border border-line-strong bg-surface-2 px-4 py-3 font-mono text-sm"
+            style={{ animationDelay: "70ms" }}
+          >
             <code>{g.errorText}</code>
           </p>
         )}
       </header>
 
       <div className="mt-8">
-        <RealScreen slot={g.image.slot} alt={g.image.alt} preload />
+        {/* 720px is max-w-3xl less px-6, which is this box at every width from md up. */}
+        <RealScreen slot={g.image.slot} alt={g.image.alt} sizes="(min-width: 48rem) 720px, 100vw" preload />
       </div>
 
       <Section id="symptoms" title="What you are seeing">

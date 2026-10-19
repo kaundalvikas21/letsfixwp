@@ -14,7 +14,7 @@ export function CityHubTemplate({ node }: { node: FlatNode }) {
     <article className={cn(page, pageY, "max-w-4xl")}>
       <Breadcrumbs items={nodeCrumbs(node.path)} />
       <h1 className={cn(h1, "mt-6")}>WordPress development by city</h1>
-      <p className="mt-5 max-w-[68ch] text-lg text-muted">
+      <p className="rise-in mt-5 max-w-[68ch] text-lg text-muted" style={{ animationDelay: "70ms" }}>
         {citiesLead}
       </p>
       <div className="mt-8">
@@ -54,7 +54,7 @@ export function CityTemplate({ city: c, node }: { city: City; node: FlatNode }) 
 
       <header className="mt-6">
         <h1 className={h1}>WordPress development in {c.city}</h1>
-        <div className="mt-7 flex flex-wrap gap-3">
+        <div className="rise-in mt-7 flex flex-wrap gap-3" style={{ animationDelay: "70ms" }}>
           <QuoteLink location={`${loc}:hero`} service={highlighted[0]?.id} className="btn-primary" />
           <ChatButton location={`${loc}:hero`} service={highlighted[0]?.id} className="btn-secondary" />
         </div>
@@ -85,7 +85,7 @@ export function CityTemplate({ city: c, node }: { city: City; node: FlatNode }) 
 
       <Faqs faqs={c.faqs} />
 
-      <section aria-labelledby="city-closing" className="mt-16 flex flex-col gap-5 border-t border-line pt-8 md:flex-row md:items-center md:justify-between">
+      <section aria-labelledby="city-closing" className="reveal mt-20 flex flex-col gap-5 border-t border-line pt-10 md:mt-28 md:flex-row md:items-center md:justify-between md:pt-12">
         <h2 id="city-closing" className={cn(h2, "max-w-[24ch]")}>
           A WordPress team for {c.city}
         </h2>

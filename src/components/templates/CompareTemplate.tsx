@@ -31,7 +31,9 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
 
       <header className="mt-6">
         <h1 className={h1}>{title}</h1>
-        <p className="mt-5 max-w-[68ch] text-lg text-muted">{c.seo.description}</p>
+        <p className="rise-in mt-5 max-w-[68ch] text-lg text-muted" style={{ animationDelay: "70ms" }}>
+          {c.seo.description}
+        </p>
       </header>
 
       <Section id="verdict" title="Which one fits">
@@ -46,7 +48,16 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
       </Section>
 
       <Section id="table" title="Side by side">
-        <div className="overflow-x-auto rounded-[14px] border border-line bg-surface shadow-card">
+        {/* The table scrolls sideways under 768, so the scroll container needs a tab stop of its own
+            or a keyboard visitor cannot reach the second half of it (axe scrollable-region-focusable,
+            serious, which this page was failing at 375). Named and given a role for the same reason
+            the fix rail on the home page is. */}
+        <div
+          tabIndex={0}
+          role="region"
+          aria-label={`${c.a} compared with ${c.b}`}
+          className="overflow-x-auto rounded-[14px] border border-line bg-surface shadow-card"
+        >
           <table className="w-full min-w-[40rem] border-collapse">
             <caption className="sr-only">
               {c.a} compared with {c.b}
@@ -79,7 +90,7 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
         </div>
       </Section>
 
-      <section aria-labelledby="compare-closing" className="mt-16 flex flex-col gap-5 border-t border-line pt-8 md:flex-row md:items-center md:justify-between">
+      <section aria-labelledby="compare-closing" className="reveal mt-20 flex flex-col gap-5 border-t border-line pt-10 md:mt-28 md:flex-row md:items-center md:justify-between md:pt-12">
         <h2 id="compare-closing" className={cn(h2, "max-w-[28ch]")}>
           Still deciding between {c.a} and {c.b}?
         </h2>

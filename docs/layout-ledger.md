@@ -850,3 +850,143 @@ stagger still cascades (wrapper opacity 0.42, 0.24, 0.07, 0, 0, 0 at 150ms), hov
 switches to panels 3, 5 and 1 at a constant x=781 w=451, keyboard focus still opens the matching panel, row
 tops stay at [64,130,197,263,330,396], and the phone disclosure is unaffected: 6 categories, 0 sub-links, no
 scroll, and a tap still expands exactly one.
+
+## v4 / page templates: craft pass (P4)
+
+Refined in place across all five inner templates (Service, Hub, Guide, Compare, City and City hub, ~95 of
+99 routes). Every section's order, copy and layout family is unchanged, and nothing a visitor reads today
+changes meaning. What changed is the craft.
+
+**The bundle finding that decided the motion system, written down so it is not re-argued.** The working
+assumption was that the inner templates ship no animation library, so reusing MaskRise, CtaReveal or
+Magnetic would add Motion to 95 routes. That is false. NavBar is a `'use client'` leaf that statically
+imports `motion/react` for the scroll backdrop, SiteShell renders it from the root layout, and the motion
+chunk (147,989 bytes raw, 49,055 gzip) is referenced in 99 of the 100 prerendered HTML files. Motion is on
+every route's critical path already; reusing those components would have cost a few hundred bytes.
+
+The reason this pass is still CSS-only is different and better. MaskRise, CtaReveal and PracticeRows all
+server-render `opacity: 0` as an inline style and need hydration to clear it, and `motion-reduce` only
+rescues reduced-motion visitors. This project has already paid for that once: see the `hero-word` comment in
+globals.css, where a blocked bundle left the headline blank. On 95 pages whose entire value is readable body
+copy, that is the failure the contract calls worse than no reveal. CSS scroll-driven animation has no such
+state: inside `@supports (animation-timeline: view())`, a browser without view timelines renders the page
+exactly as it rendered before this pass.
+
+| Primitive | Motion | Spec | Communicates |
+| --- | --- | --- | --- |
+| Lead, hero CTA row, guide error text | CSS, time-based | `rise-in`: the existing `rise` keyframe, 600ms on `--ease-spring`, inline animationDelay 70 / 140ms. Server components, no observer: all are above the fold on every inner route | Hierarchy: the headline is already there, and the things that act on it arrive under it |
+| Section, closing band | CSS, view timeline | `reveal`: `reveal-rise` on `animation-timeline: view()`, `animation-range: entry 5% entry 40%`, fill both. Anything already in view at load is past the range and paints at its final state | Hierarchy: each section is its own answer, met one at a time |
+| FAQ disclosure | CSS, native | `.faq-row::details-content` block-size 0 to auto, 300ms `--ease-spring`, `content-visibility` with `allow-discrete`; `interpolate-size: allow-keywords` on html. Chevron CaretDown 0 to 180 over 240ms, ember when open | Feedback: the question opened |
+| LinkRows hover | CSS | the ember hairline from PracticeRows, scaleX 0 to 1 from the left over 260ms on cubic-bezier(0.23, 1, 0.32, 1), replacing the row's own hairline rather than sitting beside it. `(hover: hover)` gated | Feedback: this row, and it is a door |
+| LinkList, Breadcrumbs | CSS | transition-colors 200ms / 150ms on hovers that previously snapped | Feedback: the control answers the pointer |
+| btn-secondary hover | CSS | `--shadow-lift` over 200ms. It had no hover state at all, so CHAT was dead under the pointer on every page of the site. No ember border: it would compete with the primary standing beside it | Feedback: the secondary is operable, the same as the primary |
+| Service reading rail | IntersectionObserver, no library | `ReadingRail`: one tick per rendered `h2[id]`, the reader's own in ember, with the section's name under it. rootMargin `-96px 0px -55% 0px` clears the 64px header. aria-hidden and non-interactive, so it is not a second landmark and has no keyboard surface; a screen reader already has the heading outline | Orientation: where you are in a seven-section page, and the rail is still with you |
+
+**Two things the audit caught that the plan had wrong, both recorded because they are easy to reintroduce.**
+
+1. **Never put `rise-in` on an h1.** The first build faded the headline in on every template. The h1 is the
+   LCP element on every inner route, and an element at `opacity: 0` is not painted, so fading it in holds
+   the page's largest paint back by the length of the animation. The headline is now the already-visible
+   default that everything else rises under, which is also what the craft floor asks for.
+2. **A view timeline is scrubbed, not played, so a reader who stops scrolling parks it mid-animation.** With
+   a straight opacity ramp that left body copy resting at part opacity, and `--muted` at 0.55 over `--bg`
+   measures 4.03:1, under the 4.5:1 this system holds itself to. Axe caught exactly that, four nodes on the
+   guide page at 1440 and only at 1440. `reveal` therefore uses its own keyframe, `reveal-rise`, which
+   finishes the opacity by a third of the way in and spends the rest on transform alone. The worst a parked
+   reveal can now do is sit mid-slide while fully legible.
+
+**Motion exception, the third on the site.** `block-size` on `::details-content` is animated outside
+transform and opacity. Same reasoning as the two already recorded: ErrorPanels animates its grid track
+width, FaqTabs animates the answer's height, and an accordion cannot reveal an answer without one. One
+property, on one pseudo-element, behind `@supports`.
+
+**Open tension, recorded rather than resolved.** The craft floor asks for one authored moment rather than
+one identical entrance on every section, and DESIGN.md says motion here is "motivated case by case; nothing
+else moves". A single `reveal` on every `Section` is in tension with both. It is in because in-view reveals
+were asked for explicitly, and it is held to one 12px beat so it reads as the page settling under the reader
+rather than each section performing. The quieter alternative, if this ever grates: drop `reveal` from
+`Section` and keep it only on the four closing bands, which leaves the reading rail as the single authored
+moment.
+
+**No JS was added to any route but the service template.** ReadingRail is the only new client code in the
+pass; the other ~60 routes gain zero bytes.
+
+### Page rhythm, inner templates
+
+`Section` was `mt-14 md:mt-20` (56 / 80) with `mt-6` between a heading and its own body. 56px of separation
+against 24px of internal gap let adjacent sections merge at 375. It is `mt-16 md:mt-24` now (64 / 96),
+exactly half the home page's 128 / 192 between-section value: the same system at half density, which is what
+a seven-section reading document wants and what eleven full-bleed scenes do not. The heading-to-body gap
+stays at 24, so the ratio is 2.67 stacked and 4.0 at desktop. Closing bands moved to `mt-20 md:mt-28` with
+`pt-10 md:pt-12`, so the page's last beat still out-ranks a section.
+
+`h2` carried no `opsz` at all, on a variable display face where every other string on the site sets it to
+match its own size: h1 steps 34 / 48 / 56 and all eight home headings step 30 / 48. A 24px heading at
+Bricolage's default optical size rendered as a visibly different face from the h1 above it. It is
+`text-[1.625rem]` with `'opsz' 26`, stepping to `2rem` with `'opsz' 32`, leading 1.15. It is deliberately
+**not** converted to the home's 30 / 48: an inner h2 is subordinate to a 56px h1 and must not shout across a
+seven-section page. The same omission was closed on the service lead (20 / 24), the FAQ question and
+LinkRows title (18) and the service blockquote (18 / 20).
+
+### Container widths: three, on purpose
+
+Measured at 1440 as the h1's left edge, container minus `px-6`, and verified identical for every heading
+within each page:
+
+| Template | Container | Left edge | Why |
+| --- | --- | --- | --- |
+| Service, Hub, Compare | max-w-6xl | x=168 | A rail, a directory of full-width rows, a 3-up grid over a table. The page spine. |
+| City, City hub, guides index | max-w-4xl | x=296 | Prose plus a 3-up strip. |
+| Guide, compare index | max-w-3xl | x=360 | Reading documents. Body copy is capped at 68ch regardless, so a 6xl guide would hold a 694px text column in a 1104px container under a 1104px h1. Strictly worse. |
+
+The x=168 spine rule is an **intra-page** rule, and both bugs it has caught were intra-page: a section whose
+heading sat at x=296 while every heading above and below it sat at x=168. On a guide every heading sits at
+x=360, consistently, and nothing is out of line with anything. The widths were left alone deliberately:
+changing a container on 95 routes is the highest-risk act available in a craft pass and it is how both of
+those bugs were introduced. Recorded here so the next pass reads three widths as a system, not as drift.
+
+### Also fixed in this pass
+
+- **`RealScreen`'s sizes were wrong in both of its call sites, on the LCP image.** The component hardcoded
+  `(min-width: 1024px) 60vw, 100vw`, but its service box is 432px (col-span-5 of a 12-column grid on a
+  1104px inner container with 48px gutters) and its guide box is 720px (max-w-3xl less px-6). At 1440 the
+  service page preloaded the 1080w candidate into a 432px box, a 2.5x over-fetch on the LCP element of the
+  template that carries the search traffic. `sizes` is a required prop now and each call site passes its
+  real box.
+- **The FAQ summary was a 28px tap target.** `py-4` sat on the `details`, not on the `summary` that is
+  actually the click target, so every question on 95 routes was a 28px row inside a 60px box. The padding
+  moved onto the summary: same rendered height, a target you can hit.
+- **Breadcrumb links were 20px tall**, the smallest target on the site and one axe does not flag. `py-1.5`
+  takes them to 32px, clearing WCAG 2.5.8's 24px floor. Deliberately not the contract's 44: a 44px row of
+  14px crumbs reads as a second nav bar under the real one, and the same trade is already recorded for the
+  footer. Vertical padding only, so the first crumb stays on the spine.
+- **The compare table's scroll container had no tab stop**, so a keyboard visitor could not reach the second
+  half of it (axe `scrollable-region-focusable`, serious, at 375). It is `tabIndex={0}` with `role="region"`
+  and a name now, the same treatment the home page's fix rail has.
+- **LinkRows titles had no measure.** The summary was capped at 70ch and the title was not, so on a 1104px
+  hub row a short title sat with its chevron 1104px away: the same defect recorded for the FAQ pills. The
+  title is capped at 70ch, matching the summary beneath it.
+- **FAQ questions were not headings.** `<summary>` set them as display type, so one piece of content had a
+  real outline on the home page's FaqTabs and a flat one on 95 template routes. They are `<h3>` now;
+  `<summary>`'s content model permits heading content intermixed with phrasing.
+- **The FAQ chevron was a second vocabulary for one gesture:** CaretRight turning 90 here, CaretDown turning
+  180 on the home page. It is CaretDown and 180 now. LinkRows keeps CaretRight, which makes "go there" and
+  "open this" two different marks on purpose rather than by accident.
+- **`whatWeDo` left an orphan tile.** The list holds 3 to 5 steps in a two-up grid, so an odd count stranded
+  the last one beside a hole. An odd last step spans both columns.
+- **`btn-primary` and `btn-secondary` had no reduced-motion branch** on their press scale, the one motion in
+  the button system that was missing one.
+
+### Noted, not changed
+
+`src/components/Finder.tsx` is unmounted: zero importers across src, scripts, docs and design-system, and
+the only reference is a passing mention in a TileGrid comment. Its own docstring claims it lives on the
+knowledge base index, which does not import it. It is also the last component carrying `border-muted` and
+square corners. Left in place because deleting working code is outside a design pass, and recorded here so
+nobody spends a pass converting a component with no users.
+
+Geist Mono is still 29KB for error strings only. `RealScreen` passes `preload` straight to next/image while
+`Photo` hand-rolls `loading` and `fetchPriority` from the same prop name: two mechanisms, one concept. The
+guide's safe-check ordinals are a 32px box carrying the 14px shape lock, which at that size reads as a
+squircle. The four closing bands have four different heading ids for one thing. `prose` is exported from
+parts.tsx and used only by LegalPending while six call sites inline the identical two classes.

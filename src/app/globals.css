@@ -58,6 +58,9 @@
        keyboard tab stop is never parked underneath either of them. */
     scroll-padding-top: 6rem;
     scroll-padding-bottom: 6.5rem;
+    /* Lets block-size: auto take part in a transition, which is what opens an FAQ answer without
+       measuring it in JS. Inherited, and nothing else on the site transitions a size to a keyword. */
+    interpolate-size: allow-keywords;
   }
   @media (width >= 48rem) {
     html {
@@ -93,6 +96,10 @@
   transition: transform 150ms ease, box-shadow 200ms ease;
   &:hover { box-shadow: var(--shadow-lift); }
   &:active { transform: scale(0.98); }
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    &:active { transform: none; }
+  }
 }
 
 @utility btn-secondary {
@@ -108,8 +115,15 @@
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
-  transition: transform 150ms ease;
+  transition: transform 150ms ease, box-shadow 200ms ease;
+  /* It carried no hover state at all, so CHAT sat dead under the pointer on every page of the site.
+     Lift and nothing else: an ember border here would compete with the primary standing beside it. */
+  &:hover { box-shadow: var(--shadow-lift); }
   &:active { transform: scale(0.98); }
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    &:active { transform: none; }
+  }
 }
 
 /* The one gradient in v4, and a legibility scrim rather than decoration: the hero type sits on solid
@@ -227,6 +241,69 @@
   animation: rise 600ms var(--ease-spring) backwards;
   @media (prefers-reduced-motion: reduce) {
     animation: none;
+  }
+}
+
+/* An inner page's opening, painted by the stylesheet rather than by hydration: hero-word without its
+   inline-block, with the delay set inline 70ms apart. These all sit above the fold on every one of
+   these routes, so they need no observer at all. Same reasoning as above, and the same reason this
+   whole pass stays in CSS: MaskRise and CtaReveal both ship opacity:0 in the server HTML and wait
+   for JS to clear it, which on 95 pages whose value is readable body copy is a worse failure than no
+   reveal at all.
+
+   Never put this on an h1. The h1 is the LCP element on every inner route, and an element at
+   opacity 0 is not painted, so fading it in would hold the page's largest paint back by the length
+   of the animation. The headline is the already-visible default that everything else rises under. */
+@utility rise-in {
+  animation: rise 600ms var(--ease-spring) backwards;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/* Below-fold sections arrive as the reader reaches them, on a view timeline rather than an observer:
+   no JS, so there is no opacity that can fail to resolve, and outside the @supports a browser
+   without view timelines renders the page exactly as it did before this pass. Anything already in
+   view at load is past `entry 8%` and paints at its final state, so nothing above the fold hides.
+   One 12px beat and no more: the craft floor refuses an identical entrance on every section, and
+   this has to read as the page settling under the reader rather than each section performing. */
+@utility reveal {
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: reveal-rise 1s var(--ease-spring) both;
+      animation-timeline: view();
+      animation-range: entry 5% entry 40%;
+    }
+  }
+}
+
+/* Not `rise`, because a view timeline is scrubbed rather than played: a reader who stops scrolling
+   parks the animation wherever they left it. With a straight opacity ramp that meant body copy
+   resting at part opacity, and --muted at 0.55 over --bg measures 4.03:1, under the 4.5:1 this
+   system holds itself to. Axe caught exactly that on the guide page at 1440. So opacity is finished
+   by a third of the way in and the remaining travel is transform only, which cannot affect
+   contrast: the worst a parked reveal can now do is sit mid-slide while fully legible. */
+@keyframes reveal-rise {
+  0% { opacity: 0; transform: translateY(12px); }
+  33% { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* The FAQ answer opens instead of appearing. block-size is animated outside transform and opacity,
+   which is the third recorded exception on the site for the same reason as the other two: an
+   accordion cannot reveal an answer without it. ::details-content is the platform's own hook, so
+   this needs no JS, and a browser without it snaps open exactly as the page does today. */
+@supports selector(::details-content) {
+  .faq-row::details-content {
+    block-size: 0;
+    overflow: hidden;
+    transition: block-size 300ms var(--ease-spring), content-visibility 300ms allow-discrete;
+  }
+  .faq-row[open]::details-content {
+    block-size: auto;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .faq-row::details-content { transition: none; }
   }
 }
 @keyframes settle {

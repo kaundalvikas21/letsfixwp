@@ -35,9 +35,13 @@ export function HubTemplate({ node }: { node: FlatNode }) {
 
       <header className="mt-6 grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
         <div className="lg:col-span-7">
+          {/* The headline paints at once (it is the LCP element), then what it means, then the
+              buttons that act on it, 70ms apart. CSS and no observer: both are above the fold. */}
           <h1 className={h1}>{node.title}</h1>
-          <p className="mt-5 max-w-[68ch] text-lg text-muted">{hubLead[id]}</p>
-          <div className="mt-7 flex flex-wrap gap-3">
+          <p className="rise-in mt-5 max-w-[68ch] text-lg text-muted" style={{ animationDelay: "70ms" }}>
+            {hubLead[id]}
+          </p>
+          <div className="rise-in mt-7 flex flex-wrap gap-3" style={{ animationDelay: "140ms" }}>
             <Primary location={`${loc}:hero`} className="btn-primary" />
             <ChatButton location={`${loc}:hero`} className="btn-secondary" />
           </div>
@@ -88,7 +92,7 @@ export function HubTemplate({ node }: { node: FlatNode }) {
         </Section>
       )}
 
-      <section aria-labelledby="hub-closing" className="mt-16 flex flex-col gap-5 border-t border-line pt-8 md:flex-row md:items-center md:justify-between">
+      <section aria-labelledby="hub-closing" className="reveal mt-20 flex flex-col gap-5 border-t border-line pt-10 md:mt-28 md:flex-row md:items-center md:justify-between md:pt-12">
         <h2 id="hub-closing" className={cn(h2, "max-w-[24ch]")}>
           {node.title}
         </h2>

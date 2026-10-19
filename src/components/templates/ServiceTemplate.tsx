@@ -9,6 +9,7 @@ import { testimonials } from "@/content/testimonials";
 import { servicePhotos } from "@/content/photos";
 import type { Service } from "@/content/schema";
 import { cn } from "@/lib/utils";
+import { ReadingRail } from "./ReadingRail";
 import { Breadcrumbs, Faqs, LinkList, LinkRows, RealScreen, Section, TickList, h1, h2, page, pageY } from "./parts";
 
 const Primary = ({ intent, ...rest }: { intent: ReturnType<typeof primaryCtaFor>; location: string; service: string; className?: string }) =>
@@ -40,8 +41,10 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
 
       <header className="mt-6 grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
         <div className="lg:col-span-7">
+          {/* The headline paints at once and the buttons arrive under it a beat later. It is the
+              LCP element here, so it is deliberately the one thing on the page that never fades in. */}
           <h1 className={h1}>{s.h1}</h1>
-          <div className="mt-7 flex flex-wrap gap-3">
+          <div className="rise-in mt-7 flex flex-wrap gap-3" style={{ animationDelay: "70ms" }}>
             <Primary intent={intent} location={`${loc}:hero`} service={s.id} className="btn-primary" />
             <ChatButton location={`${loc}:hero`} service={s.id} className="btn-secondary" />
           </div>
@@ -51,7 +54,7 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
           {/* A real capture of one of this service's own errors when one exists, the service's night
               frame until then (contract rule 7, docs/image-todo.md). */}
           {capture ? (
-            <RealScreen slot={capture.image.slot} alt={capture.image.alt} preload />
+            <RealScreen slot={capture.image.slot} alt={capture.image.alt} sizes="(min-width: 1024px) 432px, 100vw" preload />
           ) : (
             <div className="aspect-[4/3] overflow-hidden rounded-[14px]">
               <Photo id={servicePhotos[s.id]} decorative preload sizes="(min-width: 1024px) 40vw, 100vw" />
@@ -61,8 +64,13 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
       </header>
 
       <div className="mt-12 grid gap-10 lg:grid-cols-12 lg:gap-12">
-        <div className="lg:col-span-8">
-          <p className="max-w-[68ch] font-display text-xl leading-snug font-bold md:text-2xl">{s.summary}</p>
+        <div data-rail-scope className="lg:col-span-8">
+          <p
+            className="rise-in max-w-[68ch] font-display text-xl leading-snug font-bold [font-variation-settings:'opsz'_20] md:text-2xl md:[font-variation-settings:'opsz'_24]"
+            style={{ animationDelay: "140ms" }}
+          >
+            {s.summary}
+          </p>
 
           {s.intent === "fix" ? (
             <Section id="symptoms" title="Does your site show this?">
@@ -76,8 +84,17 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
 
           <Section id="what-we-do" title="What we do">
             <ol className="grid gap-4 sm:grid-cols-2">
-              {s.whatWeDo.map((w) => (
-                <li key={w.verb} className="rounded-[14px] border border-line bg-surface p-5">
+              {s.whatWeDo.map((w, i) => (
+                <li
+                  key={w.verb}
+                  className={cn(
+                    "rounded-[14px] border border-line bg-surface p-5",
+                    // whatWeDo holds 3 to 5 steps, so an odd count leaves the last one alone in a
+                    // two-up grid with a hole beside it. Letting it run the full width reads as the
+                    // closing step rather than as a tile the layout forgot.
+                    s.whatWeDo.length % 2 === 1 && i === s.whatWeDo.length - 1 && "sm:col-span-2",
+                  )}
+                >
                   <span className="font-display text-sm font-bold tracking-wide text-accent-text">{w.verb}</span>
                   <p className="mt-1.5 text-sm">{w.detail}</p>
                 </li>
@@ -98,7 +115,7 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
           {quote && (
             <Section id="quote" title="In a client's words">
               <figure className="rounded-[14px] border border-line bg-surface p-6">
-                <blockquote className="font-display text-lg leading-snug font-bold md:text-xl">
+                <blockquote className="font-display text-lg leading-snug font-bold [font-variation-settings:'opsz'_18] md:text-xl md:[font-variation-settings:'opsz'_20]">
                   &ldquo;{quote.excerpt}&rdquo;
                 </blockquote>
                 <figcaption className="mt-4 text-[15px]">
@@ -138,12 +155,15 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
               <Primary intent={intent} location={`${loc}:rail`} service={s.id} className="btn-primary w-full" />
               <ChatButton location={`${loc}:rail`} service={s.id} className="btn-secondary w-full" />
             </div>
+            {/* Last child, so the card grows downward into the empty column and nothing above it
+                moves when it mounts. */}
+            <ReadingRail />
           </div>
         </aside>
       </div>
 
       {/* Closing band: split, not a centred panel, so it does not repeat the home page's final CTA family. */}
-      <section aria-labelledby="closing" className="mt-16 flex flex-col gap-5 border-t border-line pt-8 md:flex-row md:items-center md:justify-between">
+      <section aria-labelledby="closing" className="reveal mt-20 flex flex-col gap-5 border-t border-line pt-10 md:mt-28 md:flex-row md:items-center md:justify-between md:pt-12">
         <h2 id="closing" className={cn(h2, "max-w-[24ch]")}>
           {s.title}
         </h2>
