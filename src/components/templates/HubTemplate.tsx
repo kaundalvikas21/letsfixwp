@@ -8,7 +8,7 @@ import { getService, guidesFor } from "@/content";
 import { hubLead } from "@/content/hubs";
 import { hubPhotos } from "@/content/photos";
 import { cn } from "@/lib/utils";
-import { Breadcrumbs, h1, h2, LinkRows, page, Section } from "./parts";
+import { Breadcrumbs, LinkRows, Section, h1, h2, page, pageY } from "./parts";
 
 const urgencyRank = { critical: 0, high: 1, standard: 2 } as const;
 
@@ -30,7 +30,7 @@ export function HubTemplate({ node }: { node: FlatNode }) {
   const Primary = intent === "PLANS" ? PlansLink : intent === "QUOTE" ? QuoteLink : BookLink;
 
   return (
-    <article className={cn(page, "py-8 md:py-12")}>
+    <article className={cn(page, pageY)}>
       <Breadcrumbs items={nodeCrumbs(node.path)} />
 
       <header className="mt-6 grid items-center gap-8 lg:grid-cols-12 lg:gap-12">

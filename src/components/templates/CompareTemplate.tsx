@@ -4,7 +4,7 @@ import { primaryCtaFor } from "@/config/cta";
 import { nodeByPath, routes } from "@/config/routes";
 import type { Compare } from "@/content/schema";
 import { cn } from "@/lib/utils";
-import { Breadcrumbs, h1, h2, page, Section } from "./parts";
+import { Breadcrumbs, Section, h1, h2, page, pageY } from "./parts";
 
 /**
  * /compare/<slug>/. Layout family: verdict-by-scenario cards over a real comparison table. Factual and neutral:
@@ -19,7 +19,7 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
   const td = "border-b border-line px-4 py-3 align-top text-sm";
 
   return (
-    <article className={cn(page, "py-8 md:py-12")}>
+    <article className={cn(page, pageY)}>
       <JsonLd data={compareLd(c)} />
       <Breadcrumbs
         items={[

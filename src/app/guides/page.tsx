@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BookLink, ChatButton, CheckLink } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
-import { Breadcrumbs, h1, page, Section } from "@/components/templates/parts";
+import { Breadcrumbs, Section, h1, page, pageY } from "@/components/templates/parts";
 import { routes } from "@/config/routes";
 import { guidesFor, services } from "@/content";
 import { cn } from "@/lib/utils";
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 export default function GuidesIndex() {
   const groups = services.map((s) => ({ s, gs: guidesFor(s.id) })).filter((x) => x.gs.length);
   return (
-    <div className={cn(page, "max-w-4xl py-8 md:py-12")}>
+    <div className={cn(page, pageY, "max-w-4xl")}>
       <Breadcrumbs items={nodeCrumbs(routes.guides)} />
       <h1 className={cn(h1, "mt-6")}>Knowledge Base</h1>
       <p className="mt-5 max-w-[68ch] text-lg text-muted">Find the exact error you see. Each guide lists safe checks and links to the fix.</p>

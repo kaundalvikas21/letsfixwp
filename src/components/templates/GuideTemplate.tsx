@@ -7,7 +7,7 @@ import { getService, guidesFor } from "@/content";
 import { coreFileWarning } from "@/content/notices";
 import type { Guide } from "@/content/schema";
 import { cn } from "@/lib/utils";
-import { Breadcrumbs, Faqs, h1, LinkRows, page, RealScreen, Section } from "./parts";
+import { Breadcrumbs, Faqs, LinkRows, RealScreen, Section, h1, page, pageY } from "./parts";
 
 /**
  * /guides/<slug>/. Layout family: single-column troubleshooting document, measured for reading, with the error
@@ -19,7 +19,7 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
   const siblings = guidesFor(g.parentService).filter((x) => x.slug !== g.slug);
 
   return (
-    <article data-urgency={g.urgency} className={cn(page, "max-w-3xl py-8 md:py-12")}>
+    <article data-urgency={g.urgency} className={cn(page, pageY, "max-w-3xl")}>
       <JsonLd data={[guideLd(g), faqLd(g.faqs)]} />
       <Breadcrumbs
         items={[

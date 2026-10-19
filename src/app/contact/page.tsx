@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ChatButton } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
-import { Breadcrumbs, h1, page } from "@/components/templates/parts";
+import { Breadcrumbs, h1, page, pageY } from "@/components/templates/parts";
 import { brand } from "@/config/brand";
 import { serviceForOldSlug } from "@/config/redirects";
 import { routes, serviceIds } from "@/config/routes";
@@ -34,7 +34,7 @@ export default async function Contact({ searchParams }: PageProps<"/contact">) {
   const initial = { service, guide, url };
 
   return (
-    <div className={cn(page, "max-w-5xl py-8 md:py-12")}>
+    <div className={cn(page, pageY, "max-w-5xl")}>
       <Breadcrumbs items={nodeCrumbs(routes.contact)} />
 
       <div className="mt-6 grid gap-10 lg:grid-cols-12 lg:gap-14">

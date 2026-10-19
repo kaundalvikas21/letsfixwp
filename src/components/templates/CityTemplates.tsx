@@ -6,12 +6,12 @@ import { cities, getService } from "@/content";
 import { citiesLead, remoteDelivery } from "@/content/notices";
 import type { City } from "@/content/schema";
 import { cn } from "@/lib/utils";
-import { Breadcrumbs, Faqs, h1, h2, LinkRows, page, Section } from "./parts";
+import { Breadcrumbs, Faqs, LinkRows, Section, h1, h2, page, pageY } from "./parts";
 
 /** /wordpress-development/cities/: every city, in build priority order. */
 export function CityHubTemplate({ node }: { node: FlatNode }) {
   return (
-    <article className={cn(page, "max-w-4xl py-8 md:py-12")}>
+    <article className={cn(page, pageY, "max-w-4xl")}>
       <Breadcrumbs items={nodeCrumbs(node.path)} />
       <h1 className={cn(h1, "mt-6")}>WordPress development by city</h1>
       <p className="mt-5 max-w-[68ch] text-lg text-muted">
@@ -39,7 +39,7 @@ export function CityTemplate({ city: c, node }: { city: City; node: FlatNode }) 
   const loc = `city:${c.slug}`;
 
   return (
-    <article className={cn(page, "max-w-4xl py-8 md:py-12")}>
+    <article className={cn(page, pageY, "max-w-4xl")}>
       <JsonLd
         data={[
           serviceLd(dev, {

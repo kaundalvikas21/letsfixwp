@@ -14,6 +14,17 @@ import { cn } from "@/lib/utils";
 // for error strings only. Density 3, so sections breathe further apart than they did on v3.
 
 export const page = "mx-auto w-full max-w-6xl px-4 md:px-6";
+/**
+ * Every page's own top and bottom padding, and the header is part of it.
+ *
+ * The bar is `fixed` and 64px tall, so a page that starts at the top of the document starts
+ * underneath it. Each page was carrying `py-8 md:py-12`, which is 32 and 48: less than the header
+ * on both, so the first 32px of every stacked page and the first 16px of every desktop one were
+ * behind the bar, which is where the breadcrumb lives. 96 and 112 are the same 32 and 48 those
+ * pages were always asking for, with the 64 they have to clear added on. One constant rather than
+ * thirteen literals, so the next page cannot quietly reintroduce it.
+ */
+export const pageY = "pt-24 pb-8 md:pt-28 md:pb-12";
 export const prose = "max-w-[68ch] text-muted";
 export const h1 =
   "font-display text-[2.125rem] leading-[1.05] font-extrabold tracking-[-0.04em] text-balance [font-variation-settings:'opsz'_34] sm:text-5xl sm:[font-variation-settings:'opsz'_48] lg:text-[3.5rem] lg:[font-variation-settings:'opsz'_56]";
@@ -161,7 +172,7 @@ export function RealScreen({ slot, alt, preload = false }: { slot: string; alt: 
 /** Shown instead of the fixmywp.com legal text while brand.legacy.enabled is false. */
 export function LegalPending({ title }: { title: string }) {
   return (
-    <article className={cn(page, "py-16")}>
+    <article className={cn(page, pageY)}>
       <h1 className={h1}>{title}</h1>
       <p className={cn(prose, "mt-4")}>This page is being prepared. Until it is published, write to us with any question about it.</p>
     </article>

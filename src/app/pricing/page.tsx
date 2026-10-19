@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BookLink, ChatButton, CheckLink, PlansLink } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
-import { Breadcrumbs, h1, h2, page, Section } from "@/components/templates/parts";
+import { Breadcrumbs, Section, h1, h2, page, pageY } from "@/components/templates/parts";
 import { hubIdOf, hubNodes, routes } from "@/config/routes";
 import { services } from "@/content";
 import { hubLead } from "@/content/hubs";
@@ -22,7 +22,7 @@ export default function Pricing() {
   const priced = services.filter((s) => s.priceFrom).length;
 
   return (
-    <div className={cn(page, "max-w-4xl py-8 md:py-12")}>
+    <div className={cn(page, pageY, "max-w-4xl")}>
       <Breadcrumbs items={nodeCrumbs(routes.pricing)} />
       <h1 className={cn(h1, "mt-6")}>Pricing</h1>
       <p className="mt-5 max-w-[68ch] text-lg text-muted">

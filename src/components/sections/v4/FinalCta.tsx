@@ -3,6 +3,7 @@ import { BookLink, ChatButton } from "@/components/Cta";
 import { Photo } from "@/components/Photo";
 import { brand } from "@/config/brand";
 import { CtaReveal } from "./CtaReveal";
+import { MaskRise } from "./MaskRise";
 import { Magnetic } from "./Magnetic";
 
 // brand.claims.bookingMinutes: gated like every other claim, so a production deploy fails until the
@@ -23,7 +24,7 @@ export function FinalCta() {
     <section
       aria-labelledby="final-cta"
       // No min-height: the banner is exactly as tall as what it holds, plus its padding.
-      className="relative isolate overflow-hidden py-20 md:py-24"
+      className="relative isolate overflow-hidden py-20 md:py-32"
     >
       <Photo id="emergency" decorative sizes="100vw" className="absolute inset-0 -z-10 [transform:scaleX(-1)]" />
       {/* The flat scrim, never a gradient: --text over it measures 5.6:1 against the brightest pixel a
@@ -31,14 +32,21 @@ export function FinalCta() {
       <span aria-hidden className="absolute inset-0 -z-10 bg-photo-scrim" />
 
       <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
-        <CtaReveal>
-          <h2
-            id="final-cta"
-            className="max-w-[9ch] font-display text-[clamp(3rem,8vw,7rem)] leading-[0.9] font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_96]"
-          >
-            Let&rsquo;s fix it.
-          </h2>
+        {/* The last thing the page says, and the only line on it, so it is set at the scale that
+            earns: 128px at 1440 against the 112px it ran at, filling the spine rather than a third
+            of it. It stays one line at every width, which is what the ch cap is holding. It is also
+            the one place on this section with an authored moment, so it is outside CtaReveal and
+            rises out of a clip box of its own rather than taking the block's 14px nudge. */}
+        <h2
+          id="final-cta"
+          className="max-w-[11ch] font-display text-[clamp(3rem,9vw,8rem)] leading-[0.9] font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_96]"
+        >
+          {/* The clip box needs the descender room the line-height does not give it, or the comma
+              and the dot are shaved off the bottom of the mask. */}
+          <MaskRise className="pb-[0.08em]">Let&rsquo;s fix it.</MaskRise>
+        </h2>
 
+        <CtaReveal>
           <p className="mt-6 max-w-[34ch] text-lg text-text">
             Describe what your site is doing. Booking takes about {minutes} minutes.
           </p>
