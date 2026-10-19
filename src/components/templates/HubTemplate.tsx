@@ -11,8 +11,6 @@ import { cn } from "@/lib/utils";
 import { Breadcrumbs, LinkRows, Section, h1, h2, page, pageY } from "./parts";
 
 const urgencyRank = { critical: 0, high: 1, standard: 2 } as const;
-/** The same three words the content files carry. No hue: this variation has one accent and no status set. */
-const urgencyLabel = { critical: "Critical", high: "High", standard: "Standard" } as const;
 
 /**
  * /<hub>/. Layout family: a full-width lead block over a two-column service directory, with a weighted
@@ -21,7 +19,9 @@ const urgencyLabel = { critical: "Critical", high: "High", standard: "Standard" 
  *
  * Rhythm, which departs from the inner-template baseline on purpose (docs/layout-ledger.md records
  * `Section` at mt-16 md:mt-24): a hub is three or four beats, not a seven-section reading document, so
- * running them all at one interval leaves the page with no cadence at all. Desktop reads 128 / 64 / 112:
+ * running them all at one interval leaves the page with no cadence at all. Desktop reads 128 / 64 / 112,
+ * which needs the override written at both modifiers (`mt-16 md:mt-16`): tailwind-merge only resolves a
+ * conflict within one modifier, so a bare `mt-16` leaves the base `md:mt-24` standing and ships 96.
  * the directory opens wide because it is what the page is for, the problem grid sits close under it
  * because those problems belong to the services above, and the closing band opens again. Stacked, every
  * interval stays at or above the 64 the ledger set as the floor, because at 375 anything less merges
@@ -36,18 +36,12 @@ export function HubTemplate({ node }: { node: FlatNode }) {
     .flatMap((n) => guidesFor(serviceIdOf(n.path)))
     .sort((a, b) => urgencyRank[a.urgency] - urgencyRank[b.urgency])
     .slice(0, 6);
-  // The grid's rhythm is the data's. A hub whose worst problem is a site that will not load gives that
-  // problem the full width; a hub whose worst is a failing Core Web Vitals score does not, and reads as
-  // the calmer page it is. An odd remainder takes the full width too rather than stranding the last
-  // tile beside a hole, which is the rule the service page's whatWeDo already uses.
-  const leadWide = topGuides.length > 2 && topGuides[0].urgency === "critical";
-  const spanAll = (i: number) =>
-    (leadWide && i === 0) || (i === topGuides.length - 1 && (topGuides.length - (leadWide ? 1 : 0)) % 2 === 1);
-  // The word is printed only where it separates one problem from another. On the fix hub every one of
-  // the six is critical, and six tiles each saying "Critical" under a heading that already says "most
-  // urgent" is the heading repeated six times, not a signal. On the speed hub it runs High, Standard,
-  // Standard, Standard and tells the visitor something true about the page they are on.
-  const urgencyReads = new Set(topGuides.map((g) => g.urgency)).size > 1;
+  // The full width goes to the hub's worst problem only when that problem is also the richest thing on
+  // the page: critical, and carrying the literal string WordPress prints. A 1104px box holding one 18px
+  // line reads as a broken state rather than as weighting, which is what gating on urgency alone gave
+  // the fix hub. Today only the security hub qualifies, and its remainder is even, so no hub is left
+  // with a tile stranded beside a hole.
+  const leadWide = topGuides.length > 2 && topGuides[0].urgency === "critical" && !!topGuides[0].errorText;
   const loc = `hub:${id}`;
   const intent = primaryCtaFor(node.intent);
   const Primary = intent === "PLANS" ? PlansLink : intent === "QUOTE" ? QuoteLink : BookLink;
@@ -105,10 +99,10 @@ export function HubTemplate({ node }: { node: FlatNode }) {
       {topGuides.length > 0 && (
         // Sits close under the directory at desktop: these are the errors the services above fix, not
         // a third subject. Four of the six hubs have no guides at all and render nothing here.
-        <Section id="guides" title="Most urgent problems" className="mt-16">
+        <Section id="guides" title="Most urgent problems" className="mt-16 md:mt-16">
           <ul className="grid items-start gap-4 sm:grid-cols-2">
             {topGuides.map((g, i) => (
-              <li key={g.slug} className={cn(spanAll(i) && "sm:col-span-2")}>
+              <li key={g.slug} className={cn(leadWide && i === 0 && "sm:col-span-2")}>
                 <Link
                   href={routes.guide(g.slug)}
                   className="group block rounded-[14px] border border-line bg-surface p-5 shadow-card transition-[border-color,box-shadow] duration-200 hover:border-line-strong hover:shadow-lift"
@@ -120,13 +114,11 @@ export function HubTemplate({ node }: { node: FlatNode }) {
                       allows for it. Two lines: it is here to be recognised, not read. */}
                   {/* No `block` beside `line-clamp-2`: both set `display`, and the plain utility wins over
                       the clamp's -webkit-box, which silently turns the clamp off. */}
+                  {/* The urgency is not printed on the row. It sorts the list and it decides which panel
+                      takes the full width; a ranked list under a heading that reads "Most urgent
+                      problems" does not also need every row to restate its rank, and on three of the
+                      four hubs that render this the word either repeated or contradicted the heading. */}
                   {g.errorText && <span className="mt-3 line-clamp-2 font-mono text-[15px] leading-snug text-muted">{g.errorText}</span>}
-                  {urgencyReads && (
-                    <span className="mt-3 block text-sm text-muted">
-                      <span className="sr-only">Urgency: </span>
-                      {urgencyLabel[g.urgency]}
-                    </span>
-                  )}
                 </Link>
               </li>
             ))}
