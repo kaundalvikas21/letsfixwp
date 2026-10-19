@@ -1264,7 +1264,12 @@ animation at all, which is why it is the one element that can be the LCP without
 - **`items-center` on the header, with the whitespace that implies.** On the 17 guides with no `errorText`
   the left column holds only the h1, so there is about 79px of slack above and below it against a 273px
   banner. At density 3 that is the system working, not a hole: the alternative was inventing a subtitle.
-- **Pre-existing and not introduced here:** the FAQ section heading paints a hairline under its own text on
-  every template, including the untouched `/wordpress-fix/white-screen/`. Computed `text-decoration-line` is
-  `none` on the heading and on every ancestor, it follows `color`, and it follows the text when the text is
-  changed. Not diagnosed, not in this task's scope, recorded so the next pass does not rediscover it.
+- **The "hairline" under the FAQ heading is the letter Q.** Recorded because it cost an investigation and
+  should cost nobody another one. The FAQ heading "Questions" appears to be underlined on every template,
+  including the untouched `/wordpress-fix/white-screen/`, while no other heading is. It is not a decoration:
+  computed `text-decoration-line` is `none` on the heading and on every ancestor, `elementsFromPoint` finds
+  nothing at that pixel, and it survives changing the id. It is **Bricolage Grotesque's capital Q**, whose
+  tail is a long horizontal stroke that runs along the baseline under the letters that follow it. Probed on
+  the production build at 26px in the live page: "Q" alone draws the line, "O" alone does not, "Questions"
+  draws it, "Oestions" does not, and the same string in `system-ui` does not. Nothing to fix; the typeface
+  is doing what it was drawn to do, and "Questions" is the only heading on the site that starts with a Q.
