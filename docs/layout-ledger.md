@@ -1165,3 +1165,106 @@ they were out of scope here, and
   non-LCP image, and costs one candidate step. Left.
 - **`Section`'s baseline interval was not changed** to fit the hub. The hub overrides it at both modifiers;
   the other ~90 routes keep 64 / 96.
+
+## v4 / guide template: the 37 money pages (Task 1)
+
+`GuideTemplate` is the search-traffic surface: 37 routes, one per error. This pass changed what the page is
+made of, not what it says. **It supersedes two rows of the tables above**: the template table's "Guide /
+single-column troubleshooting document" and the container table's "Guide, compare index | max-w-3xl". The
+compare index still runs at `max-w-3xl`; the guide no longer does.
+
+| Layout family | Eyebrows | Marquee | CTA intents | Client islands |
+| --- | --- | --- | --- | --- |
+| Split header (error, then the picture of it) over a lead column with a sticky rail at lg | 0 | 0 | BOOK, CHAT, CHECK | `ReadingRail` only |
+
+### The container is `max-w-6xl` now, and the reading measure did not move
+
+The old entry's argument against a wide guide was "a 694px text column in a 1104px container under a 1104px
+h1". That argument is against a **wide single column**, and it is right. It is not an argument against a
+wider container, because the column the text sits in is set by the grid, not by the container: the document
+runs in `lg:col-span-8` of the same 12-column grid the service page uses, which measures **720px at 1440**,
+which is exactly what `max-w-3xl` less `px-6` held. Measured on the production build: lead column 720px,
+rail 336px, every heading at x=161 (the 15px scrollbar off the x=168 spine), and paragraphs still capped at
+`68ch` inside it, with the symptom and safe-check lists now capped at 68ch too (they were running the full
+720px, which is 88 characters).
+
+So the page gained the right-hand 336px and lost nothing of the measure. What fills it is the service
+page's rail family: card, BOOK, CHAT, and `ReadingRail`'s ticks. **That is a family repeat across the site
+and it is deliberate**: contract rule 3 forbids a family repeating *within one page*, and a visitor reading
+a guide is not looking at a service page. It is also the only place on this page where conversion sits
+above "When to call us", which is the order a Read surface wants: comprehension first.
+
+Three container widths are still three on purpose; this changes which bucket the guide is in, from
+"reading document" to "page spine", because it now has a rail like the other spine pages.
+
+### Every guide has a banner, which is what the pass was for
+
+All 37 guides declare an `image.slot` and 4 captures exist, so `RealScreen` returned `null` on 33 of them
+and those pages had no image at all. The guide now uses the fallback the service hero already uses: the
+real capture when the file exists, otherwise `servicePhotos[g.parentService]` through `Photo`, in the same
+`p-2` frame on the same 16:10 box, so the banner is one shape across all 37. The photograph carries **no
+alt**: `g.image.alt` describes the capture that does not exist on those pages, and lending it to a stock
+frame would describe the wrong picture. The capture arm emits a real `<link rel=preload as=image>`; the
+photo arm is `loading=eager` with `fetchpriority=high`, which is what `Photo` has always done. Neither
+fades, and neither does the h1.
+
+`sizes` is `(min-width: 1152px) 432px, (min-width: 1024px) 38vw, 100vw`. Measured: the box is 432px from
+1152 up, 372px at 1024, full width below. The hub photograph's recorded 14% over-declaration at 1024 is the
+same shape of error and would have been 16% here; the middle condition costs one media query and keeps a 2x
+tablet on the 828w candidate instead of the 1080w one. At 375/2x the page fetches 750w into a 327px box,
+which is the right candidate.
+
+### The error string is the anchor, and it is sized to itself
+
+20 of 37 guides have `errorText`. It was a 14px mono line under the h1; it is now a 16px mono plate on
+`--surface-2` with `px-5 py-4`, in the header's left column with the banner beside it. Two details that are
+not decoration: it **wraps** (`[overflow-wrap:anywhere]`) instead of scrolling, so a 90-character file path
+inside a 648px column does not create a scrollable region with no tab stop (the defect this ledger already
+records against the compare table), and it is `w-fit max-w-full`, because "502 Bad Gateway" in a 648px box
+read as an empty panel with a few characters in the corner.
+
+### Headings: 22 / 26, this page only
+
+The shared inner `h2` is 26 / 32 and five templates render it. The guide sets its own step one below that,
+22 / 26 with `opsz` to match, as a scoped descendant override on the `<article>`
+(`[&_h2]:text-[1.375rem] …`) rather than as a new prop on `Section`: `Faqs` renders its own `Section` and
+would have needed the prop threaded through it, and a concurrent task imports `Section`. Against 17px body
+26px is a 1.53 ratio, which scans without shouting, and the heading is no longer the loudest thing on a
+page that now also carries an error plate, a banner and a rail. `impeccable detect` raises its
+`design-system-font-size` advisory on `1.375rem`; it raises the same advisory on the shipped `1.625rem`,
+because DESIGN.md's ramp documents the home page's scale and the template layer has always run its own.
+
+### The sibling heading was broken English
+
+`More ${parent.title.toLowerCase()} errors` rendered "More wordpress critical error fix errors": the
+parent's title is a service name, not a noun phrase you can interpolate into a sentence. It reads **"Other
+errors we fix"**, which is the heading the service page already gives the same list of guides, so it is not
+a new claim. The rows now carry `symptoms[0]` as their summary, the same way the service page's guide rows
+do, so the section is scannable instead of a list of bare titles.
+
+### Measured, production build, `next start` on the LAN address
+
+axe-core 4.14: **0 violations of any impact** on `/guides/502-bad-gateway/` at 375, 768, 1024 and 1440 under
+`prefers-reduced-motion: reduce`, on `/guides/php-fatal-error/` at 1440 and 375, and on
+`/guides/white-screen-of-death/` at 375 and at 1440 with motion enabled. No horizontal scroll at any of the
+four widths. Under `reduce` the h1, the error plate and every section render at their final state (`rise-in`
+resolves to `animation: none`, `reveal` lives inside a `no-preference` block) and the h1 carries no
+animation at all, which is why it is the one element that can be the LCP without a repaint.
+
+### Deliberately not done
+
+- **No facts list in the rail.** The service rail's `typicalTurnaround` / `priceFrom` dl renders nothing:
+  both are `null` on all 32 services. Contract rule 8 says a null renders nothing, so the right amount of
+  code for it here is none.
+- **No hero CTA row.** The rail carries BOOK and CHAT at lg, the global action bar carries them under 768,
+  and "When to call us" carries them everywhere. A fourth pair above the fold would make an informational
+  page open with a sales pitch.
+- **No closing band.** The service page's closing split is a third CTA family; the guide ends on its
+  siblings, which is where a reader who is not ready to book should be sent.
+- **`items-center` on the header, with the whitespace that implies.** On the 17 guides with no `errorText`
+  the left column holds only the h1, so there is about 79px of slack above and below it against a 273px
+  banner. At density 3 that is the system working, not a hole: the alternative was inventing a subtitle.
+- **Pre-existing and not introduced here:** the FAQ section heading paints a hairline under its own text on
+  every template, including the untouched `/wordpress-fix/white-screen/`. Computed `text-decoration-line` is
+  `none` on the heading and on every ancestor, it follows `color`, and it follows the text when the text is
+  changed. Not diagnosed, not in this task's scope, recorded so the next pass does not rediscover it.
