@@ -180,6 +180,37 @@ v3 style: 12px inputs on --line-strong, 44px targets, a step progress bar, and i
 | 1 | Intro column + form card | 5/7 split, intro left, tabbed flow card right | no | no | CHAT (intro) |
 | 2 | Booking flow | named-screen wizard inside the card (Problem, Your site, Contact, Confirm) | no | no | BOOK or QUOTE or CHECK on the last screen |
 | 3 | Success | confirmation state replacing the flow, with handoff and CHAT | no | no | CHAT |
+| 4 | Promises panel | tinted panel under the intro (icon list, no border, no shadow), left column row 2 | no | no | none |
+
+### The left column was 350px beside a 1000px form
+
+Measured at 1440: the intro column ended at y=518 while the form panel ran to 1265. Half the page's most
+important screen was empty, and the only thing in that column besides the headline was a chat trigger that
+rendered as a word inside a sentence.
+
+Three things changed, and the booking flow, its fields and `ContactTabs` were not touched.
+
+- **The grid is three children, explicitly placed.** `lg:grid-rows-[auto_1fr]` with the form at
+  `col-start-6 row-span-2` and the promises panel at `col-start-1 row-start-2 self-start`. The explicit rows
+  are load-bearing: with auto rows the browser splits the spanning form's height across both of them, which
+  pushed the intro down and stretched the panel to the form's own bottom edge with its lower half empty,
+  which is the same defect in a tinted container. `auto 1fr` pins row 1 to the intro's own height and lets row 2 absorb the
+  rest, so the panel hugs its content 56px under the intro.
+- **Document order is intro, form, panel**, so the phone gets the form second rather than after a screen of
+  reassurance: at 375 the card starts at y=556 inside an 812px viewport. The panel carries no interactive
+  element, so reading order differing from the lg visual order costs no tab stop. Left column now runs 168 to
+  917 against the form's 168 to 1265: shorter than the form on purpose, and nothing was invented to fill it.
+- **CHAT is the house `btn-secondary`**, 44px with the global 2px ember focus ring, under a plain
+  "Rather talk first?" line instead of inside it. Label still from `cta.ts`.
+
+The panel's four sentences are **verbatim** `confirm(...)` descriptions from `brand.ts` (reproduced in
+PRODUCT.md under Brand Commitments), each gated on its claim being truthy, because `brand.claims` holds
+booleans and numbers rather than sentences and no new claim wording may be authored. Four of the eight:
+`sameDay` and `bookingMinutes` are landing-surface speed claims and read as sales talk beside a form someone
+is already filling in, `vetted` and `checkTurnaround` answer other pages' questions, and all eight would run
+the column past the form's height. `first-letter:uppercase` is the only change made to the strings, which is
+presentation, not wording. The panel is `bg-surface-2` with no border and no shadow, so the form keeps the
+only card surface on the page and stays the primary element at all three widths.
 
 Two flows share the page: Emergency ticket (routes.book) and Project enquiry (routes.quote, type=project), each
 keeping its own sessionStorage draft. /free-site-check/ runs the same component in "check" mode.
