@@ -73,7 +73,9 @@ export default async function Contact({ searchParams }: PageProps<"/contact">) {
           {/*
             The page's secondary action was a word inside a sentence, so the one thing a hesitating
             visitor can do instead of filling the form did not read as a control. It is the same
-            btn-secondary 17 of the 25 ChatButton call sites use: 44px, --line-strong boundary, house focus ring.
+            btn-secondary that most of the site's ChatButton call sites use: 44px, --line-strong
+            boundary, house focus ring. Deliberately not a count: it was written as one twice and
+            was wrong both times, and it would rot the next time anyone adds a CHAT anywhere.
           */}
           <div className="rise-in mt-6" style={{ animationDelay: "140ms" }}>
             <p className="text-sm text-muted">Rather talk first?</p>

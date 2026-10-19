@@ -1140,10 +1140,18 @@ wrong on that route, so nothing changed.
 ### Correction to the contact entry above
 
 That entry's claim that CHAT is "the house `btn-secondary`" is right about the contact page and should not be
-read as a claim about the site. Counted: 25 `ChatButton` call sites, 17 with `btn-secondary`. The exceptions
-are `/free-site-check/`, `/pricing/` and `BookingFlow`'s success screen, where CHAT is still a bare word
-inside a sentence, and the home page's `FinalCta`, which is a deliberate large underlined text link beside
-the primary. A later pass should take the three sentence-inline ones; they were out of scope here, and
+read as a claim about the site. Counted, and counted wrong twice before this line settled: 25 `ChatButton`
+call sites, **18** with `btn-secondary`. The seven that do not are `/free-site-check/`, `/pricing/` and
+`BookingFlow`'s success screen, where CHAT is still a bare word inside a sentence; `CtaPair` in
+`src/components/Cta.tsx`, which has zero importers; `Finder.tsx` and `CommandPalette`, which give CHAT
+`btn-primary` because no other call to action sits beside it there; and the home page's `FinalCta`, a
+deliberate large underlined text link beside the primary. Two of those seven ship on no route at all, so
+the count flatters the problem: `CtaPair` has no importers and `Finder.tsx` is mounted nowhere.
+
+The number is recorded here and deliberately **not** repeated in a code comment, because it was written
+into one as a count twice and was wrong both times. A figure that changes whenever anyone adds a CHAT
+does not belong next to the markup it describes. A later pass should take the three sentence-inline ones;
+they were out of scope here, and
 `CtaPair` in `src/components/Cta.tsx`, which pairs the two the same way, has zero importers.
 
 ### Deliberately not done
