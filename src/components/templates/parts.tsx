@@ -7,6 +7,7 @@ import Link from "next/link";
 import { breadcrumbLd, JsonLd, type Crumb } from "@/components/JsonLd";
 import { nodeByPath } from "@/config/routes";
 import { getCompare, getGuide } from "@/content";
+import { promises } from "@/content/notices";
 import { pngSize } from "@/lib/png-size";
 import { cn } from "@/lib/utils";
 
@@ -124,6 +125,35 @@ export function Faqs({ faqs, title = "Questions" }: { faqs: { q: string; a: stri
         ))}
       </div>
     </Section>
+  );
+}
+
+/**
+ * The promises tick list, for /contact/ and /legal/guarantee/.
+ *
+ * Both routes stated the same four commitments from their own copy of the array and their own copy
+ * of this markup, which is how two promises drift into two different promises. The sentences are
+ * the owner's approved wording and live in src/content/notices.ts; nothing here edits them, and
+ * `first-letter:uppercase` is presentation only. A row renders only while its own claim is truthy,
+ * because an unconfirmed claim is null.
+ *
+ * Not `TickList`: that one takes any strings and gives them no measure, and these need the claim
+ * gate and the capital. `compact` is the /contact/ panel, which sits in a 5-column column beside
+ * the form and sets its own measure, against the reading column on /legal/guarantee/, which does
+ * not. One flag rather than four, because the two call sites are the two shapes.
+ */
+export function Promises({ className, compact = false }: { className?: string; compact?: boolean }) {
+  return (
+    <ul className={cn(className, "grid gap-3")}>
+      {promises
+        .filter(([confirmed]) => confirmed)
+        .map(([, words]) => (
+          <li key={words} className={cn("flex gap-3", compact && "text-sm")}>
+            <CheckIcon weight="duotone" className={cn(compact ? "mt-0.5" : "mt-1", "size-5 shrink-0 text-accent-text")} aria-hidden />
+            <span className={cn("block", !compact && "max-w-[60ch]", "first-letter:uppercase")}>{words}</span>
+          </li>
+        ))}
+    </ul>
   );
 }
 

@@ -1,8 +1,7 @@
-import { CheckIcon } from "@phosphor-icons/react/ssr";
 import type { Metadata } from "next";
 import { ChatButton } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
-import { Breadcrumbs, card, h1, page, pageY } from "@/components/templates/parts";
+import { Breadcrumbs, card, h1, page, pageY, Promises } from "@/components/templates/parts";
 import { brand } from "@/config/brand";
 import { serviceForOldSlug } from "@/config/redirects";
 import { routes, serviceIds } from "@/config/routes";
@@ -22,25 +21,6 @@ const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) 
 
 const optionsFor = (kind: "fix" | "project") =>
   services.filter((s) => (kind === "project" ? s.intent !== "fix" : s.intent === "fix")).map((s) => ({ id: s.id, title: s.title }));
-
-/**
- * The reassurance beside the form, and the wording is not ours to write: each string is the owner's
- * approved phrasing, copied verbatim from the `confirm(...)` description in src/config/brand.ts and
- * reproduced in PRODUCT.md under Brand Commitments. `brand.claims` itself holds booleans and numbers,
- * so the sentences have to come from there. Never reword one here; `first-letter:uppercase` below is
- * presentation only. Each row renders only while its own claim is truthy, because an unconfirmed
- * claim can be null.
- *
- * Four of the eight on purpose. sameDay and bookingMinutes are speed claims for a landing surface and
- * read as sales talk beside a form someone is already filling in; vetted and checkTurnaround answer
- * questions other pages ask. The full eight would also run this column past the form's own height.
- */
-const promises = [
-  [brand.claims.fixedPrice, "fixes are fixed price, agreed before work starts"],
-  [brand.claims.backupFirst, "a full backup is taken before any change"],
-  [brand.claims.ownLogin, "we work through a login you create for us and never ask for your password"],
-  [brand.claims.accessRemoved, "our access is removed when the work is done"],
-] as const;
 
 /** Hosts both flows. Reads routes.book() / routes.quote() params: service, guide, url, type. */
 export default async function Contact({ searchParams }: PageProps<"/contact">) {
@@ -112,16 +92,9 @@ export default async function Contact({ searchParams }: PageProps<"/contact">) {
           <h2 id="promises" className="font-display text-lg font-bold [font-variation-settings:'opsz'_18]">
             What we promise
           </h2>
-          <ul className="mt-4 grid gap-3">
-            {promises
-              .filter(([confirmed]) => confirmed)
-              .map(([, words]) => (
-                <li key={words} className="flex gap-3 text-sm">
-                  <CheckIcon weight="duotone" className="mt-0.5 size-5 shrink-0 text-accent-text" aria-hidden />
-                  <span className="block first-letter:uppercase">{words}</span>
-                </li>
-              ))}
-          </ul>
+          {/* The sentences and the claim gate are shared with /legal/guarantee/, which states the
+              same four commitments: see `Promises`. */}
+          <Promises className="mt-4" compact />
         </section>
       </div>
     </div>

@@ -1,10 +1,9 @@
-import { CheckIcon } from "@phosphor-icons/react/ssr";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BookLink, ChatButton } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
-import { Breadcrumbs, card, h1, page, pageY, Section } from "@/components/templates/parts";
+import { Breadcrumbs, card, h1, page, pageY, Promises, Section } from "@/components/templates/parts";
 import { brand } from "@/config/brand";
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/utils";
@@ -22,21 +21,6 @@ export const metadata: Metadata = {
 // Unconfirmed values must never reach the page (the same guard /contact/ and the footer carry).
 // While it is unset the way to a human is CHAT and BOOK, which work with no email configured at all.
 const hasEmail = !brand.email.includes("{{");
-
-/**
- * The reassurance that is actually confirmed, quoted verbatim from the `confirm(...)` descriptions in
- * src/config/brand.ts, exactly as /contact/ does. Never reword one here. These are not the guarantee
- * and the page says so: they are what a visitor asking "what protects me" can rely on today, while
- * `brand.guarantee` is still a placeholder. The four protection claims only; sameDay, bookingMinutes,
- * vetted and checkTurnaround are speed claims and answer a different question. Each row renders only
- * while its own claim is truthy, because an unconfirmed claim can be null.
- */
-const promises = [
-  [brand.claims.fixedPrice, "fixes are fixed price, agreed before work starts"],
-  [brand.claims.backupFirst, "a full backup is taken before any change"],
-  [brand.claims.ownLogin, "we work through a login you create for us and never ask for your password"],
-  [brand.claims.accessRemoved, "our access is removed when the work is done"],
-] as const;
 
 /**
  * /legal/guarantee/. Layout family: reading column with a standing answer card (7/5 at lg).
@@ -85,20 +69,10 @@ export default function Guarantee() {
 
           <Section id="promises" title="What we promise">
             <p className="max-w-[60ch] text-muted">These are not the guarantee terms. They apply to every job we take.</p>
-            {/* The tick treatment /contact/ already gives these exact four sentences, so the same
-                commitments look the same wherever the site states them. */}
-            <ul className="mt-5 grid gap-3">
-              {promises
-                .filter(([confirmed]) => confirmed)
-                .map(([, words]) => (
-                  <li key={words} className="flex gap-3">
-                    <CheckIcon weight="duotone" className="mt-1 size-5 shrink-0 text-accent-text" aria-hidden />
-                    {/* first-letter:uppercase is presentation only: the sentence itself is the
-                        owner's approved wording and is not edited here. */}
-                    <span className="block max-w-[60ch] first-letter:uppercase">{words}</span>
-                  </li>
-                ))}
-            </ul>
+            {/* The same four sentences and the same tick treatment /contact/ gives them, from one
+                source now, so the same commitments cannot read differently on the two routes that
+                state them. These are not the guarantee terms and the line above says so. */}
+            <Promises className="mt-5" />
           </Section>
         </div>
 
