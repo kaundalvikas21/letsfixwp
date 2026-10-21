@@ -77,6 +77,28 @@ export const serviceLd = (s: Service, opts: { name?: string; url?: string; areaS
   return ld;
 };
 
+/**
+ * An index page that exists to list internal pages, with the list itself as its main entity.
+ *
+ * Truthful by construction: every name and url is read from `src/content`, so the list cannot say
+ * the page holds something it does not render. Deliberately `CollectionPage` over `ItemList` alone,
+ * because the page is the collection; and deliberately not `HowTo` or `AggregateRating`, which the
+ * site has no data for.
+ */
+export const collectionLd = (c: { name: string; description: string; path: string; items: { name: string; path: string }[] }): Thing => ({
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: c.name,
+  description: c.description,
+  url: abs(c.path),
+  publisher: { "@id": ORG_ID },
+  mainEntity: {
+    "@type": "ItemList",
+    numberOfItems: c.items.length,
+    itemListElement: c.items.map((it, i) => ({ "@type": "ListItem", position: i + 1, name: it.name, url: abs(it.path) })),
+  },
+});
+
 export const guideLd = (g: Guide): Thing => ({
   "@context": "https://schema.org",
   "@type": "TechArticle",

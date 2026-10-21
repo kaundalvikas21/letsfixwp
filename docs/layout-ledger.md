@@ -1288,3 +1288,174 @@ animation at all, which is why it is the one element that can be the LCP without
   the production build at 26px in the live page: "Q" alone draws the line, "O" alone does not, "Questions"
   draws it, "Oestions" does not, and the same string in `system-ui` does not. Nothing to fix; the typeface
   is doing what it was drawn to do, and "Questions" is the only heading on the site that starts with a Q.
+
+## v4 / knowledge base index (/guides/, Task 2)
+
+One route, and the entry point to all 37 guide pages. **It amends the container table's "City, City
+hub, guides index | max-w-4xl | x=296" row**: the city templates keep `max-w-4xl`, the guides index
+does not. It kept x=296 while the 37 guide pages it opens moved to the `max-w-6xl` spine in Task 1,
+so the index was narrower than every page it linked to. It runs on bare `page` now, x=168, which is
+the same left edge as the guides, the hubs and the services.
+
+| Layout family | Eyebrows | Marquee | CTA intents | Client islands |
+| --- | --- | --- | --- | --- |
+| Lead-and-instrument header (7/5), one grouped column-flow index, closing band | 0 | 0 | BOOK, CHAT, CHECK | `Finder` only |
+
+### What it was
+
+**Seventeen** near-identical sections, one per parent service that has guides, each a 32px `Section`
+heading over one to four 14px chips in a 2-up grid, closed by the sentence "How we fix these:
+`<service>`" in ember underline. 5,711px at 1440 and 8,002px at 375, measured.
+
+**Seventeen, not sixteen.** The brief for this pass said sixteen and the first version of this entry
+repeated it without checking. 32 services exist, 17 of them have at least one guide, and both the old
+page and the new one render exactly `services.map(s => ({s, gs: guidesFor(s.id)})).filter(x => x.gs.length)`.
+Derived from `src/content`: group sizes are 2,4,1,1,4,2,2,4,2,1,3,3,1,1,3,1,2 in page order, which is
+17 numbers summing to 37, and counted in the built HTML the directory renders 17 `h3` and 54 links. No search, no filter, and the hierarchy
+inverted the whole way down: the headings were the loudest thing on the page and the guide titles,
+which are the content, were the quietest.
+
+### What it is: two ways in, not seventeen sections
+
+1. **`Finder`**, mounted for the first time. Free text in, the top three matches out, each resolving
+   to a service so BOOK always has a target.
+2. **One directory**, all 37 guides grouped under the 17 services that fix them, in a **column
+   flow** (`columns-1 md:columns-2 lg:columns-3`) rather than seventeen stacked sections. The service
+   title is now itself the link, which keeps all seventeen internal links to the service pages and
+   loses seventeen repetitions of a sentence.
+
+Three layout families, none repeated within the page. The closing band is the hub template's, which
+is a cross-page repeat and deliberate: contract rule 3 forbids a family repeating *within* a page.
+
+**Column flow, not a grid.** Seventeen groups of one to four rows (sizes sorted:
+1,1,1,1,1,1,2,2,2,2,2,3,3,3,4,4,4) have four different heights spread unevenly, and a grid would leave
+holes; the flow packs them and `break-inside-avoid` keeps a service with its
+guides. The flow is column-major, so tab order and reading order are the same order. The groups
+carry no border and no surface, because three bordered boxes in a row is three equal cards; a
+hairline down each group's left edge says where it starts and ends instead.
+
+### The error string is on the row, and that decision was made twice
+
+The first version of this page gave the 20 guides that carry `errorText` a two-column ruled list of
+their own above the index, mono-led, with the guide title answering underneath. It read well at
+1440 and it was wrong: it put 20 of the 37 guides on the page twice, and it cost **1,712px at 375**
+for links that were already below it. Measured, that version was 3,675px at 1440 and 8,161px at 375,
+which is a `<main>` of 2,763px and 5,601px: *taller than the page it replaced* on a phone, where the
+page it replaced measured 5,442px.
+
+So the quoted line moved onto the row it belongs to, under the title, in 14px mono on `--muted`. The
+titles are phrased for search ("WordPress 502 bad gateway") and the strings are what is actually on
+the visitor's screen ("502 Bad Gateway"), so the two are not redundant on any of the 20. 17 guides
+have no `errorText` and render a title and nothing else, which is contract rule 8 working.
+
+`line-clamp-2` with no `block` beside it (both set `display`, and the plain utility silently kills
+the clamp), and `[overflow-wrap:anywhere]` so a 90-character line wraps rather than making a
+scrollable region with no tab stop. Same two details as the guide page's error plate, same reasons.
+
+### Measured, production build
+
+| | Before | After | Change |
+| --- | --- | --- | --- |
+| Document height, 1440 | 5,711px | 2,921px | -49% |
+| Document height, 375 | 8,002px | 6,992px | -13% |
+| `<main>` height, 1440 | 4,799px | 2,009px | -58% |
+| `<main>` height, 375 | 5,442px | 4,432px | -19% |
+| Unique guide URLs in the HTML | 37 | 37 | unchanged |
+
+The footer measures 912px at 1440 and 2,484px at 375 and is the same on both sides of the change, so
+the `<main>` figures are the honest ones (at 375 the 76px the action bar reserves on `body` comes out
+too). The phone improves least because a one-column index of 54 targets at 44px has a floor the
+desktop does not: the 37 guide links and the 17 service links **are** the page.
+
+Spine, measured at 1440: the h1 and both h2s at x=168, which is `max-w-6xl` less `px-6` and the same
+edge the hubs, the services and the guides sit on.
+
+### `Finder` went from unmounted to mounted, and was converted to v4 on the way
+
+It had zero importers. Its own docstring said it lives on the knowledge base index, and the index was
+the one page with no way to search it. It was also the last component in the repo still carrying v2's
+square corners and `border-muted`:
+
+| Before | After | Why |
+| --- | --- | --- |
+| `border border-muted`, no radius | `rounded-[14px] border border-line-strong` | 14px is the shape lock; `--line-strong` (3.36:1) is the only hairline weight allowed to identify a control, and `--muted` is a text colour, not a border token |
+| `focus-visible:border-text` | the global 2px ember ring at 2px offset | A border that changes colour is not a focus indicator; `globals.css` already ships the house ring |
+| `min-h-14` (56px) | `min-h-12` (48px) | Still over the 44px floor, and 56px read as a form field on a page that is not a form |
+| Result row link was bare inline text | `inline-flex min-h-11 items-center` | It was a ~22px target in a 46px row |
+| `border-t` on the list plus `border-b` on every row | `divide-y divide-line border-y border-line` | The house `LinkRows` treatment, and one hairline per boundary rather than two |
+| No-match box: `border border-muted p-4`, square | `rounded-[14px] border border-line bg-surface p-5 shadow-card` | It is a card, so it is the card |
+| No hover state on the control | `hover:border-text/50` | A control with one static boundary gives the pointer nothing back. White at 0.50 is **deliberately above `--line-strong`'s 0.36**: it is the same boundary getting brighter, not a second token, and the resting state is still the one the contrast table covers. Pointer only, and it carries the input's existing 200ms colour transition |
+| BOOK per result: `btn-primary` | `btn-secondary` | Three ember fills stacked in one answer, under a header that already carries one, is the page shouting at someone who has just started typing. The row's own link is what they asked for; BOOK is the escalation beside it, and it still carries the service and the guide |
+
+**The live region is mounted from first render**, and only its contents are conditional. It used to
+be `{show && <div aria-live="polite">...}`, so the region and its first content arrived in the same
+mutation: a region a screen reader has not been observing yet, which can swallow the first answer,
+the one the visitor is actually waiting for, while every answer after it announces normally. That is
+why it reads as working and why axe cannot see it, the attribute being correct and the timing not.
+The `mt-6` stays conditional with the contents so an empty region takes no space.
+
+`Finder`'s own `ChatButton` is untouched and stays `btn-primary`: it sits in the no-match card as the
+only action there, which is exactly when a primary is right. **One line of the P5 entry is now
+stale**: its CHAT census listed `Finder.tsx` among the call sites that "ship on no route at all".
+`CtaPair` still has zero importers; `Finder` does not. No count is restated here, for the reason P5
+gave and commit cee284a acted on: a figure that moves whenever anyone adds a CHAT does not belong
+beside the markup it describes.
+
+**Why a client island on a page that ships almost no JS.** Constraint 6 asks for a stated reason.
+Free-text scoring against 52 candidates' titles, error strings and symptoms is not something CSS can
+do, and the ranked answer has to arrive while the visitor types. The index itself is plain
+server-rendered anchors, so **all 37 guide URLs are in the HTML with no interaction in the way** and
+nothing a crawler needs depends on hydration. The payload is `matchIndex` plus a title-and-path map,
+which is the same shape `/contact/` already ships to `BookingFlow`.
+
+**It filters on a production build**, which is the only place it can be checked: the Windows dev
+server does not hydrate from WSL, so dev-server behaviour proves nothing here. Measured on
+`next start`: "blank white page after update" returns the white-screen guide, its service and the
+after-update guide; "502" returns "WordPress 502 bad gateway" first; "zzzzqqq" returns the no-match
+card with CHAT and CHECK.
+
+### JSON-LD
+
+A `CollectionPage` whose `mainEntity` is an `ItemList` of all 37 guides, built in
+`collectionLd` (`src/components/JsonLd.tsx`) from `src/content`, so the list cannot claim the page
+holds something it does not render. `numberOfItems: 37`. No `HowTo` and no `AggregateRating`: there
+is no complete how-to and no review data. `breadcrumbLd` still emits from `Breadcrumbs`.
+
+### Motion
+
+| Element | Primitive | Communicates |
+| --- | --- | --- |
+| Hero lead | `rise-in`, inline delay 70ms | The headline is already there; what it means arrives under it |
+| Search control | `rise-in`, inline delay 140ms | The instrument arrives after the sentence that explains it |
+| Index, closing band | `reveal` on `animation-timeline: view()` | Each section is its own answer, met one at a time |
+| Group heading, guide row, service link | colour to `--accent-text` over 200ms | This row is a door |
+
+Nothing on the h1. Under `prefers-reduced-motion: reduce`, `rise-in` resolves to `animation: none`
+and `reveal` lives inside a `no-preference` block, so every element renders at its final state;
+measured at 1440 with 0 elements in `main` at `opacity: 0`. With motion enabled exactly one element
+is parked at 0 at load, the below-fold closing band, which is what a view timeline does before its
+range starts and what every `reveal` on the site has always done; verified to resolve to opacity 1
+and no transform once scrolled to.
+
+### Measured, axe-core 4.14
+
+0 violations of any impact at **375, 768, 1024 and 1440**, and at 1440 under
+`prefers-reduced-motion: reduce`. One h1 at every width, no horizontal scroll at any width, and no
+computed border radius inside `main` other than 0 or 14px.
+
+### Deliberately not done
+
+- **No filter chips and no tabs over the index.** The home page's `TileGrid` already owns that
+  pattern and it needs a client island to hold the state; 37 rows under 17 named groups with a
+  search box above them does not.
+- **No hub level in the directory.** The services already arrive in SITEMAP order, which runs hub by
+  hub, so the clusters are there without a fourth heading level to carry them.
+- **No guide counts, no "N articles", no urgency printed on a row.** Same ruling as the hubs: the
+  content has no count that stays true, and a rank restated on every row contradicts itself.
+- **`urgency` is not used on this page at all.** It sorts the hub grids; here the SITEMAP order is
+  the one a visitor can predict, and re-sorting 37 rows by severity inside seventeen groups of one to
+  four would reorder nothing visible in most of them.
+- **The 44px floor was kept on all 54 directory links**, which is the single largest cost at 375.
+  The crumb and footer deviations recorded above would have allowed 24px here and saved roughly
+  370px on a phone; a knowledge base index is what the page is *for*, not orientation furniture, so
+  it keeps the contract's figure.
