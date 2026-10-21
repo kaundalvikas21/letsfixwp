@@ -74,7 +74,7 @@ export const SITEMAP: SiteNode = {
         { title: "Hire Dedicated WordPress Developer", path: "/wordpress-development/hire-developer/", kind: "service", intent: "project" },
         { title: "WordPress SEO Services", path: "/wordpress-development/seo-services/", kind: "service", intent: "project" },
         {
-          title: "City Pages (Tier 1)", path: "/wordpress-development/cities/", kind: "cityHub", intent: "project", inNav: false,
+          title: "WordPress Developers by City", path: "/wordpress-development/cities/", kind: "cityHub", intent: "project", inNav: false,
           children: [
             { title: "Chennai", path: "/wordpress-development/cities/chennai/", kind: "city", intent: "project", priority: 1 },
             { title: "Delhi NCR", path: "/wordpress-development/cities/delhi-ncr/", kind: "city", intent: "project", priority: 2 },

@@ -1,12 +1,4 @@
-import {
-  ArrowsClockwiseIcon,
-  CaretRightIcon,
-  CodeIcon,
-  GaugeIcon,
-  ShieldCheckIcon,
-  ShoppingCartIcon,
-  WrenchIcon,
-} from "@phosphor-icons/react/ssr";
+import { CaretRightIcon } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import { BookLink, ChatButton, PlansLink, QuoteLink } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
@@ -24,23 +16,16 @@ const urgencyRank = { critical: 0, high: 1, standard: 2 } as const;
 // bentoSpans only returns these three; written out so Tailwind's scanner sees every class.
 const SPAN = { 2: "md:col-span-2", 4: "md:col-span-4", 6: "md:col-span-6" } as const;
 
-const hubIcons = {
-  "wordpress-fix": WrenchIcon,
-  "wordpress-security": ShieldCheckIcon,
-  "wordpress-performance-migration": GaugeIcon,
-  "wordpress-maintenance": ArrowsClockwiseIcon,
-  "wordpress-development": CodeIcon,
-  woocommerce: ShoppingCartIcon,
-} as const;
-
 const textLink = "inline-flex min-h-11 items-center font-semibold text-accent-text underline underline-offset-4 hover:no-underline";
 
 // Fix services carry symptoms; every other intent has none (serviceSchema refine), so those cards fall back to
 // the summary plus whoItsFor. Both shapes are real content fields.
-const cardWeight = (s: Service) => (s.symptoms.length ? s.symptoms.slice(0, 3).join(" ") : s.summary + s.whoItsFor).length;
+const shownDeliverables = (s: Service) => s.deliverables.slice(0, 3);
+const cardWeight = (s: Service) =>
+  (s.symptoms.length ? s.symptoms.slice(0, 3).join(" ") : s.summary + s.whoItsFor + shownDeliverables(s).join(" ")).length;
 
 /**
- * /<hub>/. Layout family: triage page. A typographic index panel beside the lead, a bento of symptom cards, then a
+ * /<hub>/. Layout family: triage page. A text-only lead, a bento of symptom cards, then a
  * ranked urgent list, so none of it is the home bento, the home command palette or the service lead column.
  */
 export function HubTemplate({ node }: { node: FlatNode }) {
@@ -55,7 +40,6 @@ export function HubTemplate({ node }: { node: FlatNode }) {
     .flatMap((n) => guidesFor(serviceIdOf(n.path)))
     .sort((a, b) => urgencyRank[a.urgency] - urgencyRank[b.urgency])
     .slice(0, 6);
-  const Icon = hubIcons[id as keyof typeof hubIcons] ?? WrenchIcon;
   const loc = `hub:${id}`;
   const intent = primaryCtaFor(node.intent);
   const Primary = intent === "PLANS" ? PlansLink : intent === "QUOTE" ? QuoteLink : BookLink;
@@ -64,27 +48,13 @@ export function HubTemplate({ node }: { node: FlatNode }) {
     <article className={cn(page, "py-8 md:py-12")}>
       <Breadcrumbs items={nodeCrumbs(node.path)} />
 
-      <header className="mt-6 grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
-        <div className="lg:col-span-7">
+      <header className="mt-6">
+        <div>
           <h1 className={h1}>{node.title}</h1>
           <p className="mt-5 max-w-[68ch] text-lg text-muted">{hubLead[id]}</p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Primary location={`${loc}:hero`} className="btn-primary" />
             <ChatButton location={`${loc}:hero`} className="btn-secondary" />
-          </div>
-        </div>
-        {/* Typographic index panel: the hub's own service titles set large. It repeats the grid below, so it is
-            hidden from assistive tech rather than read twice. No photograph: the shared pool is dark and reused. */}
-        <div aria-hidden className="lg:col-span-5">
-          <div className="rounded-[20px] bg-accent-tint p-6 shadow-card motion-safe:animate-[settle_600ms_var(--ease-spring)_both] md:p-8">
-            <Icon weight="duotone" className="size-12 text-accent-text" />
-            <ul className="mt-6 divide-y divide-line-strong/30">
-              {services.slice(0, 4).map(({ s }) => (
-                <li key={s.id} className="py-3 font-display text-xl leading-snug font-bold text-balance first:pt-0 last:pb-0">
-                  {s.title}
-                </li>
-              ))}
-            </ul>
           </div>
         </div>
       </header>
@@ -122,6 +92,12 @@ export function HubTemplate({ node }: { node: FlatNode }) {
                     <span className="font-semibold text-text">Who it is for </span>
                     {s.whoItsFor}
                   </p>
+                  <p className="mt-3 text-sm font-semibold">You get</p>
+                  <ul className="mt-1.5 space-y-1.5 text-sm text-muted">
+                    {shownDeliverables(s).map((x) => (
+                      <li key={x}>{x}</li>
+                    ))}
+                  </ul>
                 </>
               )}
             </li>
