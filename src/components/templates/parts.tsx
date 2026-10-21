@@ -1,11 +1,12 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { CaretRightIcon, CheckIcon } from "@phosphor-icons/react/ssr";
+import { CaretRightIcon, CheckIcon, SealCheckIcon } from "@phosphor-icons/react/ssr";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { breadcrumbLd, JsonLd, type Crumb } from "@/components/JsonLd";
-import { nodeByPath } from "@/config/routes";
+import { brand } from "@/config/brand";
+import { nodeByPath, routes } from "@/config/routes";
 import { getCompare, getGuide } from "@/content";
 import { cn } from "@/lib/utils";
 
@@ -66,12 +67,13 @@ export function Faqs({ faqs, title = "Questions" }: { faqs: { q: string; a: stri
     <Section id="faq" title={title}>
       <div className="divide-y divide-line border-y border-line">
         {faqs.map((f) => (
-          <details key={f.q} className="group py-4">
-            <summary className="flex cursor-pointer items-center justify-between gap-4 font-display text-lg font-bold marker:content-none [&::-webkit-details-marker]:hidden">
+          <details key={f.q} className="group">
+            {/* Padding sits on the summary, not the details, so the row itself is the 44px target (contract rule 5). */}
+            <summary className="flex min-h-14 cursor-pointer items-center justify-between gap-4 py-4 font-display text-lg font-bold marker:content-none [&::-webkit-details-marker]:hidden">
               {f.q}
               <CaretRightIcon weight="duotone" className="size-5 shrink-0 text-muted transition-transform group-open:rotate-90 motion-reduce:transition-none" aria-hidden />
             </summary>
-            <p className="mt-3 max-w-[70ch] text-muted">{f.a}</p>
+            <p className="max-w-[70ch] pb-4 text-muted">{f.a}</p>
           </details>
         ))}
       </div>
@@ -142,6 +144,79 @@ export function LinkList({ paths }: { paths: string[] }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+/**
+ * Conversion rail for a page whose body runs in a lead column. One DOM node at every width: below lg it sits in
+ * normal document flow as a reassurance panel, and from lg it becomes the sticky rail. The title and the CTA pair
+ * are hidden below lg by CSS, because the global fixed bottom bar is the persistent CTA there.
+ * Order is deliberate: the page's own CTA pair first, then the promises behind it. `facts` is for real numbers
+ * out of src/content, and a null or missing value renders nothing for it (contract rule 8), so no row of the
+ * rail is a placeholder figure. The guarantee comes from brand.guarantee and disappears when it is unset.
+ */
+export function FactRail({
+  title,
+  facts = [],
+  points = [],
+  children,
+}: {
+  title: string;
+  facts?: readonly { k: string; v: string }[];
+  points?: readonly string[];
+  children: React.ReactNode;
+}) {
+  const g = brand.guarantee;
+  // With no facts, no guarantee and no claims there is nothing to reassure anyone with, so the panel has no
+  // reason to exist in flow; at lg the title and CTA pair still earn the rail.
+  const hasBody = facts.length > 0 || !!g || points.length > 0;
+  return (
+    <div
+      className={cn(
+        "rounded-[20px] border border-line bg-surface p-6 shadow-card lg:sticky lg:top-28",
+        !hasBody && "hidden lg:block",
+      )}
+    >
+      <p className="hidden font-display text-lg leading-snug font-bold lg:block">{title}</p>
+      <div className="hidden gap-2 lg:mt-5 lg:grid">{children}</div>
+
+      {hasBody && (
+        <div className="space-y-5 divide-y divide-line text-sm [&>*+*]:pt-5 lg:mt-6 lg:border-t lg:border-line lg:pt-5">
+          {facts.length > 0 && (
+            <dl className="space-y-2">
+              {facts.map((f) => (
+                <div key={f.k} className="flex justify-between gap-4">
+                  <dt className="text-muted">{f.k}</dt>
+                  <dd className="font-semibold tabular-nums">{f.v}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+
+          {g && (
+            <div>
+              <Link
+                href={routes.legal.guarantee}
+                className="inline-flex min-h-11 min-w-11 items-center gap-2 font-semibold text-accent-text hover:underline hover:underline-offset-4"
+              >
+                <SealCheckIcon weight="duotone" className="size-5 shrink-0" aria-hidden />
+                {g.days}
+                {g.days === 1 ? " day" : " days"} of guarantee
+              </Link>
+              {g.placeholder && <p className="text-muted">Placeholder, not a real offer yet.</p>}
+            </div>
+          )}
+
+          {points.length > 0 && (
+            <ul className="space-y-3 text-muted">
+              {points.map((p) => (
+                <li key={p}>{p}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 

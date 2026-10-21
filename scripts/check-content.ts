@@ -3,9 +3,10 @@
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, sep } from "node:path";
+import { spansFor } from "../src/components/templates/ServiceTemplate";
 import { brand } from "../src/config/brand";
 import { CTA } from "../src/config/cta";
-import { matchIndex } from "../src/content";
+import { matchIndex, services } from "../src/content";
 import { matchProblem } from "../src/lib/match-problem";
 
 const walk = (dir: string): string[] =>
@@ -43,6 +44,24 @@ for (const f of files) {
 }
 assert.deepEqual(fail, [], fail.join("\n"));
 
+// The service bento packs rows of 6 columns. Every row must fill the row and never read as equal cards, at
+// every step count the schema allows, and the longer step of a pair must get the wider cell.
+for (const s of services) {
+  const spans = spansFor(s.whatWeDo).map((c) => Number(c.replace("md:col-span-", "")));
+  assert.equal(spans.length, s.whatWeDo.length, `${s.id}: one span per step`);
+  for (let i = 0; i < spans.length; i += 2) {
+    if (i + 1 === spans.length) {
+      assert.equal(spans[i], 6, `${s.id}: a lone last step fills its row`);
+      break;
+    }
+    assert.equal(spans[i] + spans[i + 1], 6, `${s.id}: row ${i / 2 + 1} fills 6 columns`);
+    assert.notEqual(spans[i], spans[i + 1], `${s.id}: row ${i / 2 + 1} is two equal cards`);
+    const wider = spans[i] > spans[i + 1] ? i : i + 1;
+    const other = wider === i ? i + 1 : i;
+    assert.ok(s.whatWeDo[wider].detail.length >= s.whatWeDo[other].detail.length, `${s.id}: the longer step takes the wider cell`);
+  }
+}
+
 const top = (q: string) => matchProblem(q, matchIndex)[0];
 assert.equal(top("white screen blank page")?.serviceSlug, "white-screen");
 assert.ok(matchProblem("white screen blank page", matchIndex).some((r) => r.guideSlug === "white-screen-of-death"));
@@ -54,4 +73,4 @@ assert.ok(matchProblem("502 bad gateway", matchIndex).some((r) => r.serviceSlug 
 for (const r of matchProblem("site hacked malware", matchIndex)) assert.ok(r.serviceSlug, "every result resolves to a service");
 assert.deepEqual(matchProblem("", matchIndex), []);
 
-console.log(`ok: ${matchIndex.length} match candidates, ${files.length} files scanned, legacy ${brand.legacy.enabled ? "on" : "off"}`);
+console.log(`ok: ${services.length} service bentos, ${matchIndex.length} match candidates, ${files.length} files scanned, legacy ${brand.legacy.enabled ? "on" : "off"}`);

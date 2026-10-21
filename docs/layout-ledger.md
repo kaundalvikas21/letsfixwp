@@ -41,18 +41,37 @@ QA pass; they duplicated the bento and the footer and were removed, which is wha
 
 | # | Section | Layout family | Eyebrow | Marquee | CTA intents |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Hero | 7/5 title block with photo | no | no | node intent, CHAT |
-| 2 | Lead + body column with sticky conversion rail (lg) | lead column with sticky rail | no | no | node intent, CHAT (rail) |
-| 3 | Symptoms (fix) or Who this is for (plan/project) | tick list, or prose | no | no | none |
-| 4 | What we do | verb-labelled tile pairs | no | no | none |
-| 5 | What you get | two-column tick list | no | no | none |
+| 1 | Hero | split with a content-height portrait photo frame | no | no | node intent, CHAT |
+| 2 | Lead statement (summary, then "Who this is for") with the sticky conversion rail (lg) | lead column with sticky conversion rail | no | no | node intent, CHAT (rail) |
+| 3 | Does your site show this? (fix intent only) | icon-marked tick list | no | no | none |
+| 4 | What we do | bento grid, spans varied per item count | no | no | none |
+| 5 | What you get | tinted outcome panel, statement stack | no | no | none |
 | 6 | Errors we fix here | link rows | no | no | none |
 | 7 | Questions | plain disclosure list | no | no | none |
 | 8 | Related | chip row | no | no | none |
 | 9 | Closing | split band (text left, buttons right) | no | no | node intent, CHAT |
 
+Eyebrow budget for this page: 9 sections on a fix page, so ceil(9 / 3) = 3 eyebrows allowed, and 0 are used.
+A plan or project page drops row 3 and runs 8 sections, so ceil(8 / 3) = 3 allowed, and 0 used. No row repeats a
+layout family. Marquee is `no` on every row: v3 has no marquee anywhere. Only row 1 is an image-plus-text split,
+so the 2-consecutive-splits limit is never approached.
+
 Hero carries no subtext: the shortest service field is 25+ words, over the contract's 20-word hero cap, so
-service.summary renders as the lead paragraph below the hero.
+service.summary renders as the lead statement below the hero.
+
+Row 2 carries `whoItsFor` as a definition row under the summary, which is why row 3 is now fix-only. Before this
+pass a ternary showed `symptoms` on the 15 fix services and `whoItsFor` on the other 17, so each field was dead
+on the pages of the other intent; `whoItsFor` is written for all 32 and now renders on all 32.
+
+Row 1's photo frame takes its height from the title block at lg (`lg:h-full lg:min-h-[26rem]`) rather than a
+fixed ratio, which is what keeps it off the hub hero's `aspect-[4/3]` box.
+
+Row 3 is the page's only icon-marked list, which is why row 5 stopped being a tick list: deliverables are
+outcomes and now carry the weight of a panel instead.
+
+The conversion rail (`FactRail` in `src/components/templates/parts.tsx`) leads with the page's CTA pair, then the
+guarantee and the gated brand claims. `typicalTurnaround` and `priceFrom` are null on all 32 services, so no
+number is shown; a fact row appears automatically if either is ever filled in (contract rule 8).
 
 ## v3 / guide template (/guides/<slug>/)
 

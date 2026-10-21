@@ -2,21 +2,40 @@ import { BookLink, ChatButton, PlansLink, QuoteLink } from "@/components/Cta";
 import { faqLd, JsonLd, nodeCrumbs, serviceLd } from "@/components/JsonLd";
 import { Photo } from "@/components/sections/v3/Photo";
 import { SiteStatus } from "@/components/SiteStatus";
+import { brand } from "@/config/brand";
 import { primaryCtaFor } from "@/config/cta";
 import { routes } from "@/config/routes";
 import { getGuide } from "@/content";
 import { servicePhotos } from "@/content/photos";
 import type { Service } from "@/content/schema";
 import { cn } from "@/lib/utils";
-import { Breadcrumbs, Faqs, h1, h2, LinkList, LinkRows, page, Section, TickList } from "./parts";
+import { Breadcrumbs, FactRail, Faqs, h1, h2, LinkList, LinkRows, page, Section, TickList } from "./parts";
 
 const Primary = ({ intent, ...rest }: { intent: ReturnType<typeof primaryCtaFor>; location: string; service: string; className?: string }) =>
   intent === "PLANS" ? <PlansLink {...rest} /> : intent === "QUOTE" ? <QuoteLink {...rest} /> : <BookLink {...rest} />;
 
 /**
+ * What we do is 3 to 5 steps (serviceSchema), laid out on a 6-column grid in source order, which is the order
+ * the work happens in. Steps pair off into rows of 6 and the longer detail of each pair takes the 4, so a row
+ * is never two equal cards and a long step never lands in the narrow cell. An odd last step spans the row.
+ * At 3, 4 and 5 steps that gives (4,2)(6), (4,2)(2,4) and (4,2)(2,4)(6) or their mirrors: never a row of
+ * three equal cards (contract rule 6).
+ */
+export const spansFor = (steps: readonly { detail: string }[]) => {
+  const out: string[] = [];
+  for (let i = 0; i < steps.length; i += 2) {
+    if (i + 1 === steps.length) out.push("md:col-span-6");
+    else if (steps[i].detail.length >= steps[i + 1].detail.length) out.push("md:col-span-4", "md:col-span-2");
+    else out.push("md:col-span-2", "md:col-span-4");
+  }
+  return out;
+};
+
+/**
  * /<hub>/<service>/. Layout family: lead column with a sticky conversion rail (lg), which no home section uses.
  * Hero carries no subtext: the shortest line in the content is 25+ words, over the contract's 20-word hero cap,
- * so service.summary renders as the lead paragraph under the hero instead.
+ * so service.summary renders as the lead statement under the hero instead. whoItsFor follows it as a definition
+ * row on every intent; the symptoms checklist is fix-only, because serviceSchema keeps symptoms empty otherwise.
  */
 export function ServiceTemplate({ service: s }: { service: Service }) {
   const intent = primaryCtaFor(s.intent);
@@ -26,14 +45,23 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
     s.typicalTurnaround && { k: "Typical turnaround", v: s.typicalTurnaround },
     s.priceFrom && { k: "From", v: s.priceFrom },
   ].filter((x): x is { k: string; v: string } => !!x);
+  // Each line is a claim gated in brand.claims, so a production deploy fails until the owner confirms it.
+  const points = [
+    brand.claims.backupFirst && "Files and database backed up before anything changes", // brand.claims.backupFirst
+    brand.claims.fixedPrice && "You approve the price before any work starts", // brand.claims.fixedPrice
+    brand.claims.ownLogin && "You create our login. We never ask for your password", // brand.claims.ownLogin
+  ].filter((x): x is string => !!x);
+  const spans = spansFor(s.whatWeDo);
 
   return (
     <article data-intent={s.intent} className={cn(page, "py-8 md:py-12")}>
       <JsonLd data={[serviceLd(s), faqLd(s.faqs)]} />
       <Breadcrumbs items={nodeCrumbs(s.path)} />
 
-      <header className="mt-6 grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
-        <div className="lg:col-span-7">
+      {/* Hero: the photo frame takes its height from the title block at lg instead of a fixed ratio, which is
+          what keeps it off the hub hero's 4/3 box. Entrance is CSS only, so no client JS enters the LCP path. */}
+      <header className="mt-6 grid gap-8 lg:grid-cols-12 lg:items-stretch lg:gap-12">
+        <div className="lg:col-span-7 lg:flex lg:flex-col lg:justify-center">
           <h1 className={h1}>{s.h1}</h1>
           <div className="mt-7 flex flex-wrap gap-3">
             <Primary intent={intent} location={`${loc}:hero`} service={s.id} className="btn-primary" />
@@ -42,7 +70,7 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
           {s.intent === "fix" && <SiteStatus />}
         </div>
         <div className="lg:col-span-5">
-          <div className="aspect-[4/3] overflow-hidden rounded-[20px] shadow-card">
+          <div className="aspect-[16/10] overflow-hidden rounded-[20px] shadow-lift motion-safe:animate-[settle_600ms_var(--ease-spring)_both] lg:aspect-auto lg:h-full lg:min-h-[26rem]">
             <Photo id={servicePhotos[s.id]} decorative preload sizes="(min-width: 1024px) 40vw, 100vw" />
           </div>
         </div>
@@ -51,30 +79,46 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
       <div className="mt-12 grid gap-10 lg:grid-cols-12 lg:gap-12">
         <div className="lg:col-span-8">
           <p className="max-w-[68ch] font-display text-xl leading-snug font-bold md:text-2xl">{s.summary}</p>
+          {/* whoItsFor is written for all 32 services. A definition row keeps it distinct from the symptoms
+              checklist below, which answers a different question on the same page. */}
+          <dl className="mt-7 max-w-[68ch] border-t border-line pt-5">
+            <dt className="text-sm font-semibold">Who this is for</dt>
+            <dd className="mt-1.5 text-muted">{s.whoItsFor}</dd>
+          </dl>
 
-          {s.intent === "fix" ? (
+          {s.symptoms.length > 0 && (
             <Section id="symptoms" title="Does your site show this?">
               <TickList items={s.symptoms} />
-            </Section>
-          ) : (
-            <Section id="who" title="Who this is for">
-              <p className="max-w-[68ch] text-muted">{s.whoItsFor}</p>
             </Section>
           )}
 
           <Section id="what-we-do" title="What we do">
-            <ol className="grid gap-4 sm:grid-cols-2">
-              {s.whatWeDo.map((w) => (
-                <li key={w.verb} className="rounded-[20px] border border-line bg-surface p-5">
+            <ol className="grid gap-4 md:grid-cols-6 md:gap-5">
+              {s.whatWeDo.map((w, i) => (
+                <li
+                  key={w.verb}
+                  className={cn(
+                    "flex h-full min-h-40 flex-col rounded-[20px] border border-line bg-surface p-6 shadow-card md:min-h-0",
+                    spans[i],
+                  )}
+                >
                   <span className="font-display text-sm font-bold tracking-wide text-accent-text">{w.verb}</span>
-                  <p className="mt-1.5 text-sm">{w.detail}</p>
+                  <p className="mt-2 max-w-[56ch] text-sm">{w.detail}</p>
                 </li>
               ))}
             </ol>
           </Section>
 
+          {/* Deliverables are the outcome the page is selling, so they get a panel of statements rather than a
+              second tick list (contract rule 3: one layout family per page). */}
           <Section id="deliverables" title="What you get">
-            <TickList items={s.deliverables} cols={2} />
+            <ul className="divide-y divide-line overflow-hidden rounded-[20px] bg-accent-tint px-6 shadow-card md:px-8">
+              {s.deliverables.map((d) => (
+                <li key={d} className="py-5">
+                  <span className="block max-w-[52ch] font-display text-lg leading-snug font-bold">{d}</span>
+                </li>
+              ))}
+            </ul>
           </Section>
 
           {guides.length > 0 && (
@@ -92,25 +136,13 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
           )}
         </div>
 
-        {/* Conversion rail: sticky from lg. Under 768px the global bottom bar is the only persistent CTA. */}
-        <aside className="hidden lg:col-span-4 lg:block">
-          <div className="sticky top-28 rounded-[20px] border border-line bg-surface p-6 shadow-card">
-            <p className="font-display text-lg font-bold">{s.title}</p>
-            {facts.length > 0 && (
-              <dl className="mt-4 space-y-2 border-t border-line pt-4 text-sm">
-                {facts.map((f) => (
-                  <div key={f.k} className="flex justify-between gap-4">
-                    <dt className="text-muted">{f.k}</dt>
-                    <dd className="font-semibold">{f.v}</dd>
-                  </div>
-                ))}
-              </dl>
-            )}
-            <div className="mt-5 grid gap-2">
-              <Primary intent={intent} location={`${loc}:rail`} service={s.id} className="btn-primary w-full" />
-              <ChatButton location={`${loc}:rail`} service={s.id} className="btn-secondary w-full" />
-            </div>
-          </div>
+        {/* Conversion rail: one node at every width. Below lg it falls into flow here, after Related and before
+            the closing band, carrying the guarantee and the claims; the global bottom bar remains the CTA there. */}
+        <aside className="lg:col-span-4">
+          <FactRail title={s.title} facts={facts} points={points}>
+            <Primary intent={intent} location={`${loc}:rail`} service={s.id} className="btn-primary w-full" />
+            <ChatButton location={`${loc}:rail`} service={s.id} className="btn-secondary w-full" />
+          </FactRail>
         </aside>
       </div>
 
