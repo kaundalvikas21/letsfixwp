@@ -8,28 +8,17 @@ import { routes } from "@/config/routes";
 import { getGuide } from "@/content";
 import { servicePhotos } from "@/content/photos";
 import type { Service } from "@/content/schema";
+import { bentoSpans } from "@/lib/bento";
 import { cn } from "@/lib/utils";
 import { Breadcrumbs, FactRail, Faqs, h1, h2, LinkList, LinkRows, page, Section, TickList } from "./parts";
 
 const Primary = ({ intent, ...rest }: { intent: ReturnType<typeof primaryCtaFor>; location: string; service: string; className?: string }) =>
   intent === "PLANS" ? <PlansLink {...rest} /> : intent === "QUOTE" ? <QuoteLink {...rest} /> : <BookLink {...rest} />;
 
-/**
- * What we do is 3 to 5 steps (serviceSchema), laid out on a 6-column grid in source order, which is the order
- * the work happens in. Steps pair off into rows of 6 and the longer detail of each pair takes the 4, so a row
- * is never two equal cards and a long step never lands in the narrow cell. An odd last step spans the row.
- * At 3, 4 and 5 steps that gives (4,2)(6), (4,2)(2,4) and (4,2)(2,4)(6) or their mirrors: never a row of
- * three equal cards (contract rule 6).
- */
-export const spansFor = (steps: readonly { detail: string }[]) => {
-  const out: string[] = [];
-  for (let i = 0; i < steps.length; i += 2) {
-    if (i + 1 === steps.length) out.push("md:col-span-6");
-    else if (steps[i].detail.length >= steps[i + 1].detail.length) out.push("md:col-span-4", "md:col-span-2");
-    else out.push("md:col-span-2", "md:col-span-4");
-  }
-  return out;
-};
+// What we do is 3 to 5 steps (serviceSchema), laid out in source order, which is the order the work happens in.
+// bentoSpans packs them into rows of 6 and gives the longer detail the wider cell; these are the only three
+// spans it returns, written out so Tailwind sees them.
+const SPAN = { 2: "md:col-span-2", 4: "md:col-span-4", 6: "md:col-span-6" } as const;
 
 /**
  * /<hub>/<service>/. Layout family: lead column with a sticky conversion rail (lg), which no home section uses.
@@ -49,9 +38,9 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
   const points = [
     brand.claims.backupFirst && "Files and database backed up before anything changes", // brand.claims.backupFirst
     brand.claims.fixedPrice && "You approve the price before any work starts", // brand.claims.fixedPrice
-    brand.claims.ownLogin && "You create our login. We never ask for your password", // brand.claims.ownLogin
+    brand.claims.ownLogin && "We work through a login you create, never your password", // brand.claims.ownLogin
   ].filter((x): x is string => !!x);
-  const spans = spansFor(s.whatWeDo);
+  const spans = bentoSpans(s.whatWeDo.map((w) => w.detail.length));
 
   return (
     <article data-intent={s.intent} className={cn(page, "py-8 md:py-12")}>
@@ -70,7 +59,7 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
           {s.intent === "fix" && <SiteStatus />}
         </div>
         <div className="lg:col-span-5">
-          <div className="aspect-[16/10] overflow-hidden rounded-[20px] shadow-lift motion-safe:animate-[settle_600ms_var(--ease-spring)_both] lg:aspect-auto lg:h-full lg:min-h-[26rem]">
+          <div className="aspect-[16/10] overflow-hidden rounded-[20px] shadow-card motion-safe:animate-[settle_600ms_var(--ease-spring)_both] lg:aspect-auto lg:h-full lg:min-h-[26rem]">
             <Photo id={servicePhotos[s.id]} decorative preload sizes="(min-width: 1024px) 40vw, 100vw" />
           </div>
         </div>
@@ -99,7 +88,7 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
                   key={w.verb}
                   className={cn(
                     "flex h-full min-h-40 flex-col rounded-[20px] border border-line bg-surface p-6 shadow-card md:min-h-0",
-                    spans[i],
+                    SPAN[spans[i] as keyof typeof SPAN],
                   )}
                 >
                   <span className="font-display text-sm font-bold tracking-wide text-accent-text">{w.verb}</span>

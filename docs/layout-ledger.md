@@ -42,7 +42,7 @@ QA pass; they duplicated the bento and the footer and were removed, which is wha
 | # | Section | Layout family | Eyebrow | Marquee | CTA intents |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Hero | split with a content-height portrait photo frame | no | no | node intent, CHAT |
-| 2 | Lead statement (summary, then "Who this is for") with the sticky conversion rail (lg) | lead column with sticky conversion rail | no | no | node intent, CHAT (rail) |
+| 2 | Lead statement (summary, then "Who this is for") with the conversion rail: in flow under 1024px, sticky beside the lead column from lg | lead column with conversion rail | no | no | node intent, CHAT (rail, lg only) |
 | 3 | Does your site show this? (fix intent only) | icon-marked tick list | no | no | none |
 | 4 | What we do | bento grid, spans varied per item count | no | no | none |
 | 5 | What you get | tinted outcome panel, statement stack | no | no | none |
@@ -64,14 +64,20 @@ pass a ternary showed `symptoms` on the 15 fix services and `whoItsFor` on the o
 on the pages of the other intent; `whoItsFor` is written for all 32 and now renders on all 32.
 
 Row 1's photo frame takes its height from the title block at lg (`lg:h-full lg:min-h-[26rem]`) rather than a
-fixed ratio, which is what keeps it off the hub hero's `aspect-[4/3]` box.
+fixed ratio, which is what keeps it off the hub hero's `aspect-[4/3]` box. Its resting elevation is `shadow-card`:
+`--shadow-lift` is the hover shadow in MASTER and the frame is not interactive.
 
 Row 3 is the page's only icon-marked list, which is why row 5 stopped being a tick list: deliverables are
 outcomes and now carry the weight of a panel instead.
 
-The conversion rail (`FactRail` in `src/components/templates/parts.tsx`) leads with the page's CTA pair, then the
-guarantee and the gated brand claims. `typicalTurnaround` and `priceFrom` are null on all 32 services, so no
-number is shown; a fact row appears automatically if either is ever filled in (contract rule 8).
+The conversion rail (`FactRail` in `src/components/templates/parts.tsx`) is one DOM node at every width, not two.
+From lg it is the sticky rail beside the lead column, carrying the page title, its CTA pair, then the guarantee
+and the gated brand claims. Under 1024px the same node falls into normal flow between Related and the closing
+band as a reassurance panel: CSS hides the title and the CTA pair there, because the global fixed bottom bar is
+the persistent CTA below lg, so what appears is the guarantee and the claims and nothing else. It is still row 2's
+layout family rather than a row of its own, because it is the same node in the same component with the same
+content; what changes is where the grid puts it. `typicalTurnaround` and `priceFrom` are null on all 32 services,
+so no number is shown; a fact row appears automatically if either is ever filled in (contract rule 8).
 
 ## v3 / guide template (/guides/<slug>/)
 

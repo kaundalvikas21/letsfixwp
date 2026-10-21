@@ -3,10 +3,10 @@
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, sep } from "node:path";
-import { spansFor } from "../src/components/templates/ServiceTemplate";
 import { brand } from "../src/config/brand";
 import { CTA } from "../src/config/cta";
 import { matchIndex, services } from "../src/content";
+import { bentoSpans } from "../src/lib/bento";
 import { matchProblem } from "../src/lib/match-problem";
 
 const walk = (dir: string): string[] =>
@@ -47,7 +47,7 @@ assert.deepEqual(fail, [], fail.join("\n"));
 // The service bento packs rows of 6 columns. Every row must fill the row and never read as equal cards, at
 // every step count the schema allows, and the longer step of a pair must get the wider cell.
 for (const s of services) {
-  const spans = spansFor(s.whatWeDo).map((c) => Number(c.replace("md:col-span-", "")));
+  const spans = bentoSpans(s.whatWeDo.map((w) => w.detail.length));
   assert.equal(spans.length, s.whatWeDo.length, `${s.id}: one span per step`);
   for (let i = 0; i < spans.length; i += 2) {
     if (i + 1 === spans.length) {

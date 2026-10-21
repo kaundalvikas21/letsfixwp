@@ -42,7 +42,7 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
     <>
       <JsonLd data={breadcrumbLd(items)} />
       <nav aria-label="Breadcrumb" className="text-sm text-muted">
-        <ol className="flex flex-wrap items-center gap-x-1 gap-y-1">
+        <ol className="flex flex-wrap items-center gap-x-1 gap-y-2">
           {items.map((c, i) => (
             <li key={c.path} aria-current={i === items.length - 1 ? "page" : undefined} className="flex items-center gap-1">
               {i > 0 && <CaretRightIcon weight="duotone" className="size-3.5 shrink-0" aria-hidden />}
@@ -201,8 +201,7 @@ export function FactRail({
                 className="inline-flex min-h-11 min-w-11 items-center gap-2 font-semibold text-accent-text hover:underline hover:underline-offset-4"
               >
                 <SealCheckIcon weight="duotone" className="size-5 shrink-0" aria-hidden />
-                {g.days}
-                {g.days === 1 ? " day" : " days"} of guarantee
+                {g.days}-day guarantee
               </Link>
               {g.placeholder && <p className="text-muted">Placeholder, not a real offer yet.</p>}
             </div>
