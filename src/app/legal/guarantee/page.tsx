@@ -9,8 +9,9 @@ import { brand } from "@/config/brand";
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/utils";
 
-// LetsFixWP's own guarantee (brand.guarantee) when the owner has set one. Otherwise the legacy path (docs/foundation.md,
-// fixmywp.com's guarantee, only when legacy.enabled), else 404.
+// LetsFixWP's own guarantee (brand.guarantee) when the owner has set one, else 404. There is no
+// legacy path here: fixmywp.com's guarantee belongs to a different, trading company (see the guard
+// in the component).
 // ponytail: states only the confirmed fact; the owner supplies the full terms.
 export const metadata: Metadata = {
   title: "Guarantee",
@@ -49,10 +50,13 @@ const promises = [
  * The page is thin because its content is genuinely unconfirmed. No terms are written here.
  */
 export default function Guarantee() {
-  const facts = brand.legacy.facts;
   const g = brand.guarantee;
-  if (!g && !facts) notFound();
-  const days = g ? g.days : facts!.guaranteeDays;
+  // brand.guarantee or 404, and deliberately no fall-through to brand.legacy.facts. That guarantee
+  // is fixmywp.com's, a different and still-trading company: brand.ts says in writing "Never the old
+  // business's guarantee in legacyFacts below", and CLAUDE.md forbids reusing its content on any
+  // variation. This is a strict superset of the 404 that was here (it still 404s when neither source
+  // is set); the only behaviour removed is the one the spec forbids.
+  if (!g) notFound();
 
   return (
     <article className={cn(page, pageY)}>
@@ -62,9 +66,9 @@ export default function Guarantee() {
 
       <div className="mt-6 grid gap-10 lg:grid-cols-12 lg:gap-12">
         <div className="lg:col-span-7">
-          <h1 className={h1}>Our {days}-day guarantee</h1>
+          <h1 className={h1}>Our {g.days}-day guarantee</h1>
 
-          {g?.placeholder && (
+          {g.placeholder && (
             // The same notice the home page's guarantee section carries, in the same words, so the
             // section and the page it links to read as one thing. Quiet on purpose: it is a note to
             // the owner, not a warning to the visitor, and a production deploy fails while it shows.
@@ -76,7 +80,7 @@ export default function Guarantee() {
           {/* Everything the guarantee says today is this one line. The headline paints first and is
               never faded (it is the LCP element); the sentence it introduces arrives under it. */}
           <p className="rise-in mt-6 max-w-[60ch] text-lg" style={{ animationDelay: "70ms" }}>
-            {g ? g.summary : `Every service carries a ${days}-day guarantee.`}
+            {g.summary}
           </p>
 
           <Section id="promises" title="What we promise">
