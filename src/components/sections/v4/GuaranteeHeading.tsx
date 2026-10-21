@@ -1,6 +1,7 @@
 "use client";
 
 import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 
@@ -87,6 +88,15 @@ export function GuaranteeHeading({ text }: { text: string }) {
   useGSAP(
     () => {
       if (!box) return;
+      // Registered here rather than at module scope because this file is still evaluated on the
+      // server for the initial HTML, and registration is idempotent so the repeat costs nothing.
+      //
+      // Without it the `scrollTrigger` key below is not a thing GSAP knows about, so it is dropped
+      // from the timeline config in silence and the timeline plays the moment it is built. That is
+      // what was happening: the draw ran to completion while the section was still 6772px below the
+      // fold, and every visitor arrived at a heading that had already finished animating. No error,
+      // no warning, and the only symptom was the effect never appearing to run.
+      gsap.registerPlugin(ScrollTrigger);
       const strokes = gsap.utils.toArray<SVGTSpanElement>("[data-ink]", root.current);
       const curtain = wipe.current;
       if (!strokes.length || !curtain) return;

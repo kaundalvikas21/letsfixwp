@@ -2230,3 +2230,47 @@ disabled on the home page. `PracticeRows` is one of them and ships
 `style="opacity:0;transform:translateY(14px)"` from the server with only a `motion-reduce` escape.
 This entry fixes the guarantee heading, which was `visibility: hidden` rather than `opacity: 0` and
 was not in that count. The 27 remain unowned.
+
+### The guarantee draw had never run. ScrollTrigger was never registered.
+
+Follow-up to the entry above, reported by the owner: the animation still did not play on reaching
+the section. Correct, and the cause is older than either of these two passes.
+
+`GuaranteeHeading` builds its timeline with
+`gsap.timeline({ scrollTrigger: { trigger: root.current, start: "top 85%", once: true } })`, and
+`ScrollTrigger` **is imported and registered nowhere in `src/`**. `grep -rn "ScrollTrigger" src/`
+returned nothing; the only hit anywhere is the lowercase config key on that one line. GSAP drops a
+config key belonging to an unregistered plugin in silence: no error, no warning, no console notice.
+The timeline therefore had no trigger at all and played the instant it was built.
+
+Measured on a production build before the fix, at `scrollY` 0 with the section's top 6772px below a
+900px viewport: wipe `scaleX` already 1, `stroke-dashoffset` already 0, outline opacity already 0.
+Every visitor has always arrived at a heading that finished animating while it was seven screens
+away. The effect that the component's own 20-line docstring describes has never been seen.
+
+The fix is `import { ScrollTrigger } from "gsap/ScrollTrigger"` and `gsap.registerPlugin(ScrollTrigger)`
+inside the `useGSAP` callback, not at module scope: this file is still evaluated on the server for
+the initial HTML, and registration is idempotent so the repeat costs nothing.
+
+Measured after, same build, same viewport:
+
+| Moment | wipe scaleX | dashoffset | outline opacity |
+| --- | --- | --- | --- |
+| At top, section 6772px below the fold | 0 | 900 | 1 |
+| 250ms after reaching it | 0 | 365 | 1 |
+| 950ms | 0.39 | 0 | 1 |
+| 2.15s | 1 | 0 | 0 |
+
+Outline draws, fill wipes in behind it, outline fades. `once: true` keeps it to one play per load,
+which is per visit, which is what the owner asked for.
+
+**The no-JS fallback from the previous entry is unaffected**, and was re-checked after this change:
+with JavaScript disabled the fill still resolves to solid ember through the paint fallback and the
+heading is still visible, because the clip path that hides the fill is only attached once the
+client-side measurement exists.
+
+**Worth carrying forward:** a GSAP config key for an unregistered plugin fails silently. Nothing in
+`npm run check`, `lint`, `tsc` or `build` catches it, and axe cannot see it either. The only way this
+surfaced was measuring the animation's own state at a scroll position where it should not yet have
+run. `scrollTrigger` is used exactly once in this repo, so there is nothing else to audit today, but
+a second use would fail the same way.
