@@ -967,12 +967,17 @@ within each page:
 | Template | Container | Left edge | Why |
 | --- | --- | --- | --- |
 | Service, Hub, Compare | max-w-6xl | x=168 | A rail, a directory of full-width rows, a 3-up grid over a table. The page spine. |
-| City, City hub, guides index | max-w-4xl | x=296 | Prose plus a 3-up strip. |
+| City, City hub, ~~guides index~~ | max-w-4xl | x=296 | Prose plus a 3-up strip. **The guides index left this row in Task 2** and is on the spine at x=168. |
 | ~~Guide, compare index~~ Case studies | max-w-3xl | x=360 | Reading documents. Body copy is capped at 68ch regardless, so a 6xl guide would hold a 694px text column in a 1104px container under a 1104px h1. Strictly worse. **Both named pages have since left this row**: the guide in Task 1, the compare index in Task 6, each for a reason recorded in its own entry. `/case-studies/` is the only route still on this width. |
 
 The x=168 spine rule is an **intra-page** rule, and both bugs it has caught were intra-page: a section whose
-heading sat at x=296 while every heading above and below it sat at x=168. On a guide every heading sits at
-x=360, consistently, and nothing is out of line with anything. The widths were left alone deliberately:
+heading sat at x=296 while every heading above and below it sat at x=168. On a guide every heading then sat
+at x=360, consistently, and nothing was out of line with anything. (**Re-measured 2026-10-21:** the guide,
+the guides index and the compare index are all at x=168 now, and `/about/` and `/legal/guarantee/`, which
+this table never listed, were `max-w-3xl` and are on the spine too. Five of the site's surfaces have come
+onto one left edge over Tasks 1, 2, 5 and 6. Counted on disk afterwards, the narrowings that remain are
+`/case-studies/` at 3xl, both city templates and `/pricing/` at 4xl, and `/contact/` and
+`/free-site-check/` at 5xl, each of which holds a form or a strip rather than a reading column.) The widths were left alone deliberately:
 changing a container on 95 routes is the highest-risk act available in a craft pass and it is how both of
 those bugs were introduced. Recorded here so the next pass reads three widths as a system, not as drift.
 
@@ -1209,7 +1214,15 @@ photograph's box is 16:10 because that is the photographs' own ratio (1600x1000)
 nothing, while the four captures measure 2.13, 1.78, 1.66 and 1.78 and each keeps its own. An earlier
 version of this entry claimed one height; it was wrong, and the code comment that claimed it has been
 corrected too. The photograph carries **no alt**: `g.image.alt` describes the capture that does not exist on those pages, and lending it to a stock
-frame would describe the wrong picture. The capture arm emits a real `<link rel=preload as=image>`; the
+frame would describe the wrong picture.
+
+**The fallback is a banner, not the picture the page should have, and the gap is still 33 of 37.**
+Re-counted from disk for this entry: 37 guides declare an `image.slot`, `public/screens/` holds four
+PNGs, so 33 guides show their parent service's night frame. Several guides share one service, so a
+reader moving between siblings sees the same frame more than once; `docs/image-todo.md` carries the
+slot list, the sizes and the art direction, and `npm run capture` (which needs Docker, unavailable
+here) writes them. One heading in that file still reads "`public/screens/`, still empty", which has
+not been true since 2026-10-19. The capture arm emits a real `<link rel=preload as=image>`; the
 photo arm is `loading=eager` with `fetchpriority=high`, which is what `Photo` has always done. Neither
 fades, and neither does the h1.
 
@@ -1464,6 +1477,111 @@ computed border radius inside `main` other than 0 or 14px.
 
 ---
 
+## v4 / guarantee (/legal/guarantee/, Task 3)
+
+One route, reached from the footer's "Legal" column and from the home page's guarantee section. It
+was **broken rather than boring**: the page returned a bare `<article>` with no container and no
+classes, so its text started at x=0 and the first lines sat under the fixed 64px header with the
+wordmark drawn over the h1, and it printed the raw `{{CONFIRM support email}}` token to screen
+twice, once as a `mailto:` and once as the visible link text.
+
+| Layout family | Eyebrows | Marquee | CTA intents | Client islands |
+| --- | --- | --- | --- | --- |
+| Reading column with a standing answer card (7/5 at lg) | 0 | 0 | BOOK, CHAT | none |
+
+### The container is the whole of the first fix
+
+`page` + `pageY` from `parts.tsx`. `pageY` is `pt-24 pb-8 md:pt-28 md:pb-12` and exists precisely to
+clear the 64px bar, so the overlap needed no new value. Measured on the production build at 1440:
+the breadcrumb lands at y=112 under a header whose bottom edge is y=64, and the crumb, the h1, the
+summary and the "What we promise" h2 all sit at x=168, the same left edge as the hubs, the services
+and the guides. One heading is deliberately off that edge: the card's own h2 is at x=865, inset by
+the card's padding inside the right-hand column, which is the panelled-heading case `docs/qa-report.md`
+already records against `/contact/` and is not a misalignment.
+
+### 7/5, and the three shapes it is not
+
+Left seven columns are the guarantee's own column and are where the owner's real terms land, so the
+page needs no relaying when they arrive; the measure is capped at `max-w-[60ch]`, never by narrowing
+the container (constraint 8). Right five columns are one `card` holding the way out, `lg:sticky
+lg:top-24` so it clears the bar and stays with a reader the moment the left column grows past a
+screen. It does nothing today on a 1,677px page, which is the point of putting it there now.
+
+- **Not `max-w-3xl`.** That is the fault this plan opens with, and this page holds less content than
+  the guides the complaint was written about.
+- **Not `ServiceTemplate`'s 8/4 lead column plus `ReadingRail`.** The rail is several stacked blocks
+  arguing a service; there is one question here and one answer to it.
+- **Not the home page's `Guarantee` section** (masked type over a photograph). The link lands on the
+  page that explains; the section is the page that announces. They share the number, the notice
+  wording and the accent, and nothing else.
+
+### The token, and the route to a human that does not depend on it
+
+`const hasEmail = !brand.email.includes("{{")` at module scope, the same guard `/contact/` and
+`SiteFooter` carry. The `mailto:` and the visible address render only inside it, so with the token
+unset the email line is **not in the DOM at all**. Re-measured on this build at 375 and 1440:
+`document.body.innerText` contains no `{{` on this route or on any of the nine others swept in
+`docs/qa-report.md`. The card's BOOK and CHAT both work with `brand.email`, `brand.chatProvider` and
+`brand.bookingProvider` all unset, which is the config's current state, so the way out never
+depended on the address.
+
+### Still a placeholder, and still marked as one
+
+`brand.guarantee.summary` prints verbatim and still reads `Placeholder: one sentence on what the
+guarantee covers and how to claim it.` Above it, in the home section's words and the same dashed
+`--line-strong` box, "Placeholder guarantee, not a real offer. Replace before launch." It sits
+**between the h1 and the summary** so the caveat is read before the sentence it qualifies. `14`
+comes from `brand.guarantee.days` and appears once, in the h1. `robots: { index: false }` and the
+`notFound()` when `brand.guarantee` is unset both stay.
+
+### The fix round: no fall-through to fixmywp.com
+
+The first version fell back to `brand.legacy.facts` when `brand.guarantee` was unset. That guarantee
+belongs to fixmywp.com, a different and still-trading company; `brand.ts` says so in writing and
+CLAUDE.md forbids reusing its content on any variation. Commit `3d1f794` removed the branch. The
+behaviour that remains is a strict superset of the 404 that was there before: the page still 404s
+when no guarantee is set, and the only path removed is the one the spec forbids.
+
+### Motion
+
+| Element | Primitive | Communicates |
+| --- | --- | --- |
+| h1 | none, ever | It is the LCP element; `globals.css` records why nothing fades it |
+| Summary line | `rise-in`, inline delay 70ms | The one sentence the guarantee says today arrives under the headline |
+| Answer card | `rise-in`, inline delay 140ms | The way out arrives after the thing it is a way out of |
+| "What we promise" | `reveal` on `animation-timeline: view()` | A below-fold section met as the reader reaches it |
+| Placeholder notice | none | A caveat that performs is a caveat competing with itself |
+
+Transform only since Task 8 (see its entry). Under `prefers-reduced-motion: reduce`, `rise-in`
+resolves to `animation: none` and `reveal` lives inside a `no-preference` block, so every element
+renders at its final state: re-measured at 375 and 1440 on this build, 0 elements in `main` at
+`opacity: 0` with JS disabled, and every `.reveal`/`.rise-in` at opacity 1 and `transform: none`
+under reduce.
+
+### Measured, production build
+
+Document height 1,677px at 1440 and 3,758px at 375; `<main>` 766px and 1,198px. axe-core 4.14: 0
+violations of any impact at 375, 768, 1024 and 1440 over 20 park positions, and 0 under reduced
+motion. One h1 at every width, no horizontal scroll, no computed radius in `main` other than 0 or
+14px. Full figures in `docs/qa-report.md`.
+
+### Deliberately not done
+
+- **No guarantee terms.** Not one clause, not one condition. User decision 2 and constraint 1. The
+  page is thin because its content is genuinely unconfirmed, and a page that invents terms to look
+  finished is the one outcome worse than a thin one.
+- **No `AggregateRating`, no `Review`, no `HowTo`.** No review data, and this is not a procedure.
+  The only JSON-LD here is the `BreadcrumbList` that `Breadcrumbs` emits; `/legal/` sits outside
+  SITEMAP (`routes.utilityPaths`), so the trail is built by hand rather than walked.
+- **No second legal link in the body.** A visitor here is mid-decision, so the page may not end by
+  sending them to another policy document. Terms sits last in the card, after BOOK and CHAT.
+- **Four of `brand.claims`, not eight.** `fixedPrice`, `backupFirst`, `ownLogin`, `accessRemoved`
+  are the protection claims and answer "what protects me"; `sameDay`, `bookingMinutes`, `vetted`
+  and `checkTurnaround` are speed claims and answer something else. They were a local array here
+  until Task 8 made them one source; see its entry.
+
+---
+
 ## v4 / about (/about/, Task 5)
 
 One route, and the only page whose subject is the business rather than a service, an error or a
@@ -1528,22 +1646,37 @@ photograph is content.
 the Imagery section's own direction almost word for word. The fix hub's `emergency` frame was tried
 first and is cold and mostly a dark mass at this crop, which on a dark page reads as a hole.
 
-### The first section may not carry `reveal`, and that is measured
+### The first section refused `reveal`, and the reason has since been removed
 
-Written out rather than built with `Section`. A view-timeline reveal is **scrubbed**, so a section
-parked inside the first third of its range at load sits at part opacity, and `--muted` at part
-opacity is under 4.5:1. The 2/1 banner puts "What we work on" within a few pixels of the fold at
-**768**, where it parked exactly there: axe reported a serious `color-contrast` failure on the
-heading, the lead and all twelve directory strings. With the reveal off that section, 0 violations at
-every width tested. Everything below it is far enough down to be either fully hidden (axe skips
-opacity 0) or fully arrived.
+**Corrected 2026-10-21 (Task 4). The paragraphs below are history and the exception they argue for
+is retired; the live behaviour is in the last paragraph of this subsection.** The history is kept
+because it is why the final fix is the shape it is, and because the reasoning in it must not be
+tried a third time.
 
-**This is a standing site-wide fragility, not a new one**, and it is not fixed here: the same sweep
-found `/guides/critical-error-on-this-website/` failing the identical way at **820px** on the current
-build. `@keyframes reveal-rise` already finishes its opacity at 33% of the range for exactly this
-reason (recorded in `globals.css`), which narrows the window without closing it. Closing it means
-dropping opacity from the keyframe entirely and leaving `reveal` as a 12px slide, which is a one-line
-change to a utility every one of the 99 routes uses and so belongs in its own pass.
+*As built in Task 5:* written out rather than built with `Section`. A view-timeline reveal is
+**scrubbed**, so a section parked inside the first third of its range at load sits at part opacity,
+and `--muted` at part opacity is under 4.5:1. The 2/1 banner puts "What we work on" within a few
+pixels of the fold at **768**, where it parked exactly there: axe reported a serious
+`color-contrast` failure on the heading, the lead and all twelve directory strings. With the reveal
+off that section, 0 violations at every width tested.
+
+*And the standing fragility it named:* the same sweep found
+`/guides/critical-error-on-this-website/` failing the identical way at **820px** on the build of the
+day. `@keyframes reveal-rise` already finished its opacity at 33% of the range for exactly this
+reason (recorded in `globals.css`), which narrowed the window without closing it, because a reader
+can stop inside the first third. This entry then said closing it meant dropping opacity from the
+keyframe entirely, leaving `reveal` as a 12px slide, and that it belonged in its own pass.
+
+**That pass shipped: `d4284ff`, Task 8, recorded under "v4 / reveal without opacity, and one source
+for the promises" at the end of this file.** `reveal-rise` is the translate alone and carries no
+opacity, so no park position at any width can change a contrast ratio, and the exception here has no
+subject left. **"What we work on" carries `reveal` again**; the section is still written out rather
+than built with `Section`, for the smaller remaining reason that `Section` wraps its children in one
+`mt-6` div and this one has two blocks with their own spacing. Two further corrections Task 6 and
+Task 8 proved against what this entry originally assumed: the failing node was the ember
+`.btn-primary`, not the `--muted` body copy named above, so a fix aimed only at muted text would
+have left the primary CTA failing; and clean axe results taken at rest cannot see this class of bug
+at all, which is recorded as an instrument defect in `docs/qa-report.md`.
 
 ### JSON-LD
 
@@ -1558,10 +1691,11 @@ something `src/content` can prove. `breadcrumbLd` still emits from `Breadcrumbs`
 | --- | --- | --- |
 | Lead sentence | `rise-in`, inline delay 70ms | The headline is already there; what it means arrives under it |
 | CTA pair | `rise-in`, inline delay 140ms | The buttons that act on the sentence arrive after it |
-| "How working with us runs", closing band | `reveal` on `animation-timeline: view()` | Each section is its own answer, met one at a time |
+| "What we work on", "How working with us runs", closing band | `reveal` on `animation-timeline: view()` | Each section is its own answer, met one at a time |
 
 Nothing on the h1 and nothing on the banner: both are the page's largest paints. "What we work on"
-is static for the contrast reason above.
+was static until Task 8 for the contrast reason above; it carries `reveal` with the other two now,
+and the three `.reveal` elements on this page are re-measured on the current build.
 
 ### Measured, production build, axe-core 4.14
 
@@ -1690,12 +1824,18 @@ this business sells.
 | Closing band | `reveal` on `animation-timeline: view()` | The page's last beat arrives as the reader reaches it |
 | Entry hover | `LinkRows`' ember rule, scale-x on the row's own hairline, `hover:hover` only | This row is a destination |
 
-Nothing on the h1 (LCP) and **nothing on the ledger section**. The same measured reason as
-`/about/`'s first section: a view-timeline reveal is scrubbed, a section parked in the first third
-of its range sits at part opacity, and `--muted` at part opacity is under 4.5:1. The ledger heading
-lands 429px down at 1440, measured on the shipped build, which is well inside the fold and exactly
-where a reader parks it. (It was ~350px before the masthead gained its second column in round 2;
-the figure is re-measured rather than carried over.)
+Nothing on the h1, which is the LCP element.
+
+**Corrected 2026-10-21 (Task 4).** This paragraph used to end "and **nothing on the ledger
+section**", for the same measured reason `/about/`'s first section gave: a view-timeline reveal is
+scrubbed, a section parked in the first third of its range sat at part opacity, and `--muted` at
+part opacity is under 4.5:1. The pairings heading lands **429px** down at 1440, re-measured on the
+current build, which is well inside the fold and exactly where a reader parks it. (It was ~350px
+before the masthead gained its second column in round 2.) Task 8 (`d4284ff`) took opacity out of
+`reveal-rise` entirely, so a park can no longer change a contrast ratio and the exception is
+retired: **"What each comparison covers" carries `reveal`**, and this page holds two `.reveal`
+sections, that one and the closing band. See "v4 / reveal without opacity, and one source for the
+promises" at the end of this file.
 
 ### Measured, production build, axe-core 4.14
 
@@ -1720,7 +1860,9 @@ sits strictly between 0.02 and 0.999 opacity (axe skips a band at exactly 0 as n
 same serious failure appears on `/compare/` @768 at 0.251 and @1440 at 0.495, on **`/about/`** at
 0.174 and 0.625, on **`/guides/`** at 0.183 and 0.550, and on the untouched **`/compare/wordpress-vs-wix/`**
 at 0.191 and 0.132. Identical nodes every time. It is the `reveal` primitive, not this page, and it
-is left for the pass that owns the primitive. Two corrections to what the earlier entries assumed:
+was left for the pass that owns the primitive; **that pass is Task 8 (`d4284ff`), which reproduced
+this same failure on a control rebuild and then removed its cause.** Two corrections to what the
+earlier entries assumed:
 the opacity ramp finishing at 33% of the range narrows this window but does not close it, because a
 reader can stop inside the first third; and the failing node is `.btn-primary`, where the ember fill
 and its near-black label composite together, so a fix that only protects `--muted` copy leaves the
@@ -1741,3 +1883,185 @@ primary CTA failing.
 - **The lazier version was available and refused.** `LinkRows` with `split` and the criteria joined
   into one comma string per row would have been a two-line diff reusing an existing primitive. It
   would also have been the page that is already there, with a longer summary.
+
+---
+
+## v4 / RealScreen sized from the PNG header (Task 7)
+
+No layout family, no page and no section: one component in `parts.tsx` that four guide pages and
+every service page with a capture render, so it is recorded here because it changes what box those
+pages reserve before their largest image decodes.
+
+### The bug
+
+`RealScreen` hardcoded `width={1600} height={1000}` for every capture, a 1.600 box. Re-derived from
+the IHDR chunks on disk, the four real captures are:
+
+| File | Pixels | Ratio |
+| --- | --- | --- |
+| `critical-error-on-this-website.png` | 1829x860 | 2.127 |
+| `error-establishing-database-connection.png` | 2848x1600 | 1.780 |
+| `illustration-google-deceptive-site-warning.png` | 892x537 | 1.661 |
+| `white-screen-of-death.png` | 2736x1536 | 1.781 |
+
+Not one of them is 1.600, so `next/image` reserved a box of the wrong shape on all four and
+re-ratioed it when the image decoded, moving the LCP element of four guide pages and of the service
+pages that share the component.
+
+### The fix, and why it is 25 lines of `node:fs` and no dependency
+
+`src/lib/png-size.ts` exports `pngSize(path)`, which opens the file, reads 24 bytes, and returns the
+big-endian uint32 at offset 16 and 20. A PNG's IHDR is at a fixed offset: 8 signature bytes, a
+4-byte length, the 4-byte chunk type, then width and height. `RealScreen` is a Server Component that
+already stats the same file with `existsSync`, so this is one extra synchronous 24-byte read at build
+time.
+
+It is its own module rather than another export of `parts.tsx` so `scripts/check-content.ts` can
+import it without pulling in `next/image`. **No export of `parts.tsx` changed and the signature is
+still `{ slot, alt, sizes, preload }`**, so every call site is untouched.
+
+**It never throws.** An open or read failure, a short read, a missing signature, a chunk type that
+is not `IHDR`, or a zero dimension all return the old 1600x1000, and the fd closes in `finally`. The
+chunk-type check came in the fix round (`1453f2d`): without it the doc comment described a
+validation the code did not perform, which is a comment that will mislead the next reader rather
+than a bug today.
+
+### The runnable check
+
+Two `assert.deepEqual` lines in `scripts/check-content.ts`, where `npm run check` already lives:
+`public/screens/white-screen-of-death.png` must report 2736x1536, and `package.json` must report the
+1600x1000 fallback. One asserts the parser reads a real header, the other that a non-PNG cannot
+break the build. `npm run check` is in the build chain, so a capture replaced by one of a different
+size fails loudly instead of silently re-ratioing a page.
+
+### Measured on this build
+
+| Route | `<img>` attrs | Rendered box |
+| --- | --- | --- |
+| `/guides/white-screen-of-death/` | `width="2736" height="1536"` | 320x180 at 1440, 327x184 at 375 |
+| `/wordpress-fix/white-screen/` | `width="2736" height="1536"` | 416x233 at 1440, 327x183 at 375 |
+| `/guides/php-fatal-error/` (no capture) | `width="1600" height="1000"` | 320x200 at 1440, the `Photo` fallback arm, untouched by this change |
+
+CLS figures are in `docs/qa-report.md`. The honest reading of them is in that file too: only the
+post-state was measured, here and in Task 7's own report, so the verdict rests on the mechanical
+argument that the reserved box now has the image's real ratio, not on a before-and-after delta.
+
+### Deliberately not done
+
+- **`Screen` and `Photo` untouched.** `Photo` draws the catalogue frames, which really are 1600x1000,
+  so there is nothing to read.
+- **No `sizes` change at any call site.** `GuideTemplate` and `ServiceTemplate` pass their own
+  already and keep working unchanged; the box's ratio moved, its width did not.
+- **No caching and no async.** 24 bytes per capture at build time, four captures on the whole site.
+  A memo would be more code than the read it saves.
+
+---
+
+## v4 / reveal without opacity, and one source for the promises (Task 8)
+
+Two shared-file cleanups that three earlier tasks asked for. No page changed shape, so there is no
+layout family here; what changed is a utility every one of the 99 routes renders, and a block of
+copy two routes were each holding their own copy of. Commits `d4284ff` (8a) and `a2017d8` (8b);
+`git diff --stat 1453f2d..a2017d8` re-derived for this entry: **8 files, 102 insertions, 85
+deletions.**
+
+### 8a. `reveal-rise` is the translate alone
+
+```css
+@keyframes reveal-rise {
+  from { transform: translateY(12px); }
+  to { transform: translateY(0); }
+}
+```
+
+`.reveal` runs on `animation-timeline: view()` with `animation-range: entry 5% entry 40%`, which is
+**scrubbed, not played**: a reader who stops scrolling inside that range leaves the animation parked
+at whatever the scroll position holds, indefinitely. While the keyframe carried an opacity channel
+that park was a composite, and a composite is a contrast ratio nobody designed. Three entries in
+this file argued about how to narrow the window. There is no window now: a translate cannot change a
+contrast ratio at any scroll position, at any width, on any route, and transform only is a strict
+subset of what contract rule 10 allows.
+
+**The first repair is kept in the comment above the keyframe in `globals.css` and in the Task 5 and
+Task 6 entries above, deliberately.** It read `0% { opacity: 0 } 33% { opacity: 1 } 100%`, on the
+theory that finishing the fade in the first third made the failing window small enough to be gone.
+A smaller window is not a closed one. The reasoning must not be tried a third time, so it is
+recorded rather than deleted.
+
+**What the motion now communicates:** the page settling under the reader, not each section
+performing. That was already the whole of the motion past the first third of the range, and the
+12px travel is unchanged. **Reduced motion:** unchanged and still the final state immediately -
+`.reveal` lives inside a `@media (prefers-reduced-motion: no-preference)` block, so under `reduce`
+every element reports `animation-name: none`, `transform: none`, `opacity: 1`.
+
+**Two local workarounds are retired.** `/about/`'s "What we work on" and `/compare/`'s "What each
+comparison covers" each refused `reveal` because a park left them under 4.5:1. The exception has no
+subject now, so both carry `reveal` again and both comments record the history instead of asserting
+a reason that no longer holds. Re-counted on the current build: `/about/` renders three `.reveal`
+sections, `/compare/` two. The two entries above are corrected in place.
+
+**The failing node was never the one the first repair was aimed at.** It is the ember
+`.btn-primary`, whose fill and near-black label both composite against the page while the section is
+translucent. A fix that protected only `--muted` body copy would have left the site's primary CTA
+failing at every park. Recorded here because the diagnosis, not the keyframe, is the part that was
+wrong twice.
+
+### 8b. The four promises come from one place
+
+`src/content/notices.ts` gains `promises`: four `[brand.claims.*, sentence]` pairs beside
+`remoteDelivery`. `parts.tsx` gains `Promises`, which renders the tick list and keeps the per-claim
+truthy gate, because an unconfirmed claim is `null` and must then render nothing (rule 8).
+`/contact/` and `/legal/guarantee/` both drop their array, their markup and their `CheckIcon`
+import.
+
+These sentences are what the company promises a paying customer. Two hardcoded copies can silently
+diverge, and a promise that reads differently on two routes is a real problem rather than an untidy
+one. Checked for this entry: the four strings in `notices.ts` are byte-identical to the
+`confirm(...)` descriptions in `src/config/brand.ts` less their `claim: ` prefix, and byte-identical
+to what both pages held before. All four claims are truthy today, so both pages render all four, as
+they did.
+
+`compact` is the only prop besides `className` and it carries all four differences between the two
+call sites at once: `text-sm` on the row, `mt-0.5` against `mt-1` on the tick, and the `max-w-[60ch]`
+measure that only the reading column needs. The class strings are assembled in the original order
+rather than alphabetised, so the rendered `class` attributes are identical and not merely
+equivalent. Verified against the served HTML on this build: `/contact/` renders
+`<ul class="mt-4 grid gap-3">` / `<li class="flex gap-3 text-sm">` / `<span class="block
+first-letter:uppercase">`, `/legal/guarantee/` renders `<ul class="mt-5 grid gap-3">` /
+`<li class="flex gap-3">` / `<span class="block max-w-[60ch] first-letter:uppercase">`.
+
+Not folded into `TickList`: that takes bare strings and applies neither the claim gate nor
+`first-letter:uppercase`, and widening it would change every one of its current callers.
+
+### Measured, and measured against a control
+
+A sweep that only measures the post-state cannot tell "fixed" from "never reproduced here", so the
+old keyframe was rebuilt on disk, the bug reproduced, and the fixed build measured with the same
+harness. Both runs, the park method, and the instrument defects that made the earlier clean results
+meaningless are in `docs/qa-report.md` under "Guides, Knowledge Base, guarantee, About, comparisons,
+RealScreen and the reveal primitive (Tasks 1-8)". The short version: with the opacity channel back
+on disk the failure reproduces on this build; with it gone, no element on any of ten routes was ever
+measured below opacity 1 at any park position, at any width, which is the guarantee itself rather
+than a sample of it.
+
+### Deliberately not done
+
+- **`.reveal` was not deleted.** If the owner later finds a 12px scrubbed settle imperceptible, the
+  honest follow-up is deletion, not a restored fade: a fade is the one thing that cannot come back
+  while the timeline is scrubbed.
+- **The travel was not lengthened and the range was not narrowed.** Either would make the
+  per-section entrance louder, which the utility's own comment and the craft floor both refuse, and
+  neither affects the guarantee.
+- **`LinkRows` was not widened to take a `ReactNode` title**, which Task 6 routed here. `LinkRows`
+  wraps the whole row in one `<Link>`; `/compare/`'s row deliberately makes the anchor *be* the h3
+  and stretches it with `after:absolute after:inset-0`, because wrapping the row gave the link a
+  forty-word accessible name and the obvious repair (`aria-labelledby` off the heading) breaks WCAG
+  2.5.3 `label-content-name-mismatch`. Passing that heading in as a `ReactNode` would nest its
+  anchor inside `LinkRows`' own. What the two genuinely share is one hairline `<span>` class string,
+  which is not worth an export's surface area. (Task 8's report justified this with "`LinkRows` is
+  imported by 18 files, 6 of them templates". **Re-counted from disk: 18 files import the `parts`
+  module and 6 of those are under `src/components/templates/`, but `LinkRows` itself is imported by
+  five, `about/page.tsx`, `CityTemplates`, `GuideTemplate`, `HubTemplate`, `ServiceTemplate`. The
+  ruling stands on the accessibility argument; the figure was the module's, not the component's.**)
+- **`brand.legacy.facts`' other three readers** (`JsonLd.tsx`, `SiteFooter.tsx`, `Plans.tsx`) are
+  untouched. They are a separate removal pass the owner has not authorised.
