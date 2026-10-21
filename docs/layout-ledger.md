@@ -1221,8 +1221,8 @@ Re-counted from disk for this entry: 37 guides declare an `image.slot`, `public/
 PNGs, so 33 guides show their parent service's night frame. Several guides share one service, so a
 reader moving between siblings sees the same frame more than once; `docs/image-todo.md` carries the
 slot list, the sizes and the art direction, and `npm run capture` (which needs Docker, unavailable
-here) writes them. One heading in that file still reads "`public/screens/`, still empty", which has
-not been true since 2026-10-19. The capture arm emits a real `<link rel=preload as=image>`; the
+here) writes them. Three statements in that file still read "still empty" or "also empty" for `public/screens/`,
+which has not been true since 2026-10-19. The capture arm emits a real `<link rel=preload as=image>`; the
 photo arm is `loading=eager` with `fetchpriority=high`, which is what `Photo` has always done. Neither
 fades, and neither does the h1.
 

@@ -595,9 +595,11 @@ all three routes at both widths; under throttling the worst figure on the site's
 published is only true of the unthrottled instrument, and a reader of that number should know which
 one it was.
 
-Rendered `<img>` attributes re-derived from the served HTML and the IHDR chunks on disk: `2736x1536`
-where a capture exists and `1600x1000` on the `Photo` fallback arm, which is the catalogue
-photographs' real size. No route still carries the old hardcoded 1600x1000 over a capture.
+Rendered `<img>` attributes re-derived from the served HTML and the IHDR chunks on disk: each capture
+renders at its own intrinsic size (`critical-error-on-this-website` 1829x860,
+`error-establishing-database-connection` 2848x1600, `illustration-google-deceptive-site-warning`
+892x537, `white-screen-of-death` 2736x1536), and the `Photo` fallback arm renders `1600x1000`, which is
+the catalogue photographs' real size. No route still carries the old hardcoded 1600x1000 over a capture.
 
 ## Control run: the reveal fix, reproduced before it was measured gone
 
