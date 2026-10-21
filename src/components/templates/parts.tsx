@@ -144,7 +144,7 @@ export function Faqs({ faqs, title = "Questions" }: { faqs: { q: string; a: stri
  */
 export function Promises({ className, compact = false }: { className?: string; compact?: boolean }) {
   return (
-    <ul className={cn(className, "grid gap-3")}>
+    <ul className={cn("grid gap-3", className)}>
       {promises
         .filter(([confirmed]) => confirmed)
         .map(([, words]) => (
