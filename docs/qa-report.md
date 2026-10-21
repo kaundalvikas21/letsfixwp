@@ -325,6 +325,10 @@ hub              168    city           296    compare-index  360
    scrubbed rather than played, so a reader who stops scrolling parks the animation wherever they left it,
    and parked body copy measured 4.03:1 against a 4.5:1 floor. Fixed by giving `reveal` its own keyframe
    that finishes opacity by a third of the range and spends the rest on transform alone.
+   **Superseded 2026-10-21.** That narrowed the failing window and did not close it: a reader can stop
+   inside the first third. Re-measured parked, the serious node is the ember `.btn-primary`, not the
+   muted body copy recorded above, and it reproduces on `/about/`, `/guides/` and the untouched
+   `/compare/wordpress-vs-wix/`. `reveal-rise` now animates the translate only and carries no opacity.
 2. **The h1 was being faded in**, which holds back the paint of the page's LCP element. Removed from every
    template; the headline now paints at once and everything else rises under it.
 

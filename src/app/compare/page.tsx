@@ -76,12 +76,13 @@ export default function CompareIndex() {
         </dl>
       </header>
 
-      {/* No `reveal` on this section, and that is measured rather than stylistic: a view-timeline
-          reveal is scrubbed, so a section parked inside the first third of its range at load sits at
-          part opacity, and `--muted` at part opacity is under 4.5:1. This section's heading lands a
-          few hundred pixels down, which is exactly where a reader parks it. The same decision and
-          the same reason are recorded for the first section of /about/. */}
-      <section aria-labelledby="pairings" className="mt-16 md:mt-24">
+      {/* This section once had to refuse `reveal`, because its heading lands a few hundred pixels
+          down, which is exactly where a reader parks it, and a scrubbed opacity ramp left whatever
+          parked there under 4.5:1. `reveal-rise` is transform only now (globals.css records why),
+          so a park cannot change a contrast ratio and the exception is retired here and on /about/,
+          which carried the same one. Written out rather than built with `Section` only because the
+          list below sets its own `mt-8`. */}
+      <section aria-labelledby="pairings" className="reveal mt-16 md:mt-24">
         <h2 id="pairings" className={h2}>
           What each comparison covers
         </h2>

@@ -285,15 +285,26 @@
 }
 
 /* Not `rise`, because a view timeline is scrubbed rather than played: a reader who stops scrolling
-   parks the animation wherever they left it. With a straight opacity ramp that meant body copy
-   resting at part opacity, and --muted at 0.55 over --bg measures 4.03:1, under the 4.5:1 this
-   system holds itself to. Axe caught exactly that on the guide page at 1440. So opacity is finished
-   by a third of the way in and the remaining travel is transform only, which cannot affect
-   contrast: the worst a parked reveal can now do is sit mid-slide while fully legible. */
+   parks the animation wherever they left it, at whatever opacity that position holds.
+
+   The first repair is kept here because it is the reasoning that must not be tried again. It read
+   `0% { opacity: 0 } 33% { opacity: 1 } 100%`, on the theory that finishing the fade early made the
+   failing window small enough to be gone. A smaller window is not a closed one: a reader can stop
+   anywhere, including inside the first third, and a scrubbed park is a state the page can hold
+   indefinitely. Measured on the shipped build, parked inside the entry range, axe reports
+   `color-contrast` serious on /about/ (opacity 0.174 and 0.625), /guides/ (0.183, 0.550) and the
+   untouched /compare/wordpress-vs-wix/ (0.191, 0.132), the same nodes every time. The failing node
+   is also not the --muted body copy the old note assumed: it is the ember .btn-primary, whose fill
+   and near-black label both composite against the page while the section is translucent.
+
+   So there is no opacity here at all, and the fade is not compressed further but gone. The reveal
+   is the translate alone, which cannot change a contrast ratio at any scroll position or any width,
+   so no park state can fail; transform only is a strict subset of what contract rule 10 allows. The
+   12px beat is unchanged, and it was already the whole of the motion past the first third: what it
+   communicates is the page settling under the reader, not each section announcing itself. */
 @keyframes reveal-rise {
-  0% { opacity: 0; transform: translateY(12px); }
-  33% { opacity: 1; }
-  100% { opacity: 1; transform: translateY(0); }
+  from { transform: translateY(12px); }
+  to { transform: translateY(0); }
 }
 
 /* The FAQ answer opens instead of appearing. block-size is animated outside transform and opacity,

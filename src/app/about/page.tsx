@@ -81,15 +81,15 @@ export default function About() {
         </div>
       </header>
 
-      {/* Written out rather than built with `Section`, for one reason: it may not carry `reveal`.
-          A view-timeline reveal is scrubbed, so a section parked inside the first third of its range
-          at load sits at part opacity, and `--muted` at part opacity is under 4.5:1. The banner puts
-          this heading within a few pixels of the fold at 768, where it parks exactly there and axe
-          reports a serious colour-contrast failure on the heading, the lead and all twelve directory
-          strings. Everything else on the page is far enough down to be either fully hidden (which
-          axe skips) or fully arrived. Same ruling as the header above: what is at the fold paints at
-          its final state. The margins and the heading are `Section`'s own, so nothing else moves. */}
-      <section aria-labelledby="what-we-do" className="mt-16 md:mt-24">
+      {/* This section once had to refuse `reveal`: the banner puts its heading within a few pixels
+          of the fold at 768, it parked inside its own entry range at load, and a scrubbed opacity
+          ramp meant axe read the heading, the lead and all twelve directory strings at part
+          opacity. `reveal-rise` no longer touches opacity (globals.css records why), so a park can
+          no longer change a contrast ratio and the exception is retired: this section settles like
+          every other one. Still written out rather than built with `Section` for the remaining,
+          smaller reason: `Section` wraps its children in one `mt-6` div and this one has two blocks
+          with their own spacing. The margins and the heading are `Section`'s own. */}
+      <section aria-labelledby="what-we-do" className="reveal mt-16 md:mt-24">
         <h2 id="what-we-do" className={h2}>
           What we work on
         </h2>
