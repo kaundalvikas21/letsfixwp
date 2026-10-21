@@ -99,6 +99,23 @@ export const collectionLd = (c: { name: string; description: string; path: strin
   },
 });
 
+/**
+ * /about/. The page whose subject is the business itself.
+ *
+ * `mainEntity` points at the Organization the root layout already emits rather than declaring a
+ * second one, so the site has exactly one Organization node and this page is the page about it.
+ * Deliberately no `AggregateRating`, no `Review` and no `numberOfEmployees`: there is no review data,
+ * and a headcount is a claim about the world rather than something `src/content` can prove.
+ */
+export const aboutLd = (c: { name: string; description: string; path: string }): Thing => ({
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  name: c.name,
+  description: c.description,
+  url: abs(c.path),
+  mainEntity: { "@id": ORG_ID },
+});
+
 export const guideLd = (g: Guide): Thing => ({
   "@context": "https://schema.org",
   "@type": "TechArticle",

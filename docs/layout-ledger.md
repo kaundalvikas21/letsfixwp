@@ -1459,3 +1459,119 @@ computed border radius inside `main` other than 0 or 14px.
   The crumb and footer deviations recorded above would have allowed 24px here and saved roughly
   370px on a phone; a knowledge base index is what the page is *for*, not orientation furniture, so
   it keeps the contract's figure.
+
+---
+
+## v4 / about (/about/, Task 5)
+
+One route, and the only page whose subject is the business rather than a service, an error or a
+policy. **It amends the container table's `max-w-3xl` row for `/about/`**: the page runs on the bare
+`page` spine now, x=168, the same left edge as the hubs, the guides and the knowledge base, with
+every measure capped in `ch` instead.
+
+| Layout family | Eyebrows | Marquee | CTA intents | Client islands |
+| --- | --- | --- | --- | --- |
+| Masthead over a full-width photographic band, ruled hub directory, left-rail progression, closing band | 0 | 0 | BOOK, CHAT | none |
+
+### What it was
+
+47 lines in a `max-w-3xl` column: h1, one sentence, a `LinkRows` of the six hubs, a
+`dl.grid.sm:grid-cols-3` over the three `remoteDelivery` entries, a CTA pair. **No image anywhere**,
+on the one page whose whole job is to make a stranger trust a remote team, and the three-card grid
+was not a taste call: three equal cards in a row is banned outright by contract rule 6.
+
+### Four families, none repeated within the page
+
+1. **Masthead over a full-width photographic band.** The words run the full 1104px spine and the
+   photograph runs under them at the same width. Deliberately none of the site's four split headers
+   (hub 6/5, guide 8/4, knowledge base 7/5, guarantee 7/5): nothing sits beside this picture, because
+   it is not an illustration of a product or an error, it is the only evidence on the page of who
+   does the work. 16/9 stacked so a phone gets a band and not a postcard, 2/1 from md.
+2. **Ruled hub directory**, `LinkRows split`, unchanged from what was there.
+3. **Left-rail progression** for `remoteDelivery`, which replaces the three-card grid.
+4. **Closing band**, the hub template's. A cross-page repeat and a deliberate one: rule 3 forbids a
+   family repeating *within* one page.
+
+### The engagement is a rail, and it is never numbered
+
+`Meetings`, `While we work`, `Handover` are one engagement in order, not three peers, so they are
+read **down a rail** instead of across a row of cards: a hairline on the group's left edge, each
+entry meeting it on a short ember tick, label over sentence. The order carries the sequence and is
+the only thing that does. No numbers, no "Stage 2", which rule 6 bans alongside the cards it also
+bans. The tick is a 1px rule, not a dot: it joins an entry to the rail rather than decorating it.
+
+### The counts are computed, and nothing else is claimed
+
+`services.length` and `guides.length` are read from `src/content` at build time, so the sentence
+under "What we work on" cannot drift from what the site holds. **No years in business, no team size,
+no client volume, no number of sites fixed, and no testimonial**: `src/content/testimonials.ts` is
+entirely placeholders and `brand.legacy.facts` belongs to fixmywp.com, a different and still-trading
+company. Nothing on this page is asserted about the world.
+
+### The banner's `sizes`, and why it is declared
+
+The band is the inner container and nothing else: **1104px** from 1152 up (`max-w-6xl` less the 24px
+`md` gutters), `calc(100vw - 48px)` while the container is still under its max at md, and
+`calc(100vw - 32px)` below md where the gutter is 16px. Measured on the build: 1104px box taking the
+`w=1200` candidate at 1440, 976px taking `w=1080` at 1024, 343px taking `w=384` at 375. Left at the
+`100vw` default it would have over-fetched by a whole candidate step at every width, on an eager
+image that is the page's largest paint. Real alt text rather than `decorative`, because here the
+photograph is content.
+
+`servicePhotos["hire-developer"]` (`terminal`): hands at a keyboard under one warm light, which is
+the Imagery section's own direction almost word for word. The fix hub's `emergency` frame was tried
+first and is cold and mostly a dark mass at this crop, which on a dark page reads as a hole.
+
+### The first section may not carry `reveal`, and that is measured
+
+Written out rather than built with `Section`. A view-timeline reveal is **scrubbed**, so a section
+parked inside the first third of its range at load sits at part opacity, and `--muted` at part
+opacity is under 4.5:1. The 2/1 banner puts "What we work on" within a few pixels of the fold at
+**768**, where it parked exactly there: axe reported a serious `color-contrast` failure on the
+heading, the lead and all twelve directory strings. With the reveal off that section, 0 violations at
+every width tested. Everything below it is far enough down to be either fully hidden (axe skips
+opacity 0) or fully arrived.
+
+**This is a standing site-wide fragility, not a new one**, and it is not fixed here: the same sweep
+found `/guides/critical-error-on-this-website/` failing the identical way at **820px** on the current
+build. `@keyframes reveal-rise` already finishes its opacity at 33% of the range for exactly this
+reason (recorded in `globals.css`), which narrows the window without closing it. Closing it means
+dropping opacity from the keyframe entirely and leaving `reveal` as a 12px slide, which is a one-line
+change to a utility every one of the 99 routes uses and so belongs in its own pass.
+
+### JSON-LD
+
+`AboutPage` with `mainEntity: { "@id": ".../#organization" }`, pointing at the Organization the root
+layout already emits rather than declaring a second one. No `AggregateRating`, no `Review`, no
+`numberOfEmployees`: there is no review data, and a headcount is a claim about the world rather than
+something `src/content` can prove. `breadcrumbLd` still emits from `Breadcrumbs`.
+
+### Motion
+
+| Element | Primitive | Communicates |
+| --- | --- | --- |
+| Lead sentence | `rise-in`, inline delay 70ms | The headline is already there; what it means arrives under it |
+| CTA pair | `rise-in`, inline delay 140ms | The buttons that act on the sentence arrive after it |
+| "How working with us runs", closing band | `reveal` on `animation-timeline: view()` | Each section is its own answer, met one at a time |
+
+Nothing on the h1 and nothing on the banner: both are the page's largest paints. "What we work on"
+is static for the contrast reason above.
+
+### Measured, production build, axe-core 4.14
+
+0 violations of any impact at **375, 768, 1024 and 1440**, and at 375 and 1440 under
+`prefers-reduced-motion: reduce`. A wider sweep at 390, 430, 600, 700, 800, 820, 900, 1100, 1152,
+1280 and 1600 is also 0. One h1 at every width, no horizontal scroll at any width, and no computed
+border radius inside `main` other than 0 or 14px. Document height 3,453px at 1440, 4,052px at 768,
+3,569px at 1024, 5,340px at 375.
+
+### Deliberately not done
+
+- **No `brand.claims` tick list.** `/contact/` and `/legal/guarantee/` both render the same four
+  `confirm(...)` sentences and a reviewer has already flagged the duplication; this page would have
+  been the third copy. The page does not need them, and the right move is to extract the existing two
+  before adding a third, not to add one and leave three.
+- **No testimonial and no logo wall.** Every entry in `src/content/testimonials.ts` is a placeholder
+  nobody said, and there is no permission for a client logo.
+- **No "where we work" or city strip.** The cities index exists and says the same thing better.
+- **No second image.** One photograph that is actually about the work beats two that are mood.
