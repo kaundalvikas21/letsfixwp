@@ -1,4 +1,4 @@
-import { hubIds, serviceIds } from "../config/routes";
+import { serviceIds } from "../config/routes";
 
 /**
  * Every photograph in public/site_images/, carried over from the v1-incident-console set.
@@ -124,16 +124,5 @@ export const servicePhotos: Record<string, PhotoId> = {
   "woocommerce-fixes": "store",
 };
 
-/** Hub pages have no content file, so their photograph is mapped by hub id. */
-export const hubPhotos: Record<string, PhotoId> = {
-  "wordpress-fix": "emergency",
-  "wordpress-security": "terminal",
-  "wordpress-performance-migration": "racks",
-  "wordpress-maintenance": "workspace",
-  "wordpress-development": "drafting",
-  woocommerce: "store",
-};
-
-// Integrity: a new service or hub in SITEMAP without a photograph fails the build here.
+// Integrity: a new service in SITEMAP without a photograph fails the build here.
 for (const id of serviceIds) if (!servicePhotos[id]) throw new Error(`photos: service "${id}" has no photograph`);
-for (const id of hubIds) if (!hubPhotos[id]) throw new Error(`photos: hub "${id}" has no photograph`);

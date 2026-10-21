@@ -19,10 +19,13 @@ const SPAN = { 2: "md:col-span-2", 4: "md:col-span-4", 6: "md:col-span-6" } as c
 const textLink = "inline-flex min-h-11 items-center font-semibold text-accent-text underline underline-offset-4 hover:no-underline";
 
 // Fix services carry symptoms; every other intent has none (serviceSchema refine), so those cards fall back to
-// the summary plus whoItsFor. Both shapes are real content fields.
-const shownDeliverables = (s: Service) => s.deliverables.slice(0, 3);
-const cardWeight = (s: Service) =>
-  (s.symptoms.length ? s.symptoms.slice(0, 3).join(" ") : s.summary + s.whoItsFor + shownDeliverables(s).join(" ")).length;
+// the summary, whoItsFor and deliverables. `shown` is the one place that decides what a card renders, and the
+// bento weights are measured from it, so a cell is sized by the text it actually holds.
+const shown = (s: Service) =>
+  s.symptoms.length
+    ? { symptoms: s.symptoms.slice(0, 3), deliverables: [] as string[], body: "", who: "" }
+    : { symptoms: [] as string[], deliverables: s.deliverables.slice(0, 3), body: s.summary, who: s.whoItsFor };
+const weight = (c: ReturnType<typeof shown>) => [...c.symptoms, ...c.deliverables, c.body, c.who].join(" ").length;
 
 /**
  * /<hub>/. Layout family: triage page. A text-only lead, a bento of symptom cards, then a
@@ -33,8 +36,11 @@ export function HubTemplate({ node }: { node: FlatNode }) {
   const children = nodes.filter((n) => n.parentPath === node.path);
   const serviceChildren = children.filter((n) => n.kind === "service");
   const otherChildren = children.filter((n) => n.kind !== "service");
-  const services = serviceChildren.map((n) => ({ node: n, s: getService(serviceIdOf(n.path))! }));
-  const spans = bentoSpans(services.map(({ s }) => cardWeight(s)));
+  const services = serviceChildren.map((n) => {
+    const s = getService(serviceIdOf(n.path))!;
+    return { node: n, s, c: shown(s) };
+  });
+  const spans = bentoSpans(services.map(({ c }) => weight(c)));
   const triage = services.some(({ s }) => s.symptoms.length > 0);
   const topGuides = serviceChildren
     .flatMap((n) => guidesFor(serviceIdOf(n.path)))
@@ -61,7 +67,7 @@ export function HubTemplate({ node }: { node: FlatNode }) {
 
       <Section id="services" title={triage ? "Which of these is your site doing?" : "Pick the work that fits"}>
         <ul className="grid gap-4 md:grid-cols-6 md:gap-5">
-          {services.map(({ node: n, s }, i) => (
+          {services.map(({ node: n, s, c }, i) => (
             <li
               key={s.id}
               className={cn(
@@ -71,30 +77,30 @@ export function HubTemplate({ node }: { node: FlatNode }) {
             >
               <h3 className="font-display text-lg leading-snug font-bold">
                 {/* Stretched link: the whole card is the target, and the title is its accessible name. */}
-                <Link href={n.path} className="flex min-h-11 items-center justify-between gap-3 outline-none after:absolute after:inset-0 after:rounded-[20px] group-hover:text-accent-text">
+                <Link href={n.path} className="flex min-h-11 items-center justify-between gap-3 supports-[selector(:has(*))]:outline-none after:absolute after:inset-0 after:rounded-[20px] group-hover:text-accent-text">
                   {n.title}
                   <CaretRightIcon weight="duotone" className="mt-1 size-5 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden />
                 </Link>
               </h3>
-              {s.symptoms.length > 0 ? (
+              {c.symptoms.length > 0 ? (
                 <>
                   <p className="mt-3 text-sm font-semibold">You might see</p>
                   <ul className="mt-1.5 space-y-1.5 text-sm text-muted">
-                    {s.symptoms.slice(0, 3).map((x) => (
+                    {c.symptoms.map((x) => (
                       <li key={x}>{x}</li>
                     ))}
                   </ul>
                 </>
               ) : (
                 <>
-                  <p className="mt-3 max-w-[56ch] text-sm">{s.summary}</p>
+                  <p className="mt-3 max-w-[56ch] text-sm">{c.body}</p>
                   <p className="mt-3 max-w-[56ch] text-sm text-muted">
                     <span className="font-semibold text-text">Who it is for </span>
-                    {s.whoItsFor}
+                    {c.who}
                   </p>
                   <p className="mt-3 text-sm font-semibold">You get</p>
                   <ul className="mt-1.5 space-y-1.5 text-sm text-muted">
-                    {shownDeliverables(s).map((x) => (
+                    {c.deliverables.map((x) => (
                       <li key={x}>{x}</li>
                     ))}
                   </ul>

@@ -10,7 +10,7 @@ neutral and green tones, no red. Real screens only: shoot the screen, never comp
 
 All 15 v1-incident-console photographs are in `public/site_images/` and listed in `src/content/photos.ts`
 with size, alt, crop focus and a `tone`. Use them with `<Photo id="..." sizes="..." />`
-(`src/components/sections/v3/Photo.tsx`); pages map services and hubs through `servicePhotos` and `hubPhotos`.
+(`src/components/sections/v3/Photo.tsx`); pages map services through `servicePhotos`.
 
 | Tone | Photos | On v3 |
 | --- | --- | --- |

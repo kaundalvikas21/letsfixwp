@@ -8,6 +8,7 @@ import { breadcrumbLd, JsonLd, type Crumb } from "@/components/JsonLd";
 import { brand } from "@/config/brand";
 import { nodeByPath, routes } from "@/config/routes";
 import { getCompare, getGuide } from "@/content";
+import type { Urgency } from "@/content/schema";
 import { cn } from "@/lib/utils";
 
 // v3 template primitives. Visual language from design-system/letsfixwp-v3/MASTER.md: 20px cards, 12px inputs,
@@ -118,14 +119,14 @@ export function LinkRows({ items }: { items: { href: string; title: string; summ
   );
 }
 
-const urgencyLabel = { critical: "Critical", high: "High", standard: "Standard" } as const;
+const urgencyLabel: Record<Urgency, string> = { critical: "Critical", high: "High", standard: "Standard" };
 
 /**
  * Guide urgency as weight, not a new hue: the accent for critical and muted otherwise. Colour is never the only
  * signal (contract rule 9): the level is written out, and critical and high carry different icons. Presentational
  * and not interactive, so it can sit inside a link row.
  */
-export function UrgencyBadge({ level, className }: { level: keyof typeof urgencyLabel; className?: string }) {
+export function UrgencyBadge({ level, className }: { level: Urgency; className?: string }) {
   const Icon = level === "critical" ? WarningOctagonIcon : level === "high" ? WarningIcon : null;
   return (
     <span

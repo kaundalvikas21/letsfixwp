@@ -3,6 +3,8 @@ import { z } from "zod";
 const slug = z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/);
 const path = z.string().regex(/^\/([a-z0-9-]+\/)*$/, "path must start and end with /");
 const text = z.string().min(1);
+const urgencyLevel = z.enum(["critical", "high", "standard"]);
+export type Urgency = z.infer<typeof urgencyLevel>;
 const faq = z.object({ q: text, a: text });
 const seo = z.object({ title: z.string().min(1).max(60), description: z.string().min(1).max(155) });
 const image = z.object({ slot: text, alt: text });
@@ -46,7 +48,7 @@ export const guideSchema = z.object({
   safeChecks: z.array(text).min(2).max(3), // never editing core files
   whenToCallUs: text,
   parentService: slug,
-  urgency: z.enum(["critical", "high", "standard"]),
+  urgency: urgencyLevel,
   faqs: z.array(faq).min(3).max(4),
   seo,
   image,
