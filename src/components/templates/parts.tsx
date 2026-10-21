@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { CaretRightIcon, CheckIcon, SealCheckIcon } from "@phosphor-icons/react/ssr";
+import { CaretRightIcon, CheckIcon, SealCheckIcon, WarningIcon, WarningOctagonIcon } from "@phosphor-icons/react/ssr";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -115,6 +115,30 @@ export function LinkRows({ items }: { items: { href: string; title: string; summ
         </li>
       ))}
     </ul>
+  );
+}
+
+const urgencyLabel = { critical: "Critical", high: "High", standard: "Standard" } as const;
+
+/**
+ * Guide urgency as weight, not a new hue: the accent for critical and muted otherwise. Colour is never the only
+ * signal (contract rule 9): the level is written out, and critical and high carry different icons. Presentational
+ * and not interactive, so it can sit inside a link row.
+ */
+export function UrgencyBadge({ level, className }: { level: keyof typeof urgencyLabel; className?: string }) {
+  const Icon = level === "critical" ? WarningOctagonIcon : level === "high" ? WarningIcon : null;
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs",
+        level === "critical" ? "border-accent bg-accent-tint font-bold text-accent-text" : "border-line-strong font-medium text-muted",
+        className,
+      )}
+    >
+      {Icon && <Icon weight="duotone" className="size-3.5 shrink-0" aria-hidden />}
+      {urgencyLabel[level]}
+      <span className="sr-only"> urgency</span>
+    </span>
   );
 }
 

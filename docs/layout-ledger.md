@@ -96,10 +96,14 @@ so no number is shown; a fact row appears automatically if either is ever filled
 
 | # | Section | Layout family | Eyebrow | Marquee | CTA intents |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Hero | 7/5 title block with photo and lead paragraph | no | no | node intent, CHAT |
-| 2 | What we do here | link rows | no | no | none |
-| 3 | Most urgent problems | two-column tile list | no | no | none |
-| 4 | Closing | split band | no | no | node intent, CHAT |
+| 1 | Hero | 7/5 title block beside a typographic index panel (hub icon over its service titles) | no | no | node intent, CHAT |
+| 2 | Which of these is your site doing | varied-span bento of symptom cards (bentoSpans) | no | no | none |
+| 3 | Most urgent problems | ranked list in one panel, severity badge per row | no | no | none |
+| 4 | Not sure which one | left-aligned prompt band, one button | no | no | CHAT |
+
+Eyebrow budget: 4 sections, ceil(4 / 3) = 2 allowed, 0 used. No marquee. No two consecutive image-plus-text splits: the hero is the only split, and it carries no photograph.
+
+Row 2 reads the real intent mix of each hub. Measured: wordpress-fix 11 fix; wordpress-security 3 fix, 1 project; woocommerce 1 fix, 3 project; wordpress-maintenance 3 plan, 1 project; wordpress-performance-migration 3 project; wordpress-development 6 project. `symptoms` is empty on every non-fix service (serviceSchema refine), so a card shows its first three symptoms when it has them and otherwise its `summary` plus `whoItsFor`. The heading follows: "Which of these is your site doing?" only when at least one card has symptoms, "Pick the work that fits" when none does. Row 3 renders only when the hub has guides (4 of 6 do: maintenance and development have none). It ranks by `Guide.urgency` and shows the urgency in words plus an icon (`UrgencyBadge`), never colour alone. The hero drops the photograph: `hubPhotos` reuses six frames and several are dark, against the bright-daylight direction in MASTER. Row 4 replaces a closing band that repeated the node title and both hero buttons.
 
 ## v3 / city template (/wordpress-development/cities/<city>/)
 
