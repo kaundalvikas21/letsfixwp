@@ -1579,3 +1579,114 @@ border radius inside `main` other than 0 or 14px. Document height 3,453px at 144
   nobody said, and there is no permission for a client logo.
 - **No "where we work" or city strip.** The cities index exists and says the same thing better.
 - **No second image.** One photograph that is actually about the work beats two that are mood.
+
+---
+
+## v4 / comparisons index (/compare/, Task 6)
+
+One route, parent of three compare pages. **It empties the container table's "Guide, compare index
+| max-w-3xl" row**: the guide left it in Task 1 and the compare index leaves it here, so neither
+page named in that row runs at `max-w-3xl` any more. `/case-studies/` is now the only route still
+on that container, and the next pass over it should decide whether the width survives at all. This
+page is on the bare `page` spine, x=168, with the lead capped at 62ch.
+
+| Layout family | Eyebrows | Marquee | CTA intents | Client islands |
+| --- | --- | --- | --- | --- |
+| Lead header, split ledger of pairings, closing band | 0 | 0 | BOOK, CHAT | none |
+
+### What it was
+
+32 lines in a `max-w-3xl` column: h1, one sentence, a `LinkRows` of the three compares with each
+one's `seo.description` as the summary, a CTA pair. No image, no JSON-LD, and no contrast anywhere
+on a page whose whole subject is contrast. The data it was throwing away: `c.a` and `c.b`, five to
+ten `rows[].criterion` per comparison, and three to five `verdictByScenario` entries.
+
+### The unit is a split, which is how three items avoid being three cards
+
+Three items plus rule 6's "no three equal cards in a row" is the whole design problem of this page,
+and the escape is not a card made slightly wider than its neighbours. Each comparison is one
+**full-width entry in one ruled list**, and the entry itself is the split: left column is the
+pairing, `c.a` and `c.b` at the same size and the same weight with a hairline seam and the word
+"vs" between them; right column is every criterion that comparison is built on, across a vertical
+hairline. Three of those stack down the page as rows, so there is no row of three anything.
+
+They are also visibly unequal without being made unequal: "Monthly care plan vs Pay-as-you-go
+support hours" wraps to four lines where "WordPress vs Wix" takes two, and the criteria run 8, 9
+and 10 deep. The rhythm comes from the content, not from a span override.
+
+**Deliberately not `CompareTemplate`'s family.** The child owns "verdict-by-scenario cards over a
+real comparison table". A parent rendering its child's layout with a thinner version of the child's
+data reads to a visitor as the same page twice and to a crawler as thin content. Rule 3 is
+per page, so this is a judgement rather than a rule, and it is the brief's judgement: the index
+shows *what is compared*, the comparison page shows *how the two answer it*.
+
+### Everything on screen, and where it is from
+
+| On screen | Source |
+| --- | --- |
+| "Comparisons" (h1) | SITEMAP node title |
+| The lead sentence | Unchanged from the previous page. Says no winner is declared, because the files declare none |
+| "What each comparison covers" (h2) | Written here. Names what the right column of every entry is |
+| The two names in each entry | `c.a`, `c.b` |
+| "N scenarios, each with the verdict for it." | `c.verdictByScenario.length`, a count of entries in the file |
+| Every criterion string | `c.rows[].criterion`, in file order, all of them |
+| "Want this answered for your site?" (h2) | Written here |
+| CTA labels | `cta.ts` via `BookLink` and `ChatButton`; `/compare/` is intent `info`, so BOOK is primary |
+
+Nothing is summarised, no criterion is invented, and no side is characterised. The criterion titles
+are the one part of the comparison that belongs to both sides at once, which is why they are the
+only body text the index shows: printing `rows[].a` against `rows[].b` would be the child's table,
+and printing one of them would tip a page that is deliberately neutral.
+
+### No photograph, and that is the honest answer
+
+`src/content/photos.ts` is a fixed catalogue of real frames: desks, cables, racks, keyboards,
+screens, an engineer at night. Every one of them is about *work being done on a site*. This page is
+about a decision taken before any of that work exists, between two pieces of software or two ways
+of paying. `drafting` (a hand sketching a wireframe) is the nearest miss and is already the face of
+the design services; putting it here would make it decoration, which rule 7 exists to prevent. Rule
+7 requires every visual to be real. It does not require a visual, so there is none, and the page
+carries no `sizes` arithmetic because it loads no image.
+
+### JSON-LD
+
+`collectionLd`, reused from the knowledge base index rather than a new `itemListLd`: it already
+emits `CollectionPage` with an `ItemList` as `mainEntity`, which is exactly the shape asked for,
+and the names and URLs are read from `src/content` so the list cannot claim the page holds
+something it does not render. `breadcrumbLd` still emits from `Breadcrumbs`. No `Product`, no
+`Review`, no `AggregateRating`: there is no review data and neither side of any pairing is a thing
+this business sells.
+
+### Motion
+
+| Element | Primitive | Communicates |
+| --- | --- | --- |
+| Lead sentence | `rise-in`, inline delay 70ms | The headline is already there; what it means arrives under it |
+| Closing band | `reveal` on `animation-timeline: view()` | The page's last beat arrives as the reader reaches it |
+| Entry hover | `LinkRows`' ember rule, scale-x on the row's own hairline, `hover:hover` only | This row is a destination |
+
+Nothing on the h1 (LCP) and **nothing on the ledger section**. The same measured reason as
+`/about/`'s first section: a view-timeline reveal is scrubbed, a section parked in the first third
+of its range sits at part opacity, and `--muted` at part opacity is under 4.5:1. The ledger heading
+lands roughly 350px down at 1440, which is exactly where a reader parks it.
+
+### Measured, production build, axe-core 4.14
+
+0 violations of any impact at **375, 768, 1024 and 1440**, each audited after scrolling to 45% of
+the document so any scrubbed `reveal` is parked mid-range, and 0 at 375 and 1440 under
+`prefers-reduced-motion: reduce`. One h1 at every width, no horizontal scroll at any width.
+Document height 2,288px at 1440, 2,368px at 1024, 2,859px at 768, 4,747px at 375.
+
+### Deliberately not done
+
+- **No scenario strings on the index.** `verdictByScenario[].scenario` is the most persuasive copy
+  in the files, and showing it here would put 13 sentences on the parent that the three children
+  already carry, with the verdict beside each of them. The count of them is enough to set the
+  expectation; the sentences are the reason to click.
+- **No new export in `parts.tsx`.** The entry is used three times on one page and nowhere else, so
+  it stays local. Five templates import that file and Task 8 adds to it.
+- **No change to `CompareTemplate.tsx` or `src/content/compares/`.** Out of scope, and the index now
+  depends on the shape of those files, so the next change to them should be read against this page.
+- **The lazier version was available and refused.** `LinkRows` with `split` and the criteria joined
+  into one comma string per row would have been a two-line diff reusing an existing primitive. It
+  would also have been the page that is already there, with a longer summary.
