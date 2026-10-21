@@ -173,8 +173,9 @@ export function HubTemplate({ node }: { node: FlatNode }) {
           Not sure which one is yours?
         </h2>
         <p className="mt-3 max-w-[56ch] text-muted">Tell us what your site is doing and we will point you to the right page.</p>
-        <div className="mt-6">
-          <ChatButton location={`${loc}:closing`} className="btn-primary" />
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Primary location={`${loc}:closing`} className="btn-primary" />
+          <ChatButton location={`${loc}:closing`} className="btn-secondary" />
         </div>
       </section>
     </article>
