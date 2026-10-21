@@ -2111,3 +2111,80 @@ state. Nothing animates on the photograph itself.
 **Deliberately not done:** no `aspect-ratio` on the band, for the reason above. No gradient scrim, no
 second hue, no blur layer. The `bannerSizes` string is unchanged, because the box is still the full
 1104px spine and the arithmetic that produced it did not move.
+
+## v4 / pricing
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Masthead over a photographic band | type on photography, the /about/ pattern | no | no | BOOK, CHAT |
+| 2 | Three ways to work with us | ruled split ledger (reused from /compare/) | no | no | BOOK, BOOK+service, PLANS |
+| 3 | What you are agreeing to | two-column tick grid (`Promises`) | no | no | none |
+| 4 | Everything we quote on | grouped column directory (reused from /guides/) | no | no | none (32 service links) |
+| 5 | Questions about price | FAQ disclosure list | no | no | none |
+| 6 | Closing band | the site's shared closing band | no | no | BOOK, PLANS |
+
+**The page had no prices and still has none.** All 32 services carry `priceFrom: null`, all four
+entries in `src/content/pricing.ts` are `null`, and all 32 `typicalTurnaround` values are `null`,
+verified by grep on 2026-10-21. What it replaced was a service directory with a price column that
+never rendered, under a lead sentence apologising for the absence. It read as boring because it had
+nothing to say, which is not a layout problem.
+
+The page is built on what is confirmed instead: `brand.claims.fixedPrice` as the offer, the three
+engagement modes with their real `deliverables`, the four `brand.claims` commitments through the
+shared `Promises` component (its third call site), the 32-service catalogue, and four FAQs lifted
+from service content. `priceFaqs` resolves each one by exact question match and **throws at build
+time** if a service stops carrying it, so the page cannot quietly diverge from its sources.
+
+**The masthead's h1, lead and `seo.description` are gated on `brand.claims.fixedPrice`**, through one
+`MASTHEAD` constant, with a fallback that asserts nothing about how pricing works. That claim is
+wrapped in `confirm(...)` and is therefore NOT yet confirmed by the owner, despite what an earlier
+brief and an earlier version of this page's comment both said. Every other page on the site risks one
+sentence on that boolean; this page stakes its headline, its lead and its meta description on it at
+once, which is why it is the one place gated rather than asserted.
+
+**Price slots.** `from()` mirrors `Plans.tsx`'s helper exactly (`p && ...`, a null renders nothing),
+and the catalogue row is a declared `grid-cols-[minmax(0,1fr)_auto]`. Publishing a price fills the
+slot without relaying the page: measured in a scratch build at 2px of total movement, the row name
+not moving and no row changing height. The `auto` track takes its width from the title, so the
+longest catalogue title narrows from 504 to 403px without rewrapping. Note the two explicit tracks
+always generate the `gap-x-4` gutter, so about 16px sits after every title even while every price is
+null; it is invisible, but it is not zero.
+
+### Touch targets, and what a clean axe run does not cover
+
+Nine heading links shipped at 22 to 28px and were corrected to exactly 44px: three engagement-mode
+names and six hub labels, measured at 1440 and 375 as 44px each (`One-time fix` 135x44,
+`Hacked site cleanup` 222x44, `Care plan` 105x44, `Fixes` 46x44, `Security` 74x44, `Care plans`
+93x44, `Speed and migration` 182x44, `Development` 116x44, `WooCommerce` 135x44). The fix is
+`inline-flex min-h-11 items-center`, which this ledger already recorded once this plan and which
+`/guides/` already carried on the identical element.
+
+**axe's default ruleset has no target-size rule.** Every "0 violations" figure in this plan is
+therefore silent on contract rule 5, and these nine passed 32 clean axe samples while failing it.
+This is the second thing a clean axe run has been found not to cover, after the parked-contrast case.
+Target sizes must be measured, not inferred from a green sweep.
+
+### A third documented sub-44 exception: inline links inside a sentence
+
+Sweeping every interactive element in `main` turned up one more, which neither the implementer nor
+the reviewer had flagged: `CheckLink` with no `className` renders a bare inline anchor **18px** tall.
+Three call sites do this inside flowing sentences: `src/app/pricing/page.tsx:371`,
+`src/app/guides/page.tsx:150` and `src/components/templates/GuideTemplate.tsx:168`, the last of which
+puts it on all 37 guide pages. 39 routes in total.
+
+**Ruling: not a defect, and deliberately not changed.** WCAG 2.5.8 Target Size (Minimum) explicitly
+exempts a target that is inline in a sentence of text, and a 44px line box inside a running paragraph
+would break the paragraph. This is the same class of trade already written down twice in this file,
+for the 32px breadcrumb and the 36px footer link. The difference was that those two carried written
+reasons and this one did not, so it is recorded here now rather than left for the next pass to
+rediscover and either "fix" or quietly accept.
+
+### Deliberately not done
+
+No invented price, range, turnaround, discount or saving. No `Offer` or `OfferCatalog` in the
+JSON-LD, because an Offer with no price is not a truthful one: the page emits `CollectionPage` with
+an `ItemList` of the 32 services and `faqLd` over the four real FAQs, both referencing the existing
+Organization by `@id`. No `AggregateRating` and no `Review`, because there is no review data. The
+three engagement-mode labels are duplicated with `Plans.tsx` and no content file holds them, because
+they name a mode rather than a service; moving them into `src/content/` is real debt and was out of
+scope here.
