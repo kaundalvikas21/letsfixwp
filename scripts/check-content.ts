@@ -7,6 +7,7 @@ import { brand } from "../src/config/brand";
 import { CTA } from "../src/config/cta";
 import { matchIndex } from "../src/content";
 import { matchProblem } from "../src/lib/match-problem";
+import { pngSize } from "../src/lib/png-size";
 
 const walk = (dir: string): string[] =>
   readdirSync(dir).flatMap((f) => {
@@ -53,5 +54,9 @@ assert.ok(matchProblem("ERR_TOO_MANY_REDIRECTS", matchIndex).some((r) => r.guide
 assert.ok(matchProblem("502 bad gateway", matchIndex).some((r) => r.serviceSlug === "server-errors"));
 for (const r of matchProblem("site hacked malware", matchIndex)) assert.ok(r.serviceSlug, "every result resolves to a service");
 assert.deepEqual(matchProblem("", matchIndex), []);
+
+// RealScreen sizes its box from the PNG header: a real capture must report its own shape, a bad file the fallback.
+assert.deepEqual(pngSize(join("public", "screens", "white-screen-of-death.png")), { width: 2736, height: 1536 });
+assert.deepEqual(pngSize("package.json"), { width: 1600, height: 1000 });
 
 console.log(`ok: ${matchIndex.length} match candidates, ${files.length} files scanned, legacy ${brand.legacy.enabled ? "on" : "off"}`);

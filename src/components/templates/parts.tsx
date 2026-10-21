@@ -7,6 +7,7 @@ import Link from "next/link";
 import { breadcrumbLd, JsonLd, type Crumb } from "@/components/JsonLd";
 import { nodeByPath } from "@/config/routes";
 import { getCompare, getGuide } from "@/content";
+import { pngSize } from "@/lib/png-size";
 import { cn } from "@/lib/utils";
 
 // Template primitives for the active variation. Visual language from design-system/letsfixwp-v4/MASTER.md:
@@ -237,10 +238,12 @@ export function LinkList({ paths }: { paths: string[] }) {
  */
 export function RealScreen({ slot, alt, sizes, preload = false }: { slot: string; alt: string; sizes: string; preload?: boolean }) {
   const src = `/screens/${slot}.png`;
-  if (!existsSync(join(process.cwd(), "public", src))) return null;
+  const file = join(process.cwd(), "public", src);
+  if (!existsSync(file)) return null;
+  const { width, height } = pngSize(file); // the real shape, so the reserved box is the final box
   return (
     <figure className="overflow-hidden rounded-[14px] bg-surface-2 p-2">
-      <Image src={src} alt={alt} width={1600} height={1000} preload={preload} sizes={sizes} className="rounded-[14px]" />
+      <Image src={src} alt={alt} width={width} height={height} preload={preload} sizes={sizes} className="rounded-[14px]" />
     </figure>
   );
 }
