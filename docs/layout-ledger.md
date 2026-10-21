@@ -968,7 +968,7 @@ within each page:
 | --- | --- | --- | --- |
 | Service, Hub, Compare | max-w-6xl | x=168 | A rail, a directory of full-width rows, a 3-up grid over a table. The page spine. |
 | City, City hub, guides index | max-w-4xl | x=296 | Prose plus a 3-up strip. |
-| Guide, compare index | max-w-3xl | x=360 | Reading documents. Body copy is capped at 68ch regardless, so a 6xl guide would hold a 694px text column in a 1104px container under a 1104px h1. Strictly worse. |
+| ~~Guide, compare index~~ Case studies | max-w-3xl | x=360 | Reading documents. Body copy is capped at 68ch regardless, so a 6xl guide would hold a 694px text column in a 1104px container under a 1104px h1. Strictly worse. **Both named pages have since left this row**: the guide in Task 1, the compare index in Task 6, each for a reason recorded in its own entry. `/case-studies/` is the only route still on this width. |
 
 The x=168 spine rule is an **intra-page** rule, and both bugs it has caught were intra-page: a section whose
 heading sat at x=296 while every heading above and below it sat at x=168. On a guide every heading sits at
@@ -1171,7 +1171,9 @@ they were out of scope here, and
 `GuideTemplate` is the search-traffic surface: 37 routes, one per error. This pass changed what the page is
 made of, not what it says. **It supersedes two rows of the tables above**: the template table's "Guide /
 single-column troubleshooting document" and the container table's "Guide, compare index | max-w-3xl". The
-compare index still runs at `max-w-3xl`; the guide no longer does.
+guide no longer runs at `max-w-3xl`. (At the time of writing the compare index still did. It no
+longer does either: Task 6 moved it to the `page` spine, and the container-table row is corrected
+above.)
 
 | Layout family | Eyebrows | Marquee | CTA intents | Client islands |
 | --- | --- | --- | --- | --- |
@@ -1592,7 +1594,29 @@ page is on the bare `page` spine, x=168, with the lead capped at 62ch.
 
 | Layout family | Eyebrows | Marquee | CTA intents | Client islands |
 | --- | --- | --- | --- | --- |
-| Lead header, split ledger of pairings, closing band | 0 | 0 | BOOK, CHAT | none |
+| Masthead with a measured `dl`, split ledger of pairings, closing band | 0 | 0 | BOOK, CHAT | none |
+
+### The masthead is 7/5, and the second column is counted rather than decorated
+
+The page carries no photograph (see below), so with an h1 and one sentence the top of it was two
+lines of type in a 1104px field. The right five columns now hold a two-row `dl`, hairline-ruled,
+bottomed on the lead's last line with `lg:self-end`: **Criteria compared 27** and **Scenarios
+answered 14**, both `reduce`d out of `compares` at build rather than written, so they cannot drift
+from what the ledger below renders. Two rows and vertical, so it is not a 3-up stat strip. It
+answers what an index is actually asked: whether there is anything behind three links.
+
+### The row link is the heading, stretched
+
+The anchor is the `h3` and nothing else, pulled over the whole row by its own
+`after:absolute after:inset-0`, with `relative group` on the `li`. The obvious shape, one anchor
+wrapping the row, gives that anchor an accessible name computed from its entire subtree: about forty
+words, measured off `Accessibility.getFullAXTree`. Naming it with `aria-labelledby` off the heading
+fixes the length and **immediately breaks WCAG 2.5.3**, because the name then no longer contains the
+row's own visible text: axe `label-content-name-mismatch`, serious, 3 nodes, at all four widths,
+measured. Only an anchor whose content *is* its visible label satisfies both. Hit area is still the
+whole row, there is still one tab stop per row, and `group-hover` on the `li` keeps the ember rule
+and the caret answering a hover anywhere in it. **Worth knowing before building another row like
+this one:** `LinkRows` has the same shape and the same exposure.
 
 ### What it was
 
@@ -1673,9 +1697,31 @@ lands roughly 350px down at 1440, which is exactly where a reader parks it.
 ### Measured, production build, axe-core 4.14
 
 0 violations of any impact at **375, 768, 1024 and 1440**, each audited after scrolling to 45% of
-the document so any scrubbed `reveal` is parked mid-range, and 0 at 375 and 1440 under
-`prefers-reduced-motion: reduce`. One h1 at every width, no horizontal scroll at any width.
-Document height 2,288px at 1440, 2,368px at 1024, 2,859px at 768, 4,747px at 375.
+the document, and 0 at 375 and 1440 under `prefers-reduced-motion: reduce`. One h1 at every width,
+no horizontal scroll at any width. Document height 2,318px at 1440, 2,404px at 1024, 3,048px at 768,
+4,936px at 375.
+
+### Two things the 45% park does not catch, and both matter site-wide
+
+**A `fullPage` screenshot does not scroll, so every below-fold `reveal` is captured at opacity 0.**
+Playwright captures beyond the viewport through CDP while `scrollY` stays at 0, and a `view()`
+timeline is driven by scroll position, so the section is in the captured area and genuinely
+transparent in it. The closing band is absent from any such capture of this site. **Scroll the
+document to the end before capturing**: everything past its range holds its final state under
+`animation-fill-mode: both` and resolves to opacity 1 in one capture. Residual artifact of doing so:
+the fixed nav composites at its scrolled position, partway down the stitched image.
+
+**Parking a band inside its own entry range fails `color-contrast` on the ember button.** Not at
+45% of the document, which is nowhere near it. Swept across every scroll position where the band
+sits strictly between 0.02 and 0.999 opacity (axe skips a band at exactly 0 as not visible), the
+same serious failure appears on `/compare/` @768 at 0.251 and @1440 at 0.495, on **`/about/`** at
+0.174 and 0.625, on **`/guides/`** at 0.183 and 0.550, and on the untouched **`/compare/wordpress-vs-wix/`**
+at 0.191 and 0.132. Identical nodes every time. It is the `reveal` primitive, not this page, and it
+is left for the pass that owns the primitive. Two corrections to what the earlier entries assumed:
+the opacity ramp finishing at 33% of the range narrows this window but does not close it, because a
+reader can stop inside the first third; and the failing node is `.btn-primary`, where the ember fill
+and its near-black label composite together, so a fix that only protects `--muted` copy leaves the
+primary CTA failing.
 
 ### Deliberately not done
 
