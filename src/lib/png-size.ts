@@ -13,7 +13,7 @@ export function pngSize(path: string): { width: number; height: number } {
   try {
     fd = openSync(path, "r");
     const head = Buffer.alloc(24);
-    if (readSync(fd, head, 0, 24, 0) < 24 || !head.subarray(0, 8).equals(SIGNATURE)) return FALLBACK;
+    if (readSync(fd, head, 0, 24, 0) < 24 || !head.subarray(0, 8).equals(SIGNATURE) || head.toString("ascii", 12, 16) !== "IHDR") return FALLBACK;
     const width = head.readUInt32BE(16);
     const height = head.readUInt32BE(20);
     return width > 0 && height > 0 ? { width, height } : FALLBACK;
