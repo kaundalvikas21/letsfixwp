@@ -1487,7 +1487,11 @@ was not a taste call: three equal cards in a row is banned outright by contract 
    (hub 6/5, guide 8/4, knowledge base 7/5, guarantee 7/5): nothing sits beside this picture, because
    it is not an illustration of a product or an error, it is the only evidence on the page of who
    does the work. 16/9 stacked so a phone gets a band and not a postcard, 2/1 from md.
-2. **Ruled hub directory**, `LinkRows split`, unchanged from what was there.
+2. **Ruled hub directory**, `LinkRows`. Same six rows and the same data as before, but **`split` is
+   new on this call site**: the old page rendered the default stacked row, six title-over-paragraph
+   blocks that read as one block of text in a narrow column. `split` puts the titles in one
+   scannable column on the page spine with the summaries answering across the gutter from md up,
+   which is the shape that variant was built for and the one the hub template already uses.
 3. **Left-rail progression** for `remoteDelivery`, which replaces the three-card grid.
 4. **Closing band**, the hub template's. A cross-page repeat and a deliberate one: rule 3 forbids a
    family repeating *within* one page.

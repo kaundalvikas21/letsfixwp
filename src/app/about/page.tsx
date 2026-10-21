@@ -93,11 +93,19 @@ export default function About() {
         <h2 id="what-we-do" className={h2}>
           What we work on
         </h2>
-        {/* Counted from src/content at build time, which is the only kind of number this page is
-            allowed to print: six hubs, the services under them and the guides written against them. */}
+        {/* All three counted from src/content at build time, which is the only kind of number this
+            page is allowed to print: the hubs rendered directly under this sentence, the services
+            under them and the guides written against those. The sentence is phrased so no count
+            opens it, because `hubNodes.length` sets a numeral where the word "Six" used to be: the
+            six was the one figure here that was typed rather than counted, and a sentence that
+            argues these numbers cannot drift may not hardcode one of them. */}
         <p className="mt-6 max-w-[60ch] text-muted">
-          Six areas of work. Under them sit {services.length} services and {guides.length} written guides to specific WordPress errors.
+          The {hubNodes.length} areas below hold {services.length} services and {guides.length} written guides to specific WordPress errors.
         </p>
+        {/* `split` is new on this call site, and it is the thing that turns this from a stacked
+            block of six title-over-paragraph rows into a ruled two-column list: titles in one
+            scannable column on the page spine, summaries answering across the gutter from md up.
+            The variant exists for exactly this shape and the hub template already uses it. */}
         <div className="mt-6">
           <LinkRows split items={hubNodes.map((h) => ({ href: h.path, title: h.title, summary: hubLead[hubIdOf(h.path)] }))} />
         </div>
@@ -112,8 +120,14 @@ export default function About() {
         <dl className="max-w-[70ch] space-y-8 border-l border-line pl-6 md:space-y-10 md:pl-8">
           {remoteDelivery.map((r) => (
             <div key={r.label} className="relative">
-              <span aria-hidden className="absolute -left-6 top-[0.7rem] h-px w-4 bg-accent md:-left-8 md:w-6" />
-              <dt className="font-display text-lg font-bold [font-variation-settings:'opsz'_18]">{r.label}</dt>
+              {/* Inside the dt, not beside it: a div inside a dl may hold only dt and dd, so a span
+                  as a direct child of this wrapper is invalid even though nothing renders it wrong.
+                  Its containing block is unchanged either way, because the nearest positioned
+                  ancestor is still the wrapper. */}
+              <dt className="font-display text-lg font-bold [font-variation-settings:'opsz'_18]">
+                <span aria-hidden className="absolute -left-6 top-[0.7rem] h-px w-4 bg-accent md:-left-8 md:w-6" />
+                {r.label}
+              </dt>
               <dd className="mt-1.5 max-w-[60ch] text-muted">{r.text}</dd>
             </div>
           ))}
