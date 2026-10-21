@@ -10,10 +10,40 @@ import { getService, services } from "@/content";
 import { formatPrice, prices, type Price } from "@/content/pricing";
 import { cn } from "@/lib/utils";
 
-const seo = {
-  title: "Pricing",
-  description: "Every WordPress fix is quoted at a fixed price, agreed before work starts. The three ways to work with us, and every service we quote on.",
-};
+/**
+ * The masthead, gated on the one claim it rests on.
+ *
+ * `brand.claims.fixedPrice` is still wrapped in `confirm(...)` in src/config/brand.ts, which means
+ * the owner has **not** confirmed it. It reads `true` in dev and in a local build, and a production
+ * deploy fails while it is unconfirmed, so nothing untrue can ship today. That is not the risk. The
+ * risk is the owner's next action, which is to go through those values and set each one: confirming
+ * this one as `false` would leave the h1, the lead and the meta description all asserting a pricing
+ * model the business does not run, with no build failure to catch it. `Promises` already gates it
+ * per claim and `Practices.tsx` gates this exact boolean in the same way, which is the house
+ * answer: a false claim removes its words rather than softening them.
+ *
+ * Every other page on this site risks a sentence. This one risks its whole premise, because the
+ * claim IS the page's answer to "what will this cost me", so the three strings are gated together
+ * from one place and cannot drift apart.
+ *
+ * **The fallback asserts nothing about how pricing works.** It is the page's own name, which is
+ * already its `<title>` and its last breadcrumb, over a sentence that describes only what the page
+ * contains. It does not author a replacement claim, and it does not apologise for the absent prices
+ * either, which was the old page's mistake.
+ */
+const MASTHEAD = brand.claims.fixedPrice
+  ? {
+      h1: "Fixed price, agreed before work starts",
+      lead: "Each fix is quoted at a fixed price before any work starts, once an engineer has seen the problem.",
+      description: "Every WordPress fix is quoted at a fixed price, agreed before work starts. The three ways to work with us, and every service we quote on.",
+    }
+  : {
+      h1: "Pricing",
+      lead: "Three ways to work with us, and every service we work on, with what each one covers and what you get.",
+      description: "The three ways to work with us and every WordPress service we quote on, each with its own scope, deliverables and questions.",
+    };
+
+const seo = { title: "Pricing", description: MASTHEAD.description };
 
 export const metadata: Metadata = {
   title: seo.title,
@@ -162,14 +192,16 @@ export default function Pricing() {
         <Photo id="workspace" decorative preload sizes={bannerSizes} className="absolute inset-0 -z-10" />
         <span aria-hidden className="absolute inset-0 -z-10 bg-photo-scrim" />
 
-        {/* The pricing model is the headline. `brand.claims.fixedPrice` is confirmed and its own
-            approved sentence is "fixes are fixed price, agreed before work starts"; this is that
-            clause, not a new claim. Never faded: it is the LCP candidate. The sentence under it is
-            the one this page already carried, less the half that apologised for the missing prices.
-            70ms and 140ms behind the h1, the same beat as the hub, the knowledge base and /about/. */}
-        <h1 className={h1}>Fixed price, agreed before work starts</h1>
+        {/* The pricing model is the headline while the claim behind it holds. `brand.claims.fixedPrice`
+            is an **unconfirmed** claim whose own approved wording is "fixes are fixed price, agreed
+            before work starts", and this is that clause rather than a new claim; `MASTHEAD` above
+            carries both arms and the reason for the gate. Never faded: the h1 is the LCP candidate.
+            The sentence under it is the one this page already carried, less the half that apologised
+            for the missing prices. 70ms and 140ms behind the h1, the same beat as the hub, the
+            knowledge base and /about/. */}
+        <h1 className={h1}>{MASTHEAD.h1}</h1>
         <p className="rise-in mt-5 max-w-[58ch] text-lg text-on-photo" style={{ animationDelay: "70ms" }}>
-          Each fix is quoted at a fixed price before any work starts, once an engineer has seen the problem.
+          {MASTHEAD.lead}
         </p>
         <div className="rise-in mt-7 flex flex-wrap gap-3" style={{ animationDelay: "140ms" }}>
           <BookLink location="pricing:hero" className="btn-primary" />
@@ -199,8 +231,17 @@ export default function Pricing() {
                   <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
                     <h3 className="font-display text-[1.5rem] leading-[1.15] font-extrabold tracking-[-0.03em] [font-variation-settings:'opsz'_24]">
                       {/* The label is the link text, so the accessible name is the visible name and
-                          one click gets from the choice to the scope behind it. */}
-                      <Link href={s.path} className="transition-colors duration-200 hover:text-accent-text">
+                          one click gets from the choice to the scope behind it.
+
+                          `inline-flex min-h-11 items-center` because a bare inline anchor around
+                          24px display type is a 28px target, under contract rule 5's 44px floor.
+                          axe's default ruleset carries no target-size rule, so a clean sweep says
+                          nothing about this; it is the same repair `docs/layout-ledger.md` records
+                          for the knowledge base's result rows and the same three classes
+                          `src/app/guides/page.tsx` carries on the identical heading link. `inline-flex` keeps the
+                          anchor inline inside the h3, so the heading's own baseline and the price
+                          sitting on it do not move. */}
+                      <Link href={s.path} className="inline-flex min-h-11 items-center transition-colors duration-200 hover:text-accent-text">
                         {w.name}
                       </Link>
                     </h3>
@@ -265,12 +306,22 @@ export default function Pricing() {
         <div className="mt-8 md:columns-2 md:gap-x-10 lg:gap-x-16">
           {hubNodes.map((hub) => (
             <div key={hub.path} className="mb-10 break-inside-avoid last:mb-0">
+              {/* Same 44px repair as the three way names above, and the same three classes
+                  `src/app/guides/page.tsx` already carries on this grouped-directory heading link:
+                  the six
+                  hub labels were 22px inline targets sitting directly above 51px service rows,
+                  which is the one inconsistency a thumb would actually feel. No compensating
+                  margin, exactly as the knowledge base index does it: the 44px box centres the
+                  label and so grows the
+                  heading by roughly 8px above and 8px below, which is separation between two
+                  adjacent targets rather than a gap to claw back. The list below drops from `mt-3`
+                  to `mt-2` for the same reason. */}
               <h3 className="font-display text-lg font-bold [font-variation-settings:'opsz'_18]">
-                <Link href={hub.path} className="transition-colors duration-200 hover:text-accent-text">
+                <Link href={hub.path} className="inline-flex min-h-11 items-center transition-colors duration-200 hover:text-accent-text">
                   {HUB_LABELS[hub.path]}
                 </Link>
               </h3>
-              <ul className="mt-3 divide-y divide-line border-t border-line">
+              <ul className="mt-2 divide-y divide-line border-t border-line">
                 {services
                   .filter((s) => s.path.startsWith(hub.path))
                   .map((s) => (
