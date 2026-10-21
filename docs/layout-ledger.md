@@ -2065,3 +2065,49 @@ than a sample of it.
   ruling stands on the accessibility argument; the figure was the module's, not the component's.**)
 - **`brand.legacy.facts`' other three readers** (`JsonLd.tsx`, `SiteFooter.tsx`, `Plans.tsx`) are
   untouched. They are a separate removal pass the owner has not authorised.
+
+### /about/ masthead, revised 2026-10-21: the type moved onto the photograph
+
+The first version of this header was two boxes stacked: the h1, the lead and the CTA pair in flow,
+then a separate `aspect-[16/9] md:aspect-[2/1]` frame under them holding the photograph. The owner
+asked for the words to sit on the picture instead, which is what a masthead actually is.
+
+**Layout family:** unchanged in name, masthead over a full-width photographic band, but it is now
+one box rather than two. The header is the page's only `relative isolate` element: photograph and
+scrim both at `-z-10`, type in normal flow above them. That is `FinalCta`'s shape exactly, and
+`FinalCta`, `RestoredOverlay` and `ProblemTiles` are the three places this site already puts type
+over photography. Nothing new was invented for it.
+
+**The scrim is the existing token, not a gradient.** `bg-photo-scrim` is `rgb(12 12 14 / 0.66)`,
+flat, and the variation bans gradients everywhere except the hero legibility scrim and the guarantee
+mask. The lead changed from `--muted` to `--on-photo` in the same move and that was not cosmetic:
+muted over this scrim measures 2.55:1 and would have failed outright the moment it moved onto the
+picture.
+
+**Measured, in the browser, on the production build**, compositing the 0.66 scrim over the actual
+served image and taking the brightest pixel rather than an average:
+
+| Width | Band box | Contrast under the type | Worst pixel anywhere in the band |
+| --- | --- | --- | --- |
+| 1440 | 1104x384 | 6.58:1 | 6.58:1 |
+| narrow | 453x260 | 6.23:1 | - |
+
+The 1440 row is the one that matters: the worst pixel in the whole band is the same 6.58:1 as the
+worst under the type, so the guarantee does not depend on where the words happen to fall. axe 0
+violations of any impact at 375, 768, 1024 and 1440, each run twice, once under reduced motion.
+
+**Height comes from content plus padding, never from an aspect ratio.** This is the one thing the
+two-box version could not have survived. At 375 a 16/9 band is 211px, and the h1, the sentence and
+the two buttons need more than 300px, so an aspect-driven box would have had type overflowing the
+frame it is supposed to sit inside. `md:min-h-[24rem]` is the opposite guard, holding enough frame
+open at desktop that the photograph still reads as a photograph once the type stops filling it.
+`justify-end` sits the words on the lower third, so the frame's upper two thirds stay picture.
+
+**Motion unchanged and still answers rule 10 in one sentence:** the h1 is never faded because it is
+the LCP candidate, and the lead and the CTA pair arrive 70ms and 140ms behind it, which is the same
+beat the hub, the knowledge base and the guarantee headers run. Reduced motion renders the final
+state. Nothing animates on the photograph itself.
+
+**Deliberately not done:** no `aspect-ratio` on the band, for the reason above. No gradient scrim, no
+second hue, no blur layer. The `bannerSizes` string is unchanged, because the box is still the full
+1104px spine and the arithmetic that produced it did not move.

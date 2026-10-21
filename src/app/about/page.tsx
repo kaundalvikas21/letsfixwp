@@ -56,28 +56,44 @@ export default function About() {
       <JsonLd data={aboutLd({ name: `About ${brand.name}`, description, path: routes.about })} />
       <Breadcrumbs items={nodeCrumbs(routes.about)} />
 
-      <header className="mt-6">
-        {/* Never faded: it is the first thing painted and an LCP candidate. The sentence under it
-            arrives one beat later and the buttons that act on it one beat after that, which is the
-            same 70/140ms the hub and the guarantee headers run. */}
-        <h1 className={h1}>About {brand.name}</h1>
-        <p className="rise-in mt-5 max-w-[60ch] text-lg text-muted" style={{ animationDelay: "70ms" }}>
-          We fix WordPress sites that are down, hacked or slow, look after them afterwards, and build new ones.
-        </p>
-        <div className="rise-in mt-7 flex flex-wrap gap-3" style={{ animationDelay: "140ms" }}>
-          <BookLink location="about:hero" className="btn-primary" />
-          <ChatButton location="about:hero" className="btn-secondary" />
-        </div>
+      {/* The words sit ON the photograph rather than above it, which is what makes this a masthead
+          and not a lead block with a picture parked under it. The band is the one `relative isolate`
+          box on the page: photograph and scrim both at -z-10, type in normal flow above them, which
+          is `FinalCta`'s shape exactly and the only shape on this site measured for type over
+          photography.
+
+          Height comes from the content plus its padding, never from an aspect ratio. An aspect
+          ratio was what the two-box version used, and it cannot survive type being moved inside it:
+          at 375 a 16/9 band is 211px and the h1, the sentence and the two buttons need more than
+          300px, so the words would have overflowed the frame they are supposed to sit in. The
+          `md:min-h-[24rem]` is the opposite guard, holding enough frame open at desktop that the
+          photograph still reads as a photograph once the type stops filling it. */}
+      <header className="relative isolate mt-6 flex flex-col justify-end overflow-hidden rounded-[14px] p-6 shadow-card sm:p-10 md:min-h-[24rem] md:p-14 lg:p-16">
         {/* Hands at a keyboard under one warm light, which is the Imagery section's own art
             direction almost word for word, and the catalogue's one frame of the work itself rather
             than of a desk. The fix hub's `emergency` frame was tried first: cold, and at this crop
             mostly a dark mass, which on a dark page reads as a hole. Real alt text, not
             `decorative`: on a page whose job is to say who we are, the picture is content and no
             sentence beside it describes it. No animation on it at all, because it is the largest
-            paint on the page. 16/9 stacked so a phone gets a band and not a postcard; 2/1 from md,
-            where 1104px of 2/1 is 552px tall and the hands are still in frame. */}
-        <div className="mt-10 aspect-[16/9] overflow-hidden rounded-[14px] shadow-card md:mt-12 md:aspect-[2/1]">
-          <Photo id={servicePhotos["hire-developer"]} preload sizes={bannerSizes} />
+            paint on the page. */}
+        <Photo id={servicePhotos["hire-developer"]} preload sizes={bannerSizes} className="absolute inset-0 -z-10" />
+        {/* The flat scrim, never a gradient, and the token the site already measured for this:
+            `--text` over `--photo-scrim` is 5.6:1 against the brightest pixel a photograph can
+            hold. It is why the sentence below is `--on-photo` and no longer `--muted`: muted over
+            this same scrim is 2.55:1 and would have failed outright the moment the type moved onto
+            the picture. */}
+        <span aria-hidden className="absolute inset-0 -z-10 bg-photo-scrim" />
+
+        {/* Never faded: it is the first thing painted and an LCP candidate. The sentence under it
+            arrives one beat later and the buttons that act on it one beat after that, which is the
+            same 70/140ms the hub and the guarantee headers run. */}
+        <h1 className={h1}>About {brand.name}</h1>
+        <p className="rise-in mt-5 max-w-[60ch] text-lg text-on-photo" style={{ animationDelay: "70ms" }}>
+          We fix WordPress sites that are down, hacked or slow, look after them afterwards, and build new ones.
+        </p>
+        <div className="rise-in mt-7 flex flex-wrap gap-3" style={{ animationDelay: "140ms" }}>
+          <BookLink location="about:hero" className="btn-primary" />
+          <ChatButton location="about:hero" className="btn-secondary" />
         </div>
       </header>
 
