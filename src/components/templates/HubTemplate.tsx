@@ -13,8 +13,8 @@ import { Breadcrumbs, h1, h2, page, Section, UrgencyBadge } from "./parts";
 
 const urgencyRank = { critical: 0, high: 1, standard: 2 } as const;
 
-// bentoSpans only returns these three; written out so Tailwind's scanner sees every class.
-const SPAN = { 2: "md:col-span-2", 4: "md:col-span-4", 6: "md:col-span-6" } as const;
+// bentoSpans returns 2, 4 or 6, and a uniform hub uses 3; written out so Tailwind's scanner sees every class.
+const SPAN = { 3: "md:col-span-3", 2: "md:col-span-2", 4: "md:col-span-4", 6: "md:col-span-6" } as const;
 
 const textLink = "inline-flex min-h-11 items-center font-semibold text-accent-text underline underline-offset-4 hover:no-underline";
 
@@ -40,7 +40,11 @@ export function HubTemplate({ node }: { node: FlatNode }) {
     const s = getService(serviceIdOf(n.path))!;
     return { node: n, s, c: shown(s) };
   });
-  const spans = bentoSpans(services.map(({ c }) => weight(c)));
+  // Near-equal cards give bentoSpans nothing to differentiate, so it would only invent wide cells the text cannot
+  // fill. Below this max/min ratio the grid is a plain 2-up (two equal cards a row is allowed, rule 6 bans three).
+  const weights = services.map(({ c }) => weight(c));
+  const uniform = Math.max(...weights) <= Math.min(...weights) * 1.4;
+  const spans = uniform ? weights.map(() => 3) : bentoSpans(weights);
   const triage = services.some(({ s }) => s.symptoms.length > 0);
   const topGuides = serviceChildren
     .flatMap((n) => guidesFor(serviceIdOf(n.path)))
@@ -85,7 +89,7 @@ export function HubTemplate({ node }: { node: FlatNode }) {
               {c.symptoms.length > 0 ? (
                 <>
                   <p className="mt-3 text-sm font-semibold">You might see</p>
-                  <ul className="mt-1.5 space-y-1.5 text-sm text-muted">
+                  <ul className={cn("mt-1.5 space-y-1.5 text-sm text-muted", spans[i] === 6 && "md:grid md:grid-cols-3 md:gap-x-6 md:space-y-0")}>
                     {c.symptoms.map((x) => (
                       <li key={x}>{x}</li>
                     ))}
@@ -93,13 +97,13 @@ export function HubTemplate({ node }: { node: FlatNode }) {
                 </>
               ) : (
                 <>
-                  <p className="mt-3 max-w-[56ch] text-sm">{c.body}</p>
-                  <p className="mt-3 max-w-[56ch] text-sm text-muted">
+                  <p className="mt-3 max-w-[68ch] text-sm">{c.body}</p>
+                  <p className="mt-3 max-w-[68ch] text-sm text-muted">
                     <span className="font-semibold text-text">Who it is for </span>
                     {c.who}
                   </p>
                   <p className="mt-3 text-sm font-semibold">You get</p>
-                  <ul className="mt-1.5 space-y-1.5 text-sm text-muted">
+                  <ul className={cn("mt-1.5 space-y-1.5 text-sm text-muted", spans[i] === 6 && "md:grid md:grid-cols-3 md:gap-x-6 md:space-y-0")}>
                     {c.deliverables.map((x) => (
                       <li key={x}>{x}</li>
                     ))}
