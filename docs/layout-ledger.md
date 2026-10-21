@@ -1686,13 +1686,16 @@ this business sells.
 | Element | Primitive | Communicates |
 | --- | --- | --- |
 | Lead sentence | `rise-in`, inline delay 70ms | The headline is already there; what it means arrives under it |
+| Masthead `dl` | `rise-in`, inline delay 140ms | What is behind the links arrives after what the page is, the same 70ms beat again |
 | Closing band | `reveal` on `animation-timeline: view()` | The page's last beat arrives as the reader reaches it |
 | Entry hover | `LinkRows`' ember rule, scale-x on the row's own hairline, `hover:hover` only | This row is a destination |
 
 Nothing on the h1 (LCP) and **nothing on the ledger section**. The same measured reason as
 `/about/`'s first section: a view-timeline reveal is scrubbed, a section parked in the first third
 of its range sits at part opacity, and `--muted` at part opacity is under 4.5:1. The ledger heading
-lands roughly 350px down at 1440, which is exactly where a reader parks it.
+lands 429px down at 1440, measured on the shipped build, which is well inside the fold and exactly
+where a reader parks it. (It was ~350px before the masthead gained its second column in round 2;
+the figure is re-measured rather than carried over.)
 
 ### Measured, production build, axe-core 4.14
 
@@ -1726,11 +1729,13 @@ primary CTA failing.
 ### Deliberately not done
 
 - **No scenario strings on the index.** `verdictByScenario[].scenario` is the most persuasive copy
-  in the files, and showing it here would put 13 sentences on the parent that the three children
+  in the files, and showing it here would put 14 sentences on the parent that the three children
   already carry, with the verdict beside each of them. The count of them is enough to set the
   expectation; the sentences are the reason to click.
 - **No new export in `parts.tsx`.** The entry is used three times on one page and nowhere else, so
-  it stays local. Five templates import that file and Task 8 adds to it.
+  it stays local. 18 files import that module, 6 of them the templates under
+  `src/components/templates/`, and Task 8 adds to it. (The brief said "five templates"; counted on
+  disk it is six, so the standing ruling is if anything stronger than it was stated.)
 - **No change to `CompareTemplate.tsx` or `src/content/compares/`.** Out of scope, and the index now
   depends on the shape of those files, so the next change to them should be read against this page.
 - **The lazier version was available and refused.** `LinkRows` with `split` and the criteria joined
