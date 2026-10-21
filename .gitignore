@@ -46,3 +46,6 @@ next-env.d.ts
 
 # python bytecode from skill scripts
 __pycache__/
+
+# prebuilt per-platform binaries from skill installs
+.agents/skills/*/scripts/bin/
