@@ -43,6 +43,18 @@ const useWide = () =>
  *
  * Reduced motion draws nothing: the outline is already retracted and the fill already uncovered on
  * the first frame, which is the finished state rather than a hidden one.
+ *
+ * The finished state is also the DEFAULT, and that is what the server sends. This component used to
+ * carry `visibility: hidden` until `getBBox` had measured the text, so the heading did not exist for
+ * anyone whose JS had not run, had failed, or was switched off: the only thing left of it was the
+ * `sr-only` span in the h2 above. The fallback `viewBox` is a guess at the real box and the text is
+ * `overflow-visible`, so an unmeasured heading paints slightly off its final scale rather than not
+ * at all, and the measured `viewBox` corrects it on the next frame. The matching half of this is the
+ * paint fallback on `guarantee-fill` in globals.css, because at md the fill points at a `<pattern>`
+ * that does not exist until the same measurement happens.
+ *
+ * Nothing here is throttled to once per visitor: the draw replays on every load by the owner's
+ * decision, and the point of the change above is that the words are on screen either way.
  */
 export function GuaranteeHeading({ text }: { text: string }) {
   const root = useRef<SVGSVGElement>(null);
@@ -109,7 +121,6 @@ export function GuaranteeHeading({ text }: { text: string }) {
       viewBox={vb}
       preserveAspectRatio="xMidYMid meet"
       className="block w-full overflow-visible"
-      style={box ? undefined : { visibility: "hidden" }}
     >
       {box && (
         <defs>

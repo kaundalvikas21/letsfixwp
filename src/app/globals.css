@@ -168,7 +168,13 @@
 @utility guarantee-fill {
   fill: var(--accent);
   @media (width >= 48rem) {
-    fill: url(#guarantee-photo);
+    /* The ember after the url() is the SVG paint fallback, and it is load-bearing rather than
+       defensive: `#guarantee-photo` is only in the DOM once the heading has been measured on the
+       client, so on the server, with JS off, or before fonts resolve, this reference points at
+       nothing. A paint reference that resolves to nothing paints nothing, which is how three words
+       of marketing copy managed to render as a blank strip on every desktop visit without JS. With
+       the fallback the words are solid ember until the photograph exists to fill them. */
+    fill: url(#guarantee-photo) var(--accent);
   }
 }
 

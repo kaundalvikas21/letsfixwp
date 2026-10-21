@@ -2188,3 +2188,45 @@ Organization by `@id`. No `AggregateRating` and no `Review`, because there is no
 three engagement-mode labels are duplicated with `Plans.tsx` and no content file holds them, because
 they name a mode rather than a service; moving them into `src/content/` is real debt and was out of
 scope here.
+
+### Guarantee heading: the finished state is now what the server sends
+
+Reported by the owner as "every page refresh or visit reveal animate to display". The report was
+accurate and the cause was worse than a replaying animation: the heading did not exist until
+JavaScript had run.
+
+`GuaranteeHeading` is an SVG whose `viewBox` is measured from `getBBox()` after Bricolage resolves,
+and it carried `style={{ visibility: "hidden" }}` until that measurement arrived. The server
+therefore shipped `<svg style="visibility:hidden">`, so with JS disabled, failing, or merely slow,
+the only trace of the section's headline was the `sr-only` span in the `h2`. Confirmed in the served
+HTML before the fix.
+
+The second half was quieter and would have survived a naive fix. `@utility guarantee-fill` is
+`fill: url(#guarantee-photo)` from md up, and that `<pattern>` is only rendered once the same
+client-side measurement has happened. An SVG paint reference that resolves to nothing paints
+nothing, so simply removing the `visibility` would have left the desktop heading blank anyway. The
+rule now carries the SVG paint fallback, `fill: url(#guarantee-photo) var(--accent)`.
+
+Measured on a production build, `h2#guarantee`:
+
+| | viewBox | fill | result |
+| --- | --- | --- | --- |
+| JS off, 1440 | fallback `0 -128 900 170` | `url(#guarantee-photo) rgb(255,90,54)` resolving to ember | visible, solid ember |
+| JS off, 375 | fallback | ember | visible, solid ember |
+| JS on, 1440 | measured `-10 -128.87 928.12 173.44` | pattern present | photograph through the letters |
+| JS on, 375 | measured | ember, no pattern (the 76KB frame stays off phones) | as designed |
+
+axe 0 violations at 1440 and 375 with the stylesheet guard asserted first.
+
+**The draw still replays on every visit, by the owner's explicit decision.** Offered the choice
+between removing the animation, throttling it to once per visitor, and keeping it as it is, they
+chose to keep it. The change is only that the words are on screen whether or not it runs. An
+unmeasured heading paints at the fallback `viewBox`, about 9px wider than its box and
+`overflow-visible`, and the measured `viewBox` corrects it on the next frame; slightly off-scale for
+one frame is the trade against invisible for everyone without JS.
+
+**Related, still open and not fixed here:** the audit's finding of 27 nodes at `opacity: 0` with JS
+disabled on the home page. `PracticeRows` is one of them and ships
+`style="opacity:0;transform:translateY(14px)"` from the server with only a `motion-reduce` escape.
+This entry fixes the guarantee heading, which was `visibility: hidden` rather than `opacity: 0` and
+was not in that count. The 27 remain unowned.
