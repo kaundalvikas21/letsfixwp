@@ -128,7 +128,7 @@ export function SearchTrigger({ variant }: { variant: "pill" | "icon" }) {
       type="button"
       onClick={open}
       aria-keyshortcuts="Meta+K Control+K"
-      className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full bg-surface-2 px-3 text-sm text-muted transition-colors hover:text-text lg:pr-2 lg:pl-4"
+      className="inline-flex h-11 min-w-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-surface-2 px-3 text-sm text-muted transition-colors hover:text-text lg:pr-2 lg:pl-4"
     >
       {/* The name comes from this one string, so it reads the same at every width. The visible copy is decorative:
           an aria-label here would not contain the shortcut hint, which axe reports as a name/content mismatch. */}

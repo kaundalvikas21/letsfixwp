@@ -11,7 +11,8 @@ const hasEmail = !brand.email.includes("{{"); // unconfirmed values must never r
 
 const colHead = "font-display text-sm font-bold";
 const colList = "mt-3 space-y-2 text-sm text-muted";
-const link = "inline-block py-0.5 hover:text-text";
+// Every footer link is a 44x44 target (contract rule 5); space-y-2 on the lists keeps the 8px between them.
+const link = "inline-flex min-h-11 min-w-11 items-center hover:text-text";
 
 export function SiteFooter() {
   const facts = brand.legacy.facts;
@@ -22,7 +23,7 @@ export function SiteFooter() {
           {hubs.map((hub) => (
             <div key={hub.path}>
               <h2 className={colHead}>
-                <Link href={hub.path} className="hover:text-accent-text">
+                <Link href={hub.path} className="inline-flex min-h-11 min-w-11 items-center hover:text-accent-text">
                   {hub.title}
                 </Link>
               </h2>
@@ -81,14 +82,14 @@ export function SiteFooter() {
             {hasEmail ? (
               <>
                 {" · "}
-                <a href={`mailto:${brand.email}`} className="hover:text-text">
+                <a href={`mailto:${brand.email}`} className="inline-flex min-h-11 items-center hover:text-text">
                   {brand.email}
                 </a>
               </>
             ) : (
               <>
                 {" · "}
-                <Link href={routes.contact} className="hover:text-text">
+                <Link href={routes.contact} className="inline-flex min-h-11 items-center hover:text-text">
                   Contact us
                 </Link>
               </>

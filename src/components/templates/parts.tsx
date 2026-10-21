@@ -49,7 +49,8 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
               {i === items.length - 1 ? (
                 <span className="text-text">{c.name}</span>
               ) : (
-                <Link href={c.path} className="hover:text-text">
+                // min-h/min-w 11 keeps the crumb a 44x44 target (contract rule 5); the text stays left aligned.
+                <Link href={c.path} className="inline-flex min-h-11 min-w-11 items-center hover:text-text">
                   {c.name}
                 </Link>
               )}
