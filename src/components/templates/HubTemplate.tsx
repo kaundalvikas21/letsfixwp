@@ -7,7 +7,7 @@ import { hubIdOf, nodes, routes, serviceIdOf, type FlatNode } from "@/config/rou
 import { getService, guidesFor } from "@/content";
 import { hubLead } from "@/content/hubs";
 import type { Service } from "@/content/schema";
-import { bentoSpans } from "@/lib/bento";
+import { bentoLayout } from "@/lib/bento";
 import { cn } from "@/lib/utils";
 import { Breadcrumbs, h1, h2, page, Section, UrgencyBadge } from "./parts";
 
@@ -40,15 +40,7 @@ export function HubTemplate({ node }: { node: FlatNode }) {
     const s = getService(serviceIdOf(n.path))!;
     return { node: n, s, c: shown(s) };
   });
-  // Near-equal cards give bentoSpans nothing to differentiate, so it would only invent wide cells the text cannot
-  // fill. At or below UNIFORM the grid is a plain 2-up (two equal cards a row is allowed, rule 6 bans three), and
-  // an odd last card spans the row, the same rule bentoSpans applies.
-  // ponytail: 1.4 was tuned by hand against the six real hubs: max/min card weight is 1.12 to 1.28 for the three
-  // uniform ones (2-up) and 1.67 to 2.63 for the three varied ones (bento), so anything from 1.3 to 1.6 splits them.
-  // If a future hub lands wrong, move this number or replace it with a per-hub choice; it has no other callers.
-  const weights = services.map(({ c }) => weight(c));
-  const uniform = Math.max(...weights) <= Math.min(...weights) * 1.4;
-  const spans = uniform ? weights.map((_, i) => (i === weights.length - 1 && i % 2 === 0 ? 6 : 3)) : bentoSpans(weights);
+  const spans = bentoLayout(services.map(({ c }) => weight(c)));
   const triage = services.some(({ s }) => s.symptoms.length > 0);
   const topGuides = serviceChildren
     .flatMap((n) => guidesFor(serviceIdOf(n.path)))

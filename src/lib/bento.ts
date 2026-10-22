@@ -18,3 +18,19 @@ export const bentoSpans = (weights: readonly number[]): number[] => {
   }
   return spans;
 };
+
+/**
+ * Spans for a bento that only goes asymmetric when its content genuinely varies. Near-equal weights give
+ * `bentoSpans` nothing to differentiate, so it would only invent wide cells the text cannot fill. At or below
+ * the ratio the grid is a plain 2-up (two equal cards a row is allowed, rule 6 bans three) and an odd last card
+ * spans the row, the same rule `bentoSpans` applies. Returns 3 for the halves, else 2, 4 or 6.
+ * ponytail: 1.4 was tuned by hand against the six real hubs: max/min card weight is 1.12 to 1.28 for the three
+ * uniform ones (2-up) and 1.67 to 2.63 for the three varied ones (bento), so anything from 1.3 to 1.6 splits them.
+ * The compare pages (1.0 to 1.5 on real verdicts) use the same number. If a future set lands wrong, move this
+ * number or replace it with a per-caller choice.
+ */
+export const UNIFORM_RATIO = 1.4;
+export const bentoLayout = (weights: readonly number[]): number[] =>
+  Math.max(...weights) <= Math.min(...weights) * UNIFORM_RATIO
+    ? weights.map((_, i) => (i === weights.length - 1 && i % 2 === 0 ? 6 : 3))
+    : bentoSpans(weights);

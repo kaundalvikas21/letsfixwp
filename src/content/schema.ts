@@ -71,7 +71,7 @@ export const compareSchema = z.object({
   a: text,
   b: text,
   /** Visible lead and index blurb. Optional: falls back to seo.description, which is meta text. */
-  summary: z.string().optional(),
+  summary: z.string().min(1).optional(),
   verdictByScenario: z.array(z.object({ scenario: text, verdict: text })).min(3),
   rows: z.array(z.object({ criterion: text, a: text, b: text })).min(5),
   seo,

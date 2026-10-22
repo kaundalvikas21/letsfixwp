@@ -4,14 +4,14 @@ import { primaryCtaFor } from "@/config/cta";
 import { nodeByPath, routes } from "@/config/routes";
 import type { Compare } from "@/content/schema";
 import { cn } from "@/lib/utils";
-import { bentoSpans } from "@/lib/bento";
+import { bentoLayout } from "@/lib/bento";
 import { Breadcrumbs, h1, h2, page, Section, Versus } from "./parts";
 
 // Literal classes so Tailwind's scanner emits them; a computed `md:col-span-${n}` would not.
 const SPAN = { 3: "md:col-span-3", 2: "md:col-span-2", 4: "md:col-span-4", 6: "md:col-span-6" } as const;
 
 /**
- * /compare/<slug>/. Layout family: verdict-by-scenario cards over a real comparison table. Factual and neutral:
+ * /compare/<slug>/. Layout family: a verdict-by-scenario bento (2-up when the verdicts are similar in length) over a real comparison table. Factual and neutral:
  * no winner is declared, because which one fits depends on the scenario.
  */
 export function CompareTemplate({ compare: c }: { compare: Compare }) {
@@ -20,10 +20,7 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
   const Primary = intent === "PLANS" ? PlansLink : intent === "QUOTE" ? QuoteLink : BookLink;
   const loc = `compare:${c.slug}`;
   const th = "border-b border-line-strong px-4 py-3 text-left font-display text-sm font-bold";
-  // Near-equal verdicts give bentoSpans nothing to differentiate: plain 2-up, odd last card spans the row.
-  const weights = c.verdictByScenario.map((v) => v.scenario.length + v.verdict.length);
-  const uniform = Math.max(...weights) <= Math.min(...weights) * 1.4;
-  const spans = uniform ? weights.map((_, i) => (i === weights.length - 1 && i % 2 === 0 ? 6 : 3)) : bentoSpans(weights);
+  const spans = bentoLayout(c.verdictByScenario.map((v) => v.scenario.length + v.verdict.length));
   const td = "border-b border-line px-4 py-3 align-top text-sm";
 
   return (
@@ -38,7 +35,7 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
       />
 
       <header className="mt-6">
-        <Versus a={c.a} b={c.b} className="mb-5" />
+        <Versus a={c.a} b={c.b} decorative className="mb-5" />
         <h1 className={h1}>{title}</h1>
         <p className="mt-5 max-w-[68ch] text-lg text-muted">{c.summary ?? c.seo.description}</p>
       </header>
