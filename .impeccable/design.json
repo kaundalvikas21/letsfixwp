@@ -1,0 +1,234 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-22T00:00:00Z",
+  "title": "Design System: LetsFixWP v3",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Back-Online Green",
+        "canonical": "oklch(52.7% 0.137 150.1)",
+        "dark": "#4ade80",
+        "darkCanonical": "oklch(80.0% 0.182 151.7)",
+        "tonalRamp": ["oklch(15% 0.137 150)", "oklch(26% 0.137 150)", "oklch(37% 0.137 150)", "oklch(49% 0.137 150)", "oklch(60% 0.137 150)", "oklch(72% 0.137 150)", "oklch(83% 0.137 150)", "oklch(95% 0.137 150)"]
+      },
+      "bg": {
+        "role": "neutral",
+        "displayName": "Paper Grey",
+        "canonical": "oklch(96.7% 0.003 264.5)",
+        "dark": "#0d0f12",
+        "darkCanonical": "oklch(16.8% 0.007 258.4)",
+        "tonalRamp": ["oklch(15% 0.005 260)", "oklch(26% 0.005 260)", "oklch(37% 0.005 260)", "oklch(49% 0.005 260)", "oklch(60% 0.005 260)", "oklch(72% 0.005 260)", "oklch(83% 0.005 260)", "oklch(95% 0.005 260)"]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Card White",
+        "canonical": "oklch(99.1% 0.001 286.4)",
+        "dark": "#15181d",
+        "darkCanonical": "oklch(20.8% 0.011 260.7)",
+        "tonalRamp": ["oklch(15% 0.004 270)", "oklch(26% 0.004 270)", "oklch(37% 0.004 270)", "oklch(49% 0.004 270)", "oklch(60% 0.004 270)", "oklch(72% 0.004 270)", "oklch(83% 0.004 270)", "oklch(95% 0.004 270)"]
+      },
+      "surface-2": {
+        "role": "neutral",
+        "displayName": "Inset Grey",
+        "canonical": "oklch(94.8% 0.005 258.3)",
+        "dark": "#1b1f25",
+        "darkCanonical": "oklch(23.8% 0.013 258.4)",
+        "tonalRamp": ["oklch(15% 0.006 258)", "oklch(26% 0.006 258)", "oklch(37% 0.006 258)", "oklch(49% 0.006 258)", "oklch(60% 0.006 258)", "oklch(72% 0.006 258)", "oklch(83% 0.006 258)", "oklch(95% 0.006 258)"]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(17.7% 0.009 264.3)",
+        "dark": "#e9ebee",
+        "darkCanonical": "oklch(93.9% 0.005 258.3)",
+        "tonalRamp": ["oklch(15% 0.009 264)", "oklch(26% 0.009 264)", "oklch(37% 0.009 264)", "oklch(49% 0.009 264)", "oklch(60% 0.009 264)", "oklch(72% 0.009 264)", "oklch(83% 0.009 264)", "oklch(95% 0.009 264)"]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "canonical": "oklch(47.0% 0.019 262.7)",
+        "dark": "#9aa1ac",
+        "darkCanonical": "oklch(70.7% 0.018 259.4)",
+        "tonalRamp": ["oklch(15% 0.019 262)", "oklch(26% 0.019 262)", "oklch(37% 0.019 262)", "oklch(49% 0.019 262)", "oklch(60% 0.019 262)", "oklch(72% 0.019 262)", "oklch(83% 0.019 262)", "oklch(95% 0.019 262)"]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "oklch(91.8% 0.006 255.5)",
+        "dark": "rgb(255 255 255 / 0.08)",
+        "purpose": "Decorative edges only; measures 1.24:1.",
+        "tonalRamp": ["oklch(15% 0.006 255)", "oklch(26% 0.006 255)", "oklch(37% 0.006 255)", "oklch(49% 0.006 255)", "oklch(60% 0.006 255)", "oklch(72% 0.006 255)", "oklch(83% 0.006 255)", "oklch(95% 0.006 255)"]
+      },
+      "line-strong": {
+        "role": "neutral",
+        "displayName": "Control Edge",
+        "canonical": "oklch(61.5% 0.019 259.4)",
+        "dark": "rgb(255 255 255 / 0.36)",
+        "purpose": "Every boundary that identifies a control; at least 3.20:1 on every surface.",
+        "tonalRamp": ["oklch(15% 0.019 259)", "oklch(26% 0.019 259)", "oklch(37% 0.019 259)", "oklch(49% 0.019 259)", "oklch(60% 0.019 259)", "oklch(72% 0.019 259)", "oklch(83% 0.019 259)", "oklch(95% 0.019 259)"]
+      },
+      "cta-base": {
+        "role": "tertiary",
+        "displayName": "CTA Base",
+        "canonical": "oklch(42.6% 0.103 151.5)",
+        "dark": "#223a32",
+        "purpose": "Base of the one gradient on the site, on the closing CTA panel only.",
+        "tonalRamp": ["oklch(15% 0.103 151)", "oklch(26% 0.103 151)", "oklch(37% 0.103 151)", "oklch(49% 0.103 151)", "oklch(60% 0.103 151)", "oklch(72% 0.103 151)", "oklch(83% 0.103 151)", "oklch(95% 0.103 151)"]
+      },
+      "photo-scrim": {
+        "role": "tertiary",
+        "displayName": "Photo Scrim",
+        "canonical": "hsl(220 30% 6% / 0.65)",
+        "purpose": "Flat, never a gradient. Holds on-photo text at 5.78:1 over any frame in the library."
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The page h1 only, one per page, capped at two lines and balanced." },
+      "headline": { "displayName": "Headline", "purpose": "Section h2." },
+      "title": { "displayName": "Title", "purpose": "Card and bento-cell h3, measure capped around 22ch." },
+      "body": { "displayName": "Body", "purpose": "All running copy at 16px / 1.6; lead copy steps up to 1.125rem." },
+      "label": { "displayName": "Label", "purpose": "Buttons, nav links (15px), form labels. The single eyebrow is 0.75rem / 0.06em / uppercase in muted ink." }
+    },
+    "shadows": [
+      { "name": "card", "value": "0 1px 2px hsl(220 20% 40% / 0.06), 0 8px 24px -6px hsl(220 20% 40% / 0.1)", "purpose": "Resting material for every card, cell, panel and device frame. Tinted to the page hue, never black." },
+      { "name": "card-dark", "value": "inset 0 1px 0 rgb(255 255 255 / 0.04), 0 1px 2px hsl(220 30% 2% / 0.5), 0 12px 32px -8px hsl(220 30% 2% / 0.6)", "purpose": "Same role in dark mode; the inset highlight resolves the card edge without a heavy border." },
+      { "name": "lift", "value": "0 2px 4px hsl(220 20% 40% / 0.07), 0 16px 40px -10px hsl(220 20% 40% / 0.16)", "purpose": "Hover on something clickable, and the hero image at rest. Never on a static surface." },
+      { "name": "lift-dark", "value": "inset 0 1px 0 rgb(255 255 255 / 0.04), 0 2px 4px hsl(220 30% 2% / 0.55), 0 20px 48px -12px hsl(220 30% 2% / 0.7)", "purpose": "Dark-mode lift." },
+      { "name": "nav-inset", "value": "inset 0 1px 0 rgb(255 255 255 / 0.12)", "purpose": "Top highlight on the floating glass nav, over the card shadow." }
+    ],
+    "motion": [
+      { "name": "ease-spring", "value": "linear(0, 0.09 8%, 0.264 17%, 0.442 25%, 0.594 33%, 0.713 42%, 0.801 50%, 0.908 67%, 0.96 83%, 1)", "purpose": "CSS sampling of the contract spring (stiffness 100, damping 20): critically damped, settles in about 600ms." },
+      { "name": "spring-content", "value": "{ type: 'spring', stiffness: 100, damping: 20 }", "purpose": "Motion default for entrances and layout changes; 60ms stagger across a grid." },
+      { "name": "spring-thumb", "value": "{ type: 'spring', stiffness: 400, damping: 40 }", "purpose": "Segmented-control and tab thumb: lands in about 250ms with no overshoot." },
+      { "name": "press", "value": "transform 150ms ease, scale 0.98", "purpose": "Button and card press feedback." },
+      { "name": "hover-shadow", "value": "box-shadow 200ms ease", "purpose": "The only hover transition on a card; nothing moves." },
+      { "name": "rise", "value": "@keyframes rise { from { opacity: 0; transform: translateY(12px); } }", "purpose": "Entrance for headline words (40ms stagger) and in-view cells, on ease-spring." },
+      { "name": "settle", "value": "@keyframes settle { from { opacity: 0; transform: scale(0.98); } }", "purpose": "Image and dialog entrance." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "container", "value": "1152px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The page's primary action. Accent pill, label never wraps, lift on hover, 2% press.",
+      "html": "<a class=\"ds-btn-primary\" href=\"#\">Fix my site</a>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 44px; padding-inline: 1.25rem; border-radius: 9999px; background: var(--accent, #15803d); color: var(--on-accent, #fcfcfd); font-weight: 600; font-size: 0.9375rem; text-decoration: none; white-space: nowrap; cursor: pointer; transition: transform 150ms ease, box-shadow 200ms ease; } .ds-btn-primary:hover { box-shadow: 0 2px 4px hsl(220 20% 40% / 0.07), 0 16px 40px -10px hsl(220 20% 40% / 0.16); } .ds-btn-primary:focus-visible { outline: 2px solid var(--accent, #15803d); outline-offset: 2px; } .ds-btn-primary:active { transform: scale(0.98); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "The always-present secondary action (chat). Surface fill with a control-edge border.",
+      "html": "<button class=\"ds-btn-secondary\" type=\"button\">Chat with an engineer</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding-inline: 1.25rem; border-radius: 9999px; border: 1px solid var(--line-strong, #7e8590); background: var(--surface, #fcfcfd); color: var(--text, #0f1115); font-weight: 600; font-size: 0.9375rem; white-space: nowrap; cursor: pointer; transition: transform 150ms ease; } .ds-btn-secondary:focus-visible { outline: 2px solid var(--accent, #15803d); outline-offset: 2px; } .ds-btn-secondary:active { transform: scale(0.98); }"
+    },
+    {
+      "name": "Bento Cell (link)",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "One problem area on the board. Fully readable at rest; the shadow lifts on hover because it is a link.",
+      "html": "<a class=\"ds-cell\" href=\"#\"><svg class=\"ds-cell-arrow\" viewBox=\"0 0 256 256\" aria-hidden=\"true\"><path d=\"M200 64v104a8 8 0 0 1-16 0V83.3L69.7 197.7a8 8 0 0 1-11.4-11.4L172.7 72H88a8 8 0 0 1 0-16h104a8 8 0 0 1 8 8Z\"/></svg><h3 class=\"ds-cell-title\">White screens and fatal errors</h3><p class=\"ds-cell-line\">Blank pages, critical error notices and 500 errors.</p></a>",
+      "css": ".ds-cell { position: relative; display: flex; flex-direction: column; justify-content: flex-end; min-height: 200px; padding: 1.5rem; border: 1px solid var(--line, #e1e4e8); border-radius: 20px; background: var(--surface, #fcfcfd); color: var(--text, #0f1115); text-decoration: none; box-shadow: 0 1px 2px hsl(220 20% 40% / 0.06), 0 8px 24px -6px hsl(220 20% 40% / 0.1); transition: box-shadow 200ms ease; } .ds-cell:hover { box-shadow: 0 2px 4px hsl(220 20% 40% / 0.07), 0 16px 40px -10px hsl(220 20% 40% / 0.16); } .ds-cell:focus-visible { outline: 2px solid var(--accent, #15803d); outline-offset: 2px; } .ds-cell-arrow { position: absolute; top: 1.25rem; right: 1.25rem; width: 20px; height: 20px; fill: var(--muted, #555b66); } .ds-cell-title { margin: 0; max-width: 22ch; font-family: var(--font-display, 'Cabinet Grotesk', ui-sans-serif, system-ui, sans-serif); font-size: 1.5rem; font-weight: 700; line-height: 1.25; } .ds-cell-line { margin: 0.5rem 0 0; max-width: 40ch; font-size: 0.875rem; color: var(--muted, #555b66); }"
+    },
+    {
+      "name": "Accent-Tint Cell",
+      "kind": "card",
+      "refersTo": "card-accent",
+      "description": "The one cell on the board carrying 6% accent, to weight an area without a second hue.",
+      "html": "<a class=\"ds-cell-tint\" href=\"#\"><h3 class=\"ds-cell-title\">Slow site and Core Web Vitals</h3></a>",
+      "css": ".ds-cell-tint { display: flex; flex-direction: column; justify-content: flex-end; min-height: 200px; padding: 1.5rem; border: 1px solid var(--line, #e1e4e8); border-radius: 20px; background: color-mix(in srgb, var(--accent, #15803d) 6%, var(--surface, #fcfcfd)); color: var(--text, #0f1115); text-decoration: none; box-shadow: 0 1px 2px hsl(220 20% 40% / 0.06), 0 8px 24px -6px hsl(220 20% 40% / 0.1); transition: box-shadow 200ms ease; } .ds-cell-tint:hover { box-shadow: 0 2px 4px hsl(220 20% 40% / 0.07), 0 16px 40px -10px hsl(220 20% 40% / 0.16); } .ds-cell-tint .ds-cell-title { margin: 0; max-width: 22ch; font-family: var(--font-display, 'Cabinet Grotesk', ui-sans-serif, system-ui, sans-serif); font-size: 1.5rem; font-weight: 700; line-height: 1.25; }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Icon and input share one box, so the focus ring sits on the wrapper and they read as one control.",
+      "html": "<div class=\"ds-field\"><svg class=\"ds-field-icon\" viewBox=\"0 0 256 256\" aria-hidden=\"true\"><path d=\"m229.7 218.3-50.1-50a88.1 88.1 0 1 0-11.3 11.3l50 50.1a8.1 8.1 0 0 0 11.4 0 8.1 8.1 0 0 0 0-11.4ZM40 112a72 72 0 1 1 72 72 72.1 72.1 0 0 1-72-72Z\"/></svg><input class=\"ds-field-input\" type=\"search\" placeholder=\"backup, access, hosting\" aria-label=\"Filter questions\"></div>",
+      "css": ".ds-field { display: flex; align-items: center; gap: 0.75rem; padding-inline: 1rem; border: 1px solid var(--line-strong, #7e8590); border-radius: 12px; background: var(--surface-2, #eceef1); } .ds-field:focus-within { outline: 2px solid var(--accent, #15803d); outline-offset: 2px; } .ds-field-icon { flex: 0 0 auto; width: 20px; height: 20px; fill: var(--muted, #555b66); } .ds-field-input { height: 44px; width: 100%; border: 0; background: transparent; color: var(--text, #0f1115); font-size: 1rem; outline: none; } .ds-field-input::placeholder { color: var(--muted, #555b66); }"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "chip",
+      "refersTo": "pill-radio-track",
+      "description": "Radix radio group as a pill track with an accent thumb; arrow keys move the selection.",
+      "html": "<div class=\"ds-seg\" role=\"radiogroup\" aria-label=\"Compare a one-time fix with a care plan\"><button class=\"ds-seg-item is-on\" role=\"radio\" aria-checked=\"true\">One-time fix</button><button class=\"ds-seg-item\" role=\"radio\" aria-checked=\"false\">Care plan</button></div>",
+      "css": ".ds-seg { display: inline-flex; align-self: flex-start; padding: 4px; border: 1px solid var(--line-strong, #7e8590); border-radius: 9999px; background: var(--surface-2, #eceef1); } .ds-seg-item { height: 44px; padding-inline: 1.25rem; border: 0; border-radius: 9999px; background: transparent; color: var(--muted, #555b66); font-weight: 600; font-size: 0.9375rem; cursor: pointer; transition: color 150ms ease, background 150ms ease; } .ds-seg-item:hover { color: var(--text, #0f1115); } .ds-seg-item:focus-visible { outline: 2px solid var(--accent, #15803d); outline-offset: 2px; } .ds-seg-item.is-on { background: var(--accent, #15803d); color: var(--on-accent, #fcfcfd); }"
+    },
+    {
+      "name": "Floating Glass Nav",
+      "kind": "nav",
+      "description": "The only translucent surface on the site. Solid fill under prefers-reduced-transparency.",
+      "html": "<header class=\"ds-nav\"><a class=\"ds-nav-mark\" href=\"#\">LetsFixWP</a><nav class=\"ds-nav-links\" aria-label=\"Primary\"><a href=\"#\">Problems</a><a href=\"#\">Pricing</a><a href=\"#\">Care plans</a><a href=\"#\">Reviews</a></nav><a class=\"ds-btn-primary\" href=\"#\">Fix my site</a></header>",
+      "css": ".ds-nav { display: flex; align-items: center; gap: 0.5rem; height: 60px; padding-left: 1.5rem; padding-right: 0.5rem; border: 1px solid rgb(255 255 255 / 0.1); border-radius: 9999px; background: color-mix(in srgb, var(--surface, #fcfcfd) 72%, transparent); backdrop-filter: blur(16px) saturate(140%); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12), 0 1px 2px hsl(220 20% 40% / 0.06), 0 8px 24px -6px hsl(220 20% 40% / 0.1); } .ds-nav-mark { display: flex; align-items: center; height: 44px; font-family: var(--font-display, 'Cabinet Grotesk', ui-sans-serif, system-ui, sans-serif); font-size: 1.25rem; font-weight: 800; letter-spacing: -0.01em; color: var(--text, #0f1115); text-decoration: none; } .ds-nav-links { display: flex; align-items: center; margin-inline: auto; } .ds-nav-links a { display: flex; align-items: center; height: 44px; padding-inline: 0.75rem; border-radius: 9999px; color: var(--text, #0f1115); font-size: 15px; font-weight: 500; text-decoration: none; } .ds-nav-links a:hover { background: var(--surface-2, #eceef1); } .ds-nav-links a:focus-visible { outline: 2px solid var(--accent, #15803d); outline-offset: 2px; } @media (prefers-reduced-transparency: reduce) { .ds-nav { background: var(--surface, #fcfcfd); backdrop-filter: none; } }"
+    },
+    {
+      "name": "Placeholder Frame",
+      "kind": "custom",
+      "description": "The system's one honesty marker: unconfirmed content (a quote, a guarantee) is visibly framed rather than passed off as fact.",
+      "html": "<p class=\"ds-placeholder\">Placeholder: replace with one client's own words before publishing.</p>",
+      "css": ".ds-placeholder { margin: 0; max-width: 28rem; padding: 0.5rem 0.75rem; border: 1px dashed var(--line-strong, #7e8590); border-radius: 12px; color: var(--muted, #555b66); font-size: 0.875rem; }"
+    },
+    {
+      "name": "Closing CTA Panel",
+      "kind": "custom",
+      "description": "The one gradient on the site: a static two-blob mesh over a deep green base, with inverted buttons.",
+      "html": "<section class=\"ds-cta\"><h2 class=\"ds-cta-title\">Let&rsquo;s get you back online.</h2><div class=\"ds-cta-actions\"><a class=\"ds-cta-primary\" href=\"#\">Fix my site</a><button class=\"ds-cta-secondary\" type=\"button\">Chat with an engineer</button></div></section>",
+      "css": ".ds-cta { padding: 4rem 1.5rem; border-radius: 20px; text-align: center; color: var(--on-cta, #fcfcfd); background: radial-gradient(58% 82% at 12% 18%, rgb(21 128 61 / 1) 0%, transparent 62%), radial-gradient(52% 76% at 88% 82%, rgb(21 128 61 / 0.85) 0%, transparent 60%), var(--cta-base, #135e30); box-shadow: 0 1px 2px hsl(220 20% 40% / 0.06), 0 8px 24px -6px hsl(220 20% 40% / 0.1); } .ds-cta-title { margin: 0 auto; max-width: 16ch; font-family: var(--font-display, 'Cabinet Grotesk', ui-sans-serif, system-ui, sans-serif); font-size: 2.25rem; font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; } .ds-cta-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; margin-top: 2rem; } .ds-cta-primary, .ds-cta-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding-inline: 1.25rem; border-radius: 9999px; font-weight: 600; font-size: 0.9375rem; text-decoration: none; cursor: pointer; } .ds-cta-primary { border: 0; background: var(--on-cta, #fcfcfd); color: var(--cta-ink, #0f1115); } .ds-cta-secondary { border: 1px solid var(--on-cta, #fcfcfd); background: transparent; color: var(--on-cta, #fcfcfd); } .ds-cta-primary:focus-visible, .ds-cta-secondary:focus-visible { outline: 2px solid var(--on-cta, #fcfcfd); outline-offset: 2px; } .ds-cta-primary:active, .ds-cta-secondary:active { transform: scale(0.98); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Calm Operations Room",
+    "overview": "Someone arrives here because their site is down. The design answers by looking like a room where this is handled every day: a composed board of everything that can break, each area a card with its own weight, nothing flashing, nothing shouting. The surfaces are cool paper greys that sit a hair apart in tone; the type is confident without being loud; and exactly one colour, a deep functional green, marks the thing the visitor came for. That restraint is the whole trick. If three things competed for the signal, nothing would read as under control.\n\nDepth is soft rather than dramatic. Every card rests on a two-layer shadow tinted to the background's cool hue (around hue 220), never black, so the board looks lit rather than cut out. Corners are generous (20px on anything card-shaped), controls are full pills, and the single translucent surface on the entire site is the floating nav. Photography is bright daylight and literal: a desk, a laptop, a shop owner checking orders. Where the subject is a WordPress error, the image is a real capture from public/screens/, not a div dressed up as a browser. Evidence beats illustration here, because the product claim is competence.\n\nMotion reports, it does not perform. Cells rise 12px and fade as the grid comes into view, in reading order; a toggle's thumb slides to the option you picked; a button presses 2%. Everything runs on one critically damped spring (stiffness 100, damping 20) and collapses to its final state under reduced motion. The world this rejects is specific and confirmed: no second accent, no brand red, no glass beyond the nav, no gradients beyond one closing panel, no GSAP, no marquees, no parallax, no neon.",
+    "keyCharacteristics": [
+      "One accent, used as a signal, on a cool paper grey field",
+      "Bento board layout with deliberately unequal spans",
+      "Soft two-layer shadows tinted to the background hue, never black",
+      "Three radii only: 20px cards, 12px fields, full-pill controls",
+      "Both themes designed, not inverted, and every pair measured at AA",
+      "Real photographs and real error captures; no synthetic UI",
+      "Spring motion on transform and opacity only"
+    ],
+    "rules": [
+      { "name": "The One Signal Rule", "body": "One accent, and it means \"back online\". The brand red (#CC3333 in brand.accent) does not appear anywhere in this variation: it competes with the signal and reads as an error state. No second hue gets introduced to mark a highlighted plan, a badge, or a state.", "section": "colors" },
+      { "name": "The Control Boundary Rule", "body": "--line is decorative and measures 1.24:1. Any boundary that identifies something operable (input, select, checkbox, segmented track) uses --line-strong, which measures at least 3.20:1 on every surface in both themes.", "section": "colors" },
+      { "name": "The Accent-On-Light Rule", "body": "Small accent-coloured text sits on --surface (4.89:1) or --bg (4.56:1), never on --surface-2, where it drops to 4.31:1. On that surface the accent is for large text and icons only.", "section": "colors" },
+      { "name": "The Display-Never-Body Rule", "body": "Cabinet Grotesk sets headings and the wordmark. It never sets running copy, labels, or UI text, at any size.", "section": "typography" },
+      { "name": "The Muted-Not-Faded Rule", "body": "Secondary text uses --muted, never reduced opacity on --text. Opacity breaks the measured contrast and goes grey-on-grey over photographs.", "section": "typography" },
+      { "name": "The Tightening Rule", "body": "Display tracking closes to -0.02em from 48px up; body and label tracking stay at normal. Nothing in this system is letterspaced for decoration except the single uppercase eyebrow.", "section": "typography" },
+      { "name": "The No-Three-Equal-Cards Rule", "body": "No row of three equal cards, anywhere. On the board, spans vary so no row reads as a tidy triptych; every cell is fully readable at rest, without hover.", "section": "layout" },
+      { "name": "The Floating-Nav Clearance Rule", "body": "html carries scroll-padding-top: 6rem and scroll-padding-bottom: 6.5rem (dropping to 2rem at 768px) so no anchor target or keyboard tab stop ever parks under the floating nav or the mobile action bar.", "section": "layout" },
+      { "name": "The Lift-Means-Link Rule", "body": "--shadow-lift on hover says \"this is clickable\". A non-interactive surface never grows its shadow, and an interactive one never changes size or position on hover; the transition is box-shadow only, so nothing in the grid shifts.", "section": "elevation" },
+      { "name": "The No-Black-Shadow Rule", "body": "Shadows are tinted to the page hue (220), never rgba(0,0,0,...). Black shadows read as dirt on a cool grey field.", "section": "elevation" },
+      { "name": "The Three-Radius Rule", "body": "20 / 12 / pill. A new radius is a bug, not a variation.", "section": "shapes" },
+      { "name": "The Transform-And-Opacity Rule", "body": "Animate transform and opacity only, on the spring (stiffness 100, damping 20) with a 60ms stagger across a grid, and let useReducedMotion() collapse every one of them to its final state. Hover scale, where it exists, sits on a wrapper so it cannot shift layout.", "section": "components" }
+    ],
+    "dos": [
+      "Do keep the accent scarce and functional: fills, the thumb, the focus ring, accent text. If a screen has accent in more than a few places, something that is not a signal is wearing the signal.",
+      "Do use --line-strong on every control boundary and --line only for decoration.",
+      "Do design both themes. Check any new pair against the measured table in design-system/letsfixwp-v3/MASTER.md rather than assuming the dark value inverts.",
+      "Do keep to 20 / 12 / pill, and to --shadow-card / --shadow-lift.",
+      "Do ship real imagery: daylight photography from src/content/photos.ts (never a red-toned frame in this variation) or real captures from public/screens/, inside the device frame.",
+      "Do mark unconfirmed content visibly, with the dashed --line-strong placeholder frame, rather than letting a placeholder pass as fact.",
+      "Do give every animation a one-sentence job (hierarchy, feedback, state) and a reduced-motion collapse."
+    ],
+    "donts": [
+      "Don't introduce a second accent, brand red #CC3333, or any extra hue for a badge, a highlighted plan, or a state.",
+      "Don't use glass anywhere except the floating nav, or a gradient anywhere except the closing CTA mesh.",
+      "Don't use pure #000000 or #FFFFFF, or rgba(0,0,0,...) shadows.",
+      "Don't set body copy in Cabinet Grotesk, or fade text with opacity instead of --muted.",
+      "Don't put small accent-coloured text on --surface-2.",
+      "Don't add GSAP, marquees, parallax, scroll listeners, custom cursors, or neon glows.",
+      "Don't build a row of three equal cards, a fake screenshot or dashboard from divs, or put a pill or label on top of an image.",
+      "Don't let a hover change layout, or leave a focus state invisible."
+    ]
+  }
+}
