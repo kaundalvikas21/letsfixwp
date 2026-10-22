@@ -166,7 +166,7 @@ apart by a letter plus a coloured rule, never by colour alone. Breadcrumbs alrea
 | /free-site-check/ | lead magnet: preview panel left, form card right | no | no | CHECK (form submit), CHAT |
 | /case-studies/ | composed empty state card | no | no | BOOK, CHAT |
 | /pricing/ | scope and outcome: three unequal tier cards, outcome rows per tier, a real comparison table, a disclosure FAQ and a split closing band | no | no | BOOK, PLANS, QUOTE, CHECK, CHAT |
-| /about/ | company document: a hub bento, ruled engagement rows, a grouped practice list, a city chip row and a closing band, with the shared rail beside the body | no | no | BOOK, CHAT |
+| /about/ | company document: a hub bento, ruled engagement rows, a grouped practice list, a city chip row and a closing band, with the shared rail beside the body from lg | no | no | BOOK, CHAT |
 | /guides/ | urgency-grouped error cards under a search panel, then a service chip row and a closing prompt band | no | no | BOOK, CHAT, CHECK |
 | /compare/ | stacked full-width comparison cards, each with A/B chips, summary and the criteria compared | no | no | BOOK, CHAT |
 | /wordpress-development/cities/ | link rows | no | no | QUOTE, CHAT |
@@ -270,16 +270,31 @@ so none of them is a candidate and nothing is logged to image-todo.
 
 No two blocks share a layout family: cards (the hub bento), full-width label rows (the engagement list), a
 grouped icon list two items to a group (the practice list), a pill chip row (the cities) and a split band
-(closing). The rail is not a sixth family; it is the one `FactRail` node, in the aside beside the body column
-from lg and in flow below it, which is the arrangement the service and guide templates already use.
+(closing). The rail is not a sixth family; it is the one `FactRail` node, in the aside beside the body column.
+
+Unlike the service and guide templates, the rail is `hidden` below lg here. It carries no claim `points` on this
+page, because the practice list is the same promises in full, so its whole body below lg would be
+`brand.guarantee`, which is still a placeholder: a lone card reading "Placeholder, not a real offer yet." is
+worse on a narrow screen than no card. Nothing is lost there. The fixed bottom bar is already the CTA under lg,
+and the footer links /legal/guarantee/ at every width. Deleting one `hidden` brings it back the day the
+guarantee is real.
 
 Block 2 replaces the `LinkRows` of the six hubs, which was the third appearance of that divided-row pattern
-across the in-scope pages and showed `hubLead` only as a one-line summary. The cards print the whole paragraph
-and `bentoLayout` sizes them: measured on the six real `hubLead` lengths (217 to 262 characters) the ratio is
-1.21, under the 1.4 uniform threshold, so this grid is a plain 2-up of three rows rather than invented
-asymmetry, which is the finding Task 2 recorded. Spans map through a literal class record, because Tailwind v4
-never sees a computed `md:col-span-${n}`. The whole card is the link, with the title as its accessible name and
-the hub-page fallback for browsers without `:has()` so focus is never invisible.
+across the in-scope pages and showed `hubLead` only as a one-line summary. A card carries the hub's first
+sentence that fits rule 4's 25-word cap on supporting copy, since every `hubLead` runs 36 to 46 words: measured,
+that is 20, 23, 13, 11, 13 and 22 words, the opening sentence for four hubs and the second for the two whose
+openers run 26 and 33.
+
+The cards are uniform, two a row from md, which rule 6 allows; it bans three. This block carries no bento, and
+the reason is a measurement rather than a preference. Weighted on the line a card actually holds, as the hub
+grid weighs its own cells, the six run 61 to 128 characters, a ratio of 2.10, so `bentoLayout` returns a real
+bento of (2,4) (4,2) (2,4). Built and looked at, that grid is worse at both widths: the longest line left is 23
+words, so every 4-span cell sits half empty, and the 2-span cell is 227px at 768, which breaks "WordPress Fixes
+& Error Resolution" onto three lines beside a half-empty neighbour. Trimming the copy to the cap is what took
+the variance out of the content, and `bentoLayout` returns this same uniform shape for the untrimmed paragraphs
+(ratio 1.21). The guides index made the same call for the same reason, which Task 2 recorded: asymmetry over
+content that cannot fill it only invents cells. The whole card is the link, with the title as its accessible
+name and the hub-page fallback for browsers without `:has()` so focus is never invisible.
 
 Block 3 fixes a live rule 6 violation. `remoteDelivery` has exactly three items and they rendered as three equal
 bordered cards in a row, which rule 6 bans outright. They are now full-width rows, a phase name in a label

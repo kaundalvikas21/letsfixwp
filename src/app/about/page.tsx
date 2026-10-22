@@ -9,7 +9,6 @@ import { brand } from "@/config/brand";
 import { cityNodes, hubIdOf, hubNodes, routes } from "@/config/routes";
 import { hubLead } from "@/content/hubs";
 import { citiesLead, remoteDelivery, securityPractice } from "@/content/notices";
-import { bentoLayout } from "@/lib/bento";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -18,8 +17,16 @@ export const metadata: Metadata = {
   alternates: { canonical: routes.about },
 };
 
-// bentoLayout returns 3 for a uniform grid and 2, 4 or 6 for a varied one; written out so Tailwind sees them.
-const SPAN = { 3: "md:col-span-3", 2: "md:col-span-2", 4: "md:col-span-4", 6: "md:col-span-6" } as const;
+/**
+ * Contract rule 4 caps supporting copy at 25 words and every `hubLead` runs 36 to 46, so a card carries the
+ * hub's first sentence that fits the cap. Measured on the six real paragraphs: 20, 23, 13, 11, 13 and 22 words,
+ * which is the first sentence for four hubs and the second for the two whose openers run 26 and 33. A hub whose
+ * sentences are all over the cap falls back to its opener, which is the loudest way to show it needs rewriting.
+ */
+const cardLine = (lead: string) => {
+  const sentences = lead.split(/(?<=\.)\s+/);
+  return sentences.find((x) => x.trim().split(/\s+/).length <= 25) ?? sentences[0];
+};
 
 /**
  * /about/. A company page, not a team page: no person is named anywhere in the content, so nothing here
@@ -28,8 +35,7 @@ const SPAN = { 3: "md:col-span-3", 2: "md:col-span-2", 4: "md:col-span-4", 6: "m
  * shared `FactRail` beside it. No photography, and no address or LocalBusiness anywhere: there is no office.
  */
 export default function About() {
-  const hubs = hubNodes.map((n) => ({ node: n, lead: hubLead[hubIdOf(n.path)] }));
-  const spans = bentoLayout(hubs.map((h) => h.lead.length));
+  const hubs = hubNodes.map((n) => ({ node: n, lead: cardLine(hubLead[hubIdOf(n.path)]) }));
 
   return (
     <div className={cn(page, "py-8 md:py-12")}>
@@ -43,15 +49,17 @@ export default function About() {
       </header>
 
       <Section id="what-we-do" title="What we work on">
-        <ul className="grid gap-4 md:grid-cols-6 md:gap-5">
-          {hubs.map(({ node, lead }, i) => (
+        {/* Two a row, which rule 6 allows; it bans three. Not a bento: `bentoLayout` reads 2.10 on the six card
+            lines and returns (2,4) (4,2) (2,4), but built and measured that leaves every 4-span cell half empty
+            (the longest line is 23 words) and squeezes a 33-character title onto three lines in the 227px cell
+            at 768. Uniform cards are the shape it returns for the untrimmed paragraphs anyway, and the guides
+            index made the same call for the same reason. */}
+        <ul className="grid gap-4 md:grid-cols-2 md:gap-5">
+          {hubs.map(({ node, lead }) => (
             <li
               key={node.path}
-              className={cn(
-                // Resting elevation is shadow-card; --shadow-lift is MASTER's hover shadow (MASTER.md:99,204).
-                "group relative rounded-[20px] border border-line bg-surface p-6 shadow-card transition-[transform,box-shadow] duration-200 hover:shadow-lift active:scale-[0.98] has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-accent motion-reduce:transition-none",
-                SPAN[spans[i] as keyof typeof SPAN],
-              )}
+              // Resting elevation is shadow-card; --shadow-lift is MASTER's hover shadow (MASTER.md:99,204).
+              className="group relative rounded-[20px] border border-line bg-surface p-6 shadow-card transition-[transform,box-shadow] duration-200 hover:shadow-lift active:scale-[0.98] has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-accent motion-reduce:transition-none"
             >
               <h3 className="font-display text-lg leading-snug font-bold">
                 {/* Stretched link: the whole card is the target, the title is its accessible name, and the
@@ -122,10 +130,12 @@ export default function About() {
           </Section>
         </div>
 
-        {/* The one rail (parts.tsx): the CTA pair beside the body from lg, and in flow below it with the
-            guarantee and its placeholder disclosure. No claim points here, because the practice list above is
-            the same promises in full and the rail would print them twice. */}
-        <aside className="lg:col-span-4">
+        {/* The one rail (parts.tsx), beside the body from lg only. It carries no claim `points`, because the
+            practice list above is the same promises in full, which leaves the guarantee as its whole body; and
+            while brand.guarantee is a placeholder, a lone card of placeholder text is worse on a narrow screen
+            than no card, where the fixed bottom bar is already the CTA and the footer already links the
+            guarantee page. It comes back below lg by deleting `hidden` once that guarantee is real. */}
+        <aside className="hidden lg:col-span-4 lg:block">
           <FactRail title={`Work with ${brand.name}`}>
             <BookLink location="about:rail" className="btn-primary w-full" />
             <ChatButton location="about:rail" className="btn-secondary w-full" />
