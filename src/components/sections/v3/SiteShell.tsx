@@ -62,17 +62,24 @@ export function SiteShell({ children }: { children: ReactNode }) {
         <BookLink location="nav" className="btn-primary" />
       </header>
 
-      <header className="sticky top-0 z-40 flex h-14 items-center gap-1 border-b border-line bg-surface pr-2 pl-4 md:hidden">
+      {/* gap-2, not gap-1: rule 5 asks for 8px between targets and the search trigger and the menu button sat 4px
+          apart at 375. Measured at 375 the row is 246px of a 375px bar, so the extra 4px costs nothing. */}
+      <header className="sticky top-0 z-40 flex h-14 items-center gap-2 border-b border-line bg-surface pr-2 pl-4 md:hidden">
         <Wordmark />
         <span className="ml-auto" />
         <SearchTrigger variant="icon" />
         <MobileMenu links={links} />
       </header>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-line bg-surface px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-card md:hidden">
+      {/* A labelled landmark, not a bare div: this bar is the persistent CTA below 768px, and as a div its two
+          targets were the only content on the page outside any landmark (axe `region`, moderate, at 375). */}
+      <nav
+        aria-label="Get help"
+        className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-line bg-surface px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-card md:hidden"
+      >
         <BookLink location="bottom-bar" className="btn-primary h-12 flex-1" />
         <ChatIconButton location="bottom-bar" />
-      </div>
+      </nav>
 
         {children}
       </ProblemSearch>

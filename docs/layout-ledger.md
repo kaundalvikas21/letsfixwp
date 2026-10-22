@@ -142,9 +142,18 @@ Row 2 reads the real intent mix of each hub. Measured: wordpress-fix 11 fix; wor
 | 1 | Hero | narrow document header | no | no | QUOTE, CHAT |
 | 2 | Local context | prose column | no | no | none |
 | 3 | What <city> clients ask for | link rows | no | no | none |
-| 4 | How working with us runs | three labelled fact tiles | no | no | none |
+| 4 | How working with us runs | span bento of labelled delivery cards (bentoLayout) | no | no | none |
 | 5 | Questions | plain disclosure list | no | no | none |
 | 6 | Closing | split band | no | no | QUOTE, CHAT |
+
+Row 4 rendered `remoteDelivery`'s three items as three equal cards in a row, which contract rule 6 bans outright;
+/about/ fixed the same breach on the same data and this file was the survivor. Spans now come from `bentoLayout`
+weighted on the line each card actually holds (`r.text`, the hub grid's own weighting: the phase name is a label
+row, not part of that line). Measured on the real copy the three run 65 to 90 characters, a ratio of 1.38, under
+`UNIFORM_RATIO`, so the uniform branch returns (3,3,6): two a row, which rule 6 allows, and the odd last card
+spanning the row rather than leaving half a row empty. 1.38 is close to the 1.4 threshold, so a reworded line
+could flip these to the varied branch (2,4,6); both are correct here, because the spans map through a literal
+class record that covers 2, 3, 4 and 6. The grid is one column below 768px, where three cards never fit anyway.
 
 ## v3 / compare template (/compare/<slug>/)
 

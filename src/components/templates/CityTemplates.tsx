@@ -5,8 +5,13 @@ import { routes, type FlatNode } from "@/config/routes";
 import { cities, getService } from "@/content";
 import { citiesLead, remoteDelivery } from "@/content/notices";
 import type { City } from "@/content/schema";
+import { bentoLayout } from "@/lib/bento";
 import { cn } from "@/lib/utils";
 import { Breadcrumbs, Faqs, h1, h2, LinkRows, page, Section } from "./parts";
+
+// bentoLayout returns 3 for a uniform pair and 2, 4 or 6 otherwise; written out so Tailwind's scanner sees
+// every class. A computed `md:col-span-${n}` is never emitted by the v4 scanner.
+const SPAN = { 3: "md:col-span-3", 2: "md:col-span-2", 4: "md:col-span-4", 6: "md:col-span-6" } as const;
 
 /** /wordpress-development/cities/: every city, in build priority order. */
 export function CityHubTemplate({ node }: { node: FlatNode }) {
@@ -37,6 +42,7 @@ export function CityTemplate({ city: c, node }: { city: City; node: FlatNode }) 
   const dev = getService("website-design")!;
   const path = routes.city(c.slug);
   const loc = `city:${c.slug}`;
+  const spans = bentoLayout(remoteDelivery.map((r) => r.text.length));
 
   return (
     <article className={cn(page, "max-w-4xl py-8 md:py-12")}>
@@ -73,9 +79,14 @@ export function CityTemplate({ city: c, node }: { city: City; node: FlatNode }) 
       </Section>
 
       <Section id="remote" title="How working with us runs">
-        <dl className="grid gap-4 sm:grid-cols-3">
-          {remoteDelivery.map((r) => (
-            <div key={r.label} className="rounded-[20px] border border-line bg-surface p-5">
+        {/* Three items rendered as three equal cards in a row, which contract rule 6 bans outright; /about/ fixed
+            the same breach on the same data. Spans now come from `bentoLayout` on the line each card actually
+            holds, the weighting the hub grid uses, and the label is a label row rather than part of that line.
+            Measured on the real copy the three run 65 to 90 characters, a ratio of 1.38, so the uniform branch
+            returns (3,3,6): two a row, which rule 6 allows, and the odd last card spans the row. */}
+        <dl className="grid gap-4 md:grid-cols-6 md:gap-5">
+          {remoteDelivery.map((r, i) => (
+            <div key={r.label} className={cn("rounded-[20px] border border-line bg-surface p-5", SPAN[spans[i] as keyof typeof SPAN])}>
               <dt className="font-display text-sm font-bold tracking-wide text-accent-text">{r.label}</dt>
               <dd className="mt-1.5 text-sm">{r.text}</dd>
             </div>
