@@ -60,12 +60,14 @@ export default function GuidesIndex() {
       <div className="mt-7 rounded-[20px] border border-line bg-surface p-5 shadow-card sm:p-6">
         <p className="font-display text-lg font-bold">Search by what you see</p>
         <p className="mt-1 max-w-[56ch] text-sm text-muted">Type the error text or describe the symptom. It opens the matching page.</p>
-        {/* The shell's own trigger, stretched to a full width bar on this page: the override asks for a prominent
-            search here, and the component takes no className, so the width comes from the wrapper. Its label and
-            shortcut still appear at lg; below that the shell hides them and the bar carries the icon alone. */}
-        <div className="mt-4 [&>button]:w-full [&>button]:justify-start [&>button]:gap-3 [&>button]:px-4 [&>button]:lg:px-4">
-          <SearchTrigger variant="pill" />
-        </div>
+        {/* The shell's own trigger, as a full width bar with wording at every width: pages/guide.md asks for a
+            prominent search here, and below lg the nav shape is a bare magnifier. The wording matches the
+            palette's own placeholder, so the control says the same thing before and after it opens. */}
+        <SearchTrigger
+          variant="pill"
+          label="What is your site doing?"
+          className="mt-4 w-full justify-start gap-3 px-4 text-base lg:px-4"
+        />
       </div>
 
       <Section id="errors" title="Pick the error you are seeing">

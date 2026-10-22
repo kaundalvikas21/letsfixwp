@@ -7,6 +7,7 @@ import { BookLink, ChatButton } from "@/components/Cta";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { matchProblem, type MatchCandidate } from "@/lib/match-problem";
+import { cn } from "@/lib/utils";
 import { useSearchTracking } from "@/lib/use-search-tracking";
 
 /** A match candidate plus what the palette shows and where Enter goes. Built on the server in SiteShell. */
@@ -112,13 +113,20 @@ const noop = () => () => {};
 const useIsMac = () =>
   useSyncExternalStore(noop, () => /Mac|iPhone|iPad/.test(navigator.userAgent), () => false);
 
-export function SearchTrigger({ variant }: { variant: "pill" | "icon" }) {
+/**
+ * Opens the palette. Two shapes, and two optional additions for a page that makes search its own control rather
+ * than a corner of the nav: `label` replaces the wording and shows it at every width instead of from lg, and
+ * `className` tunes the box (width, alignment, type size). Both default to the nav's behaviour exactly, so every
+ * existing call site renders as before.
+ */
+export function SearchTrigger({ variant, label, className }: { variant: "pill" | "icon"; label?: string; className?: string }) {
   const open = useContext(OpenPalette);
   const mac = useIsMac();
+  const name = label ?? "Search problems";
 
   if (variant === "icon")
     return (
-      <button type="button" onClick={open} aria-label="Search problems" className="grid size-11 cursor-pointer place-items-center rounded-full hover:bg-surface-2">
+      <button type="button" onClick={open} aria-label={name} className={cn("grid size-11 cursor-pointer place-items-center rounded-full hover:bg-surface-2", className)}>
         <MagnifyingGlassIcon weight="duotone" className="size-5" aria-hidden />
       </button>
     );
@@ -128,13 +136,17 @@ export function SearchTrigger({ variant }: { variant: "pill" | "icon" }) {
       type="button"
       onClick={open}
       aria-keyshortcuts="Meta+K Control+K"
-      className="inline-flex h-11 min-w-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-surface-2 px-3 text-sm text-muted transition-colors hover:text-text lg:pr-2 lg:pl-4"
+      className={cn(
+        "inline-flex h-11 min-w-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-surface-2 px-3 text-sm text-muted transition-colors hover:text-text lg:pr-2 lg:pl-4",
+        className,
+      )}
     >
-      {/* The name comes from this one string, so it reads the same at every width. The visible copy is decorative:
-          an aria-label here would not contain the shortcut hint, which axe reports as a name/content mismatch. */}
-      <span className="sr-only">Search problems</span>
+      {/* The name comes from this one string, so it reads the same at every width, and the visible copy repeats
+          it verbatim: an aria-label here would not contain the shortcut hint, which axe reports as a
+          name/content mismatch, and visible wording that is not in the name fails label-in-name. */}
+      <span className="sr-only">{name}</span>
       <MagnifyingGlassIcon weight="duotone" className="size-4" aria-hidden />
-      <span aria-hidden className="hidden lg:inline">Search problems</span>
+      <span aria-hidden className={label ? "inline" : "hidden lg:inline"}>{name}</span>
       <span aria-hidden className="hidden lg:inline">
         <Kbd>{mac ? "⌘ K" : "Ctrl K"}</Kbd>
       </span>
