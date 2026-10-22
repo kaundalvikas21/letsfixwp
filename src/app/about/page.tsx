@@ -3,8 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BookLink, ChatButton } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
-import { practiceIcons } from "@/components/sections/v3/Security";
-import { Breadcrumbs, FactRail, h1, h2, LinkList, page, Section } from "@/components/templates/parts";
+import { Breadcrumbs, FactRail, h1, h2, LinkList, page, practiceIcons, Section } from "@/components/templates/parts";
 import { brand } from "@/config/brand";
 import { cityNodes, hubIdOf, hubNodes, routes } from "@/config/routes";
 import { hubLead } from "@/content/hubs";
@@ -19,7 +18,7 @@ export const metadata: Metadata = {
 
 /**
  * Contract rule 4 caps supporting copy at 25 words and every `hubLead` runs 36 to 46, so a card carries the
- * hub's first sentence that fits the cap. Measured on the six real paragraphs: 20, 23, 13, 11, 13 and 22 words,
+ * hub's first sentence that fits the cap. Measured on the six real paragraphs: 20, 23, 13, 11, 14 and 22 words,
  * which is the first sentence for four hubs and the second for the two whose openers run 26 and 33. A hub whose
  * sentences are all over the cap falls back to its opener, which is the loudest way to show it needs rewriting.
  */
@@ -30,9 +29,9 @@ const cardLine = (lead: string) => {
 
 /**
  * /about/. A company page, not a team page: no person is named anywhere in the content, so nothing here
- * describes one. Layout: a document header, a bento of the six hubs with the whole `hubLead` paragraph, then a
- * body column carrying how an engagement runs, how access and data are handled and where clients are, with the
- * shared `FactRail` beside it. No photography, and no address or LocalBusiness anywhere: there is no office.
+ * describes one. Layout: a document header, the six hubs as uniform cards two a row, then a body column
+ * carrying how an engagement runs, how access and data are handled and where the work happens, with the shared
+ * `FactRail` beside it from lg. No photography, and no address or LocalBusiness anywhere: there is no office.
  */
 export default function About() {
   const hubs = hubNodes.map((n) => ({ node: n, lead: cardLine(hubLead[hubIdOf(n.path)]) }));
@@ -85,7 +84,7 @@ export default function About() {
       <div className="mt-12 grid gap-10 md:mt-16 lg:grid-cols-12 lg:gap-12">
         <div className="lg:col-span-8">
           {/* Phase names, in the order the work happens. No numerals and no "Step 1" label (rule 6): rows, not
-              three equal cards, which is also what keeps the card family to the bento above. */}
+              three equal cards, which is also what keeps the card family to the hub grid above. */}
           <Section id="engagement" title="How an engagement runs" className="mt-0 md:mt-0">
             <ol className="divide-y divide-line border-y border-line">
               {remoteDelivery.map((r) => (
@@ -122,7 +121,7 @@ export default function About() {
             </div>
           </Section>
 
-          <Section id="coverage" title="Where our clients are">
+          <Section id="coverage" title="Where we work">
             <p className="max-w-[68ch] text-muted">{citiesLead}</p>
             <div className="mt-5">
               <LinkList paths={cityNodes.map((c) => c.path)} />

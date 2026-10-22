@@ -166,7 +166,7 @@ apart by a letter plus a coloured rule, never by colour alone. Breadcrumbs alrea
 | /free-site-check/ | lead magnet: preview panel left, form card right | no | no | CHECK (form submit), CHAT |
 | /case-studies/ | composed empty state card | no | no | BOOK, CHAT |
 | /pricing/ | scope and outcome: three unequal tier cards, outcome rows per tier, a real comparison table, a disclosure FAQ and a split closing band | no | no | BOOK, PLANS, QUOTE, CHECK, CHAT |
-| /about/ | company document: a hub bento, ruled engagement rows, a grouped practice list, a city chip row and a closing band, with the shared rail beside the body from lg | no | no | BOOK, CHAT |
+| /about/ | company document: uniform hub cards two a row, ruled engagement rows, a grouped practice list, a city chip row and a closing band, with the shared rail beside the body from lg | no | no | BOOK, CHAT |
 | /guides/ | urgency-grouped error cards under a search panel, then a service chip row and a closing prompt band | no | no | BOOK, CHAT, CHECK |
 | /compare/ | stacked full-width comparison cards, each with A/B chips, summary and the criteria compared | no | no | BOOK, CHAT |
 | /wordpress-development/cities/ | link rows | no | no | QUOTE, CHAT |
@@ -262,13 +262,13 @@ on the service and guide templates, where the rail already renders it with its p
 
 /about/ is a company page, not a team page. There are no people, names, roles, bios or headshots anywhere in the
 repo, so nothing here describes a person, and the SITEMAP title (`About / Team`) is now `About`, which is also
-what the footer and the breadcrumb print. Six blocks: a document header, the hub bento, the engagement rows, the
+what the footer and the breadcrumb print. Six blocks: a document header, the hub cards, the engagement rows, the
 practice list, the city chips and the closing band, so ceil(6 / 3) = 2 eyebrows allowed and 0 used. Marquee is
 `no`. The page carries no photography, so it has zero image-plus-text splits and the 2-consecutive limit cannot
 be reached; the three frames now referenced by nothing are all `tone: "red"`, which MASTER.md:39 locks out of v3,
 so none of them is a candidate and nothing is logged to image-todo.
 
-No two blocks share a layout family: cards (the hub bento), full-width label rows (the engagement list), a
+No two blocks share a layout family: cards (the hub grid), full-width label rows (the engagement list), a
 grouped icon list two items to a group (the practice list), a pill chip row (the cities) and a split band
 (closing). The rail is not a sixth family; it is the one `FactRail` node, in the aside beside the body column.
 
@@ -282,8 +282,9 @@ guarantee is real.
 Block 2 replaces the `LinkRows` of the six hubs, which was the third appearance of that divided-row pattern
 across the in-scope pages and showed `hubLead` only as a one-line summary. A card carries the hub's first
 sentence that fits rule 4's 25-word cap on supporting copy, since every `hubLead` runs 36 to 46 words: measured,
-that is 20, 23, 13, 11, 13 and 22 words, the opening sentence for four hubs and the second for the two whose
-openers run 26 and 33.
+that is 20, 23, 13, 11, 14 and 22 words, the opening sentence for four hubs and the second for the two whose
+openers run 26 and 33. The development lead's second sentence gained one word in `3ddde13`, so that card reads
+14: its pronoun had no noun once the sentence was excerpted from the paragraph.
 
 The cards are uniform, two a row from md, which rule 6 allows; it bans three. This block carries no bento, and
 the reason is a measurement rather than a preference. Weighted on the line a card actually holds, as the hub
@@ -307,13 +308,18 @@ left for the fix wave.
 Block 4 is the security practice, now read from `src/content/notices.ts` rather than hardcoded: six items in
 three groups, each item either a claim gated in `brand.claims` or a published deliverable. The home page's
 `Security` section renders the same data in its own three-column group layout; this page renders it as a
-grouped two-up icon list in the body column, and the icons are the one thing the two share (`practiceIcons` in
-`parts.tsx`), because icons are not content.
+grouped two-up icon list in the body column, and the icons are the one thing the two share, because icons are
+not content: `practiceIcons` sits in `parts.tsx` with the other shared primitives, so neither page depends on
+the other, and it is keyed by the `PracticeId` union `notices.ts` exports, so a practice item added without an
+icon is a compile error rather than `undefined` rendered as a component.
 
 Block 5 is coverage, from the eight real city files, as a row of pill links to the city pages under
-`citiesLead`, which states that the work is remote. No `LocalBusiness` JSON-LD and no address: there is no
-office in any city, which is the decision `CityTemplates.tsx:32-34` records and nothing here contradicts it. No
-count is printed; eight links are their own quantity, and a count framed as an achievement is rule 8.
+`citiesLead`, which states that the work is remote. It is headed "Where we work", not "Where our clients are":
+those eight pages are the `/wordpress-development/cities/` taxonomy and their content is what websites in that
+city are usually built to do, so nothing in `src/content` establishes a client in any named city, and a heading
+that implies one is social proof invented from a route tree. No `LocalBusiness` JSON-LD and no address: there
+is no office in any city, which is the decision `CityTemplates.tsx:32-34` records and nothing here contradicts
+it. No count is printed; eight links are their own quantity, and a count framed as an achievement is rule 8.
 
 The rail carries `brand.guarantee` with the placeholder disclosure `FactRail` already renders, and the CTA pair.
 It carries no claim `points`: block 4 is the full practice on this page, and the rail would print the same

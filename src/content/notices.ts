@@ -42,9 +42,13 @@ export const claimPoints = (...keys: readonly ClaimKey[]): string[] => keys.filt
  * How we handle access, data and money: the home page's security section and the about page both read this.
  * Every item is either a claim gated in brand.claims, named in `claim` and marked with the same
  * `// brand.claims.x` comment as the lines above, or content the owner has already published as a deliverable,
- * with the file it comes from noted. `id` is what a page maps an icon to, because icons are not content.
+ * with the file it comes from noted. `id` is what a page maps an icon to, because icons are not content: it is
+ * a union rather than a string so that adding an item without giving it an icon fails to compile, instead of
+ * rendering `undefined` as a component.
  */
-const PRACTICE: { group: string; items: { id: string; claim?: ClaimKey; title: string; text: string }[] }[] = [
+export type PracticeId = "own-login" | "access-ends" | "backup-first" | "offsite-backups" | "price-approved" | "change-note";
+
+const PRACTICE: { group: string; items: { id: PracticeId; claim?: ClaimKey; title: string; text: string }[] }[] = [
   {
     group: "Access",
     items: [

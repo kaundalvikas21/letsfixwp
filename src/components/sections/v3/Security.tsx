@@ -1,19 +1,5 @@
-import { CheckCircleIcon, ClipboardTextIcon, CloudArrowUpIcon, DatabaseIcon, KeyIcon, UserMinusIcon } from "@phosphor-icons/react/ssr";
+import { practiceIcons } from "@/components/templates/parts";
 import { securityPractice } from "@/content/notices";
-
-/**
- * One icon per securityPractice item, by id. The words live in src/content/notices.ts with their
- * `// brand.claims.x` gate comments; icons are not content, so they stay here, and /about/ reads this record
- * rather than choosing its own, so the same practice carries the same icon on both pages.
- */
-export const practiceIcons: Record<string, typeof KeyIcon> = {
-  "own-login": KeyIcon,
-  "access-ends": UserMinusIcon,
-  "backup-first": DatabaseIcon,
-  "offsite-backups": CloudArrowUpIcon,
-  "price-approved": CheckCircleIcon,
-  "change-note": ClipboardTextIcon,
-};
 
 /** v3 home: grouped icon list, two columns per group, one soft divider between groups. */
 export function Security() {

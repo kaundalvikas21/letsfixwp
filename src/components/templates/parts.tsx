@@ -1,6 +1,18 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { CaretRightIcon, CheckIcon, SealCheckIcon, WarningIcon, WarningOctagonIcon } from "@phosphor-icons/react/ssr";
+import {
+  CaretRightIcon,
+  CheckCircleIcon,
+  CheckIcon,
+  ClipboardTextIcon,
+  CloudArrowUpIcon,
+  DatabaseIcon,
+  KeyIcon,
+  SealCheckIcon,
+  UserMinusIcon,
+  WarningIcon,
+  WarningOctagonIcon,
+} from "@phosphor-icons/react/ssr";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,6 +20,7 @@ import { breadcrumbLd, JsonLd, type Crumb } from "@/components/JsonLd";
 import { brand } from "@/config/brand";
 import { nodeByPath, routes } from "@/config/routes";
 import { getCompare, getGuide } from "@/content";
+import type { PracticeId } from "@/content/notices";
 import type { Urgency } from "@/content/schema";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +32,21 @@ export const prose = "max-w-[68ch] text-muted";
 export const h1 = "font-display text-[2rem] leading-[1.08] font-extrabold tracking-[-0.02em] text-balance sm:text-4xl lg:text-[2.75rem]";
 export const h2 = "font-display text-2xl leading-tight font-extrabold tracking-[-0.01em] md:text-3xl";
 export const card = "rounded-[20px] border border-line bg-surface p-6 shadow-card";
+
+/**
+ * One icon per `securityPractice` item (src/content/notices.ts), by id. The words and their
+ * `// brand.claims.x` gate comments are content and live there; icons are not, so they live here, where the
+ * home page's security section and /about/ both read them and a practice keeps one icon on both. Keyed by
+ * `PracticeId`, so an item added without an icon is a compile error rather than `undefined` as a component.
+ */
+export const practiceIcons: Record<PracticeId, typeof KeyIcon> = {
+  "own-login": KeyIcon,
+  "access-ends": UserMinusIcon,
+  "backup-first": DatabaseIcon,
+  "offsite-backups": CloudArrowUpIcon,
+  "price-approved": CheckCircleIcon,
+  "change-note": ClipboardTextIcon,
+};
 
 export const pageMetadata = (seo: { title: string; description: string }, path: string): Metadata => ({
   title: { absolute: seo.title },
