@@ -47,8 +47,8 @@ next-env.d.ts
 # python bytecode from skill scripts
 __pycache__/
 
-# prebuilt per-platform binaries from skill installs
-.agents/skills/*/scripts/bin/
+# vendored agent skills (duplicates of ~/.claude/skills, not product code)
+.agents/
 
 # sdd plan workspaces (git-ignored scratch)
 .superpowers/
