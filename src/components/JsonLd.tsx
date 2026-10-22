@@ -77,6 +77,45 @@ export const serviceLd = (s: Service, opts: { name?: string; url?: string; areaS
   return ld;
 };
 
+/**
+ * An index page that exists to list internal pages, with the list itself as its main entity.
+ *
+ * Truthful by construction: every name and url is read from `src/content`, so the list cannot say
+ * the page holds something it does not render. Deliberately `CollectionPage` over `ItemList` alone,
+ * because the page is the collection; and deliberately not `HowTo` or `AggregateRating`, which the
+ * site has no data for.
+ */
+export const collectionLd = (c: { name: string; description: string; path: string; items: { name: string; path: string }[] }): Thing => ({
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: c.name,
+  description: c.description,
+  url: abs(c.path),
+  publisher: { "@id": ORG_ID },
+  mainEntity: {
+    "@type": "ItemList",
+    numberOfItems: c.items.length,
+    itemListElement: c.items.map((it, i) => ({ "@type": "ListItem", position: i + 1, name: it.name, url: abs(it.path) })),
+  },
+});
+
+/**
+ * /about/. The page whose subject is the business itself.
+ *
+ * `mainEntity` points at the Organization the root layout already emits rather than declaring a
+ * second one, so the site has exactly one Organization node and this page is the page about it.
+ * Deliberately no `AggregateRating`, no `Review` and no `numberOfEmployees`: there is no review data,
+ * and a headcount is a claim about the world rather than something `src/content` can prove.
+ */
+export const aboutLd = (c: { name: string; description: string; path: string }): Thing => ({
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  name: c.name,
+  description: c.description,
+  url: abs(c.path),
+  mainEntity: { "@id": ORG_ID },
+});
+
 export const guideLd = (g: Guide): Thing => ({
   "@context": "https://schema.org",
   "@type": "TechArticle",

@@ -180,6 +180,37 @@ v3 style: 12px inputs on --line-strong, 44px targets, a step progress bar, and i
 | 1 | Intro column + form card | 5/7 split, intro left, tabbed flow card right | no | no | CHAT (intro) |
 | 2 | Booking flow | named-screen wizard inside the card (Problem, Your site, Contact, Confirm) | no | no | BOOK or QUOTE or CHECK on the last screen |
 | 3 | Success | confirmation state replacing the flow, with handoff and CHAT | no | no | CHAT |
+| 4 | Promises panel | tinted panel under the intro (icon list, no border, no shadow), left column row 2 | no | no | none |
+
+### The left column was 350px beside a 1000px form
+
+Measured at 1440: the intro column ended at y=518 while the form panel ran to 1265. Half the page's most
+important screen was empty, and the only thing in that column besides the headline was a chat trigger that
+rendered as a word inside a sentence.
+
+Three things changed, and the booking flow, its fields and `ContactTabs` were not touched.
+
+- **The grid is three children, explicitly placed.** `lg:grid-rows-[auto_1fr]` with the form at
+  `col-start-6 row-span-2` and the promises panel at `col-start-1 row-start-2 self-start`. The explicit rows
+  are load-bearing: with auto rows the browser splits the spanning form's height across both of them, which
+  pushed the intro down and stretched the panel to the form's own bottom edge with its lower half empty,
+  which is the same defect in a tinted container. `auto 1fr` pins row 1 to the intro's own height and lets row 2 absorb the
+  rest, so the panel hugs its content 56px under the intro.
+- **Document order is intro, form, panel**, so the phone gets the form second rather than after a screen of
+  reassurance: at 375 the card starts at y=556 inside an 812px viewport. The panel carries no interactive
+  element, so reading order differing from the lg visual order costs no tab stop. Left column now runs 168 to
+  917 against the form's 168 to 1265: shorter than the form on purpose, and nothing was invented to fill it.
+- **CHAT is the house `btn-secondary`**, 44px with the global 2px ember focus ring, under a plain
+  "Rather talk first?" line instead of inside it. Label still from `cta.ts`.
+
+The panel's four sentences are **verbatim** `confirm(...)` descriptions from `brand.ts` (reproduced in
+PRODUCT.md under Brand Commitments), each gated on its claim being truthy, because `brand.claims` holds
+booleans and numbers rather than sentences and no new claim wording may be authored. Four of the eight:
+`sameDay` and `bookingMinutes` are landing-surface speed claims and read as sales talk beside a form someone
+is already filling in, `vetted` and `checkTurnaround` answer other pages' questions, and all eight would run
+the column past the form's height. `first-letter:uppercase` is the only change made to the strings, which is
+presentation, not wording. The panel is `bg-surface-2` with no border and no shadow, so the form keeps the
+only card surface on the page and stays the primary element at all three widths.
 
 Two flows share the page: Emergency ticket (routes.book) and Project enquiry (routes.quote, type=project), each
 keeping its own sessionStorage draft. /free-site-check/ runs the same component in "check" mode.
@@ -850,3 +881,1396 @@ stagger still cascades (wrapper opacity 0.42, 0.24, 0.07, 0, 0, 0 at 150ms), hov
 switches to panels 3, 5 and 1 at a constant x=781 w=451, keyboard focus still opens the matching panel, row
 tops stay at [64,130,197,263,330,396], and the phone disclosure is unaffected: 6 categories, 0 sub-links, no
 scroll, and a tap still expands exactly one.
+
+## v4 / page templates: craft pass (P4)
+
+Refined in place across all five inner templates (Service, Hub, Guide, Compare, City and City hub, ~95 of
+99 routes). Every section's order, copy and layout family is unchanged, and nothing a visitor reads today
+changes meaning. What changed is the craft.
+
+**The bundle finding that decided the motion system, written down so it is not re-argued.** The working
+assumption was that the inner templates ship no animation library, so reusing MaskRise, CtaReveal or
+Magnetic would add Motion to 95 routes. That is false. NavBar is a `'use client'` leaf that statically
+imports `motion/react` for the scroll backdrop, SiteShell renders it from the root layout, and the motion
+chunk (147,989 bytes raw, 49,055 gzip) is referenced in 99 of the 100 prerendered HTML files. Motion is on
+every route's critical path already; reusing those components would have cost a few hundred bytes.
+
+The reason this pass is still CSS-only is different and better. MaskRise, CtaReveal and PracticeRows all
+server-render `opacity: 0` as an inline style and need hydration to clear it, and `motion-reduce` only
+rescues reduced-motion visitors. This project has already paid for that once: see the `hero-word` comment in
+globals.css, where a blocked bundle left the headline blank. On 95 pages whose entire value is readable body
+copy, that is the failure the contract calls worse than no reveal. CSS scroll-driven animation has no such
+state: inside `@supports (animation-timeline: view())`, a browser without view timelines renders the page
+exactly as it rendered before this pass.
+
+| Primitive | Motion | Spec | Communicates |
+| --- | --- | --- | --- |
+| Lead, hero CTA row, guide error text | CSS, time-based | `rise-in`: the existing `rise` keyframe, 600ms on `--ease-spring`, inline animationDelay 70 / 140ms. Server components, no observer: all are above the fold on every inner route | Hierarchy: the headline is already there, and the things that act on it arrive under it |
+| Section, closing band | CSS, view timeline | `reveal`: `reveal-rise` on `animation-timeline: view()`, `animation-range: entry 5% entry 40%`, fill both. Anything already in view at load is past the range and paints at its final state | Hierarchy: each section is its own answer, met one at a time |
+| FAQ disclosure | CSS, native | `.faq-row::details-content` block-size 0 to auto, 300ms `--ease-spring`, `content-visibility` with `allow-discrete`; `interpolate-size: allow-keywords` on html. Chevron CaretDown 0 to 180 over 240ms, ember when open | Feedback: the question opened |
+| LinkRows hover | CSS | the ember hairline from PracticeRows, scaleX 0 to 1 from the left over 260ms on cubic-bezier(0.23, 1, 0.32, 1), replacing the row's own hairline rather than sitting beside it. `(hover: hover)` gated | Feedback: this row, and it is a door |
+| LinkList, Breadcrumbs | CSS | transition-colors 200ms / 150ms on hovers that previously snapped | Feedback: the control answers the pointer |
+| btn-secondary hover | CSS | `--shadow-lift` over 200ms. It had no hover state at all, so CHAT was dead under the pointer on every page of the site. No ember border: it would compete with the primary standing beside it | Feedback: the secondary is operable, the same as the primary |
+| Service reading rail | IntersectionObserver, no library | `ReadingRail`: one tick per rendered `h2[id]`, the reader's own in ember, with the section's name under it. rootMargin `-96px 0px -55% 0px` clears the 64px header. aria-hidden and non-interactive, so it is not a second landmark and has no keyboard surface; a screen reader already has the heading outline | Orientation: where you are in a seven-section page, and the rail is still with you |
+
+**Two things the audit caught that the plan had wrong, both recorded because they are easy to reintroduce.**
+
+1. **Never put `rise-in` on an h1.** The first build faded the headline in on every template. The h1 is the
+   LCP element on every inner route, and an element at `opacity: 0` is not painted, so fading it in holds
+   the page's largest paint back by the length of the animation. The headline is now the already-visible
+   default that everything else rises under, which is also what the craft floor asks for.
+2. **A view timeline is scrubbed, not played, so a reader who stops scrolling parks it mid-animation.** With
+   a straight opacity ramp that left body copy resting at part opacity, and `--muted` at 0.55 over `--bg`
+   measures 4.03:1, under the 4.5:1 this system holds itself to. Axe caught exactly that, four nodes on the
+   guide page at 1440 and only at 1440. `reveal` therefore uses its own keyframe, `reveal-rise`, which
+   finishes the opacity by a third of the way in and spends the rest on transform alone. The worst a parked
+   reveal can now do is sit mid-slide while fully legible.
+
+**Motion exception, the third on the site.** `block-size` on `::details-content` is animated outside
+transform and opacity. Same reasoning as the two already recorded: ErrorPanels animates its grid track
+width, FaqTabs animates the answer's height, and an accordion cannot reveal an answer without one. One
+property, on one pseudo-element, behind `@supports`.
+
+**Open tension, recorded rather than resolved.** The craft floor asks for one authored moment rather than
+one identical entrance on every section, and DESIGN.md says motion here is "motivated case by case; nothing
+else moves". A single `reveal` on every `Section` is in tension with both. It is in because in-view reveals
+were asked for explicitly, and it is held to one 12px beat so it reads as the page settling under the reader
+rather than each section performing. The quieter alternative, if this ever grates: drop `reveal` from
+`Section` and keep it only on the four closing bands, which leaves the reading rail as the single authored
+moment.
+
+**No JS was added to any route but the service template.** ReadingRail is the only new client code in the
+pass; the other ~60 routes gain zero bytes.
+
+### Page rhythm, inner templates
+
+`Section` was `mt-14 md:mt-20` (56 / 80) with `mt-6` between a heading and its own body. 56px of separation
+against 24px of internal gap let adjacent sections merge at 375. It is `mt-16 md:mt-24` now (64 / 96),
+exactly half the home page's 128 / 192 between-section value: the same system at half density, which is what
+a seven-section reading document wants and what eleven full-bleed scenes do not. The heading-to-body gap
+stays at 24, so the ratio is 2.67 stacked and 4.0 at desktop. Closing bands moved to `mt-20 md:mt-28` with
+`pt-10 md:pt-12`, so the page's last beat still out-ranks a section.
+
+`h2` carried no `opsz` at all, on a variable display face where every other string on the site sets it to
+match its own size: h1 steps 34 / 48 / 56 and all eight home headings step 30 / 48. A 24px heading at
+Bricolage's default optical size rendered as a visibly different face from the h1 above it. It is
+`text-[1.625rem]` with `'opsz' 26`, stepping to `2rem` with `'opsz' 32`, leading 1.15. It is deliberately
+**not** converted to the home's 30 / 48: an inner h2 is subordinate to a 56px h1 and must not shout across a
+seven-section page. The same omission was closed on the service lead (20 / 24), the FAQ question and
+LinkRows title (18) and the service blockquote (18 / 20).
+
+### Container widths: three, on purpose
+
+Measured at 1440 as the h1's left edge, container minus `px-6`, and verified identical for every heading
+within each page:
+
+| Template | Container | Left edge | Why |
+| --- | --- | --- | --- |
+| Service, Hub, Compare | max-w-6xl | x=168 | A rail, a directory of full-width rows, a 3-up grid over a table. The page spine. |
+| City, City hub, ~~guides index~~ | max-w-4xl | x=296 | Prose plus a 3-up strip. **The guides index left this row in Task 2** and is on the spine at x=168. |
+| ~~Guide, compare index~~ Case studies | max-w-3xl | x=360 | Reading documents. Body copy is capped at 68ch regardless, so a 6xl guide would hold a 694px text column in a 1104px container under a 1104px h1. Strictly worse. **Both named pages have since left this row**: the guide in Task 1, the compare index in Task 6, each for a reason recorded in its own entry. `/case-studies/` is the only route still on this width. |
+
+The x=168 spine rule is an **intra-page** rule, and both bugs it has caught were intra-page: a section whose
+heading sat at x=296 while every heading above and below it sat at x=168. On a guide every heading then sat
+at x=360, consistently, and nothing was out of line with anything. (**Re-measured 2026-10-21:** the guide,
+the guides index and the compare index are all at x=168 now, and `/about/` and `/legal/guarantee/`, which
+this table never listed, were `max-w-3xl` and are on the spine too. Five of the site's surfaces have come
+onto one left edge over Tasks 1, 2, 5 and 6. Counted on disk afterwards, the narrowings that remain are
+`/case-studies/` at 3xl, both city templates and `/pricing/` at 4xl, and `/contact/` and
+`/free-site-check/` at 5xl, each of which holds a form or a strip rather than a reading column.) The widths were left alone deliberately:
+changing a container on 95 routes is the highest-risk act available in a craft pass and it is how both of
+those bugs were introduced. Recorded here so the next pass reads three widths as a system, not as drift.
+
+### Also fixed in this pass
+
+- **`RealScreen`'s sizes were wrong in both of its call sites, on the LCP image.** The component hardcoded
+  `(min-width: 1024px) 60vw, 100vw`, but its service box is 432px (col-span-5 of a 12-column grid on a
+  1104px inner container with 48px gutters) and its guide box is 720px (max-w-3xl less px-6). At 1440 the
+  service page preloaded the 1080w candidate into a 432px box, a 2.5x over-fetch on the LCP element of the
+  template that carries the search traffic. `sizes` is a required prop now and each call site passes its
+  real box.
+- **The FAQ summary was a 28px tap target.** `py-4` sat on the `details`, not on the `summary` that is
+  actually the click target, so every question on 95 routes was a 28px row inside a 60px box. The padding
+  moved onto the summary: same rendered height, a target you can hit.
+- **Breadcrumb links were 20px tall**, the smallest target on the site and one axe does not flag. `py-1.5`
+  takes them to 32px, clearing WCAG 2.5.8's 24px floor. Deliberately not the contract's 44: a 44px row of
+  14px crumbs reads as a second nav bar under the real one, and the same trade is already recorded for the
+  footer. Vertical padding only, so the first crumb stays on the spine.
+- **The compare table's scroll container had no tab stop**, so a keyboard visitor could not reach the second
+  half of it (axe `scrollable-region-focusable`, serious, at 375). It is `tabIndex={0}` with `role="region"`
+  and a name now, the same treatment the home page's fix rail has.
+- **LinkRows titles had no measure.** The summary was capped at 70ch and the title was not, so on a 1104px
+  hub row a short title sat with its chevron 1104px away: the same defect recorded for the FAQ pills. The
+  title is capped at 70ch, matching the summary beneath it.
+- **FAQ questions were not headings.** `<summary>` set them as display type, so one piece of content had a
+  real outline on the home page's FaqTabs and a flat one on 95 template routes. They are `<h3>` now;
+  `<summary>`'s content model permits heading content intermixed with phrasing.
+- **The FAQ chevron was a second vocabulary for one gesture:** CaretRight turning 90 here, CaretDown turning
+  180 on the home page. It is CaretDown and 180 now. LinkRows keeps CaretRight, which makes "go there" and
+  "open this" two different marks on purpose rather than by accident.
+- **`whatWeDo` left an orphan tile.** The list holds 3 to 5 steps in a two-up grid, so an odd count stranded
+  the last one beside a hole. An odd last step spans both columns.
+- **`btn-primary` and `btn-secondary` had no reduced-motion branch** on their press scale, the one motion in
+  the button system that was missing one.
+
+### Noted, not changed
+
+`src/components/Finder.tsx` is unmounted: zero importers across src, scripts, docs and design-system, and
+the only reference is a passing mention in a TileGrid comment. Its own docstring claims it lives on the
+knowledge base index, which does not import it. It is also the last component carrying `border-muted` and
+square corners. Left in place because deleting working code is outside a design pass, and recorded here so
+nobody spends a pass converting a component with no users.
+
+Geist Mono is still 29KB for error strings only. `RealScreen` passes `preload` straight to next/image while
+`Photo` hand-rolls `loading` and `fetchPriority` from the same prop name: two mechanisms, one concept. The
+guide's safe-check ordinals are a 32px box carrying the 14px shape lock, which at that size reads as a
+squircle. The four closing bands have four different heading ids for one thing. `prose` is exported from
+parts.tsx and used only by LegalPending while six call sites inline the identical two classes.
+
+## v4 / hub pages: cadence and directory (P5)
+
+Six hub routes (`/wordpress-fix/`, `/wordpress-security/`, `/wordpress-performance-migration/`,
+`/wordpress-maintenance/`, `/wordpress-development/`, `/woocommerce/`), one template,
+`src/components/templates/HubTemplate.tsx`. The contact page's entry for the same pass is under
+**v3 / contact** above, where the rest of that page is recorded; this section covers the hubs and the one
+shell change the pass made.
+
+### Layout families, per section
+
+| # | Section | Family | Full bleed | Changed |
+| --- | --- | --- | --- | --- |
+| 1 | Hero | h1 on the whole 1104px spine, then a 6 / empty / 5 lead-and-photograph split under it | no | yes, the headline was inside the 7/5 split and read as a service page's opening |
+| 2 | Service directory ("What we do here") | divided full-width rows, two columns from md up: 368 / 620 / 20 at 1440, one stacked column at 375 | no | yes, new `split` variant on `LinkRows` |
+| 3 | Problem grid ("Most urgent problems") | 2-up card grid, optionally one full-width lead panel | no | yes, sort order and the lead panel |
+| 4 | Closing band | hairline over a heading-left, buttons-right row | no | yes, copy |
+
+The directory is the reason the pass existed. Eleven stacked title-over-paragraph rows read as one block of
+text, so the summary moved into a column of its own and the titles became a single scannable column on the
+spine with the summaries answering across the gutter. `LinkRows` is one grid with three cells now and
+`split` only re-places them, so the five existing call sites render exactly what they rendered before. The
+title column is `minmax(0,18rem)` at md and `minmax(0,23rem)` at lg, a measure rather than a fraction: a
+23rem column at 768 would leave the summary at 38ch, under what a sentence needs.
+
+### Rhythm: 128 / 64 / 112 at desktop, 80 / 64 / 80 stacked
+
+Measured on a production build, `margin-top` of each section at 1440 and at 375:
+
+| Interval | 1440 | 375 | Why |
+| --- | --- | --- | --- |
+| Hero to directory | 128px | 80px | The directory is what the page is for, so it opens at the home page's between-section value, not the reading document's |
+| Directory to problem grid | 64px | 64px | These are the errors the services above fix, not a third subject, so the grid sits close under them |
+| Problem grid to closing band | 112px | 80px | The last beat still out-ranks a section, as on every other template |
+
+The inner-template baseline recorded under **P4** is `mt-16 md:mt-24` on every `Section`, which is right for
+a seven-section guide and wrong here: a hub is three or four beats, and running them all at one interval
+leaves the page with no cadence at all. Stacked, every interval stays at or above the 64 that P4 set as the
+floor, because at 375 anything less merges two sections into one.
+
+**tailwind-merge only resolves a conflict within the same modifier.** The middle interval shipped at 96px
+for one commit while a code comment above it asserted 64. `className="mt-16"` on a component whose base is
+`mt-16 md:mt-24` leaves `md:mt-24` standing: the two classes do not conflict, because one is bare and one is
+`md:`. The built class string was `reveal md:mt-24 mt-16`, and nothing in the source read as wrong. Write
+both modifiers (`mt-16 md:mt-16`), and check an overridden responsive utility in the built HTML rather than
+in the JSX.
+
+### Urgency drives order and weight, and is never printed
+
+`guide.urgency` sorts the problem grid (critical, high, standard) and decides whether the first panel takes
+the full 1104px. The word itself came out of the row entirely. It could not be made to read well on any hub:
+on `/wordpress-fix/` all six guides are `critical`, so it said nothing; on `/wordpress-security/` it printed
+"Critical" on four of five panels; and on `/wordpress-performance-migration/` it labelled three of four
+panels "Standard" directly under a heading reading "Most urgent problems", which contradicts the heading. A
+ranked list under that heading does not need every row to restate its rank.
+
+The lead panel is gated on `topGuides.length > 2 && topGuides[0].urgency === "critical" && !!topGuides[0].errorText`.
+**The `errorText` half of that gate is a silent dependency on content order**: reorder or reword the guides
+so the worst one carries no error string and the lead panel disappears with no warning and no failing check.
+It is in because a 1104px box holding one 18px line reads as a broken state rather than as weighting, which
+is what gating on urgency alone gave the fix hub. Today only `/wordpress-security/` qualifies, measured:
+1104px lead panel there, 544px panels on the other three hubs that render the grid.
+
+`/wordpress-fix/` therefore renders a uniform 2x3 grid with no lead panel, **deliberately**. All six of its
+guides are equally critical, so widening one because it happens to carry an error string would be emphasis
+the data does not support, and six panels fill a 2x3 grid with no tile stranded beside a hole. The monotony
+this pass existed to remove was the section cadence, and that is what the 128 / 64 / 112 interval ships.
+
+### Motion
+
+No new motion was invented. Each primitive is the one already recorded under **P4**, and all of it is CSS.
+
+| Element | Primitive | Communicates |
+| --- | --- | --- |
+| Hero lead, hero button row | `rise-in`, 600ms on `--ease-spring`, inline delay 70 / 140ms | The headline is already there, and what it means and the buttons that act on it arrive under it |
+| Directory, problem grid | `reveal` on `animation-timeline: view()` | Each section is its own answer, met one at a time |
+| Directory row hover | ember hairline, scaleX from the left over 260ms, `(hover: hover)` only | This row, and it is a door |
+| Problem panel hover | border and shadow to `--line-strong` / `--shadow-lift` over 200ms | The panel is a door too, but a quieter one than the row |
+| Closing band | `reveal` | The page's last beat arrives with the reader |
+
+The h1 carries nothing, for the reason P4 records: it is the LCP element and an element at `opacity: 0` is
+not painted.
+
+Reduced motion: `rise-in` resolves to `animation: none`, so the lead and the buttons are simply present;
+`reveal` is inside `@media (prefers-reduced-motion: no-preference)`, so under `reduce` no view timeline is
+created and every section renders at its final state; the hover hairline and chevron nudge carry
+`motion-reduce:transition-none`. Verified at 1440 under `prefers-reduced-motion: reduce` on a production
+build: every `.reveal` and `.rise-in` at opacity 1 and transform none.
+
+### The mobile action bar does not render on /contact/
+
+The fixed bottom bar under 768px (`NavBar`, recorded under **v4 / header refinement**) carries BOOK and a
+chat icon. BOOK navigates to `/contact/`, so on `/contact/` itself the bar sat a no-op button and a second
+chat trigger on top of the one form the page exists for. It is suppressed there: `NavBar` compares
+`usePathname()` against `routes.contact` and, on every route that keeps the bar, marks the header with
+`data-action-bar`.
+
+That attribute is what reserves the bar's space, so the space goes with the bar. The reservation used to be
+a `pb-[calc(4.75rem+env(safe-area-inset-bottom))] md:pb-0` on `body` in the root layout plus
+`html { scroll-padding-bottom: 6.5rem }` in globals.css, neither of which can see the route. Both are now one
+`@media (width < 48rem)` block keyed on `html:has(header[data-action-bar])` and `body:has(...)`, so
+`/contact/` releases 76px of bottom padding and goes back to the desktop 2rem scroll padding instead of
+gaining dead space on a phone. The marker sits on the header rather than on the bar itself because the bar
+unmounts while the mega menu is open: measured, `body` holds 76px of padding with the menu both closed and
+open, so nothing shifts behind the overlay.
+
+Measured at 375 on a production build: `/contact/` has no bar, `padding-bottom: 0px`,
+`scroll-padding-bottom: 32px`, no gap below the footer, and one chat trigger rather than two.
+`/wordpress-fix/` has a 73px bar, 76px of padding and 104px of scroll padding, unchanged.
+
+**`/free-site-check/` keeps its bar, deliberately.** It runs the same `BookingFlow` in `check` mode, but the
+bar's BOOK is a real navigation there, to the paid booking flow, which is the escalation that page exists to
+offer. The duplicate-trigger argument is weaker too: the chat launcher is already hidden under md on both
+form pages, so the only other trigger on the page is a word inside a sentence. Nothing about the bar is
+wrong on that route, so nothing changed.
+
+### Correction to the contact entry above
+
+That entry's claim that CHAT is "the house `btn-secondary`" is right about the contact page and should not be
+read as a claim about the site. Counted, and counted wrong twice before this line settled: 25 `ChatButton`
+call sites, **18** with `btn-secondary`. The seven that do not are `/free-site-check/`, `/pricing/` and
+`BookingFlow`'s success screen, where CHAT is still a bare word inside a sentence; `CtaPair` in
+`src/components/Cta.tsx`, which has zero importers; `Finder.tsx` and `CommandPalette`, which give CHAT
+`btn-primary` because no other call to action sits beside it there; and the home page's `FinalCta`, a
+deliberate large underlined text link beside the primary. Two of those seven ship on no route at all, so
+the count flatters the problem: `CtaPair` has no importers and `Finder.tsx` is mounted nowhere.
+
+The number is recorded here and deliberately **not** repeated in a code comment, because it was written
+into one as a count twice and was wrong both times. A figure that changes whenever anyone adds a CHAT
+does not belong next to the markup it describes. A later pass should take the three sentence-inline ones;
+they were out of scope here, and
+`CtaPair` in `src/components/Cta.tsx`, which pairs the two the same way, has zero importers.
+
+### Deliberately not done
+
+- **No change to the five existing `LinkRows` call sites.** `split` is opt-in for that reason.
+- **No guide counts, badges or "N problems" anywhere.** The content has no count that is true across hubs.
+- **The heading "Most urgent problems" stays.** As a superlative over the guides a hub actually has it stays
+  true even when the most urgent one is only `high`. "Problems we see most" would be an invented statistic.
+- **The container width is untouched.** The hub stays at `max-w-6xl`, x=168, the spine P4 recorded.
+- **`sizes="432px"` on the hub hero photograph over-declares by about 14% at 1024.** Exact at 1440, on a
+  non-LCP image, and costs one candidate step. Left.
+- **`Section`'s baseline interval was not changed** to fit the hub. The hub overrides it at both modifiers;
+  the other ~90 routes keep 64 / 96.
+
+## v4 / guide template: the 37 money pages (Task 1)
+
+`GuideTemplate` is the search-traffic surface: 37 routes, one per error. This pass changed what the page is
+made of, not what it says. **It supersedes two rows of the tables above**: the template table's "Guide /
+single-column troubleshooting document" and the container table's "Guide, compare index | max-w-3xl". The
+guide no longer runs at `max-w-3xl`. (At the time of writing the compare index still did. It no
+longer does either: Task 6 moved it to the `page` spine, and the container-table row is corrected
+above.)
+
+| Layout family | Eyebrows | Marquee | CTA intents | Client islands |
+| --- | --- | --- | --- | --- |
+| Split header (error, then the picture of it) over a lead column with a sticky rail at lg | 0 | 0 | BOOK, CHAT, CHECK | `ReadingRail` only |
+
+### The container is `max-w-6xl` now, and the reading measure did not move
+
+The old entry's argument against a wide guide was "a 694px text column in a 1104px container under a 1104px
+h1". That argument is against a **wide single column**, and it is right. It is not an argument against a
+wider container, because the column the text sits in is set by the grid, not by the container: the document
+runs in `lg:col-span-8` of the same 12-column grid the service page uses, which measures **720px at 1440**,
+which is exactly what `max-w-3xl` less `px-6` held. Measured on the production build: lead column 720px,
+rail 336px, every heading at x=161 (the 15px scrollbar off the x=168 spine), and paragraphs still capped at
+`68ch` inside it, with the symptom and safe-check lists now capped at 68ch too (they were running the full
+720px, which is 88 characters).
+
+So the page gained the right-hand 336px and lost nothing of the measure. What fills it is the service
+page's rail family: card, BOOK, CHAT, and `ReadingRail`'s ticks. **That is a family repeat across the site
+and it is deliberate**: contract rule 3 forbids a family repeating *within one page*, and a visitor reading
+a guide is not looking at a service page. It is also the only place on this page where conversion sits
+above "When to call us", which is the order a Read surface wants: comprehension first.
+
+Three container widths are still three on purpose; this changes which bucket the guide is in, from
+"reading document" to "page spine", because it now has a rail like the other spine pages.
+
+### Every guide has a banner, which is what the pass was for
+
+All 37 guides declare an `image.slot` and 4 captures exist, so `RealScreen` returned `null` on 33 of them
+and those pages had no image at all. The guide now uses the fallback the service hero already uses: the
+real capture when the file exists, otherwise `servicePhotos[g.parentService]` through `Photo`, in the same
+`p-2` frame in the same column, so the banner is one shape across all 37. One **shape**, not one height: the
+photograph's box is 16:10 because that is the photographs' own ratio (1600x1000), so the frame crops
+nothing, while the four captures measure 2.13, 1.78, 1.66 and 1.78 and each keeps its own. An earlier
+version of this entry claimed one height; it was wrong, and the code comment that claimed it has been
+corrected too. The photograph carries **no alt**: `g.image.alt` describes the capture that does not exist on those pages, and lending it to a stock
+frame would describe the wrong picture.
+
+**The fallback is a banner, not the picture the page should have, and the gap is still 33 of 37.**
+Re-counted from disk for this entry: 37 guides declare an `image.slot`, `public/screens/` holds four
+PNGs, so 33 guides show their parent service's night frame. Several guides share one service, so a
+reader moving between siblings sees the same frame more than once; `docs/image-todo.md` carries the
+slot list, the sizes and the art direction, and `npm run capture` (which needs Docker, unavailable
+here) writes them. Three statements in that file still read "still empty" or "also empty" for `public/screens/`,
+which has not been true since 2026-10-19. The capture arm emits a real `<link rel=preload as=image>`; the
+photo arm is `loading=eager` with `fetchpriority=high`, which is what `Photo` has always done. Neither
+fades, and neither does the h1.
+
+`sizes` is `(min-width: 1152px) 336px, (min-width: 1024px) 30vw, 100vw`. Measured on the production build:
+the cell is 336px from 1152 up, 288px at 1024, full width below, and the image inside it is 16px narrower
+than the cell because the frame holds it in `p-2`. The hub photograph's recorded 14% over-declaration at
+1024 is the same shape of error; the middle condition costs one media query and keeps a 2x tablet a
+candidate step cheaper. At 1440 the page fetches the 384w candidate into a 320px box and at 375/2x the 750w
+into a 343px one, which are the right candidates in both cases.
+
+The first version of this pass declared 432px, because the banner was `col-span-5` of a 7/5 header. That was
+the wrong structure, for a reason a screenshot caught: the header ran 7/5 over a body that runs 8/4, so the
+banner and the rail card beneath it shared a right edge, were 431px and 335px wide, and the right column
+stepped 96px sideways between the two. **The page is one 8/4 grid now**, header and body, which is what puts
+the banner and the card on one left edge. The alternative was moving the body to 7/5, which was rejected on
+the measure: a 648px reading column is under the 68ch cap, so the measure would have become
+container-bound rather than `ch`-bound, which is the one thing constraint 8 forbids. Measured after the
+change at 1440: banner and card both `left: 929, width: 336`, 48px apart, h1 720px wide on the same spine as
+the 720px reading column. At 1024: both `left: 697, width: 288`, 48px apart. At 375 the aside is
+`display: none` and nothing moved.
+
+### The error string is the anchor, and it is sized to itself
+
+20 of 37 guides have `errorText`. It was a 14px mono line under the h1; it is now a 16px mono plate on
+`--surface-2` with `px-5 py-4`, in the header's left column with the banner beside it. Two details that are
+not decoration: it **wraps** (`[overflow-wrap:anywhere]`) instead of scrolling, so a 90-character file path
+inside a 648px column does not create a scrollable region with no tab stop (the defect this ledger already
+records against the compare table), and it is `w-fit max-w-full`, because "502 Bad Gateway" in a 648px box
+read as an empty panel with a few characters in the corner.
+
+### Headings: 22 / 26, this page only
+
+The shared inner `h2` is 26 / 32 and five templates render it. The guide sets its own step one below that,
+22 / 26 with `opsz` to match, as a scoped descendant override on the `<article>`
+(`[&_h2]:text-[1.375rem] …`) rather than as a new prop on `Section`: `Faqs` renders its own `Section` and
+would have needed the prop threaded through it, and a concurrent task imports `Section`. Against 17px body
+26px is a 1.53 ratio, which scans without shouting, and the heading is no longer the loudest thing on a
+page that now also carries an error plate, a banner and a rail. `impeccable detect` raises its
+`design-system-font-size` advisory on `1.375rem`; it raises the same advisory on the shipped `1.625rem`,
+because DESIGN.md's ramp documents the home page's scale and the template layer has always run its own.
+
+### The sibling heading was broken English
+
+`More ${parent.title.toLowerCase()} errors` rendered "More wordpress critical error fix errors": the
+parent's title is a service name, not a noun phrase you can interpolate into a sentence. It reads **"Other
+errors we fix"**, which is the heading the service page already gives the same list of guides, so it is not
+a new claim. The rows now carry `symptoms[0]` as their summary, the same way the service page's guide rows
+do, so the section is scannable instead of a list of bare titles.
+
+### Measured, production build, `next start` on the LAN address
+
+axe-core 4.14: **0 violations of any impact** on `/guides/502-bad-gateway/` at 375, 768, 1024 and 1440 under
+`prefers-reduced-motion: reduce`, on `/guides/php-fatal-error/` at 1440 and 375, and on
+`/guides/white-screen-of-death/` at 375 and at 1440 with motion enabled. No horizontal scroll at any of the
+four widths. Under `reduce` the h1, the error plate and every section render at their final state (`rise-in`
+resolves to `animation: none`, `reveal` lives inside a `no-preference` block) and the h1 carries no
+animation at all, which is why it is the one element that can be the LCP without a repaint.
+
+### Deliberately not done
+
+- **No facts list in the rail.** The service rail's `typicalTurnaround` / `priceFrom` dl renders nothing:
+  both are `null` on all 32 services. Contract rule 8 says a null renders nothing, so the right amount of
+  code for it here is none.
+- **No hero CTA row.** The rail carries BOOK and CHAT at lg, the global action bar carries them under 768,
+  and "When to call us" carries them everywhere. A fourth pair above the fold would make an informational
+  page open with a sales pitch.
+- **No closing band.** The service page's closing split is a third CTA family; the guide ends on its
+  siblings, which is where a reader who is not ready to book should be sent.
+- **`items-center` on the header, with the whitespace that implies.** On the 17 guides with no `errorText`
+  the left column holds only the h1, so there is about 79px of slack above and below it against a 273px
+  banner. At density 3 that is the system working, not a hole: the alternative was inventing a subtitle.
+- **The "hairline" under the FAQ heading is the letter Q.** Recorded because it cost an investigation and
+  should cost nobody another one. The FAQ heading "Questions" appears to be underlined on every template,
+  including the untouched `/wordpress-fix/white-screen/`, while no other heading is. It is not a decoration:
+  computed `text-decoration-line` is `none` on the heading and on every ancestor, `elementsFromPoint` finds
+  nothing at that pixel, and it survives changing the id. It is **Bricolage Grotesque's capital Q**, whose
+  tail is a long horizontal stroke that runs along the baseline under the letters that follow it. Probed on
+  the production build at 26px in the live page: "Q" alone draws the line, "O" alone does not, "Questions"
+  draws it, "Oestions" does not, and the same string in `system-ui` does not. Nothing to fix; the typeface
+  is doing what it was drawn to do, and "Questions" is the only heading on the site that starts with a Q.
+
+## v4 / knowledge base index (/guides/, Task 2)
+
+One route, and the entry point to all 37 guide pages. **It amends the container table's "City, City
+hub, guides index | max-w-4xl | x=296" row**: the city templates keep `max-w-4xl`, the guides index
+does not. It kept x=296 while the 37 guide pages it opens moved to the `max-w-6xl` spine in Task 1,
+so the index was narrower than every page it linked to. It runs on bare `page` now, x=168, which is
+the same left edge as the guides, the hubs and the services.
+
+| Layout family | Eyebrows | Marquee | CTA intents | Client islands |
+| --- | --- | --- | --- | --- |
+| Lead-and-instrument header (7/5), one grouped column-flow index, closing band | 0 | 0 | BOOK, CHAT, CHECK | `Finder` only |
+
+### What it was
+
+**Seventeen** near-identical sections, one per parent service that has guides, each a 32px `Section`
+heading over one to four 14px chips in a 2-up grid, closed by the sentence "How we fix these:
+`<service>`" in ember underline. 5,711px at 1440 and 8,002px at 375, measured.
+
+**Seventeen, not sixteen.** The brief for this pass said sixteen and the first version of this entry
+repeated it without checking. 32 services exist, 17 of them have at least one guide, and both the old
+page and the new one render exactly `services.map(s => ({s, gs: guidesFor(s.id)})).filter(x => x.gs.length)`.
+Derived from `src/content`: group sizes are 2,4,1,1,4,2,2,4,2,1,3,3,1,1,3,1,2 in page order, which is
+17 numbers summing to 37, and counted in the built HTML the directory renders 17 `h3` and 54 links. No search, no filter, and the hierarchy
+inverted the whole way down: the headings were the loudest thing on the page and the guide titles,
+which are the content, were the quietest.
+
+### What it is: two ways in, not seventeen sections
+
+1. **`Finder`**, mounted for the first time. Free text in, the top three matches out, each resolving
+   to a service so BOOK always has a target.
+2. **One directory**, all 37 guides grouped under the 17 services that fix them, in a **column
+   flow** (`columns-1 md:columns-2 lg:columns-3`) rather than seventeen stacked sections. The service
+   title is now itself the link, which keeps all seventeen internal links to the service pages and
+   loses seventeen repetitions of a sentence.
+
+Three layout families, none repeated within the page. The closing band is the hub template's, which
+is a cross-page repeat and deliberate: contract rule 3 forbids a family repeating *within* a page.
+
+**Column flow, not a grid.** Seventeen groups of one to four rows (sizes sorted:
+1,1,1,1,1,1,2,2,2,2,2,3,3,3,4,4,4) have four different heights spread unevenly, and a grid would leave
+holes; the flow packs them and `break-inside-avoid` keeps a service with its
+guides. The flow is column-major, so tab order and reading order are the same order. The groups
+carry no border and no surface, because three bordered boxes in a row is three equal cards; a
+hairline down each group's left edge says where it starts and ends instead.
+
+### The error string is on the row, and that decision was made twice
+
+The first version of this page gave the 20 guides that carry `errorText` a two-column ruled list of
+their own above the index, mono-led, with the guide title answering underneath. It read well at
+1440 and it was wrong: it put 20 of the 37 guides on the page twice, and it cost **1,712px at 375**
+for links that were already below it. Measured, that version was 3,675px at 1440 and 8,161px at 375,
+which is a `<main>` of 2,763px and 5,601px: *taller than the page it replaced* on a phone, where the
+page it replaced measured 5,442px.
+
+So the quoted line moved onto the row it belongs to, under the title, in 14px mono on `--muted`. The
+titles are phrased for search ("WordPress 502 bad gateway") and the strings are what is actually on
+the visitor's screen ("502 Bad Gateway"), so the two are not redundant on any of the 20. 17 guides
+have no `errorText` and render a title and nothing else, which is contract rule 8 working.
+
+`line-clamp-2` with no `block` beside it (both set `display`, and the plain utility silently kills
+the clamp), and `[overflow-wrap:anywhere]` so a 90-character line wraps rather than making a
+scrollable region with no tab stop. Same two details as the guide page's error plate, same reasons.
+
+### Measured, production build
+
+| | Before | After | Change |
+| --- | --- | --- | --- |
+| Document height, 1440 | 5,711px | 2,921px | -49% |
+| Document height, 375 | 8,002px | 6,992px | -13% |
+| `<main>` height, 1440 | 4,799px | 2,009px | -58% |
+| `<main>` height, 375 | 5,442px | 4,432px | -19% |
+| Unique guide URLs in the HTML | 37 | 37 | unchanged |
+
+The footer measures 912px at 1440 and 2,484px at 375 and is the same on both sides of the change, so
+the `<main>` figures are the honest ones (at 375 the 76px the action bar reserves on `body` comes out
+too). The phone improves least because a one-column index of 54 targets at 44px has a floor the
+desktop does not: the 37 guide links and the 17 service links **are** the page.
+
+Spine, measured at 1440: the h1 and both h2s at x=168, which is `max-w-6xl` less `px-6` and the same
+edge the hubs, the services and the guides sit on.
+
+### `Finder` went from unmounted to mounted, and was converted to v4 on the way
+
+It had zero importers. Its own docstring said it lives on the knowledge base index, and the index was
+the one page with no way to search it. It was also the last component in the repo still carrying v2's
+square corners and `border-muted`:
+
+| Before | After | Why |
+| --- | --- | --- |
+| `border border-muted`, no radius | `rounded-[14px] border border-line-strong` | 14px is the shape lock; `--line-strong` (3.36:1) is the only hairline weight allowed to identify a control, and `--muted` is a text colour, not a border token |
+| `focus-visible:border-text` | the global 2px ember ring at 2px offset | A border that changes colour is not a focus indicator; `globals.css` already ships the house ring |
+| `min-h-14` (56px) | `min-h-12` (48px) | Still over the 44px floor, and 56px read as a form field on a page that is not a form |
+| Result row link was bare inline text | `inline-flex min-h-11 items-center` | It was a ~22px target in a 46px row |
+| `border-t` on the list plus `border-b` on every row | `divide-y divide-line border-y border-line` | The house `LinkRows` treatment, and one hairline per boundary rather than two |
+| No-match box: `border border-muted p-4`, square | `rounded-[14px] border border-line bg-surface p-5 shadow-card` | It is a card, so it is the card |
+| No hover state on the control | `hover:border-text/50` | A control with one static boundary gives the pointer nothing back. White at 0.50 is **deliberately above `--line-strong`'s 0.36**: it is the same boundary getting brighter, not a second token, and the resting state is still the one the contrast table covers. Pointer only, and it carries the input's existing 200ms colour transition |
+| BOOK per result: `btn-primary` | `btn-secondary` | Three ember fills stacked in one answer, under a header that already carries one, is the page shouting at someone who has just started typing. The row's own link is what they asked for; BOOK is the escalation beside it, and it still carries the service and the guide |
+
+**The live region is mounted from first render**, and only its contents are conditional. It used to
+be `{show && <div aria-live="polite">...}`, so the region and its first content arrived in the same
+mutation: a region a screen reader has not been observing yet, which can swallow the first answer,
+the one the visitor is actually waiting for, while every answer after it announces normally. That is
+why it reads as working and why axe cannot see it, the attribute being correct and the timing not.
+The `mt-6` stays conditional with the contents so an empty region takes no space.
+
+`Finder`'s own `ChatButton` is untouched and stays `btn-primary`: it sits in the no-match card as the
+only action there, which is exactly when a primary is right. **One line of the P5 entry is now
+stale**: its CHAT census listed `Finder.tsx` among the call sites that "ship on no route at all".
+`CtaPair` still has zero importers; `Finder` does not. No count is restated here, for the reason P5
+gave and commit cee284a acted on: a figure that moves whenever anyone adds a CHAT does not belong
+beside the markup it describes.
+
+**Why a client island on a page that ships almost no JS.** Constraint 6 asks for a stated reason.
+Free-text scoring against 52 candidates' titles, error strings and symptoms is not something CSS can
+do, and the ranked answer has to arrive while the visitor types. The index itself is plain
+server-rendered anchors, so **all 37 guide URLs are in the HTML with no interaction in the way** and
+nothing a crawler needs depends on hydration. The payload is `matchIndex` plus a title-and-path map,
+which is the same shape `/contact/` already ships to `BookingFlow`.
+
+**It filters on a production build**, which is the only place it can be checked: the Windows dev
+server does not hydrate from WSL, so dev-server behaviour proves nothing here. Measured on
+`next start`: "blank white page after update" returns the white-screen guide, its service and the
+after-update guide; "502" returns "WordPress 502 bad gateway" first; "zzzzqqq" returns the no-match
+card with CHAT and CHECK.
+
+### JSON-LD
+
+A `CollectionPage` whose `mainEntity` is an `ItemList` of all 37 guides, built in
+`collectionLd` (`src/components/JsonLd.tsx`) from `src/content`, so the list cannot claim the page
+holds something it does not render. `numberOfItems: 37`. No `HowTo` and no `AggregateRating`: there
+is no complete how-to and no review data. `breadcrumbLd` still emits from `Breadcrumbs`.
+
+### Motion
+
+| Element | Primitive | Communicates |
+| --- | --- | --- |
+| Hero lead | `rise-in`, inline delay 70ms | The headline is already there; what it means arrives under it |
+| Search control | `rise-in`, inline delay 140ms | The instrument arrives after the sentence that explains it |
+| Index, closing band | `reveal` on `animation-timeline: view()` | Each section is its own answer, met one at a time |
+| Group heading, guide row, service link | colour to `--accent-text` over 200ms | This row is a door |
+
+Nothing on the h1. Under `prefers-reduced-motion: reduce`, `rise-in` resolves to `animation: none`
+and `reveal` lives inside a `no-preference` block, so every element renders at its final state;
+measured at 1440 with 0 elements in `main` at `opacity: 0`. With motion enabled exactly one element
+is parked at 0 at load, the below-fold closing band, which is what a view timeline does before its
+range starts and what every `reveal` on the site has always done; verified to resolve to opacity 1
+and no transform once scrolled to.
+
+### Measured, axe-core 4.14
+
+0 violations of any impact at **375, 768, 1024 and 1440**, and at 1440 under
+`prefers-reduced-motion: reduce`. One h1 at every width, no horizontal scroll at any width, and no
+computed border radius inside `main` other than 0 or 14px.
+
+### Deliberately not done
+
+- **No filter chips and no tabs over the index.** The home page's `TileGrid` already owns that
+  pattern and it needs a client island to hold the state; 37 rows under 17 named groups with a
+  search box above them does not.
+- **No hub level in the directory.** The services already arrive in SITEMAP order, which runs hub by
+  hub, so the clusters are there without a fourth heading level to carry them.
+- **No guide counts, no "N articles", no urgency printed on a row.** Same ruling as the hubs: the
+  content has no count that stays true, and a rank restated on every row contradicts itself.
+- **`urgency` is not used on this page at all.** It sorts the hub grids; here the SITEMAP order is
+  the one a visitor can predict, and re-sorting 37 rows by severity inside seventeen groups of one to
+  four would reorder nothing visible in most of them.
+- **The 44px floor was kept on all 54 directory links**, which is the single largest cost at 375.
+  The crumb and footer deviations recorded above would have allowed 24px here and saved roughly
+  370px on a phone; a knowledge base index is what the page is *for*, not orientation furniture, so
+  it keeps the contract's figure.
+
+---
+
+## v4 / guarantee (/legal/guarantee/, Task 3)
+
+One route, reached from the footer's "Legal" column and from the home page's guarantee section. It
+was **broken rather than boring**: the page returned a bare `<article>` with no container and no
+classes, so its text started at x=0 and the first lines sat under the fixed 64px header with the
+wordmark drawn over the h1, and it printed the raw `{{CONFIRM support email}}` token to screen
+twice, once as a `mailto:` and once as the visible link text.
+
+| Layout family | Eyebrows | Marquee | CTA intents | Client islands |
+| --- | --- | --- | --- | --- |
+| Reading column with a standing answer card (7/5 at lg) | 0 | 0 | BOOK, CHAT | none |
+
+### The container is the whole of the first fix
+
+`page` + `pageY` from `parts.tsx`. `pageY` is `pt-24 pb-8 md:pt-28 md:pb-12` and exists precisely to
+clear the 64px bar, so the overlap needed no new value. Measured on the production build at 1440:
+the breadcrumb lands at y=112 under a header whose bottom edge is y=64, and the crumb, the h1, the
+summary and the "What we promise" h2 all sit at x=168, the same left edge as the hubs, the services
+and the guides. One heading is deliberately off that edge: the card's own h2 is at x=865, inset by
+the card's padding inside the right-hand column, which is the panelled-heading case `docs/qa-report.md`
+already records against `/contact/` and is not a misalignment.
+
+### 7/5, and the three shapes it is not
+
+Left seven columns are the guarantee's own column and are where the owner's real terms land, so the
+page needs no relaying when they arrive; the measure is capped at `max-w-[60ch]`, never by narrowing
+the container (constraint 8). Right five columns are one `card` holding the way out, `lg:sticky
+lg:top-24` so it clears the bar and stays with a reader the moment the left column grows past a
+screen. It does nothing today on a 1,677px page, which is the point of putting it there now.
+
+- **Not `max-w-3xl`.** That is the fault this plan opens with, and this page holds less content than
+  the guides the complaint was written about.
+- **Not `ServiceTemplate`'s 8/4 lead column plus `ReadingRail`.** The rail is several stacked blocks
+  arguing a service; there is one question here and one answer to it.
+- **Not the home page's `Guarantee` section** (masked type over a photograph). The link lands on the
+  page that explains; the section is the page that announces. They share the number, the notice
+  wording and the accent, and nothing else.
+
+### The token, and the route to a human that does not depend on it
+
+`const hasEmail = !brand.email.includes("{{")` at module scope, the same guard `/contact/` and
+`SiteFooter` carry. The `mailto:` and the visible address render only inside it, so with the token
+unset the email line is **not in the DOM at all**. Re-measured on this build at 375 and 1440:
+`document.body.innerText` contains no `{{` on this route or on any of the nine others swept in
+`docs/qa-report.md`. The card's BOOK and CHAT both work with `brand.email`, `brand.chatProvider` and
+`brand.bookingProvider` all unset, which is the config's current state, so the way out never
+depended on the address.
+
+### Still a placeholder, and still marked as one
+
+`brand.guarantee.summary` prints verbatim and still reads `Placeholder: one sentence on what the
+guarantee covers and how to claim it.` Above it, in the home section's words and the same dashed
+`--line-strong` box, "Placeholder guarantee, not a real offer. Replace before launch." It sits
+**between the h1 and the summary** so the caveat is read before the sentence it qualifies. `14`
+comes from `brand.guarantee.days` and appears once, in the h1. `robots: { index: false }` and the
+`notFound()` when `brand.guarantee` is unset both stay.
+
+### The fix round: no fall-through to fixmywp.com
+
+The first version fell back to `brand.legacy.facts` when `brand.guarantee` was unset. That guarantee
+belongs to fixmywp.com, a different and still-trading company; `brand.ts` says so in writing and
+CLAUDE.md forbids reusing its content on any variation. Commit `3d1f794` removed the branch. The
+behaviour that remains is a strict superset of the 404 that was there before: the page still 404s
+when no guarantee is set, and the only path removed is the one the spec forbids.
+
+### Motion
+
+| Element | Primitive | Communicates |
+| --- | --- | --- |
+| h1 | none, ever | It is the LCP element; `globals.css` records why nothing fades it |
+| Summary line | `rise-in`, inline delay 70ms | The one sentence the guarantee says today arrives under the headline |
+| Answer card | `rise-in`, inline delay 140ms | The way out arrives after the thing it is a way out of |
+| "What we promise" | `reveal` on `animation-timeline: view()` | A below-fold section met as the reader reaches it |
+| Placeholder notice | none | A caveat that performs is a caveat competing with itself |
+
+Transform only since Task 8 (see its entry). Under `prefers-reduced-motion: reduce`, `rise-in`
+resolves to `animation: none` and `reveal` lives inside a `no-preference` block, so every element
+renders at its final state: re-measured at 375 and 1440 on this build, 0 elements in `main` at
+`opacity: 0` with JS disabled, and every `.reveal`/`.rise-in` at opacity 1 and `transform: none`
+under reduce.
+
+### Measured, production build
+
+Document height 1,677px at 1440 and 3,758px at 375; `<main>` 766px and 1,198px. axe-core 4.14: 0
+violations of any impact at 375, 768, 1024 and 1440 over 20 park positions, and 0 under reduced
+motion. One h1 at every width, no horizontal scroll, no computed radius in `main` other than 0 or
+14px. Full figures in `docs/qa-report.md`.
+
+### Deliberately not done
+
+- **No guarantee terms.** Not one clause, not one condition. User decision 2 and constraint 1. The
+  page is thin because its content is genuinely unconfirmed, and a page that invents terms to look
+  finished is the one outcome worse than a thin one.
+- **No `AggregateRating`, no `Review`, no `HowTo`.** No review data, and this is not a procedure.
+  The only JSON-LD here is the `BreadcrumbList` that `Breadcrumbs` emits; `/legal/` sits outside
+  SITEMAP (`routes.utilityPaths`), so the trail is built by hand rather than walked.
+- **No second legal link in the body.** A visitor here is mid-decision, so the page may not end by
+  sending them to another policy document. Terms sits last in the card, after BOOK and CHAT.
+- **Four of `brand.claims`, not eight.** `fixedPrice`, `backupFirst`, `ownLogin`, `accessRemoved`
+  are the protection claims and answer "what protects me"; `sameDay`, `bookingMinutes`, `vetted`
+  and `checkTurnaround` are speed claims and answer something else. They were a local array here
+  until Task 8 made them one source; see its entry.
+
+---
+
+## v4 / about (/about/, Task 5)
+
+One route, and the only page whose subject is the business rather than a service, an error or a
+policy. **It amends the container table's `max-w-3xl` row for `/about/`**: the page runs on the bare
+`page` spine now, x=168, the same left edge as the hubs, the guides and the knowledge base, with
+every measure capped in `ch` instead.
+
+| Layout family | Eyebrows | Marquee | CTA intents | Client islands |
+| --- | --- | --- | --- | --- |
+| Masthead over a full-width photographic band, ruled hub directory, left-rail progression, closing band | 0 | 0 | BOOK, CHAT | none |
+
+### What it was
+
+47 lines in a `max-w-3xl` column: h1, one sentence, a `LinkRows` of the six hubs, a
+`dl.grid.sm:grid-cols-3` over the three `remoteDelivery` entries, a CTA pair. **No image anywhere**,
+on the one page whose whole job is to make a stranger trust a remote team, and the three-card grid
+was not a taste call: three equal cards in a row is banned outright by contract rule 6.
+
+### Four families, none repeated within the page
+
+1. **Masthead over a full-width photographic band.** The words run the full 1104px spine and the
+   photograph runs under them at the same width. Deliberately none of the site's four split headers
+   (hub 6/5, guide 8/4, knowledge base 7/5, guarantee 7/5): nothing sits beside this picture, because
+   it is not an illustration of a product or an error, it is the only evidence on the page of who
+   does the work. 16/9 stacked so a phone gets a band and not a postcard, 2/1 from md.
+2. **Ruled hub directory**, `LinkRows`. Same six rows and the same data as before, but **`split` is
+   new on this call site**: the old page rendered the default stacked row, six title-over-paragraph
+   blocks that read as one block of text in a narrow column. `split` puts the titles in one
+   scannable column on the page spine with the summaries answering across the gutter from md up,
+   which is the shape that variant was built for and the one the hub template already uses.
+3. **Left-rail progression** for `remoteDelivery`, which replaces the three-card grid.
+4. **Closing band**, the hub template's. A cross-page repeat and a deliberate one: rule 3 forbids a
+   family repeating *within* one page.
+
+### The engagement is a rail, and it is never numbered
+
+`Meetings`, `While we work`, `Handover` are one engagement in order, not three peers, so they are
+read **down a rail** instead of across a row of cards: a hairline on the group's left edge, each
+entry meeting it on a short ember tick, label over sentence. The order carries the sequence and is
+the only thing that does. No numbers, no "Stage 2", which rule 6 bans alongside the cards it also
+bans. The tick is a 1px rule, not a dot: it joins an entry to the rail rather than decorating it.
+
+### The counts are computed, and nothing else is claimed
+
+`services.length` and `guides.length` are read from `src/content` at build time, so the sentence
+under "What we work on" cannot drift from what the site holds. **No years in business, no team size,
+no client volume, no number of sites fixed, and no testimonial**: `src/content/testimonials.ts` is
+entirely placeholders and `brand.legacy.facts` belongs to fixmywp.com, a different and still-trading
+company. Nothing on this page is asserted about the world.
+
+### The banner's `sizes`, and why it is declared
+
+The band is the inner container and nothing else: **1104px** from 1152 up (`max-w-6xl` less the 24px
+`md` gutters), `calc(100vw - 48px)` while the container is still under its max at md, and
+`calc(100vw - 32px)` below md where the gutter is 16px. Measured on the build: 1104px box taking the
+`w=1200` candidate at 1440, 976px taking `w=1080` at 1024, 343px taking `w=384` at 375. Left at the
+`100vw` default it would have over-fetched by a whole candidate step at every width, on an eager
+image that is the page's largest paint. Real alt text rather than `decorative`, because here the
+photograph is content.
+
+`servicePhotos["hire-developer"]` (`terminal`): hands at a keyboard under one warm light, which is
+the Imagery section's own direction almost word for word. The fix hub's `emergency` frame was tried
+first and is cold and mostly a dark mass at this crop, which on a dark page reads as a hole.
+
+### The first section refused `reveal`, and the reason has since been removed
+
+**Corrected 2026-10-21 (Task 4). The paragraphs below are history and the exception they argue for
+is retired; the live behaviour is in the last paragraph of this subsection.** The history is kept
+because it is why the final fix is the shape it is, and because the reasoning in it must not be
+tried a third time.
+
+*As built in Task 5:* written out rather than built with `Section`. A view-timeline reveal is
+**scrubbed**, so a section parked inside the first third of its range at load sits at part opacity,
+and `--muted` at part opacity is under 4.5:1. The 2/1 banner puts "What we work on" within a few
+pixels of the fold at **768**, where it parked exactly there: axe reported a serious
+`color-contrast` failure on the heading, the lead and all twelve directory strings. With the reveal
+off that section, 0 violations at every width tested.
+
+*And the standing fragility it named:* the same sweep found
+`/guides/critical-error-on-this-website/` failing the identical way at **820px** on the build of the
+day. `@keyframes reveal-rise` already finished its opacity at 33% of the range for exactly this
+reason (recorded in `globals.css`), which narrowed the window without closing it, because a reader
+can stop inside the first third. This entry then said closing it meant dropping opacity from the
+keyframe entirely, leaving `reveal` as a 12px slide, and that it belonged in its own pass.
+
+**That pass shipped: `d4284ff`, Task 8, recorded under "v4 / reveal without opacity, and one source
+for the promises" at the end of this file.** `reveal-rise` is the translate alone and carries no
+opacity, so no park position at any width can change a contrast ratio, and the exception here has no
+subject left. **"What we work on" carries `reveal` again**; the section is still written out rather
+than built with `Section`, for the smaller remaining reason that `Section` wraps its children in one
+`mt-6` div and this one has two blocks with their own spacing. Two further corrections Task 6 and
+Task 8 proved against what this entry originally assumed: the failing node was the ember
+`.btn-primary`, not the `--muted` body copy named above, so a fix aimed only at muted text would
+have left the primary CTA failing; and clean axe results taken at rest cannot see this class of bug
+at all, which is recorded as an instrument defect in `docs/qa-report.md`.
+
+### JSON-LD
+
+`AboutPage` with `mainEntity: { "@id": ".../#organization" }`, pointing at the Organization the root
+layout already emits rather than declaring a second one. No `AggregateRating`, no `Review`, no
+`numberOfEmployees`: there is no review data, and a headcount is a claim about the world rather than
+something `src/content` can prove. `breadcrumbLd` still emits from `Breadcrumbs`.
+
+### Motion
+
+| Element | Primitive | Communicates |
+| --- | --- | --- |
+| Lead sentence | `rise-in`, inline delay 70ms | The headline is already there; what it means arrives under it |
+| CTA pair | `rise-in`, inline delay 140ms | The buttons that act on the sentence arrive after it |
+| "What we work on", "How working with us runs", closing band | `reveal` on `animation-timeline: view()` | Each section is its own answer, met one at a time |
+
+Nothing on the h1 and nothing on the banner: both are the page's largest paints. "What we work on"
+was static until Task 8 for the contrast reason above; it carries `reveal` with the other two now,
+and the three `.reveal` elements on this page are re-measured on the current build.
+
+### Measured, production build, axe-core 4.14
+
+0 violations of any impact at **375, 768, 1024 and 1440**, and at 375 and 1440 under
+`prefers-reduced-motion: reduce`. A wider sweep at 390, 430, 600, 700, 800, 820, 900, 1100, 1152,
+1280 and 1600 is also 0. One h1 at every width, no horizontal scroll at any width, and no computed
+border radius inside `main` other than 0 or 14px. Document height 3,453px at 1440, 4,052px at 768,
+3,569px at 1024, 5,340px at 375.
+
+### Deliberately not done
+
+- **No `brand.claims` tick list.** `/contact/` and `/legal/guarantee/` both render the same four
+  `confirm(...)` sentences and a reviewer has already flagged the duplication; this page would have
+  been the third copy. The page does not need them, and the right move is to extract the existing two
+  before adding a third, not to add one and leave three.
+- **No testimonial and no logo wall.** Every entry in `src/content/testimonials.ts` is a placeholder
+  nobody said, and there is no permission for a client logo.
+- **No "where we work" or city strip.** The cities index exists and says the same thing better.
+- **No second image.** One photograph that is actually about the work beats two that are mood.
+
+---
+
+## v4 / comparisons index (/compare/, Task 6)
+
+One route, parent of three compare pages. **It empties the container table's "Guide, compare index
+| max-w-3xl" row**: the guide left it in Task 1 and the compare index leaves it here, so neither
+page named in that row runs at `max-w-3xl` any more. `/case-studies/` is now the only route still
+on that container, and the next pass over it should decide whether the width survives at all. This
+page is on the bare `page` spine, x=168, with the lead capped at 62ch.
+
+| Layout family | Eyebrows | Marquee | CTA intents | Client islands |
+| --- | --- | --- | --- | --- |
+| Masthead with a measured `dl`, split ledger of pairings, closing band | 0 | 0 | BOOK, CHAT | none |
+
+### The masthead is 7/5, and the second column is counted rather than decorated
+
+The page carries no photograph (see below), so with an h1 and one sentence the top of it was two
+lines of type in a 1104px field. The right five columns now hold a two-row `dl`, hairline-ruled,
+bottomed on the lead's last line with `lg:self-end`: **Criteria compared 27** and **Scenarios
+answered 14**, both `reduce`d out of `compares` at build rather than written, so they cannot drift
+from what the ledger below renders. Two rows and vertical, so it is not a 3-up stat strip. It
+answers what an index is actually asked: whether there is anything behind three links.
+
+### The row link is the heading, stretched
+
+The anchor is the `h3` and nothing else, pulled over the whole row by its own
+`after:absolute after:inset-0`, with `relative group` on the `li`. The obvious shape, one anchor
+wrapping the row, gives that anchor an accessible name computed from its entire subtree: about forty
+words, measured off `Accessibility.getFullAXTree`. Naming it with `aria-labelledby` off the heading
+fixes the length and **immediately breaks WCAG 2.5.3**, because the name then no longer contains the
+row's own visible text: axe `label-content-name-mismatch`, serious, 3 nodes, at all four widths,
+measured. Only an anchor whose content *is* its visible label satisfies both. Hit area is still the
+whole row, there is still one tab stop per row, and `group-hover` on the `li` keeps the ember rule
+and the caret answering a hover anywhere in it. **Worth knowing before building another row like
+this one:** `LinkRows` has the same shape and the same exposure.
+
+### What it was
+
+32 lines in a `max-w-3xl` column: h1, one sentence, a `LinkRows` of the three compares with each
+one's `seo.description` as the summary, a CTA pair. No image, no JSON-LD, and no contrast anywhere
+on a page whose whole subject is contrast. The data it was throwing away: `c.a` and `c.b`, five to
+ten `rows[].criterion` per comparison, and three to five `verdictByScenario` entries.
+
+### The unit is a split, which is how three items avoid being three cards
+
+Three items plus rule 6's "no three equal cards in a row" is the whole design problem of this page,
+and the escape is not a card made slightly wider than its neighbours. Each comparison is one
+**full-width entry in one ruled list**, and the entry itself is the split: left column is the
+pairing, `c.a` and `c.b` at the same size and the same weight with a hairline seam and the word
+"vs" between them; right column is every criterion that comparison is built on, across a vertical
+hairline. Three of those stack down the page as rows, so there is no row of three anything.
+
+They are also visibly unequal without being made unequal: "Monthly care plan vs Pay-as-you-go
+support hours" wraps to four lines where "WordPress vs Wix" takes two, and the criteria run 8, 9
+and 10 deep. The rhythm comes from the content, not from a span override.
+
+**Deliberately not `CompareTemplate`'s family.** The child owns "verdict-by-scenario cards over a
+real comparison table". A parent rendering its child's layout with a thinner version of the child's
+data reads to a visitor as the same page twice and to a crawler as thin content. Rule 3 is
+per page, so this is a judgement rather than a rule, and it is the brief's judgement: the index
+shows *what is compared*, the comparison page shows *how the two answer it*.
+
+### Everything on screen, and where it is from
+
+| On screen | Source |
+| --- | --- |
+| "Comparisons" (h1) | SITEMAP node title |
+| The lead sentence | Unchanged from the previous page. Says no winner is declared, because the files declare none |
+| "What each comparison covers" (h2) | Written here. Names what the right column of every entry is |
+| The two names in each entry | `c.a`, `c.b` |
+| "N scenarios, each with the verdict for it." | `c.verdictByScenario.length`, a count of entries in the file |
+| Every criterion string | `c.rows[].criterion`, in file order, all of them |
+| "Want this answered for your site?" (h2) | Written here |
+| CTA labels | `cta.ts` via `BookLink` and `ChatButton`; `/compare/` is intent `info`, so BOOK is primary |
+
+Nothing is summarised, no criterion is invented, and no side is characterised. The criterion titles
+are the one part of the comparison that belongs to both sides at once, which is why they are the
+only body text the index shows: printing `rows[].a` against `rows[].b` would be the child's table,
+and printing one of them would tip a page that is deliberately neutral.
+
+### No photograph, and that is the honest answer
+
+`src/content/photos.ts` is a fixed catalogue of real frames: desks, cables, racks, keyboards,
+screens, an engineer at night. Every one of them is about *work being done on a site*. This page is
+about a decision taken before any of that work exists, between two pieces of software or two ways
+of paying. `drafting` (a hand sketching a wireframe) is the nearest miss and is already the face of
+the design services; putting it here would make it decoration, which rule 7 exists to prevent. Rule
+7 requires every visual to be real. It does not require a visual, so there is none, and the page
+carries no `sizes` arithmetic because it loads no image.
+
+### JSON-LD
+
+`collectionLd`, reused from the knowledge base index rather than a new `itemListLd`: it already
+emits `CollectionPage` with an `ItemList` as `mainEntity`, which is exactly the shape asked for,
+and the names and URLs are read from `src/content` so the list cannot claim the page holds
+something it does not render. `breadcrumbLd` still emits from `Breadcrumbs`. No `Product`, no
+`Review`, no `AggregateRating`: there is no review data and neither side of any pairing is a thing
+this business sells.
+
+### Motion
+
+| Element | Primitive | Communicates |
+| --- | --- | --- |
+| Lead sentence | `rise-in`, inline delay 70ms | The headline is already there; what it means arrives under it |
+| Masthead `dl` | `rise-in`, inline delay 140ms | What is behind the links arrives after what the page is, the same 70ms beat again |
+| Closing band | `reveal` on `animation-timeline: view()` | The page's last beat arrives as the reader reaches it |
+| Entry hover | `LinkRows`' ember rule, scale-x on the row's own hairline, `hover:hover` only | This row is a destination |
+
+Nothing on the h1, which is the LCP element.
+
+**Corrected 2026-10-21 (Task 4).** This paragraph used to end "and **nothing on the ledger
+section**", for the same measured reason `/about/`'s first section gave: a view-timeline reveal is
+scrubbed, a section parked in the first third of its range sat at part opacity, and `--muted` at
+part opacity is under 4.5:1. The pairings heading lands **429px** down at 1440, re-measured on the
+current build, which is well inside the fold and exactly where a reader parks it. (It was ~350px
+before the masthead gained its second column in round 2.) Task 8 (`d4284ff`) took opacity out of
+`reveal-rise` entirely, so a park can no longer change a contrast ratio and the exception is
+retired: **"What each comparison covers" carries `reveal`**, and this page holds two `.reveal`
+sections, that one and the closing band. See "v4 / reveal without opacity, and one source for the
+promises" at the end of this file.
+
+### Measured, production build, axe-core 4.14
+
+0 violations of any impact at **375, 768, 1024 and 1440**, each audited after scrolling to 45% of
+the document, and 0 at 375 and 1440 under `prefers-reduced-motion: reduce`. One h1 at every width,
+no horizontal scroll at any width. Document height 2,318px at 1440, 2,404px at 1024, 3,048px at 768,
+4,936px at 375.
+
+### Two things the 45% park does not catch, and both matter site-wide
+
+**A `fullPage` screenshot does not scroll, so every below-fold `reveal` is captured at opacity 0.**
+Playwright captures beyond the viewport through CDP while `scrollY` stays at 0, and a `view()`
+timeline is driven by scroll position, so the section is in the captured area and genuinely
+transparent in it. The closing band is absent from any such capture of this site. **Scroll the
+document to the end before capturing**: everything past its range holds its final state under
+`animation-fill-mode: both` and resolves to opacity 1 in one capture. Residual artifact of doing so:
+the fixed nav composites at its scrolled position, partway down the stitched image.
+
+**Parking a band inside its own entry range fails `color-contrast` on the ember button.** Not at
+45% of the document, which is nowhere near it. Swept across every scroll position where the band
+sits strictly between 0.02 and 0.999 opacity (axe skips a band at exactly 0 as not visible), the
+same serious failure appears on `/compare/` @768 at 0.251 and @1440 at 0.495, on **`/about/`** at
+0.174 and 0.625, on **`/guides/`** at 0.183 and 0.550, and on the untouched **`/compare/wordpress-vs-wix/`**
+at 0.191 and 0.132. Identical nodes every time. It is the `reveal` primitive, not this page, and it
+was left for the pass that owns the primitive; **that pass is Task 8 (`d4284ff`), which reproduced
+this same failure on a control rebuild and then removed its cause.** Two corrections to what the
+earlier entries assumed:
+the opacity ramp finishing at 33% of the range narrows this window but does not close it, because a
+reader can stop inside the first third; and the failing node is `.btn-primary`, where the ember fill
+and its near-black label composite together, so a fix that only protects `--muted` copy leaves the
+primary CTA failing.
+
+### Deliberately not done
+
+- **No scenario strings on the index.** `verdictByScenario[].scenario` is the most persuasive copy
+  in the files, and showing it here would put 14 sentences on the parent that the three children
+  already carry, with the verdict beside each of them. The count of them is enough to set the
+  expectation; the sentences are the reason to click.
+- **No new export in `parts.tsx`.** The entry is used three times on one page and nowhere else, so
+  it stays local. 18 files import that module, 6 of them the templates under
+  `src/components/templates/`, and Task 8 adds to it. (The brief said "five templates"; counted on
+  disk it is six, so the standing ruling is if anything stronger than it was stated.)
+- **No change to `CompareTemplate.tsx` or `src/content/compares/`.** Out of scope, and the index now
+  depends on the shape of those files, so the next change to them should be read against this page.
+- **The lazier version was available and refused.** `LinkRows` with `split` and the criteria joined
+  into one comma string per row would have been a two-line diff reusing an existing primitive. It
+  would also have been the page that is already there, with a longer summary.
+
+---
+
+## v4 / RealScreen sized from the PNG header (Task 7)
+
+No layout family, no page and no section: one component in `parts.tsx` that four guide pages and
+every service page with a capture render, so it is recorded here because it changes what box those
+pages reserve before their largest image decodes.
+
+### The bug
+
+`RealScreen` hardcoded `width={1600} height={1000}` for every capture, a 1.600 box. Re-derived from
+the IHDR chunks on disk, the four real captures are:
+
+| File | Pixels | Ratio |
+| --- | --- | --- |
+| `critical-error-on-this-website.png` | 1829x860 | 2.127 |
+| `error-establishing-database-connection.png` | 2848x1600 | 1.780 |
+| `illustration-google-deceptive-site-warning.png` | 892x537 | 1.661 |
+| `white-screen-of-death.png` | 2736x1536 | 1.781 |
+
+Not one of them is 1.600, so `next/image` reserved a box of the wrong shape on all four and
+re-ratioed it when the image decoded, moving the LCP element of four guide pages and of the service
+pages that share the component.
+
+### The fix, and why it is 25 lines of `node:fs` and no dependency
+
+`src/lib/png-size.ts` exports `pngSize(path)`, which opens the file, reads 24 bytes, and returns the
+big-endian uint32 at offset 16 and 20. A PNG's IHDR is at a fixed offset: 8 signature bytes, a
+4-byte length, the 4-byte chunk type, then width and height. `RealScreen` is a Server Component that
+already stats the same file with `existsSync`, so this is one extra synchronous 24-byte read at build
+time.
+
+It is its own module rather than another export of `parts.tsx` so `scripts/check-content.ts` can
+import it without pulling in `next/image`. **No export of `parts.tsx` changed and the signature is
+still `{ slot, alt, sizes, preload }`**, so every call site is untouched.
+
+**It never throws.** An open or read failure, a short read, a missing signature, a chunk type that
+is not `IHDR`, or a zero dimension all return the old 1600x1000, and the fd closes in `finally`. The
+chunk-type check came in the fix round (`1453f2d`): without it the doc comment described a
+validation the code did not perform, which is a comment that will mislead the next reader rather
+than a bug today.
+
+### The runnable check
+
+Two `assert.deepEqual` lines in `scripts/check-content.ts`, where `npm run check` already lives:
+`public/screens/white-screen-of-death.png` must report 2736x1536, and `package.json` must report the
+1600x1000 fallback. One asserts the parser reads a real header, the other that a non-PNG cannot
+break the build. `npm run check` is in the build chain, so a capture replaced by one of a different
+size fails loudly instead of silently re-ratioing a page.
+
+### Measured on this build
+
+| Route | `<img>` attrs | Rendered box |
+| --- | --- | --- |
+| `/guides/white-screen-of-death/` | `width="2736" height="1536"` | 320x180 at 1440, 327x184 at 375 |
+| `/wordpress-fix/white-screen/` | `width="2736" height="1536"` | 416x233 at 1440, 327x183 at 375 |
+| `/guides/php-fatal-error/` (no capture) | `width="1600" height="1000"` | 320x200 at 1440, the `Photo` fallback arm, untouched by this change |
+
+CLS figures are in `docs/qa-report.md`. The honest reading of them is in that file too: only the
+post-state was measured, here and in Task 7's own report, so the verdict rests on the mechanical
+argument that the reserved box now has the image's real ratio, not on a before-and-after delta.
+
+### Deliberately not done
+
+- **`Screen` and `Photo` untouched.** `Photo` draws the catalogue frames, which really are 1600x1000,
+  so there is nothing to read.
+- **No `sizes` change at any call site.** `GuideTemplate` and `ServiceTemplate` pass their own
+  already and keep working unchanged; the box's ratio moved, its width did not.
+- **No caching and no async.** 24 bytes per capture at build time, four captures on the whole site.
+  A memo would be more code than the read it saves.
+
+---
+
+## v4 / reveal without opacity, and one source for the promises (Task 8)
+
+Two shared-file cleanups that three earlier tasks asked for. No page changed shape, so there is no
+layout family here; what changed is a utility every one of the 99 routes renders, and a block of
+copy two routes were each holding their own copy of. Commits `d4284ff` (8a) and `a2017d8` (8b);
+`git diff --stat 1453f2d..a2017d8` re-derived for this entry: **8 files, 102 insertions, 85
+deletions.**
+
+### 8a. `reveal-rise` is the translate alone
+
+```css
+@keyframes reveal-rise {
+  from { transform: translateY(12px); }
+  to { transform: translateY(0); }
+}
+```
+
+`.reveal` runs on `animation-timeline: view()` with `animation-range: entry 5% entry 40%`, which is
+**scrubbed, not played**: a reader who stops scrolling inside that range leaves the animation parked
+at whatever the scroll position holds, indefinitely. While the keyframe carried an opacity channel
+that park was a composite, and a composite is a contrast ratio nobody designed. Three entries in
+this file argued about how to narrow the window. There is no window now: a translate cannot change a
+contrast ratio at any scroll position, at any width, on any route, and transform only is a strict
+subset of what contract rule 10 allows.
+
+**The first repair is kept in the comment above the keyframe in `globals.css` and in the Task 5 and
+Task 6 entries above, deliberately.** It read `0% { opacity: 0 } 33% { opacity: 1 } 100%`, on the
+theory that finishing the fade in the first third made the failing window small enough to be gone.
+A smaller window is not a closed one. The reasoning must not be tried a third time, so it is
+recorded rather than deleted.
+
+**What the motion now communicates:** the page settling under the reader, not each section
+performing. That was already the whole of the motion past the first third of the range, and the
+12px travel is unchanged. **Reduced motion:** unchanged and still the final state immediately -
+`.reveal` lives inside a `@media (prefers-reduced-motion: no-preference)` block, so under `reduce`
+every element reports `animation-name: none`, `transform: none`, `opacity: 1`.
+
+**Two local workarounds are retired.** `/about/`'s "What we work on" and `/compare/`'s "What each
+comparison covers" each refused `reveal` because a park left them under 4.5:1. The exception has no
+subject now, so both carry `reveal` again and both comments record the history instead of asserting
+a reason that no longer holds. Re-counted on the current build: `/about/` renders three `.reveal`
+sections, `/compare/` two. The two entries above are corrected in place.
+
+**The failing node was never the one the first repair was aimed at.** It is the ember
+`.btn-primary`, whose fill and near-black label both composite against the page while the section is
+translucent. A fix that protected only `--muted` body copy would have left the site's primary CTA
+failing at every park. Recorded here because the diagnosis, not the keyframe, is the part that was
+wrong twice.
+
+### 8b. The four promises come from one place
+
+`src/content/notices.ts` gains `promises`: four `[brand.claims.*, sentence]` pairs beside
+`remoteDelivery`. `parts.tsx` gains `Promises`, which renders the tick list and keeps the per-claim
+truthy gate, because an unconfirmed claim is `null` and must then render nothing (rule 8).
+`/contact/` and `/legal/guarantee/` both drop their array, their markup and their `CheckIcon`
+import.
+
+These sentences are what the company promises a paying customer. Two hardcoded copies can silently
+diverge, and a promise that reads differently on two routes is a real problem rather than an untidy
+one. Checked for this entry: the four strings in `notices.ts` are byte-identical to the
+`confirm(...)` descriptions in `src/config/brand.ts` less their `claim: ` prefix, and byte-identical
+to what both pages held before. All four claims are truthy today, so both pages render all four, as
+they did.
+
+`compact` is the only prop besides `className` and it carries all four differences between the two
+call sites at once: `text-sm` on the row, `mt-0.5` against `mt-1` on the tick, and the `max-w-[60ch]`
+measure that only the reading column needs. The class strings are assembled in the original order
+rather than alphabetised, so the rendered `class` attributes are identical and not merely
+equivalent. Verified against the served HTML on this build: `/contact/` renders
+`<ul class="mt-4 grid gap-3">` / `<li class="flex gap-3 text-sm">` / `<span class="block
+first-letter:uppercase">`, `/legal/guarantee/` renders `<ul class="mt-5 grid gap-3">` /
+`<li class="flex gap-3">` / `<span class="block max-w-[60ch] first-letter:uppercase">`.
+
+Not folded into `TickList`: that takes bare strings and applies neither the claim gate nor
+`first-letter:uppercase`, and widening it would change every one of its current callers.
+
+### Measured, and measured against a control
+
+A sweep that only measures the post-state cannot tell "fixed" from "never reproduced here", so the
+old keyframe was rebuilt on disk, the bug reproduced, and the fixed build measured with the same
+harness. Both runs, the park method, and the instrument defects that made the earlier clean results
+meaningless are in `docs/qa-report.md` under "Guides, Knowledge Base, guarantee, About, comparisons,
+RealScreen and the reveal primitive (Tasks 1-8)". The short version: with the opacity channel back
+on disk the failure reproduces on this build; with it gone, no element on any of ten routes was ever
+measured below opacity 1 at any park position, at any width, which is the guarantee itself rather
+than a sample of it.
+
+### Deliberately not done
+
+- **`.reveal` was not deleted.** If the owner later finds a 12px scrubbed settle imperceptible, the
+  honest follow-up is deletion, not a restored fade: a fade is the one thing that cannot come back
+  while the timeline is scrubbed.
+- **The travel was not lengthened and the range was not narrowed.** Either would make the
+  per-section entrance louder, which the utility's own comment and the craft floor both refuse, and
+  neither affects the guarantee.
+- **`LinkRows` was not widened to take a `ReactNode` title**, which Task 6 routed here. `LinkRows`
+  wraps the whole row in one `<Link>`; `/compare/`'s row deliberately makes the anchor *be* the h3
+  and stretches it with `after:absolute after:inset-0`, because wrapping the row gave the link a
+  forty-word accessible name and the obvious repair (`aria-labelledby` off the heading) breaks WCAG
+  2.5.3 `label-content-name-mismatch`. Passing that heading in as a `ReactNode` would nest its
+  anchor inside `LinkRows`' own. What the two genuinely share is one hairline `<span>` class string,
+  which is not worth an export's surface area. (Task 8's report justified this with "`LinkRows` is
+  imported by 18 files, 6 of them templates". **Re-counted from disk: 18 files import the `parts`
+  module and 6 of those are under `src/components/templates/`, but `LinkRows` itself is imported by
+  five, `about/page.tsx`, `CityTemplates`, `GuideTemplate`, `HubTemplate`, `ServiceTemplate`. The
+  ruling stands on the accessibility argument; the figure was the module's, not the component's.**)
+- **`brand.legacy.facts`' other three readers** (`JsonLd.tsx`, `SiteFooter.tsx`, `Plans.tsx`) are
+  untouched. They are a separate removal pass the owner has not authorised.
+
+### /about/ masthead, revised 2026-10-21: the type moved onto the photograph
+
+The first version of this header was two boxes stacked: the h1, the lead and the CTA pair in flow,
+then a separate `aspect-[16/9] md:aspect-[2/1]` frame under them holding the photograph. The owner
+asked for the words to sit on the picture instead, which is what a masthead actually is.
+
+**Layout family:** unchanged in name, masthead over a full-width photographic band, but it is now
+one box rather than two. The header is the page's only `relative isolate` element: photograph and
+scrim both at `-z-10`, type in normal flow above them. That is `FinalCta`'s shape exactly, and
+`FinalCta`, `RestoredOverlay` and `ProblemTiles` are the three places this site already puts type
+over photography. Nothing new was invented for it.
+
+**The scrim is the existing token, not a gradient.** `bg-photo-scrim` is `rgb(12 12 14 / 0.66)`,
+flat, and the variation bans gradients everywhere except the hero legibility scrim and the guarantee
+mask. The lead changed from `--muted` to `--on-photo` in the same move and that was not cosmetic:
+muted over this scrim measures 2.55:1 and would have failed outright the moment it moved onto the
+picture.
+
+**Measured, in the browser, on the production build**, compositing the 0.66 scrim over the actual
+served image and taking the brightest pixel rather than an average:
+
+| Width | Band box | Contrast under the type | Worst pixel anywhere in the band |
+| --- | --- | --- | --- |
+| 1440 | 1104x384 | 6.58:1 | 6.58:1 |
+| narrow | 453x260 | 6.23:1 | - |
+
+The 1440 row is the one that matters: the worst pixel in the whole band is the same 6.58:1 as the
+worst under the type, so the guarantee does not depend on where the words happen to fall. axe 0
+violations of any impact at 375, 768, 1024 and 1440, each run twice, once under reduced motion.
+
+**Height comes from content plus padding, never from an aspect ratio.** This is the one thing the
+two-box version could not have survived. At 375 a 16/9 band is 211px, and the h1, the sentence and
+the two buttons need more than 300px, so an aspect-driven box would have had type overflowing the
+frame it is supposed to sit inside. `md:min-h-[24rem]` is the opposite guard, holding enough frame
+open at desktop that the photograph still reads as a photograph once the type stops filling it.
+`justify-end` sits the words on the lower third, so the frame's upper two thirds stay picture.
+
+**Motion unchanged and still answers rule 10 in one sentence:** the h1 is never faded because it is
+the LCP candidate, and the lead and the CTA pair arrive 70ms and 140ms behind it, which is the same
+beat the hub, the knowledge base and the guarantee headers run. Reduced motion renders the final
+state. Nothing animates on the photograph itself.
+
+**Deliberately not done:** no `aspect-ratio` on the band, for the reason above. No gradient scrim, no
+second hue, no blur layer. The `bannerSizes` string is unchanged, because the box is still the full
+1104px spine and the arithmetic that produced it did not move.
+
+## v4 / pricing
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Masthead over a photographic band | type on photography, the /about/ pattern | no | no | BOOK, CHAT |
+| 2 | Three ways to work with us | ruled split ledger (reused from /compare/) | no | no | BOOK, BOOK+service, PLANS |
+| 3 | What you are agreeing to | two-column tick grid (`Promises`) | no | no | none |
+| 4 | Everything we quote on | grouped column directory (reused from /guides/) | no | no | none (32 service links) |
+| 5 | Questions about price | FAQ disclosure list | no | no | none |
+| 6 | Closing band | the site's shared closing band | no | no | BOOK, PLANS |
+
+**The page had no prices and still has none.** All 32 services carry `priceFrom: null`, all four
+entries in `src/content/pricing.ts` are `null`, and all 32 `typicalTurnaround` values are `null`,
+verified by grep on 2026-10-21. What it replaced was a service directory with a price column that
+never rendered, under a lead sentence apologising for the absence. It read as boring because it had
+nothing to say, which is not a layout problem.
+
+The page is built on what is confirmed instead: `brand.claims.fixedPrice` as the offer, the three
+engagement modes with their real `deliverables`, the four `brand.claims` commitments through the
+shared `Promises` component (its third call site), the 32-service catalogue, and four FAQs lifted
+from service content. `priceFaqs` resolves each one by exact question match and **throws at build
+time** if a service stops carrying it, so the page cannot quietly diverge from its sources.
+
+**The masthead's h1, lead and `seo.description` are gated on `brand.claims.fixedPrice`**, through one
+`MASTHEAD` constant, with a fallback that asserts nothing about how pricing works. That claim is
+wrapped in `confirm(...)` and is therefore NOT yet confirmed by the owner, despite what an earlier
+brief and an earlier version of this page's comment both said. Every other page on the site risks one
+sentence on that boolean; this page stakes its headline, its lead and its meta description on it at
+once, which is why it is the one place gated rather than asserted.
+
+**Price slots.** `from()` mirrors `Plans.tsx`'s helper exactly (`p && ...`, a null renders nothing),
+and the catalogue row is a declared `grid-cols-[minmax(0,1fr)_auto]`. Publishing a price fills the
+slot without relaying the page: measured in a scratch build at 2px of total movement, the row name
+not moving and no row changing height. The `auto` track takes its width from the title, so the
+longest catalogue title narrows from 504 to 403px without rewrapping. Note the two explicit tracks
+always generate the `gap-x-4` gutter, so about 16px sits after every title even while every price is
+null; it is invisible, but it is not zero.
+
+### Touch targets, and what a clean axe run does not cover
+
+Nine heading links shipped at 22 to 28px and were corrected to exactly 44px: three engagement-mode
+names and six hub labels, measured at 1440 and 375 as 44px each (`One-time fix` 135x44,
+`Hacked site cleanup` 222x44, `Care plan` 105x44, `Fixes` 46x44, `Security` 74x44, `Care plans`
+93x44, `Speed and migration` 182x44, `Development` 116x44, `WooCommerce` 135x44). The fix is
+`inline-flex min-h-11 items-center`, which this ledger already recorded once this plan and which
+`/guides/` already carried on the identical element.
+
+**axe's default ruleset has no target-size rule.** Every "0 violations" figure in this plan is
+therefore silent on contract rule 5, and these nine passed 32 clean axe samples while failing it.
+This is the second thing a clean axe run has been found not to cover, after the parked-contrast case.
+Target sizes must be measured, not inferred from a green sweep.
+
+### A third documented sub-44 exception: inline links inside a sentence
+
+Sweeping every interactive element in `main` turned up one more, which neither the implementer nor
+the reviewer had flagged: `CheckLink` with no `className` renders a bare inline anchor **18px** tall.
+Three call sites do this inside flowing sentences: `src/app/pricing/page.tsx:371`,
+`src/app/guides/page.tsx:150` and `src/components/templates/GuideTemplate.tsx:168`, the last of which
+puts it on all 37 guide pages. 39 routes in total.
+
+**Ruling: not a defect, and deliberately not changed.** WCAG 2.5.8 Target Size (Minimum) explicitly
+exempts a target that is inline in a sentence of text, and a 44px line box inside a running paragraph
+would break the paragraph. This is the same class of trade already written down twice in this file,
+for the 32px breadcrumb and the 36px footer link. The difference was that those two carried written
+reasons and this one did not, so it is recorded here now rather than left for the next pass to
+rediscover and either "fix" or quietly accept.
+
+### Deliberately not done
+
+No invented price, range, turnaround, discount or saving. No `Offer` or `OfferCatalog` in the
+JSON-LD, because an Offer with no price is not a truthful one: the page emits `CollectionPage` with
+an `ItemList` of the 32 services and `faqLd` over the four real FAQs, both referencing the existing
+Organization by `@id`. No `AggregateRating` and no `Review`, because there is no review data. The
+three engagement-mode labels are duplicated with `Plans.tsx` and no content file holds them, because
+they name a mode rather than a service; moving them into `src/content/` is real debt and was out of
+scope here.
+
+### Guarantee heading: the finished state is now what the server sends
+
+Reported by the owner as "every page refresh or visit reveal animate to display". The report was
+accurate and the cause was worse than a replaying animation: the heading did not exist until
+JavaScript had run.
+
+`GuaranteeHeading` is an SVG whose `viewBox` is measured from `getBBox()` after Bricolage resolves,
+and it carried `style={{ visibility: "hidden" }}` until that measurement arrived. The server
+therefore shipped `<svg style="visibility:hidden">`, so with JS disabled, failing, or merely slow,
+the only trace of the section's headline was the `sr-only` span in the `h2`. Confirmed in the served
+HTML before the fix.
+
+The second half was quieter and would have survived a naive fix. `@utility guarantee-fill` is
+`fill: url(#guarantee-photo)` from md up, and that `<pattern>` is only rendered once the same
+client-side measurement has happened. An SVG paint reference that resolves to nothing paints
+nothing, so simply removing the `visibility` would have left the desktop heading blank anyway. The
+rule now carries the SVG paint fallback, `fill: url(#guarantee-photo) var(--accent)`.
+
+Measured on a production build, `h2#guarantee`:
+
+| | viewBox | fill | result |
+| --- | --- | --- | --- |
+| JS off, 1440 | fallback `0 -128 900 170` | `url(#guarantee-photo) rgb(255,90,54)` resolving to ember | visible, solid ember |
+| JS off, 375 | fallback | ember | visible, solid ember |
+| JS on, 1440 | measured `-10 -128.87 928.12 173.44` | pattern present | photograph through the letters |
+| JS on, 375 | measured | ember, no pattern (the 76KB frame stays off phones) | as designed |
+
+axe 0 violations at 1440 and 375 with the stylesheet guard asserted first.
+
+**The draw still replays on every visit, by the owner's explicit decision.** Offered the choice
+between removing the animation, throttling it to once per visitor, and keeping it as it is, they
+chose to keep it. The change is only that the words are on screen whether or not it runs. An
+unmeasured heading paints at the fallback `viewBox`, about 9px wider than its box and
+`overflow-visible`, and the measured `viewBox` corrects it on the next frame; slightly off-scale for
+one frame is the trade against invisible for everyone without JS.
+
+**Related, still open and not fixed here:** the audit's finding of 27 nodes at `opacity: 0` with JS
+disabled on the home page. `PracticeRows` is one of them and ships
+`style="opacity:0;transform:translateY(14px)"` from the server with only a `motion-reduce` escape.
+This entry fixes the guarantee heading, which was `visibility: hidden` rather than `opacity: 0` and
+was not in that count. The 27 remain unowned.
+
+### The guarantee draw had never run. ScrollTrigger was never registered.
+
+Follow-up to the entry above, reported by the owner: the animation still did not play on reaching
+the section. Correct, and the cause is older than either of these two passes.
+
+`GuaranteeHeading` builds its timeline with
+`gsap.timeline({ scrollTrigger: { trigger: root.current, start: "top 85%", once: true } })`, and
+`ScrollTrigger` **is imported and registered nowhere in `src/`**. `grep -rn "ScrollTrigger" src/`
+returned nothing; the only hit anywhere is the lowercase config key on that one line. GSAP drops a
+config key belonging to an unregistered plugin in silence: no error, no warning, no console notice.
+The timeline therefore had no trigger at all and played the instant it was built.
+
+Measured on a production build before the fix, at `scrollY` 0 with the section's top 6772px below a
+900px viewport: wipe `scaleX` already 1, `stroke-dashoffset` already 0, outline opacity already 0.
+Every visitor has always arrived at a heading that finished animating while it was seven screens
+away. The effect that the component's own 20-line docstring describes has never been seen.
+
+The fix is `import { ScrollTrigger } from "gsap/ScrollTrigger"` and `gsap.registerPlugin(ScrollTrigger)`
+inside the `useGSAP` callback, not at module scope: this file is still evaluated on the server for
+the initial HTML, and registration is idempotent so the repeat costs nothing.
+
+Measured after, same build, same viewport:
+
+| Moment | wipe scaleX | dashoffset | outline opacity |
+| --- | --- | --- | --- |
+| At top, section 6772px below the fold | 0 | 900 | 1 |
+| 250ms after reaching it | 0 | 365 | 1 |
+| 950ms | 0.39 | 0 | 1 |
+| 2.15s | 1 | 0 | 0 |
+
+Outline draws, fill wipes in behind it, outline fades. `once: true` keeps it to one play per load,
+which is per visit, which is what the owner asked for.
+
+**The no-JS fallback from the previous entry is unaffected**, and was re-checked after this change:
+with JavaScript disabled the fill still resolves to solid ember through the paint fallback and the
+heading is still visible, because the clip path that hides the fill is only attached once the
+client-side measurement exists.
+
+**Worth carrying forward:** a GSAP config key for an unregistered plugin fails silently. Nothing in
+`npm run check`, `lint`, `tsc` or `build` catches it, and axe cannot see it either. The only way this
+surfaced was measuring the animation's own state at a scroll position where it should not yet have
+run. `scrollTrigger` is used exactly once in this repo, so there is nothing else to audit today, but
+a second use would fail the same way.

@@ -57,9 +57,9 @@ generation stays unavailable (0 Higgsfield credits, 2026-10-13), so rule 7b real
 
 Still to source for the sections after the hero: a phone lighting up with an alert on a dark desk, an owner's
 face lit by a laptop, and the matching restored-site capture for every error capture in `public/screens/`
-(that folder is still empty).
+(that folder holds only the four error captures so far).
 
-### v4 error captures (`public/screens/`, still empty)
+### v4 error captures (`public/screens/`, all four filled 2026-10-19)
 
 The home page's funnel stage one (`src/components/sections/v4/ErrorStack.tsx`) shows one card per error.
 Each card renders the capture the moment its file exists, with no code change; until then the card shows the
@@ -77,7 +77,7 @@ blank panel, which is what that screen is.
 (the matching restored-site frame the MASTER brief asks for next to every error). Docker is not available in
 the environment this branch was built in, so none of them exist yet.
 
-### v4 fix captures (`public/screens/`, same folder, also empty)
+### v4 fix captures (`public/screens/`, same folder, only the Diagnose capture exists, `restored.png` does not)
 
 Funnel stage two (`src/components/sections/v4/FixPan.tsx`) pans five panels past: Diagnose, Back up,
 Repair, Verify, Harden. Two of them are the before and after of the same site and show their capture the

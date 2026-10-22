@@ -1,6 +1,7 @@
 "use client";
 
 import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 
@@ -43,6 +44,18 @@ const useWide = () =>
  *
  * Reduced motion draws nothing: the outline is already retracted and the fill already uncovered on
  * the first frame, which is the finished state rather than a hidden one.
+ *
+ * The finished state is also the DEFAULT, and that is what the server sends. This component used to
+ * carry `visibility: hidden` until `getBBox` had measured the text, so the heading did not exist for
+ * anyone whose JS had not run, had failed, or was switched off: the only thing left of it was the
+ * `sr-only` span in the h2 above. The fallback `viewBox` is a guess at the real box and the text is
+ * `overflow-visible`, so an unmeasured heading paints slightly off its final scale rather than not
+ * at all, and the measured `viewBox` corrects it on the next frame. The matching half of this is the
+ * paint fallback on `guarantee-fill` in globals.css, because at md the fill points at a `<pattern>`
+ * that does not exist until the same measurement happens.
+ *
+ * Nothing here is throttled to once per visitor: the draw replays on every load by the owner's
+ * decision, and the point of the change above is that the words are on screen either way.
  */
 export function GuaranteeHeading({ text }: { text: string }) {
   const root = useRef<SVGSVGElement>(null);
@@ -75,6 +88,15 @@ export function GuaranteeHeading({ text }: { text: string }) {
   useGSAP(
     () => {
       if (!box) return;
+      // Registered here rather than at module scope because this file is still evaluated on the
+      // server for the initial HTML, and registration is idempotent so the repeat costs nothing.
+      //
+      // Without it the `scrollTrigger` key below is not a thing GSAP knows about, so it is dropped
+      // from the timeline config in silence and the timeline plays the moment it is built. That is
+      // what was happening: the draw ran to completion while the section was still 6772px below the
+      // fold, and every visitor arrived at a heading that had already finished animating. No error,
+      // no warning, and the only symptom was the effect never appearing to run.
+      gsap.registerPlugin(ScrollTrigger);
       const strokes = gsap.utils.toArray<SVGTSpanElement>("[data-ink]", root.current);
       const curtain = wipe.current;
       if (!strokes.length || !curtain) return;
@@ -109,7 +131,6 @@ export function GuaranteeHeading({ text }: { text: string }) {
       viewBox={vb}
       preserveAspectRatio="xMidYMid meet"
       className="block w-full overflow-visible"
-      style={box ? undefined : { visibility: "hidden" }}
     >
       {box && (
         <defs>
