@@ -161,7 +161,7 @@ Row 2 reads the real intent mix of each hub. Measured: wordpress-fix 11 fix; wor
 | --- | --- | --- | --- | --- |
 | /free-site-check/ | lead magnet: preview panel left, form card right | no | no | CHECK (form submit), CHAT |
 | /case-studies/ | composed empty state card | no | no | BOOK, CHAT |
-| /pricing/ | grouped price list by hub (not the home tier cards) | no | no | BOOK, PLANS, CHECK, CHAT |
+| /pricing/ | scope and outcome: three unequal tier cards, outcome rows per tier, a real comparison table, a disclosure FAQ and a split closing band | no | no | BOOK, PLANS, QUOTE, CHECK, CHAT |
 | /about/ | narrow document with link rows and fact tiles | no | no | BOOK, CHAT |
 | /guides/ | urgency-grouped error cards under a search panel, then a service chip row and a closing prompt band | no | no | BOOK, CHAT, CHECK |
 | /compare/ | link rows | no | no | BOOK, CHAT |
@@ -192,6 +192,55 @@ and for help controls to stay in consistent places, and a page-local field would
 between two inputs. Its empty state is the palette's own composed no-match state with CHAT. Without JavaScript the
 trigger does nothing, and the whole catalogue is still on the page underneath it, so the page degrades rather than
 breaking.
+
+/pricing/ is one page of six blocks: a document header, the three tier cards, the outcome rows, the comparison
+table, the FAQ and the closing band. Six blocks, so ceil(6 / 3) = 2 eyebrows allowed and 0 used, no marquee, and
+no image-plus-text split anywhere, because the page carries no photography at all. Nothing is logged to
+image-todo: the page is not waiting on a photograph, and its one visual decision is typographic.
+
+The page has no prices. Every `priceFrom` is null on all 32 services and every value in src/content/pricing.ts is
+null, so the old 32-row list had an empty right-hand column on every row. Rule 8 renders nothing for a missing
+number, and the whole page is built so that the number is the only thing missing: the price slot states that the
+work is quoted before it starts, and prints `From <price>` the moment src/content/pricing.ts publishes one. No
+figure here is invented, derived or placed as a placeholder. MASTER.md:222-225 asks for a monthly/annual toggle;
+rule 8 wins while both plan prices are null, because a toggle between two blanks is worse than no toggle, and
+`PlanPrice` already encodes exactly that: it renders itself, toggle included, only when both prices are published.
+
+Tiers come from `Service.intent`, which is the taxonomy the content already has: 15 fix, 3 plan, 14 project
+(measured 2026-10-22, no `info` service exists). Each tier is shown through the service that is its entry point,
+named on the card and in the table column, so no card claims to cover all 15 or all 14 at once: `emergency` for
+the fix tier, `care-plans` for the plan tier, `website-design` for the project tier. The fix tier is called
+"One-time fix", the home page's own wording, rather than "emergency fix", because 15 services sit under it and
+`email-not-sending` and `elementor-issues` are not emergencies. Rule 6 bans three equal cards in a row and the
+cards follow the home precedent for that: the centre tier is ringed in the accent and scaled 1.04 at md, with
+`md:order` putting the care plan first in DOM order where the cards scroll. It keeps `shadow-card` at rest;
+`--shadow-lift` is MASTER's hover shadow (MASTER.md:99,204) and using it at rest was a review finding on Task 1.
+
+All 32 services stay on the page as links, grouped under their tier instead of under their hub, and each row now
+carries its first deliverable, which is the outcome that row is selling, plus its own `priceFrom` and
+`typicalTurnaround` when either is published. Hub grouping and `hubLead` move off this page: the hub pages
+themselves lead with that paragraph, and the tier is what someone comparing prices is actually choosing between.
+
+The comparison table is the one MASTER asks for between the cards and the FAQ, and `deliverables` is its data.
+Rows are criteria, so each cell is real written content: whoItsFor, the `whatWeDo` verbs in the order the work
+happens, the full deliverables list, and how the work is billed. Typical turnaround is a row that appears only
+once an anchor publishes one. It does not repeat the price: the cards carry the price slot, and repeating it here
+would be a second treatment of the same gated value.
+
+The FAQ reuses the mechanism from the home `Faq` section rather than new copy: six questions referenced by
+service id and exact question text, resolved from the content files, so rewording a question fails the build
+instead of letting the two drift. It renders through `Faqs` (parts.tsx), the plain disclosure list, and emits
+`faqLd` beside the page's `breadcrumbLd`. Three pricing questions in the content are deliberately left out
+because they promise data this page does not have yet: care-plans "What is the difference between Basic, Pro and
+Business?", support-hours "Do unused hours expire?" and maintenance-woocommerce "Where can I see plan prices?" all
+answer "the pricing page lists it". They become usable once plan tiers and hour blocks exist in src/content.
+One care-plans deliverable, "A clear list of what each tier includes, published on the pricing page", is left out
+of the cards and the table for the same reason, the way `PlanCompare` leaves out the guarantee: on this page it
+would be the page promising itself. It comes back on its own once it is reworded or the tiers are published.
+
+No `FactRail` here, and so no second treatment of `brand.guarantee`: the rail is one DOM node built for a page
+whose body runs in a lead column, and this page is full-width cards and a full-width table. The guarantee stays
+on the service and guide templates, where the rail already renders it with its placeholder disclosure.
 
 ## v3 / contact (/contact/)
 
