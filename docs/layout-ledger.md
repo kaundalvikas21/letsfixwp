@@ -33,6 +33,25 @@ One row per section, recorded before coding (docs/section-contract.md rule 3). O
 
 Note for section 2: the hero photo hangs 48px into it at lg, so its first row needs at least 48px of clear space on the right half.
 
+Sections 1 and 4 carry the page's claims and now read their gates. The hero asserts five, not the two the fix
+routing named: `sameDay` is the headline's "today", and `vetted`, `bookingMinutes`, `fixedPrice` and `backupFirst`
+are the four halves of the subtext. All five are composed from `brand.claims` at module scope, so the hero stays a
+Server Component with a CSS-only entrance and no client JS in the LCP path, and the headline is still one string
+the h1 splits per word for the `rise` stagger. `bookingMinutes` is interpolated rather than spelled out, the
+pattern `checkTurnaround` already uses on /free-site-check/ and in the booking flow, so the number on screen is the
+gated value itself; that is the one copy change, "two minutes" to "2 minutes". Section 4 gates three lines, one of
+them `alt` text, because assistive tech reads it. Measured by flipping each claim off and rebuilding: the headline
+drops to "Your WordPress site, back online.", the subtext to "Book a vetted WordPress engineer in 2 minutes. Full
+backup first." or "... Fixed price.", and the Approve and Fix steps to "quotes the work" and "We fix the cause".
+Every surviving sentence is a complete thought.
+
+Nothing under src/content can gate a claim: those files are zod-parsed static data with no access to
+`brand.claims`, and src/content/notices.ts is the one exception because it imports brand and gates the words
+itself. The care-plans FAQ restated `backupFirst` there ungated and now does not; that page is a service page, so
+its rail still carries the promise in gated form. `scripts/check-content.ts` grew a claim-phrase scan to keep the
+next one out, deliberately phrase-level: "full backup", "backed up" and "back online" are ordinary prose on nine
+measured lines across the guides and city files, so a rule wide enough to read intent would fire on all of them.
+
 Eyebrow budget for this page: 11 sections, so ceil(11 / 3) = 3 eyebrows allowed, and 3 are used (sections 3, 5 and 8).
 Two unstyled foundation sections ("Site down or hacked right now", "What we do") sat after the final CTA until the
 QA pass; they duplicated the bento and the footer and were removed, which is what brings the page to 11 sections.

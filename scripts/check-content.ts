@@ -22,6 +22,15 @@ const banned = /\b(elevate|seamless|unleash|revolutionize|robust|leverage|cuttin
 const legacyClaim = /day or less|30[- ]day|\$150|Garrity|Kwak|Eugene|fixmywp\.com/i;
 // "/something/..." string literal. Page links must come from routes.ts; public asset folders are not page links.
 const hardcodedPath = /["'`]\/(?!screens\/|previews\/)[a-z][a-z0-9-]*\//;
+// The wordings the site uses for the promises gated in brand.claims. Files under src/content are zod-parsed
+// static data with no access to brand.claims, so a claim typed out there can never be turned off: it would
+// still assert the promise after the owner withdrew it. src/content/notices.ts is the one exception, because it
+// imports brand and gates the words itself (claimPoints, securityPractice), which is where a claim sentence
+// belongs. Deliberately phrase-level and not concept-level: "full backup", "backed up" and "back online" are
+// ordinary prose in the guides and the city files (9 lines measured), and a rule wide enough to read intent
+// would fire on all of them. So this catches a claim sentence re-typed into content, not a process step that
+// happens to describe the same work in its own words.
+const claimPhrase = /fixed[- ]price|back online today|\bsame[- ]day\b|backup first|backed up before|never (?:ask for )?your password|access is removed|\bvetted\b|in (?:two|\d+) minutes|approve the price before/i;
 
 for (const f of files) {
   readFileSync(f, "utf8")
@@ -37,6 +46,9 @@ for (const f of files) {
       // Legacy business claims may live only in brand.ts (gated) and testimonials.ts (rendered only when gated on).
       if (!brand.legacy.enabled && !is(f, "config", "brand.ts") && !is(f, "content", "testimonials.ts") && !is(f, "config", "redirects.ts") && code && legacyClaim.test(line))
         fail.push(`${at} legacy claim while brand.legacy.enabled is false: ${line.match(legacyClaim)![0]}`);
+      // Claim copy belongs in notices.ts, behind its brand.claims gate; nowhere else under src/content can gate.
+      if (f.includes(`${sep}content${sep}`) && !is(f, "content", "notices.ts") && code && claimPhrase.test(line))
+        fail.push(`${at} claim phrasing outside notices.ts, where it cannot be gated: ${line.match(claimPhrase)![0]}`);
       // Links come only from routes.ts (contract rule 16). Content data is validated against SITEMAP in src/content/index.ts.
       if (!f.includes(`${sep}content${sep}`) && !is(f, "config", "routes.ts") && !is(f, "config", "sitemap.ts") && !is(f, "config", "redirects.ts") && code && hardcodedPath.test(line))
         fail.push(`${at} hardcoded internal path, use routes.ts`);

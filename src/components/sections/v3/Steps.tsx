@@ -1,4 +1,5 @@
 import dynamic from "next/dynamic";
+import { brand } from "@/config/brand";
 import type { PhotoId } from "@/content/photos";
 import { hasScreen, Photo, Screen } from "./Photo";
 const StepsTabs = dynamic(() => import("./StepsTabs").then((m) => m.StepsTabs));
@@ -6,7 +7,10 @@ const StepsTabs = dynamic(() => import("./StepsTabs").then((m) => m.StepsTabs));
 // Each step shows its real capture in a device frame once the file exists; until then a stand-in photo
 // (docs/image-todo.md). booking and quote: screenshots of /contact once v3 styles it. before and after:
 // `npm run capture` (needs Docker). Stand-ins avoid frames the hero and bento already use on this page.
-// Copy leans only on claims gated in brand.claims (fixed price, backup first).
+// Three lines assert a claim gated in brand.claims and read their gate: the Approve step's sentence and its
+// alt text (fixedPrice) and the Fix step's first clause (backupFirst). Alt text counts, because assistive
+// tech reads it. Each one off leaves a step that still describes the move.
+const { fixedPrice, backupFirst } = brand.claims;
 const STEPS: { verb: string; text: string; capture: string; alt: string; standIn: PhotoId }[] = [
   {
     verb: "Describe",
@@ -17,14 +21,14 @@ const STEPS: { verb: string; text: string; capture: string; alt: string; standIn
   },
   {
     verb: "Approve",
-    text: "An engineer looks at the problem and quotes a fixed price. No work starts until you approve it.",
+    text: `An engineer looks at the problem and quotes ${fixedPrice ? "a fixed price" : "the work"}. No work starts until you approve it.`,
     capture: "/screens/quote.png",
-    alt: "A fixed-price quote waiting for approval",
+    alt: `A ${fixedPrice ? "fixed-price " : ""}quote waiting for approval`,
     standIn: "emergency",
   },
   {
     verb: "Fix",
-    text: "We take a full backup, then fix the cause, not the symptom. Your content, settings and design stay as they were.",
+    text: `${backupFirst ? "We take a full backup, then fix" : "We fix"} the cause, not the symptom. Your content, settings and design stay as they were.`,
     capture: "/screens/critical-error-on-this-website.png",
     alt: 'Before: the WordPress page reading "There has been a critical error on this website."',
     standIn: "racks",

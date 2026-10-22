@@ -49,3 +49,6 @@ __pycache__/
 
 # prebuilt per-platform binaries from skill installs
 .agents/skills/*/scripts/bin/
+
+# sdd plan workspaces (git-ignored scratch)
+.superpowers/

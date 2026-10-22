@@ -1,9 +1,24 @@
 import { BookLink, ChatButton } from "@/components/Cta";
+import { brand } from "@/config/brand";
 import { Photo } from "./Photo";
 
-// Each claim here is gated by brand.claims (src/config/brand.ts): a production deploy fails until all are confirmed.
-const HEADLINE = "Your WordPress site, back online today.";
-const SUBTEXT = "Book a vetted WordPress engineer in two minutes. Fixed price, full backup first.";
+/**
+ * The hero asserts five claims, and every one of them reads its gate in brand.claims (src/config/brand.ts), so a
+ * claim the owner turns off loses its words here rather than only failing the build: `sameDay` is the headline's
+ * "today", and `vetted`, `bookingMinutes`, `fixedPrice` and `backupFirst` are the four halves of the subtext.
+ * Composed at module scope, so this stays a Server Component with no client JS in the LCP path (rule 13), and
+ * the headline is still one string the h1 splits per word for the CSS `rise` stagger.
+ * `bookingMinutes` is interpolated rather than spelled out, the pattern `checkTurnaround` already uses, so the
+ * number on screen is the gated value itself. Each claim off leaves a shorter sentence that still reads:
+ * "Your WordPress site, back online." / "Book a WordPress engineer. Full backup first."
+ */
+const { sameDay, vetted, bookingMinutes, fixedPrice, backupFirst } = brand.claims;
+
+const HEADLINE = sameDay ? "Your WordPress site, back online today." : "Your WordPress site, back online.";
+
+const booking = `Book a ${vetted ? "vetted " : ""}WordPress engineer${bookingMinutes ? ` in ${bookingMinutes} minute${bookingMinutes === 1 ? "" : "s"}` : ""}.`;
+const assurance = [fixedPrice && "fixed price", backupFirst && "full backup first"].filter(Boolean).join(", ");
+const SUBTEXT = assurance ? `${booking} ${assurance[0].toUpperCase()}${assurance.slice(1)}.` : booking;
 
 /**
  * v3 home hero: 6/6 split at lg, the photo offset down so it overlaps the next section by 48px.

@@ -30,7 +30,7 @@ export default serviceSchema.parse({
   priceFrom: null,
   faqs: [
     { q: "What is the difference between Basic, Pro and Business?", a: "The tiers differ in how much is covered, such as update frequency, backup retention and how much fix time is included." },
-    { q: "Do you test updates before applying them?", a: "Yes. We take a backup first, apply updates, then check the home page, forms, logins and checkout if you have one. If an update breaks something, we roll it back and fix the cause." },
+    { q: "Do you test updates before applying them?", a: "Yes. We apply updates, then check the home page, forms, logins and checkout if you have one. If an update breaks something, we roll it back and fix the cause." },
     { q: "Do I need to move my hosting to join a plan?", a: "No. We work with the hosting you already have, as long as we can get WordPress admin and hosting or SFTP access." },
     { q: "What happens if my site gets hacked while on a plan?", a: "Monitoring is meant to catch it early. If it does happen, we restore from a clean backup or clean the site, and tell you what was found and how it got in." },
     { q: "Is a care plan better than paying per job?", a: "It depends on how often you need help. Sites that change often or earn money usually suit a plan, while rarely changed sites may suit pay-as-you-go hours. Our comparison page sets out both." },
