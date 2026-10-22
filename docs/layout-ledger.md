@@ -15,6 +15,11 @@ One row per section, recorded before coding (docs/section-contract.md rule 3). O
 | --- | --- | --- | --- | --- | --- |
 | 0 | SiteShell: floating glass pill nav (md+), top bar + fixed bottom action bar (<768px), problem command palette | shell (not counted against page layout families) | no | no | BOOK (nav, bottom bar, palette footer with the highlighted problem's slug), CHAT (bottom bar icon, palette no-match) |
 
+The fixed bottom action bar is a `nav` labelled "Get help", not a bare div: below 768px it is the page's
+persistent CTA, and as a div its two targets were the only content on any page outside a landmark, which is what
+axe's `region` rule reported as moderate at 375 on every page. The top bar's row is `gap-2`: at `gap-1` the search
+trigger and the menu button sat 4px apart where rule 5 asks for 8px.
+
 ## v3 / shared template primitives (src/components/templates/parts.tsx)
 
 Not a page. Three conventions that were in practice on four pages each but written down nowhere, which is how two
@@ -149,9 +154,12 @@ image-plus-text splits and the 2-consecutive-splits limit cannot be reached.
 Row 1 replaces the bare mono strip with `DiagnosticPanel` (`parts.tsx`): the literal message on `--surface-2` at
 12px with a 1px accent left rule, labelled so it is clear the text is what WordPress prints rather than our words.
 `errorText` is optional and 17 of the 37 guides have none (measured: 20 have it, 17 do not), so on those the panel
-carries the guide's first symptom in plain type instead, under its own label, and row 3 then lists `symptoms`
-from the second onwards. Nothing is printed twice and the panel is never an empty box. Every guide has at least
-four symptoms, so the shortest list row 3 can show is three. A 1px rule, not a thick one: the craft floor refuses a
+carries the guide's first symptom in plain type instead, under its own label, and row 3 then drops from
+`symptoms` whichever line the panel took. It drops by content, not by position: `symptomsBesides` (`parts.tsx`)
+removes any symptom containing the first 24 characters of what the panel showed, case-sensitively, so a guide
+whose second or third symptom quotes the error loses that one and keeps its first. Its own comment carries the
+limits of that test. Measured on all 37 guides: no guide ends with an empty list, none ends with a single line,
+and the shortest `symptoms` array on the site has four, so row 3 always shows at least three. A 1px rule, not a thick one: the craft floor refuses a
 coloured left border above 1px.
 
 Row 3 reuses `FactRail` rather than adding a second rail: one DOM node, sticky beside the body column from lg with
@@ -176,13 +184,30 @@ Knowledge Base pair, so the crumb titles follow SITEMAP and the trail inherits t
 | # | Section | Layout family | Eyebrow | Marquee | CTA intents |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Hero | single-column title block with lead and CTA pair, no visual | no | no | node intent, CHAT |
-| 2 | Which of these is your site doing | varied-span bento of symptom cards (bentoSpans) | no | no | none |
+| 2 | Which of these is your site doing | span grid of symptom cards (bentoLayout): a bento on three hubs, uniform 2-up on the other three | no | no | none |
 | 3 | Most urgent problems | ranked list in one panel, severity badge per row | no | no | none |
-| 4 | Not sure which one | left-aligned prompt band, one button | no | no | CHAT |
+| 4 | Not sure which one | left-aligned prompt band, CTA pair | no | no | node intent, CHAT |
 
 Eyebrow budget: 4 sections, ceil(4 / 3) = 2 allowed, 0 used. No marquee. No image-plus-text splits at all.
 
-Row 2 reads the real intent mix of each hub. Measured: wordpress-fix 11 fix; wordpress-security 3 fix, 1 project; woocommerce 1 fix, 3 project; wordpress-maintenance 3 plan, 1 project; wordpress-performance-migration 3 project; wordpress-development 6 project. `symptoms` is empty on every non-fix service (serviceSchema refine), so a card shows its first three symptoms when it has them and otherwise its `summary`, `whoItsFor` and the first three `deliverables`. The heading follows: "Which of these is your site doing?" only when at least one card has symptoms, "Pick the work that fits" when none does. Row 3 renders only when the hub has guides (4 of 6 do: maintenance and development have none). It ranks by `Guide.urgency` and shows the urgency in words plus an icon (`UrgencyBadge`), never colour alone. The hero drops the photograph and carries no visual (contract rule 4 allows text plus CTA): the old hub photographs were reused frames, several dark, against the bright-daylight direction in MASTER, and an index panel only repeated the grid. `hubPhotos` is removed, so hubs carry no photo data. Row 4 replaces a closing band that repeated the node title and both hero buttons.
+Row 2 reads the real intent mix of each hub. Measured: wordpress-fix 11 fix; wordpress-security 3 fix, 1 project; woocommerce 1 fix, 3 project; wordpress-maintenance 3 plan, 1 project; wordpress-performance-migration 3 project; wordpress-development 6 project. `symptoms` is empty on every non-fix service (serviceSchema refine), so a card shows its first three symptoms when it has them and otherwise its `summary`, `whoItsFor` and the first three `deliverables`. The heading follows: "Which of these is your site doing?" only when at least one card has symptoms, "Pick the work that fits" when none does. Row 3 renders only when the hub has guides (4 of 6 do: maintenance and development have none). It ranks by `Guide.urgency` and shows the urgency in words plus an icon (`UrgencyBadge`), never colour alone. The hero drops the photograph and carries no visual (contract rule 4 allows text plus CTA): the old hub photographs were reused frames, several dark, against the bright-daylight direction in MASTER, and an index panel only repeated the grid. `hubPhotos` is removed, so hubs carry no photo data. Row 4 replaces a closing band that repeated the node title and both hero buttons; it renders the page's primary CTA (`primaryCtaFor(node.intent)`, so PLANS on maintenance and QUOTE on development) beside `ChatButton`, which is the same pair the hero shows.
+
+Row 2's mechanism was invented, tuned and measured on this page over two fix rounds, and the compare entry and the
+/guides/ prose both document it while its origin page did not. `bentoLayout` (src/lib/bento.ts) decides per hub
+whether the grid is a bento at all. It weighs each card on the text that card actually holds (`shown`, so symptoms
+when a service has them and otherwise summary, whoItsFor and deliverables) and compares the heaviest to the
+lightest against `UNIFORM_RATIO`, 1.4. Above it `bentoSpans` pairs the cards off into rows of the 6-column grid and
+gives the heavier card of each pair the 4 and the lighter the 2, so no row is two equal cards and no long cell
+lands in a narrow slot. At or below it the grid is a plain 2-up on 3-column halves, because near-equal weights
+give `bentoSpans` nothing to differentiate and it would only invent wide cells the text cannot fill. Either way an
+odd last card spans the whole row rather than leaving half a row empty, and spans map to class names through a
+literal record in the template, because Tailwind v4's scanner never emits a computed `md:col-span-${n}`.
+
+Measured against the real content, three of the six hubs take the uniform branch and are therefore not bentos:
+`wordpress-maintenance` (ratio 1.28, four cards, 3,3,3,3), `wordpress-development` (1.20, six cards, 3,3,3,3,3,3)
+and `wordpress-performance-migration` (1.12, three cards, 3,3,6). The three that are bentos are `wordpress-fix`
+(1.67, eleven cards, ending on a 6), `wordpress-security` (2.63) and `woocommerce` (2.06). 1.4 was tuned by hand
+against exactly this split, which is why the number lives beside the function and not in a template.
 
 ## v3 / city template (/wordpress-development/cities/<city>/)
 
@@ -223,7 +248,7 @@ apart by a letter plus a coloured rule, never by colour alone. Breadcrumbs alrea
 | --- | --- | --- | --- | --- |
 | /free-site-check/ | lead magnet: preview panel left, form card right | no | no | CHECK (form submit), CHAT |
 | /case-studies/ | composed empty state card | no | no | BOOK, CHAT |
-| /pricing/ | scope and outcome: three unequal tier cards, outcome rows per tier, a real comparison table, a disclosure FAQ and a split closing band | no | no | BOOK, PLANS, QUOTE, CHECK, CHAT |
+| /pricing/ | scope and outcome: three equal tier cells with the centre ringed and scaled, outcome rows per tier, a real comparison table, a disclosure FAQ and a split closing band | no | no | BOOK, PLANS, QUOTE, CHECK, CHAT |
 | /about/ | company document: uniform hub cards two a row, ruled engagement rows, a grouped practice list, a city chip row and a closing band, with the shared rail beside the body from lg | no | no | BOOK, CHAT |
 | /guides/ | urgency-grouped error cards under a search panel, then a service chip row and a closing prompt band | no | no | BOOK, CHAT, CHECK |
 | /compare/ | stacked full-width comparison cards, each with A/B chips, summary and the criteria compared | no | no | BOOK, CHAT |
@@ -256,7 +281,9 @@ trigger does nothing, and the whole catalogue is still on the page underneath it
 breaking.
 
 /pricing/ is one page of six blocks: a document header, the three tier cards, the outcome rows, the comparison
-table, the FAQ and the closing band. The tier grid is `md:items-stretch`, not `md:items-center`: the cards end on
+table, the FAQ and the closing band. The three tiers are equal-width cells of `md:grid-cols-3`, not unequal cards:
+what sets the centre apart is the accent ring, the `md:scale-[1.04]` and the badge that says in words what the
+ring means, and that distinction is the whole rule-6 justification, so it has to be stated accurately. The tier grid is `md:items-stretch`, not `md:items-center`: the cards end on
 `mt-auto pt-8` so their CTAs align at the card foot, which only works when the cells are stretched to equal
 height, and under `items-center` each cell was content height and the three CTAs sat at three different heights.
 Stretched is also what the cards already do in the scroll-snap row below md, so both widths now agree. Six blocks, so ceil(6 / 3) = 2 eyebrows allowed and 0 used, no marquee, and
@@ -292,8 +319,11 @@ themselves lead with that paragraph, and the tier is what someone comparing pric
 The comparison table is the one MASTER asks for between the cards and the FAQ, and `deliverables` is its data.
 Rows are criteria, so each cell is real written content: whoItsFor, the `whatWeDo` verbs in the order the work
 happens, the full deliverables list, and how the work is billed. That last row reads per the anchor and nothing
-wider: "Per month" is what care-plans.summary calls the plan, and an annual option is named only once
-`planAnnual` is published, so the page never states a billing option no content backs. Typical turnaround is a row that appears only
+wider. "Per month" is a string hardcoded in pricing/page.tsx, not read from `care-plans.summary`: it is written to
+agree with that summary ("A monthly plan where we handle updates, backups, monitoring and security checks"), and
+the code's own comment says so, but an edit to `summary` will not update it and nothing fails if the two diverge.
+An annual option is named only once `planAnnual` is published, so the page never states a billing option no
+content backs. Typical turnaround is a row that appears only
 once an anchor publishes one. It does not repeat the price: the cards carry the price slot, and repeating it here
 would be a second treatment of the same gated value.
 
@@ -326,8 +356,11 @@ repo, so nothing here describes a person, and the SITEMAP title (`About / Team`)
 what the footer and the breadcrumb print. Six blocks: a document header, the hub cards, the engagement rows, the
 practice list, the city chips and the closing band, so ceil(6 / 3) = 2 eyebrows allowed and 0 used. Marquee is
 `no`. The page carries no photography, so it has zero image-plus-text splits and the 2-consecutive limit cannot
-be reached; the three frames now referenced by nothing are all `tone: "red"`, which MASTER.md:39 locks out of v3,
-so none of them is a candidate and nothing is logged to image-todo.
+be reached; the frames now referenced by nothing are all `tone: "red"`, which MASTER.md:39 locks out of v3,
+so none of them is a candidate and nothing is logged to image-todo. There are four of them, not three:
+`laptop-hands`, `monitors`, `alert` and `keyboard-red`. `hero-console` is not among them, because `Bento.tsx:45`
+still falls back to it when the capture is missing, and a scan for `"alert"` finds `role="alert"` in the booking
+flow, which is not a use of the frame. The conclusion is unchanged by the correction: all four are red.
 
 No two blocks share a layout family: cards (the hub grid), full-width label rows (the engagement list), a
 grouped icon list two items to a group (the practice list), a pill chip row (the cities) and a split band
@@ -420,6 +453,22 @@ rather than a prefix, because `brand.guarantee.summary` already opens with the s
 Text-entry inputs carry the MASTER input spec in full, 12px 16px padding included; the radios inherit the label's
 14px, which is not an iOS zoom trigger. "Who hosts it?" is `autoComplete="off"`: no token names a hosting provider,
 and "organization" was offering the visitor's own employer.
+
+## v3 / the bento entrance, as a deliberate MASTER deviation
+
+MASTER.md:203 specifies the bento entrance: `whileInView`, opacity 0 to 1 and y 16 to 0, 60ms stagger, spring
+stiffness 100 / damping 20, `viewport={{ once: true }}`, communicating reading order across the grid. The home
+page has it. The six span grids and card grids added on this branch do not: the hub template, the service
+template, the compare template, /guides/, /about/ and the city template are all static, because the motion lives
+in `BentoMotion.tsx` and `Bento.tsx` is the only file that imports it.
+
+That is the right call under contract rule 13 and not an oversight. `BentoMotion.tsx` is a `'use client'` leaf, so
+importing it into those six would put client JS in the LCP path of every template on the site to animate content
+that is already readable without it; five of the six are the first grid on their page, so the entrance would be
+running where it cannot communicate reading order the reader has not reached yet. The home page is the one place
+the grid is the page's argument rather than its index, and it is also the one page where the entrance is below a
+hero that has already loaded. Recorded here in full because the contact tabs' MASTER deviation is recorded in full
+further up and this one, across six templates, was not recorded at all.
 
 ## v3 / live chat
 
