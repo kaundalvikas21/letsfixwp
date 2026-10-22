@@ -23,10 +23,13 @@ export function ContactTabs({ initial, fix, project }: { initial: "fix" | "proje
           Project enquiry
         </Tabs.Trigger>
       </Tabs.List>
-      <Tabs.Content value="fix" className="mt-8 outline-none">
+      {/* tabIndex -1: Radix makes the panel a tab stop, and a stop on a full-height panel can only show focus as
+          a ring around the whole card or, with outline-none, not at all. The panel's first field is the next stop
+          either way, so the stop is removed rather than left invisible. */}
+      <Tabs.Content value="fix" tabIndex={-1} className="mt-8 outline-none">
         {fix}
       </Tabs.Content>
-      <Tabs.Content value="project" className="mt-8 outline-none">
+      <Tabs.Content value="project" tabIndex={-1} className="mt-8 outline-none">
         {project}
       </Tabs.Content>
     </Tabs.Root>

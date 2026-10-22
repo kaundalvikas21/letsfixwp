@@ -1,12 +1,13 @@
 "use client";
 
-import { ArrowLeftIcon, CheckCircleIcon, MagnifyingGlassIcon, WarningCircleIcon } from "@phosphor-icons/react/ssr";
+import { ArrowLeftIcon, CaretRightIcon, CheckCircleIcon, MagnifyingGlassIcon, WarningCircleIcon } from "@phosphor-icons/react/ssr";
 import { useEffect, useMemo, useReducer, useRef, useState, useTransition } from "react";
 import { ChatButton } from "@/components/Cta";
 import type { ProblemItem } from "@/components/sections/v3/ProblemSearch";
 import { brand } from "@/config/brand";
 import { CTA } from "@/config/cta";
 import { accessMethods, budgets, contactMethods, timelines } from "@/content/booking-options";
+import { claimLine } from "@/content/notices";
 import { bookingText, getHandoff } from "@/lib/booking";
 import { matchProblem } from "@/lib/match-problem";
 import { track } from "@/lib/track";
@@ -51,7 +52,7 @@ function reducer(s: State, a: Action): State {
 
 const label = "block text-sm font-semibold";
 const help = "mt-1 text-sm text-muted";
-const field = "mt-1.5 min-h-11 w-full rounded-[12px] border border-line-strong bg-surface px-4 py-2.5 text-base";
+const field = "mt-1.5 min-h-11 w-full rounded-[12px] border border-line-strong bg-surface px-4 py-3 text-base";
 const errorText = "mt-1.5 flex items-start gap-1.5 text-sm font-semibold";
 const group = "mt-6 first:mt-0";
 
@@ -247,7 +248,7 @@ export function BookingFlow({
 
       <div className="mt-8 flex flex-wrap items-center gap-3">
         {index > 0 && (
-          <button type="button" onClick={() => dispatch({ t: "goto", index: index - 1 })} className="btn-secondary">
+          <button type="button" onClick={() => dispatch({ t: "goto", index: index - 1 })} className="btn-secondary gap-2">
             <ArrowLeftIcon weight="duotone" className="size-4" aria-hidden />
             Back
           </button>
@@ -434,10 +435,11 @@ function SiteScreen({ b, errors, type, dispatch }: ScreenProps & { type: Request
           Who hosts it? (optional)
         </label>
         <p className={help}>Hostinger, GoDaddy, Cloudways, your own server. Skip it if you do not know.</p>
+        {/* No autofill token names a hosting provider, and "organization" offered the visitor's own employer. */}
         <input
           id="host"
           type="text"
-          autoComplete="organization"
+          autoComplete="off"
           value={b.host}
           onChange={(e) => dispatch({ t: "set", patch: { host: e.target.value } })}
           className={field}
@@ -540,6 +542,10 @@ function ConfirmScreen({ b, serviceTitle, type }: { b: Booking; serviceTitle: st
     { k: "Reply by", v: labelFor(contactMethods, b.contactMethod) },
   ].filter((r): r is { k: string; v: string } => !!r);
 
+  // brand.claims.fixedPrice: both lines of the note below assert it, so both go when it is off, and the box
+  // with them unless the guarantee still has something to say.
+  const priceNote = type === "check" ? "No charge for a site check." : brand.claims.fixedPrice ? "Quote before work begins." : "";
+
   return (
     <div>
       <dl className="divide-y divide-line border-y border-line text-sm">
@@ -551,16 +557,18 @@ function ConfirmScreen({ b, serviceTitle, type }: { b: Booking; serviceTitle: st
         ))}
       </dl>
 
-      <div className="mt-5 rounded-[12px] bg-surface-2 p-4 text-sm">
-        <p className="font-semibold">{type === "check" ? "No charge for a site check." : "Quote before work begins."}</p>
-        {type !== "check" && <p className="mt-1 text-muted">An engineer reviews this, then sends a fixed price. Nothing is charged until you approve it.</p>}
-        {brand.guarantee && (
-          <p className="mt-2 text-muted">
-            {brand.guarantee.placeholder && <span className="font-semibold">Placeholder: </span>}
-            {brand.guarantee.summary}
-          </p>
-        )}
-      </div>
+      {(priceNote || brand.guarantee) && (
+        <div className="mt-5 rounded-[12px] bg-surface-2 p-4 text-sm">
+          {priceNote && <p className="font-semibold">{priceNote}</p>}
+          {type !== "check" && priceNote && <p className="mt-1 text-muted">An engineer reviews this and prices the work. {claimLine.fixedPrice}.</p>}
+          {brand.guarantee && (
+            <p className="mt-2 text-muted">
+              {brand.guarantee.placeholder && <span className="font-semibold">Placeholder: </span>}
+              {brand.guarantee.summary}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -603,7 +611,8 @@ function Success({
     `Your ticket reference is ${reference}. Keep it for any reply.`,
     type === "check"
       ? `An engineer checks the site and emails the summary to ${booking.email} within ${brand.claims.checkTurnaround}.`
-      : `An engineer reads it and replies to ${booking.email} with a fixed price before any work starts.`,
+      : // brand.claims.fixedPrice: the price half of this line is the shared copy and goes with the claim.
+        `An engineer reads it and replies to ${booking.email}.${brand.claims.fixedPrice ? ` ${claimLine.fixedPrice}.` : ""}`,
     booking.access === "secure-link" && type === "fix"
       ? "A secure link for hosting or admin access comes with that reply. Nothing sensitive goes through this form."
       : "If anything is unclear, we ask before touching the site.",
@@ -636,8 +645,12 @@ function Success({
       </div>
 
       {/* Email confirmation stub: nothing is sent from the server yet, so the copy is shown rather than claimed. */}
-      <details className="mt-5">
-        <summary className="cursor-pointer text-sm font-semibold">See exactly what gets sent</summary>
+      <details className="group mt-5">
+        {/* The row itself is the 44px target, as the shared Faqs summary is (contract rule 5). */}
+        <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-4 text-sm font-semibold marker:content-none [&::-webkit-details-marker]:hidden">
+          See exactly what gets sent
+          <CaretRightIcon weight="duotone" className="size-5 shrink-0 text-muted transition-transform group-open:rotate-90 motion-reduce:transition-none" aria-hidden />
+        </summary>
         <pre className="mt-3 overflow-x-auto rounded-[12px] bg-surface-2 p-4 font-mono text-xs whitespace-pre-wrap">{bookingText(booking, serviceTitle)}</pre>
       </details>
 

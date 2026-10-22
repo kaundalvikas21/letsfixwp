@@ -331,13 +331,29 @@ promises a second time in shorter words.
 | --- | --- | --- | --- | --- | --- |
 | 1 | Intro column + form card | 5/7 split, intro left, tabbed flow card right | no | no | CHAT (intro) |
 | 2 | Booking flow | named-screen wizard inside the card (Problem, Your site, Contact, Confirm) | no | no | BOOK or QUOTE or CHECK on the last screen |
-| 3 | Success | confirmation state replacing the flow, with handoff and CHAT | no | no | CHAT |
+| 3 | Success | confirmation state replacing the flow, with handoff disclosure and CHAT | no | no | CHAT |
+
+Three sections, so ceil(3 / 3) = 1 eyebrow allowed and 0 used. No marquee, and no two rows share a layout family.
+The mode here is Operate, not Persuade: the page is a tool someone types into, so it carries no imagery, no bento
+and no second rail, and the bar for changing anything is that it makes the form easier to complete.
 
 Two flows share the page: Emergency ticket (routes.book) and Project enquiry (routes.quote, type=project), each
 keeping its own sessionStorage draft. /free-site-check/ runs the same component in "check" mode.
 Progress is shown by screen name only, never "Step 1 of 4". The generated booking override suggests red/orange/green
 step colours; the v3 colour lock wins, so every screen uses the single accent.
 /contact/thanks/ was deleted: the success screen is now part of the flow, so the redirect target was dead.
+
+The Radix tab panel is `tabIndex={-1}`: Radix makes it a tab stop, and on a panel this tall focus can only show as
+a ring around the whole card or, with `outline-none`, not at all. Its first field is the next stop either way.
+The success disclosure row is 44px tall with the hidden marker and caret the shared `Faqs` summary uses, so it is a
+rule-5 target rather than a 20px line of text.
+Every fixed-price sentence on the page now reads `claimLine.fixedPrice` from src/content/notices.ts behind
+`brand.claims.fixedPrice`, with the `// brand.claims.x` marker beside it: the lead paragraph, the confirm note (both
+lines, and the note box with them) and the success reply line. With the claim off each one drops to a shorter
+sentence that still reads. `brand.claims.checkTurnaround` stays interpolated into the check flow's success line.
+Text-entry inputs carry the MASTER input spec in full, 12px 16px padding included; the radios inherit the label's
+14px, which is not an iOS zoom trigger. "Who hosts it?" is `autoComplete="off"`: no token names a hosting provider,
+and "organization" was offering the visitor's own employer.
 
 ## v3 / live chat
 
