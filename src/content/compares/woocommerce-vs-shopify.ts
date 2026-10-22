@@ -4,6 +4,7 @@ export default compareSchema.parse({
   slug: "woocommerce-vs-shopify",
   a: "WooCommerce",
   b: "Shopify",
+  summary: "WooCommerce runs on your own WordPress and bends to unusual needs. Shopify is a hosted store that handles servers and sale-day load for you.",
   rows: [
     {
       criterion: "Ownership and hosting",

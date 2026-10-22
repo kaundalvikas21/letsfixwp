@@ -345,3 +345,26 @@ export function LegalPending({ title }: { title: string }) {
     </article>
   );
 }
+
+/** The two sides of a comparison as lettered chips. The letter carries the A/B identity, not the colour (rule 9). */
+export function Versus({ a, b, className }: { a: string; b: string; className?: string }) {
+  const chip = "inline-flex min-h-11 items-center gap-2.5 rounded-full border bg-surface py-1.5 pr-4 pl-1.5 font-display text-base font-bold";
+  const letter = "grid size-8 place-items-center rounded-full border-2 text-sm";
+  return (
+    <p className={cn("flex flex-wrap items-center gap-x-3 gap-y-2", className)}>
+      <span className={cn(chip, "border-accent")}>
+        <span className={cn(letter, "border-accent text-accent-text")} aria-hidden>
+          A
+        </span>
+        {a}
+      </span>
+      <span className="text-sm font-semibold text-muted">vs</span>
+      <span className={cn(chip, "border-line-strong")}>
+        <span className={cn(letter, "border-text text-text")} aria-hidden>
+          B
+        </span>
+        {b}
+      </span>
+    </p>
+  );
+}

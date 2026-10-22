@@ -150,10 +150,14 @@ Row 2 reads the real intent mix of each hub. Measured: wordpress-fix 11 fix; wor
 
 | # | Section | Layout family | Eyebrow | Marquee | CTA intents |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Hero | document header | no | no | none |
-| 2 | Which one fits | three verdict cards | no | no | none |
-| 3 | Side by side | real comparison table | no | no | none |
+| 1 | Hero | document header with lettered A/B chips | no | no | none |
+| 2 | Which one fits | verdict bento (2-up when the verdicts are near-equal length, odd last card spans the row) | no | no | none |
+| 3 | Side by side | real comparison table, lettered and ruled column heads | no | no | none |
 | 4 | Closing | split band | no | no | collection intent, CHAT |
+
+Four sections, so ceil(4 / 3) = 2 eyebrows allowed and 0 used. No image-plus-text split. The rows are free prose with
+no yes/no field, so the table carries no tick or cross icons (that would mean inventing data); A and B are told
+apart by a letter plus a coloured rule, never by colour alone. Breadcrumbs already come from the shared primitive.
 
 ## v3 / standalone pages
 
@@ -164,7 +168,7 @@ Row 2 reads the real intent mix of each hub. Measured: wordpress-fix 11 fix; wor
 | /pricing/ | scope and outcome: three unequal tier cards, outcome rows per tier, a real comparison table, a disclosure FAQ and a split closing band | no | no | BOOK, PLANS, QUOTE, CHECK, CHAT |
 | /about/ | narrow document with link rows and fact tiles | no | no | BOOK, CHAT |
 | /guides/ | urgency-grouped error cards under a search panel, then a service chip row and a closing prompt band | no | no | BOOK, CHAT, CHECK |
-| /compare/ | link rows | no | no | BOOK, CHAT |
+| /compare/ | stacked full-width comparison cards, each with A/B chips, summary and the criteria compared | no | no | BOOK, CHAT |
 | /wordpress-development/cities/ | link rows | no | no | QUOTE, CHAT |
 
 The booking form (src/app/contact/BookingFlow.tsx) is shared by /free-site-check/ and /contact/, so it carries one

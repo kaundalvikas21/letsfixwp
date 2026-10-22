@@ -4,7 +4,11 @@ import { primaryCtaFor } from "@/config/cta";
 import { nodeByPath, routes } from "@/config/routes";
 import type { Compare } from "@/content/schema";
 import { cn } from "@/lib/utils";
-import { Breadcrumbs, h1, h2, page, Section } from "./parts";
+import { bentoSpans } from "@/lib/bento";
+import { Breadcrumbs, h1, h2, page, Section, Versus } from "./parts";
+
+// Literal classes so Tailwind's scanner emits them; a computed `md:col-span-${n}` would not.
+const SPAN = { 3: "md:col-span-3", 2: "md:col-span-2", 4: "md:col-span-4", 6: "md:col-span-6" } as const;
 
 /**
  * /compare/<slug>/. Layout family: verdict-by-scenario cards over a real comparison table. Factual and neutral:
@@ -16,6 +20,10 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
   const Primary = intent === "PLANS" ? PlansLink : intent === "QUOTE" ? QuoteLink : BookLink;
   const loc = `compare:${c.slug}`;
   const th = "border-b border-line-strong px-4 py-3 text-left font-display text-sm font-bold";
+  // Near-equal verdicts give bentoSpans nothing to differentiate: plain 2-up, odd last card spans the row.
+  const weights = c.verdictByScenario.map((v) => v.scenario.length + v.verdict.length);
+  const uniform = Math.max(...weights) <= Math.min(...weights) * 1.4;
+  const spans = uniform ? weights.map((_, i) => (i === weights.length - 1 && i % 2 === 0 ? 6 : 3)) : bentoSpans(weights);
   const td = "border-b border-line px-4 py-3 align-top text-sm";
 
   return (
@@ -30,23 +38,24 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
       />
 
       <header className="mt-6">
+        <Versus a={c.a} b={c.b} className="mb-5" />
         <h1 className={h1}>{title}</h1>
-        <p className="mt-5 max-w-[68ch] text-lg text-muted">{c.seo.description}</p>
+        <p className="mt-5 max-w-[68ch] text-lg text-muted">{c.summary ?? c.seo.description}</p>
       </header>
 
       <Section id="verdict" title="Which one fits">
-        <ul className="grid gap-4 md:grid-cols-3">
-          {c.verdictByScenario.map((v) => (
-            <li key={v.scenario} className="rounded-[20px] border border-line bg-surface p-5 shadow-card">
-              <p className="font-display text-base font-bold">{v.scenario}</p>
-              <p className="mt-2 text-sm text-muted">{v.verdict}</p>
+        <ul className="grid gap-4 md:grid-cols-6 md:gap-5">
+          {c.verdictByScenario.map((v, i) => (
+            <li key={v.scenario} className={cn("rounded-[20px] border border-line bg-surface p-5 shadow-card", SPAN[spans[i] as keyof typeof SPAN])}>
+              <h3 className="font-display text-base font-bold">{v.scenario}</h3>
+              <p className="mt-2 max-w-[68ch] text-sm text-muted">{v.verdict}</p>
             </li>
           ))}
         </ul>
       </Section>
 
       <Section id="table" title="Side by side">
-        <div className="overflow-x-auto rounded-[20px] border border-line bg-surface shadow-card">
+        <div tabIndex={0} role="region" aria-label={`${c.a} compared with ${c.b}, scrollable`} className="overflow-x-auto rounded-[20px] border border-line bg-surface shadow-card">
           <table className="w-full min-w-[40rem] border-collapse">
             <caption className="sr-only">
               {c.a} compared with {c.b}
@@ -56,10 +65,16 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
                 <th scope="col" className={th}>
                   Criterion
                 </th>
-                <th scope="col" className={th}>
+                <th scope="col" className={cn(th, "border-t-2 border-t-accent")}>
+                  <span className="mr-2 inline-grid size-6 place-items-center rounded-full border-2 border-accent text-xs text-accent-text" aria-hidden>
+                    A
+                  </span>
                   {c.a}
                 </th>
-                <th scope="col" className={th}>
+                <th scope="col" className={cn(th, "border-t-2 border-t-text")}>
+                  <span className="mr-2 inline-grid size-6 place-items-center rounded-full border-2 border-text text-xs" aria-hidden>
+                    B
+                  </span>
                   {c.b}
                 </th>
               </tr>
@@ -83,7 +98,7 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
         <h2 id="compare-closing" className={cn(h2, "max-w-[28ch]")}>
           Still deciding between {c.a} and {c.b}?
         </h2>
-        <div className="flex shrink-0 flex-wrap gap-3">
+        <div className="flex shrink-0 flex-wrap gap-x-3 gap-y-3">
           <Primary location={`${loc}:closing`} className="btn-primary" />
           <ChatButton location={`${loc}:closing`} className="btn-secondary" />
         </div>

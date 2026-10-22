@@ -4,6 +4,7 @@ export default compareSchema.parse({
   slug: "wordpress-vs-wix",
   a: "WordPress",
   b: "Wix",
+  summary: "Wix bundles hosting and an editor, so a first site goes up fast. WordPress takes more setup but you own the files and database, which is where the room to grow comes from.",
   rows: [
     {
       criterion: "Ownership and hosting",

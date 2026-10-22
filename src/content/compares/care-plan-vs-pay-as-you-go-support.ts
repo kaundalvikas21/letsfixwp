@@ -4,6 +4,7 @@ export default compareSchema.parse({
   slug: "care-plan-vs-pay-as-you-go-support",
   a: "Monthly care plan",
   b: "Pay-as-you-go support hours",
+  summary: "A care plan keeps updates, backups and monitoring running every month. Pay-as-you-go support suits a site that rarely changes and needs occasional help.",
   rows: [
     {
       criterion: "How you pay",
