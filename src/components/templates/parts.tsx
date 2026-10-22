@@ -246,6 +246,25 @@ export function FactRail({
 }
 
 /**
+ * Symptoms with any line that restates `alreadyShown` removed, so a page never prints the same string twice:
+ * the index card drops a symptom that quotes the error text it already shows, and the guide page drops whatever
+ * the diagnostic panel took (the error text, or the first symptom when the failure prints no message).
+ *
+ * ponytail: a 24-character, case-sensitive prefix test matched as a substring, not a parser. What it cannot do,
+ * so the next person rewording a guide can see what would break it:
+ *   - 24 characters is the whole key, so two errors that open with the same long phrase read as one string;
+ *   - it is case-sensitive, so a symptom that recapitalises the message keeps its duplicate;
+ *   - the shortest errorText on the site is 11 characters, and a key that short drops every symptom containing
+ *     it, not only the one quoting it;
+ *   - a symptom that quotes the error loses its surrounding context with it, because the whole line goes.
+ * Measured against all 37 guides on 2026-10-22: 14 of the 20 with errorText quote it, no second symptom repeats
+ * the key, and the shortest list this leaves is three lines. A guide that ever reads wrong wants its own symptom
+ * reworded, not a smarter matcher here.
+ */
+export const symptomsBesides = (symptoms: readonly string[], alreadyShown: string | undefined): string[] =>
+  alreadyShown ? symptoms.filter((x) => !x.includes(alreadyShown.slice(0, 24))) : [...symptoms];
+
+/**
  * The literal message a failure prints, set as typography on an inset surface with a 1px accent rule down the
  * left edge. Not a screenshot and not dressed as one: contract rule 6 and MASTER.md:189 ban div-built browser
  * chrome, so this is a quotation, labelled as the software's words rather than ours.

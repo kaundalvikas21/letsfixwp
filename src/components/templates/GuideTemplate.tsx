@@ -8,7 +8,7 @@ import { getService, guidesFor } from "@/content";
 import { coreFileWarning } from "@/content/notices";
 import type { Guide } from "@/content/schema";
 import { cn } from "@/lib/utils";
-import { Breadcrumbs, CauseFlow, DiagnosticPanel, FactRail, Faqs, h1, LinkRows, page, RealScreen, Section, UrgencyBadge } from "./parts";
+import { Breadcrumbs, CauseFlow, DiagnosticPanel, FactRail, Faqs, h1, LinkRows, page, RealScreen, Section, symptomsBesides, UrgencyBadge } from "./parts";
 
 const textLink = "inline-flex min-h-11 items-center font-semibold text-accent-text underline underline-offset-4 hover:no-underline";
 
@@ -21,13 +21,9 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
   const parent = getService(g.parentService)!;
   const loc = `guide:${g.slug}`;
   const siblings = guidesFor(g.parentService).filter((x) => x.slug !== g.slug);
-  // The diagnostic panel shows either the literal error text or, on the 17 guides that print no message, the
-  // first symptom. Either way the list below drops what the panel already shows, so nothing is printed twice:
-  // 14 of the 20 guides with errorText open a symptom by quoting that same string. Measured against the content,
-  // the shortest list this leaves is three lines.
-  // ponytail: a prefix test, not a parser. A future guide that still reads double wants its symptoms reworded.
-  const shownAbove = g.errorText ? g.errorText.slice(0, 24) : g.symptoms[0];
-  const symptoms = g.symptoms.filter((x) => !x.includes(shownAbove));
+  // The panel shows the literal error text, or the first symptom on the 17 guides that print no message, so the
+  // list drops whichever of the two it took (symptomsBesides carries the heuristic and its limits).
+  const symptoms = symptomsBesides(g.symptoms, g.errorText ?? g.symptoms[0]);
   // Each line is a claim gated in brand.claims, so a production deploy fails until the owner confirms it.
   const points = [
     brand.claims.backupFirst && "Files and database backed up before anything changes", // brand.claims.backupFirst
@@ -83,8 +79,8 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
             <figure className="mt-5 flex flex-col items-center gap-4 rounded-[20px] bg-surface-2 p-5 sm:flex-row sm:gap-6">
               <CauseFlow causes={g.likelyCauses.length} checks={g.safeChecks.length} />
               <figcaption className="max-w-[48ch] text-sm text-muted">
-                Any one of those causes ends in the same failure, which is why the checks below are worth running
-                before you know which cause it was. They are safe whichever one it turns out to be.
+                Any one of those causes ends in the same failure, so the checks below are worth trying before you
+                know which one it was.
               </figcaption>
             </figure>
           </Section>

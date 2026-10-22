@@ -3,7 +3,7 @@ import Link from "next/link";
 import { BookLink, ChatButton, CheckLink } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
 import { SearchTrigger } from "@/components/sections/v3/ProblemSearch";
-import { Breadcrumbs, h1, h2, LinkList, page, Section, UrgencyBadge } from "@/components/templates/parts";
+import { Breadcrumbs, h1, h2, LinkList, page, Section, symptomsBesides, UrgencyBadge } from "@/components/templates/parts";
 import { routes } from "@/config/routes";
 import { getService, guides, guidesFor, services } from "@/content";
 import type { Guide, Urgency } from "@/content/schema";
@@ -28,12 +28,11 @@ const meaning: Record<Urgency, string> = {
   standard: "Working, but not as it should be",
 };
 
-// 14 of the 20 guides that have errorText open their first symptom with that same string in quotes, which would
-// print the error twice on one card. In that case the card takes the next symptom instead; every guide carries at
-// least four, and all 14 land on a line that is not the error text again (checked against the content).
-// ponytail: a prefix test, not a parser. If a future guide still reads double, give that guide a different symptom
-// order rather than growing this.
-const cardLine = (g: Guide) => (g.errorText && g.symptoms[0].includes(g.errorText.slice(0, 24)) ? (g.symptoms[1] ?? g.symptoms[0]) : g.symptoms[0]);
+// 14 of the 20 guides that have errorText open their first symptom by quoting it, which would print the error
+// twice on one card, so the card takes the first symptom that does not restate it. symptomsBesides carries that
+// heuristic and its limits for both this page and the guide template; the fallback is dead today, because no
+// guide restates its error in every symptom, and is there so a card can never end up with no line at all.
+const cardLine = (g: Guide) => symptomsBesides(g.symptoms, g.errorText)[0] ?? g.symptoms[0];
 
 // min-w-0 twice over: a grid item and a flex item both default to min-width auto, and the truncated error line
 // is nowrap, so without it one long error string sizes the whole column and the page scrolls sideways at 375.
