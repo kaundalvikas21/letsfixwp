@@ -20,9 +20,13 @@ export function StepsTabs({ steps }: { steps: Step[] }) {
   return (
     <MotionConfig reducedMotion="user">
       <Tabs.Root value={active} onValueChange={setActive}>
+        {/* gap-2 below 768px, gap-1 from md: without the shared track the four triggers read as four separate
+            pills, and rule 5 asks for 8px between targets, where they measured 4px at 375. From md they are the
+            segments of one bordered pill track, which is where 4px is the segmented-control spacing MASTER wants.
+            The row already scrolls below md, so the extra 4px costs no layout. */}
         <Tabs.List
           aria-label="How a fix works"
-          className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-1 overflow-x-auto px-4 py-1 [scrollbar-width:none] md:mx-0 md:inline-flex md:rounded-full md:border md:border-line md:bg-surface-2 md:p-1"
+          className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-2 overflow-x-auto px-4 py-1 [scrollbar-width:none] md:mx-0 md:inline-flex md:gap-1 md:rounded-full md:border md:border-line md:bg-surface-2 md:p-1"
         >
           {steps.map((s) => (
             <Tabs.Trigger
