@@ -33,7 +33,7 @@ export default serviceSchema.parse({
     { q: "Do you update on the live store?", a: "Major WooCommerce and gateway updates go to a staging copy first. Once test orders pass there, we apply the same updates to the live store and test again." },
     { q: "Which payment gateways do you work with?", a: "Any gateway with a WooCommerce plugin, including Razorpay, PayU, Cashfree, PhonePe, CCAvenue, Stripe and PayPal." },
     { q: "Will you need to take the store offline?", a: "Normally no. Routine updates and backups run while the store stays open. If a large change needs a short maintenance window, we agree the time with you first." },
-    { q: "Where can I see plan prices?", a: "The pricing page lists the current plans and what each includes." },
+    { q: "Where can I see plan prices?", a: "A store plan is quoted for your store, because the work depends on your checkout, extensions and payment gateways. The pricing page sets out what a plan covers, and you get the figure in writing before it starts." },
   ],
   guideSlugs: [],
   relatedPaths: ["/woocommerce/fixes/", "/wordpress-maintenance/care-plans/", "/woocommerce/payment-gateway-gst/", "/pricing/"],

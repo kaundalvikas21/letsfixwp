@@ -29,7 +29,7 @@ export default serviceSchema.parse({
   faqs: [
     { q: "What can I use support hours for?", a: "Anything WordPress related: fixing errors, plugin and theme changes, small design tweaks, content updates, form setup and WooCommerce changes." },
     { q: "How do I know how many hours a task will use?", a: "We estimate before starting and tell you if the work turns out bigger than expected, so hours are not used up without your agreement." },
-    { q: "Do unused hours expire?", a: "The pricing page lists the current hour blocks and how long each stays valid." },
+    { q: "Do unused hours expire?", a: "We confirm how long a block stays valid before you buy it, so you know the terms before any hours are used." },
     { q: "Should I choose hours or a care plan?", a: "Hours suit sites that need help occasionally. If you need regular updates, backups and monitoring, a care plan usually covers that better. Our comparison page sets out both." },
   ],
   guideSlugs: [],

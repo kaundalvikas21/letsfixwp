@@ -234,9 +234,12 @@ instead of letting the two drift. It renders through `Faqs` (parts.tsx), the pla
 because they promise data this page does not have yet: care-plans "What is the difference between Basic, Pro and
 Business?", support-hours "Do unused hours expire?" and maintenance-woocommerce "Where can I see plan prices?" all
 answer "the pricing page lists it". They become usable once plan tiers and hour blocks exist in src/content.
-One care-plans deliverable, "A clear list of what each tier includes, published on the pricing page", is left out
-of the cards and the table for the same reason, the way `PlanCompare` leaves out the guarantee: on this page it
-would be the page promising itself. It comes back on its own once it is reworded or the tiers are published.
+Four strings in the service content said this page lists plan tiers, plan prices or hour blocks, which it does
+not and cannot while that data is null. They were reworded in place (care-plans deliverable 5 and its tier FAQ,
+maintenance-woocommerce "Where can I see plan prices?", support-hours "Do unused hours expire?") so each is true
+with no published figures and stays true once figures land. They render on three service pages, not here, so the
+pricing page itself needed no exclusion for them: the care-plans deliverable is now shown on the card and in the
+table like any other.
 
 No `FactRail` here, and so no second treatment of `brand.guarantee`: the rail is one DOM node built for a page
 whose body runs in a lead column, and this page is full-width cards and a full-width table. The guarantee stays

@@ -38,13 +38,6 @@ function PriceSlot({ price, unit, quoted }: { price: Price | null; unit: string;
   );
 }
 
-// care-plans promises "a clear list of what each tier includes, published on the pricing page", and this is that
-// page: plan tiers do not exist in src/content yet, so printing that line here would be the page promising itself.
-// Left out the way PlanCompare leaves out the guarantee. Reword it in the content and it simply comes back, which
-// is the right failure: by then the tiers are presumably published.
-const SELF_REFERENTIAL = "A clear list of what each tier includes, published on the pricing page";
-const inclusions = (s: Service) => s.deliverables.filter((d) => d !== SELF_REFERENTIAL);
-
 const { planMonthly: m, planAnnual: a } = prices;
 const saving = annualSaving(m, a);
 
@@ -109,8 +102,8 @@ const READING = ["fix", "plan", "project"].map((i) => TIERS.find((t) => t.intent
 // Six questions about price, referenced from the service files by exact question text, the mechanism the home
 // Faq section uses: reword one in the content and the build fails here instead of the two drifting apart.
 // Left out on purpose: care-plans "What is the difference between Basic, Pro and Business?", support-hours
-// "Do unused hours expire?" and maintenance-woocommerce "Where can I see plan prices?". All three answer "the
-// pricing page lists it", and plan tiers and hour blocks are not in src/content yet.
+// "Do unused hours expire?" and maintenance-woocommerce "Where can I see plan prices?". Each is answered on its
+// own service page and each points back here, so asking it on this page would be the page answering itself.
 const FAQ_REFS: [service: string, question: string][] = [
   ["website-design", "How much does a WordPress website cost?"],
   ["care-plans", "Is a care plan better than paying per job?"],
@@ -135,7 +128,7 @@ const ROWS: { label: string; cell: (t: Tier) => ReactNode }[] = [
     label: "What you get",
     cell: (t) => (
       <ul className="space-y-2">
-        {inclusions(t.anchor).map((d) => (
+        {t.anchor.deliverables.map((d) => (
           <li key={d} className="flex gap-2">
             <CheckIcon weight="duotone" className="mt-1 size-4 shrink-0 text-accent-text" aria-hidden />
             <span>{d}</span>
@@ -204,7 +197,7 @@ export default function Pricing() {
                 </Link>
               </p>
               <ul className="mt-1 space-y-3 text-[15px]">
-                {inclusions(t.anchor).slice(0, 4).map((d) => (
+                {t.anchor.deliverables.slice(0, 4).map((d) => (
                   <li key={d} className="flex gap-3">
                     <CheckIcon weight="duotone" className="mt-0.5 size-5 shrink-0 text-accent-text" aria-hidden />
                     <span>{d}</span>
