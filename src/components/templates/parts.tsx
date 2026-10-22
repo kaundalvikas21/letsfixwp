@@ -245,6 +245,67 @@ export function FactRail({
   );
 }
 
+/**
+ * The literal message a failure prints, set as typography on an inset surface with a 1px accent rule down the
+ * left edge. Not a screenshot and not dressed as one: contract rule 6 and MASTER.md:189 ban div-built browser
+ * chrome, so this is a quotation, labelled as the software's words rather than ours.
+ *
+ * `errorText` is optional and 17 of the 37 guides print no message at all. Rather than render an empty box or
+ * nothing, the panel then carries `fallback` (the guide's first symptom) in plain type under its own label, and
+ * the caller drops that line from its symptom list so nothing appears twice.
+ */
+export function DiagnosticPanel({ errorText, fallback, className }: { errorText?: string; fallback: string; className?: string }) {
+  return (
+    <figure className={cn("rounded-[12px] border border-line border-l-accent bg-surface-2 px-5 py-4", className)}>
+      <figcaption className="text-sm font-semibold">{errorText ? "What WordPress prints" : "What you see on the page"}</figcaption>
+      {errorText ? (
+        <code className="mt-2 block font-mono text-sm break-words whitespace-pre-wrap">{errorText}</code>
+      ) : (
+        <p className="mt-2 max-w-[68ch]">{fallback}</p>
+      )}
+    </figure>
+  );
+}
+
+/**
+ * Several causes converging on one failure, and the same short set of safe checks leading out of it. Geometry
+ * only, no words inside it beyond the numerals that match the ordered list of checks, and `aria-hidden`: it is a
+ * diagram of content that already exists as two lists, and the figcaption beside it states the same relation as
+ * a sentence, so a screen reader gets the information as text (contract rule 9).
+ * Connectors use --line-strong rather than --line: --line measures 1.24:1 and is decorative only.
+ */
+export function CauseFlow({ causes, checks }: { causes: number; checks: number }) {
+  const pitch = 30;
+  const h = Math.max(causes, checks) * pitch + 20;
+  const mid = h / 2;
+  const row = (n: number, i: number) => mid + (i - (n - 1) / 2) * pitch;
+  const node = "fill-accent-tint stroke-accent";
+  return (
+    <svg viewBox={`0 0 240 ${h}`} width="240" height={h} className="h-auto w-full max-w-[15rem] shrink-0" aria-hidden focusable="false">
+      <g strokeWidth="1.5" fill="none" className="stroke-line-strong">
+        {Array.from({ length: causes }, (_, i) => (
+          <path key={`in-${i}`} d={`M20 ${row(causes, i)} C 62 ${row(causes, i)}, 76 ${mid}, 108 ${mid}`} />
+        ))}
+        {Array.from({ length: checks }, (_, i) => (
+          <path key={`out-${i}`} d={`M132 ${mid} C 164 ${mid}, 178 ${row(checks, i)}, 204 ${row(checks, i)}`} />
+        ))}
+      </g>
+      {Array.from({ length: causes }, (_, i) => (
+        <circle key={`c-${i}`} cx="12" cy={row(causes, i)} r="6" strokeWidth="1.5" className={node} />
+      ))}
+      <circle cx="120" cy={mid} r="11" strokeWidth="1.5" className={node} />
+      {Array.from({ length: checks }, (_, i) => (
+        <g key={`k-${i}`}>
+          <circle cx="216" cy={row(checks, i)} r="12" strokeWidth="1.5" className={node} />
+          <text x="216" y={row(checks, i)} textAnchor="middle" dominantBaseline="central" className="fill-text font-sans text-[11px] font-bold">
+            {i + 1}
+          </text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
 /** A real capture from scripts/capture-errors.mjs, in a device frame, rendered only once the file exists. */
 export function RealScreen({ slot, alt, preload = false }: { slot: string; alt: string; preload?: boolean }) {
   const src = `/screens/${slot}.png`;

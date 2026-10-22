@@ -1,105 +1,144 @@
 import { WarningIcon } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import { BookLink, ChatButton, CheckLink } from "@/components/Cta";
-import { faqLd, guideLd, JsonLd } from "@/components/JsonLd";
+import { faqLd, guideLd, JsonLd, nodeCrumbs } from "@/components/JsonLd";
+import { brand } from "@/config/brand";
 import { routes } from "@/config/routes";
 import { getService, guidesFor } from "@/content";
 import { coreFileWarning } from "@/content/notices";
 import type { Guide } from "@/content/schema";
 import { cn } from "@/lib/utils";
-import { Breadcrumbs, Faqs, h1, LinkRows, page, RealScreen, Section } from "./parts";
+import { Breadcrumbs, CauseFlow, DiagnosticPanel, FactRail, Faqs, h1, LinkRows, page, RealScreen, Section, UrgencyBadge } from "./parts";
+
+const textLink = "inline-flex min-h-11 items-center font-semibold text-accent-text underline underline-offset-4 hover:no-underline";
 
 /**
- * /guides/<slug>/. Layout family: single-column troubleshooting document, measured for reading, with the error
- * text set in mono exactly as WordPress prints it. Informational intent, so the page answers first and books second.
+ * /guides/<slug>/. Layout family: a troubleshooting document in a lead column with the conversion rail beside it,
+ * opening on the error exactly as the software prints it. Informational intent, so the page answers first and
+ * books second; the rail is what keeps the answer and the way out of it on screen together.
  */
 export function GuideTemplate({ guide: g }: { guide: Guide }) {
   const parent = getService(g.parentService)!;
   const loc = `guide:${g.slug}`;
   const siblings = guidesFor(g.parentService).filter((x) => x.slug !== g.slug);
+  // The diagnostic panel shows either the literal error text or, on the 17 guides that print no message, the
+  // first symptom. Either way the list below drops what the panel already shows, so nothing is printed twice:
+  // 14 of the 20 guides with errorText open a symptom by quoting that same string. Measured against the content,
+  // the shortest list this leaves is three lines.
+  // ponytail: a prefix test, not a parser. A future guide that still reads double wants its symptoms reworded.
+  const shownAbove = g.errorText ? g.errorText.slice(0, 24) : g.symptoms[0];
+  const symptoms = g.symptoms.filter((x) => !x.includes(shownAbove));
+  // Each line is a claim gated in brand.claims, so a production deploy fails until the owner confirms it.
+  const points = [
+    brand.claims.backupFirst && "Files and database backed up before anything changes", // brand.claims.backupFirst
+    brand.claims.ownLogin && "We work through a login you create, never your password", // brand.claims.ownLogin
+    brand.claims.accessRemoved && "Our access is removed when the work is done", // brand.claims.accessRemoved
+  ].filter((x): x is string => !!x);
 
   return (
-    <article data-urgency={g.urgency} className={cn(page, "max-w-3xl py-8 md:py-12")}>
+    <article data-urgency={g.urgency} className={cn(page, "py-8 md:py-12")}>
       <JsonLd data={[guideLd(g), faqLd(g.faqs)]} />
-      <Breadcrumbs
-        items={[
-          { name: "Home", path: routes.home },
-          { name: "Knowledge Base", path: routes.guides },
-          { name: g.title, path: routes.guide(g.slug) },
-        ]}
-      />
+      <Breadcrumbs items={[...nodeCrumbs(routes.guides), { name: g.title, path: routes.guide(g.slug) }]} />
 
-      <header className="mt-6">
+      <header className="mt-6 max-w-[52rem]">
         <h1 className={h1}>{g.h1}</h1>
-        {g.errorText && (
-          <p className="mt-6 overflow-x-auto rounded-[12px] border border-line-strong bg-surface-2 px-4 py-3 font-mono text-sm">
-            <code>{g.errorText}</code>
-          </p>
-        )}
+        <p className="mt-4">
+          <UrgencyBadge level={g.urgency} />
+        </p>
+        <DiagnosticPanel errorText={g.errorText} fallback={g.symptoms[0]} className="mt-6" />
       </header>
 
+      {/* Kept as an existence gate: a real capture swaps itself in on the next build once public/screens/ lands. */}
       <div className="mt-8">
         <RealScreen slot={g.image.slot} alt={g.image.alt} preload />
       </div>
 
-      <Section id="symptoms" title="What you are seeing">
-        <ul className="ml-5 list-disc space-y-2 text-muted marker:text-accent-text">
-          {g.symptoms.map((x) => (
-            <li key={x}>{x}</li>
-          ))}
-        </ul>
-      </Section>
+      <div className="mt-10 grid gap-10 lg:grid-cols-12 lg:gap-12">
+        <div className="lg:col-span-8">
+          <Section id="symptoms" title="What you are seeing" className="mt-0 md:mt-0">
+            <ul className="ml-5 list-disc space-y-2 text-muted marker:text-accent-text">
+              {symptoms.map((x) => (
+                <li key={x}>{x}</li>
+              ))}
+            </ul>
+          </Section>
 
-      <Section id="causes" title="What usually causes it">
-        {/* Tiles, not a second bullet list: no layout family repeats on a page (contract rule 3). */}
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {g.likelyCauses.map((x) => (
-            <li key={x} className="rounded-[20px] border border-line bg-surface p-4 text-sm text-muted">
-              {x}
-            </li>
-          ))}
-        </ul>
-      </Section>
+          <Section id="causes" title="What usually causes it">
+            {/* Tiles, not a second bullet list: no layout family repeats on a page (contract rule 3). Causes run
+                4 or 5, and an odd last tile spans the row rather than leaving half of one empty. */}
+            <ul className="grid gap-3 sm:grid-cols-2">
+              {g.likelyCauses.map((x, i) => (
+                <li
+                  key={x}
+                  className={cn(
+                    "rounded-[20px] border border-line bg-surface p-4 text-sm text-muted",
+                    g.likelyCauses.length % 2 === 1 && i === g.likelyCauses.length - 1 && "sm:col-span-2",
+                  )}
+                >
+                  {x}
+                </li>
+              ))}
+            </ul>
+            {/* The diagram is geometry and aria-hidden; the caption carries the same relation as a sentence. */}
+            <figure className="mt-5 flex flex-col items-center gap-4 rounded-[20px] bg-surface-2 p-5 sm:flex-row sm:gap-6">
+              <CauseFlow causes={g.likelyCauses.length} checks={g.safeChecks.length} />
+              <figcaption className="max-w-[48ch] text-sm text-muted">
+                Any one of those causes ends in the same failure, which is why the checks below are worth running
+                before you know which cause it was. They are safe whichever one it turns out to be.
+              </figcaption>
+            </figure>
+          </Section>
 
-      <Section id="safe-checks" title="Safe things to try first">
-        <ol className="space-y-4">
-          {g.safeChecks.map((x, i) => (
-            <li key={x} className="flex gap-4">
-              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent-tint font-display text-sm font-bold text-accent-text">{i + 1}</span>
-              <span className="pt-0.5">{x}</span>
-            </li>
-          ))}
-        </ol>
-        <p className="mt-6 flex gap-3 rounded-[20px] border border-line-strong bg-surface-2 p-4 text-sm">
-          <WarningIcon weight="duotone" className="mt-0.5 size-5 shrink-0 text-accent-text" aria-hidden />
-          <span>{coreFileWarning}</span>
-        </p>
-      </Section>
+          <Section id="safe-checks" title="Safe things to try first">
+            <ol className="space-y-4">
+              {g.safeChecks.map((x, i) => (
+                <li key={x} className="flex gap-4">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent-tint font-display text-sm font-bold text-accent-text">{i + 1}</span>
+                  <span className="pt-0.5">{x}</span>
+                </li>
+              ))}
+            </ol>
+            <p className="mt-6 flex gap-3 rounded-[20px] border border-line-strong bg-surface-2 p-4 text-sm">
+              <WarningIcon weight="duotone" className="mt-0.5 size-5 shrink-0 text-accent-text" aria-hidden />
+              <span>{coreFileWarning}</span>
+            </p>
+          </Section>
 
-      <Section id="call-us" title="When to call us">
-        <p className="max-w-[68ch] text-muted">{g.whenToCallUs}</p>
-        <p className="mt-4">
-          How we fix it:{" "}
-          <Link href={parent.path} className="font-semibold text-accent-text underline underline-offset-4 hover:no-underline">
-            {parent.title}
-          </Link>
-        </p>
-        <div className="mt-6 flex flex-wrap gap-3">
-          <BookLink location={`${loc}:call-us`} service={parent.id} guide={g.slug} className="btn-primary" />
-          <ChatButton location={`${loc}:call-us`} service={parent.id} className="btn-secondary" />
+          <Section id="call-us" title="When to call us">
+            <p className="max-w-[68ch] text-muted">{g.whenToCallUs}</p>
+            <p className="mt-4">
+              How we fix it:{" "}
+              <Link href={parent.path} className={textLink}>
+                {parent.title}
+              </Link>
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <BookLink location={`${loc}:call-us`} service={parent.id} guide={g.slug} className="btn-primary" />
+              <ChatButton location={`${loc}:call-us`} service={parent.id} className="btn-secondary" />
+            </div>
+            <p className="mt-4 flex flex-wrap items-center gap-x-2 text-sm text-muted">
+              Nothing down right now? <CheckLink location={`${loc}:call-us`} service={parent.id} className={textLink} />
+            </p>
+          </Section>
+
+          <Faqs faqs={g.faqs} />
+
+          {siblings.length > 0 && (
+            <Section id="related-guides" title={`More ${parent.title.toLowerCase()} errors`}>
+              <LinkRows items={siblings.map((x) => ({ href: routes.guide(x.slug), title: x.title, summary: x.symptoms[0] }))} />
+            </Section>
+          )}
         </div>
-        <p className="mt-4 text-sm text-muted">
-          Nothing down right now? <CheckLink location={`${loc}:call-us`} service={parent.id} />
-        </p>
-      </Section>
 
-      <Faqs faqs={g.faqs} />
-
-      {siblings.length > 0 && (
-        <Section id="related-guides" title={`More ${parent.title.toLowerCase()} errors`}>
-          <LinkRows items={siblings.map((x) => ({ href: routes.guide(x.slug), title: x.title }))} />
-        </Section>
-      )}
+        {/* One rail node at every width (FactRail): sticky beside this column from lg, and in flow here below lg
+            with the guarantee and the gated claims only, because the fixed bottom bar is the CTA there. */}
+        <aside className="lg:col-span-4">
+          <FactRail title={g.title} points={points}>
+            <BookLink location={`${loc}:rail`} service={parent.id} guide={g.slug} className="btn-primary w-full" />
+            <ChatButton location={`${loc}:rail`} service={parent.id} className="btn-secondary w-full" />
+          </FactRail>
+        </aside>
+      </div>
     </article>
   );
 }

@@ -83,14 +83,44 @@ so no number is shown; a fact row appears automatically if either is ever filled
 
 | # | Section | Layout family | Eyebrow | Marquee | CTA intents |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Hero | single-column document header with mono error block | no | no | none |
+| 1 | Hero | document header with the urgency badge and the diagnostic panel | no | no | none |
 | 2 | Capture | device frame (renders only when the capture exists) | no | no | none |
-| 3 | What you are seeing | bullet list | no | no | none |
-| 4 | What usually causes it | cause tiles (bordered, 2 columns at sm) | no | no | none |
-| 5 | Safe things to try first | numbered steps with a warning note | no | no | none |
+| 3 | What you are seeing, with the conversion rail beside the whole body column | lead column with conversion rail | no | no | node intent, CHAT (rail, lg only) |
+| 4 | What usually causes it | cause tiles with an inline cause-to-check diagram | no | no | none |
+| 5 | Safe things to try first | numbered procedure with a warning note | no | no | none |
 | 6 | When to call us | prose with inline CTA row | no | no | BOOK (parent service), CHAT, CHECK |
 | 7 | Questions | plain disclosure list | no | no | none |
 | 8 | More errors | link rows | no | no | none |
+
+Eyebrow budget for this page: 8 sections, so ceil(8 / 3) = 3 eyebrows allowed, and 0 are used. A guide with no
+capture in public/screens/ drops row 2 and runs 7 sections, so ceil(7 / 3) = 3 allowed, and still 0 used. No row
+repeats a layout family. Marquee is `no` on every row. This template carries no photography at all, so it has zero
+image-plus-text splits and the 2-consecutive-splits limit cannot be reached.
+
+Row 1 replaces the bare mono strip with `DiagnosticPanel` (`parts.tsx`): the literal message on `--surface-2` at
+12px with a 1px accent left rule, labelled so it is clear the text is what WordPress prints rather than our words.
+`errorText` is optional and 17 of the 37 guides have none (measured: 20 have it, 17 do not), so on those the panel
+carries the guide's first symptom in plain type instead, under its own label, and row 3 then lists `symptoms`
+from the second onwards. Nothing is printed twice and the panel is never an empty box. Every guide has at least
+four symptoms, so the shortest list row 3 can show is three. A 1px rule, not a thick one: the craft floor refuses a
+coloured left border above 1px.
+
+Row 3 reuses `FactRail` rather than adding a second rail: one DOM node, sticky beside the body column from lg with
+the guide title and its CTA pair, and in flow after row 8 below lg with the guarantee and the gated claims only,
+because the fixed mobile bar is the persistent CTA there. The template's container widens from `max-w-3xl` to the
+shared `page` width to make room for it; the body column stays at `lg:col-span-8` and every text block keeps a
+68ch measure, so the reading line does not get longer.
+
+Row 4 adds `CauseFlow` (`parts.tsx`): an inline SVG, geometry only and no words, showing several causes converging
+on one failure and the same short set of safe checks leading out of it. It is `aria-hidden` and sits in a `figure`
+whose visible `figcaption` states the same relation as a sentence, so the information is text for a screen reader
+and the cause tiles and row 5's procedure remain the actual content.
+
+Row 5 keeps bare numerals on an `<ol>`: `safeChecks` is an ordered procedure of 2 to 3 items, and contract rule 6
+bans the words "Step 1", not an ordered list.
+
+Breadcrumbs come from `nodeCrumbs(routes.guides)` plus the guide itself, instead of a hand-written Home and
+Knowledge Base pair, so the crumb titles follow SITEMAP and the trail inherits the shared 44x44 target.
 
 ## v3 / hub template (/<hub>/)
 
@@ -133,12 +163,35 @@ Row 2 reads the real intent mix of each hub. Measured: wordpress-fix 11 fix; wor
 | /case-studies/ | composed empty state card | no | no | BOOK, CHAT |
 | /pricing/ | grouped price list by hub (not the home tier cards) | no | no | BOOK, PLANS, CHECK, CHAT |
 | /about/ | narrow document with link rows and fact tiles | no | no | BOOK, CHAT |
-| /guides/ | grouped tile index | no | no | BOOK, CHAT, CHECK |
+| /guides/ | urgency-grouped error cards under a search panel, then a service chip row and a closing prompt band | no | no | BOOK, CHAT, CHECK |
 | /compare/ | link rows | no | no | BOOK, CHAT |
 | /wordpress-development/cities/ | link rows | no | no | QUOTE, CHAT |
 
 The booking form (src/app/contact/BookingFlow.tsx) is shared by /free-site-check/ and /contact/, so it carries one
 v3 style: 12px inputs on --line-strong, 44px targets, a step progress bar, and inline errors under each field.
+
+/guides/ is one page of four blocks, which is why its single layout-family cell reads as a list: a document header
+holding the search panel, the catalogue, the chip row and the closing band. Four blocks, so ceil(4 / 3) = 2
+eyebrows allowed and 0 used, no marquee, no image-plus-text split anywhere on it.
+
+The catalogue groups by `Guide.urgency`, not by parent service: urgency is the only ranking signal in the guide
+data and someone reading this page may be down right now. Measured distribution: 20 critical, 13 high, 4 standard.
+Each group is a labelled subsection of the one catalogue block (three groups of the same card, as the home page's
+security section is three groups of the same row), so the page does not use one layout family three times. The
+parent service stays on every card as a plain secondary label, and the chip row that follows links all 17 services
+that have guides, which is where the old per-group "How we fix these" links went. Cards carry the error text and
+the first symptom as well as the title, so an error can be recognised without opening it; the mono error line sits
+at the card foot with `mt-auto`, so it lines up across a row and a card without error text simply ends sooner.
+Groups run two up (two equal cards a row is allowed; rule 6 bans three), and an odd last card spans the row rather
+than leaving half a row empty, which is the rule the hub grid already follows. No bento: the cards are uniform in
+shape, and Task 2 found that manufacturing asymmetry over uniform content only invents cells the text cannot fill.
+
+The search is the site's own command palette (`SearchTrigger` from `ProblemSearch`, wired at shell level), in a
+panel at the top of the page, not a second filter written for this page: the override asks for a prominent search
+and for help controls to stay in consistent places, and a page-local field would split the problem_search signal
+between two inputs. Its empty state is the palette's own composed no-match state with CHAT. Without JavaScript the
+trigger does nothing, and the whole catalogue is still on the page underneath it, so the page degrades rather than
+breaking.
 
 ## v3 / contact (/contact/)
 
