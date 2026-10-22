@@ -29,7 +29,9 @@ const hardcodedPath = /["'`]\/(?!screens\/|previews\/)[a-z][a-z0-9-]*\//;
 // belongs. Deliberately phrase-level and not concept-level: "full backup", "backed up" and "back online" are
 // ordinary prose in the guides and the city files (9 lines measured), and a rule wide enough to read intent
 // would fire on all of them. So this catches a claim sentence re-typed into content, not a process step that
-// happens to describe the same work in its own words.
+// happens to describe the same work in its own words. Known survivor: src/content/services/support-hours.ts:17
+// ("Take a backup of files and database before any change") is a real process step, kept by ruling; if
+// brand.claims.backupFirst is ever set false that sentence needs a manual edit, no check will catch it.
 const claimPhrase = /fixed[- ]price|back online today|\bsame[- ]day\b|backup first|backed up before|never (?:ask for )?your password|access is removed|\bvetted\b|in (?:two|\d+) minutes|approve the price before/i;
 
 for (const f of files) {

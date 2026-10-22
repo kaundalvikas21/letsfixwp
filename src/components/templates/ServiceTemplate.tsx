@@ -23,7 +23,7 @@ const SPAN = { 2: "md:col-span-2", 4: "md:col-span-4", 6: "md:col-span-6" } as c
 /**
  * /<hub>/<service>/. Layout family: lead column with the shared conversion rail, which no home section uses. One
  * `FactRail` node at every width: in flow below the body column under lg as a reassurance panel, and `lg:sticky`
- * beside it from lg (parts.tsx:232).
+ * beside it from lg (parts.tsx:260).
  * Hero carries no subtext: the shortest line in the content is 25+ words, over the contract's 20-word hero cap,
  * so service.summary renders as the lead statement under the hero instead. whoItsFor follows it as a definition
  * row on every intent; the symptoms checklist is fix-only, because serviceSchema keeps symptoms empty otherwise.

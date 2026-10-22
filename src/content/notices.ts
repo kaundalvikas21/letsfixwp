@@ -36,14 +36,14 @@ export const claimLine = {
 type ClaimKey = keyof typeof claimLine;
 
 /**
+ * The named claim lines that are confirmed on, in the order asked for. A claim that is off renders nothing.
+ *
  * Each line carries its own full stop, so the five places that render one agree: the rail printed them bare as
  * list items while the pricing header, the contact panel and two lines of the booking flow appended a stop, and
  * the same sentence read two ways (rule 14). The stop is in the data because four of the five uses are mid prose,
  * where the sentence needs it; `backupFirst` gained its verb so the stop is honest on all four.
  */
-
-/** The named claim lines that are confirmed on, in the order asked for. A claim that is off renders nothing. */
-export const claimPoints = (...keys: readonly ClaimKey[]): string[] => keys.filter((k) => brand.claims[k]).map((k) => claimLine[k]);
+const claimPoints = (...keys: readonly ClaimKey[]): string[] => keys.filter((k) => brand.claims[k]).map((k) => claimLine[k]);
 
 /**
  * The claim lines the conversion rail shows, in one order, read by every template that renders a rail. The

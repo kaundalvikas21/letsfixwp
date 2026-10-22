@@ -38,7 +38,8 @@ template each re-derived by hand, correctly, four times: the hover and press tra
 `has-[a:focus-visible]` ring on the cell, `motion-reduce:transition-none`, and the stretched link that drops its
 own outline only where `:has()` can replace it. All four now import them. Resting elevation is `shadow-card`;
 `--shadow-lift` is MASTER's hover shadow only (MASTER.md:99,204). Verified render-identical: every class attribute
-on all four pages, in document order, is byte for byte what it was before the consolidation.
+on all four pages, in document order, is class for class (token for token) what it was before the consolidation; the strings differ in order, since `p-6` moved
+to the end in each of the four cells, but the merged class set and so the render are unchanged.
 
 **The rail's claim set.** `railPoints` in src/content/notices.ts is the one set every `FactRail` shows. The
 service rail asked for (backupFirst, fixedPrice, ownLogin) and the guide rail for (backupFirst, ownLogin,
@@ -85,7 +86,9 @@ Nothing under src/content can gate a claim: those files are zod-parsed static da
 itself. The care-plans FAQ restated `backupFirst` there ungated and now does not; that page is a service page, so
 its rail still carries the promise in gated form. `scripts/check-content.ts` grew a claim-phrase scan to keep the
 next one out, deliberately phrase-level: "full backup", "backed up" and "back online" are ordinary prose on nine
-measured lines across the guides and city files, so a rule wide enough to read intent would fire on all of them.
+measured lines across the guides and city files, so a rule wide enough to read intent would fire on all of them. Known survivor: `src/content/services/support-hours.ts:17`
+("Take a backup of files and database before any change") is a real process step, kept by explicit ruling; if
+`brand.claims.backupFirst` is ever set false it needs a manual content edit, as no automated check will catch it.
 
 Eyebrow budget for this page: 11 sections, so ceil(11 / 3) = 3 eyebrows allowed, and 3 are used (sections 3, 5 and 8).
 Two unstyled foundation sections ("Site down or hacked right now", "What we do") sat after the final CTA until the

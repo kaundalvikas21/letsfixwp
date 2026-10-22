@@ -236,7 +236,7 @@ export function LinkList({ paths }: { paths: string[] }) {
  * Order is deliberate: the page's own CTA pair first, then the promises behind it. `facts` is for real numbers
  * out of src/content, and a null or missing value renders nothing for it (contract rule 8), so no row of the
  * rail is a placeholder figure. The guarantee comes from brand.guarantee and disappears when it is unset.
- * `points` are claim lines: callers pass `claimPoints(...)` from src/content/notices.ts, which holds the one
+ * `points` are claim lines: callers pass `railPoints` from src/content/notices.ts (the about page passes none), which holds the one
  * wording of each claim with its `// brand.claims.x` gate comment, so the rail hard-codes none of that prose.
  */
 export function FactRail({
