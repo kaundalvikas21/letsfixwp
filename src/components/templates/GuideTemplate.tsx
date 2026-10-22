@@ -2,10 +2,9 @@ import { WarningIcon } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import { BookLink, ChatButton, CheckLink } from "@/components/Cta";
 import { faqLd, guideLd, JsonLd, nodeCrumbs } from "@/components/JsonLd";
-import { brand } from "@/config/brand";
 import { routes } from "@/config/routes";
 import { getService, guidesFor } from "@/content";
-import { coreFileWarning } from "@/content/notices";
+import { claimPoints, coreFileWarning } from "@/content/notices";
 import type { Guide } from "@/content/schema";
 import { cn } from "@/lib/utils";
 import { Breadcrumbs, CauseFlow, DiagnosticPanel, FactRail, Faqs, h1, LinkRows, page, RealScreen, Section, symptomsBesides, UrgencyBadge } from "./parts";
@@ -24,12 +23,8 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
   // The panel shows the literal error text, or the first symptom on the 17 guides that print no message, so the
   // list drops whichever of the two it took (symptomsBesides carries the heuristic and its limits).
   const symptoms = symptomsBesides(g.symptoms, g.errorText ?? g.symptoms[0]);
-  // Each line is a claim gated in brand.claims, so a production deploy fails until the owner confirms it.
-  const points = [
-    brand.claims.backupFirst && "Files and database backed up before anything changes", // brand.claims.backupFirst
-    brand.claims.ownLogin && "We work through a login you create, never your password", // brand.claims.ownLogin
-    brand.claims.accessRemoved && "Our access is removed when the work is done", // brand.claims.accessRemoved
-  ].filter((x): x is string => !!x);
+  // Claim copy and its brand.claims gating both live in src/content/notices.ts, so no template holds the words.
+  const points = claimPoints("backupFirst", "ownLogin", "accessRemoved");
 
   return (
     <article data-urgency={g.urgency} className={cn(page, "py-8 md:py-12")}>

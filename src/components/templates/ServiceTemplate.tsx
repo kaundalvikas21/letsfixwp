@@ -2,10 +2,10 @@ import { BookLink, ChatButton, PlansLink, QuoteLink } from "@/components/Cta";
 import { faqLd, JsonLd, nodeCrumbs, serviceLd } from "@/components/JsonLd";
 import { Photo } from "@/components/sections/v3/Photo";
 import { SiteStatus } from "@/components/SiteStatus";
-import { brand } from "@/config/brand";
 import { primaryCtaFor } from "@/config/cta";
 import { routes } from "@/config/routes";
 import { getGuide } from "@/content";
+import { claimPoints } from "@/content/notices";
 import { servicePhotos } from "@/content/photos";
 import type { Service } from "@/content/schema";
 import { bentoSpans } from "@/lib/bento";
@@ -34,12 +34,8 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
     s.typicalTurnaround && { k: "Typical turnaround", v: s.typicalTurnaround },
     s.priceFrom && { k: "From", v: s.priceFrom },
   ].filter((x): x is { k: string; v: string } => !!x);
-  // Each line is a claim gated in brand.claims, so a production deploy fails until the owner confirms it.
-  const points = [
-    brand.claims.backupFirst && "Files and database backed up before anything changes", // brand.claims.backupFirst
-    brand.claims.fixedPrice && "You approve the price before any work starts", // brand.claims.fixedPrice
-    brand.claims.ownLogin && "We work through a login you create, never your password", // brand.claims.ownLogin
-  ].filter((x): x is string => !!x);
+  // Claim copy and its brand.claims gating both live in src/content/notices.ts, so no template holds the words.
+  const points = claimPoints("backupFirst", "fixedPrice", "ownLogin");
   const spans = bentoSpans(s.whatWeDo.map((w) => w.detail.length));
 
   return (

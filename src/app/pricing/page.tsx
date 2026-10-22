@@ -9,6 +9,7 @@ import { Breadcrumbs, Faqs, h1, h2, page, Section } from "@/components/templates
 import { brand } from "@/config/brand";
 import { routes } from "@/config/routes";
 import { getService, services } from "@/content";
+import { claimLine } from "@/content/notices";
 import { annualSaving, formatPrice, prices, type Price } from "@/content/pricing";
 import type { Service } from "@/content/schema";
 import { cn } from "@/lib/utils";
@@ -175,8 +176,8 @@ export default function Pricing() {
             ? "Starting prices are published below. Anything without one is quoted once an engineer has seen your site."
             : "Nothing here is a guess. An engineer looks at your site first, then quotes the work."}
         </p>
-        {/* brand.claims.fixedPrice, in the wording the service template already uses for it. */}
-        {brand.claims.fixedPrice && <p className="mt-3 max-w-[68ch] text-muted">You approve the price before any work starts.</p>}
+        {/* The one wording of this claim, and its gate, both live in src/content/notices.ts. */}
+        {brand.claims.fixedPrice && <p className="mt-3 max-w-[68ch] text-muted">{claimLine.fixedPrice}.</p>}
       </header>
 
       <Section id="tiers" title="How the work is priced">
