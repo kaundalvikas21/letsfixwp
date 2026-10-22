@@ -103,7 +103,7 @@ export const SITEMAP: SiteNode = {
     { title: "Knowledge Base", path: "/guides/", kind: "collection", intent: "info" }, // items at /guides/[slug]/
     { title: "Comparisons", path: "/compare/", kind: "collection", intent: "info" },   // items at /compare/[a-vs-b]/
     { title: "Case Studies", path: "/case-studies/", kind: "page", intent: "info" },
-    { title: "About / Team", path: "/about/", kind: "page", intent: "info", inNav: false },
+    { title: "About", path: "/about/", kind: "page", intent: "info", inNav: false },
     { title: "Contact / Emergency Ticket", path: "/contact/", kind: "page", intent: "fix" },
   ],
 };

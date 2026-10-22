@@ -166,7 +166,7 @@ apart by a letter plus a coloured rule, never by colour alone. Breadcrumbs alrea
 | /free-site-check/ | lead magnet: preview panel left, form card right | no | no | CHECK (form submit), CHAT |
 | /case-studies/ | composed empty state card | no | no | BOOK, CHAT |
 | /pricing/ | scope and outcome: three unequal tier cards, outcome rows per tier, a real comparison table, a disclosure FAQ and a split closing band | no | no | BOOK, PLANS, QUOTE, CHECK, CHAT |
-| /about/ | narrow document with link rows and fact tiles | no | no | BOOK, CHAT |
+| /about/ | company document: a hub bento, ruled engagement rows, a grouped practice list, a city chip row and a closing band, with the shared rail beside the body | no | no | BOOK, CHAT |
 | /guides/ | urgency-grouped error cards under a search panel, then a service chip row and a closing prompt band | no | no | BOOK, CHAT, CHECK |
 | /compare/ | stacked full-width comparison cards, each with A/B chips, summary and the criteria compared | no | no | BOOK, CHAT |
 | /wordpress-development/cities/ | link rows | no | no | QUOTE, CHAT |
@@ -259,6 +259,50 @@ needs a three-way comparison and carries no imagery, so the table carries it ins
 No `FactRail` here, and so no second treatment of `brand.guarantee`: the rail is one DOM node built for a page
 whose body runs in a lead column, and this page is full-width cards and a full-width table. The guarantee stays
 on the service and guide templates, where the rail already renders it with its placeholder disclosure.
+
+/about/ is a company page, not a team page. There are no people, names, roles, bios or headshots anywhere in the
+repo, so nothing here describes a person, and the SITEMAP title (`About / Team`) is now `About`, which is also
+what the footer and the breadcrumb print. Six blocks: a document header, the hub bento, the engagement rows, the
+practice list, the city chips and the closing band, so ceil(6 / 3) = 2 eyebrows allowed and 0 used. Marquee is
+`no`. The page carries no photography, so it has zero image-plus-text splits and the 2-consecutive limit cannot
+be reached; the three frames now referenced by nothing are all `tone: "red"`, which MASTER.md:39 locks out of v3,
+so none of them is a candidate and nothing is logged to image-todo.
+
+No two blocks share a layout family: cards (the hub bento), full-width label rows (the engagement list), a
+grouped icon list two items to a group (the practice list), a pill chip row (the cities) and a split band
+(closing). The rail is not a sixth family; it is the one `FactRail` node, in the aside beside the body column
+from lg and in flow below it, which is the arrangement the service and guide templates already use.
+
+Block 2 replaces the `LinkRows` of the six hubs, which was the third appearance of that divided-row pattern
+across the in-scope pages and showed `hubLead` only as a one-line summary. The cards print the whole paragraph
+and `bentoLayout` sizes them: measured on the six real `hubLead` lengths (217 to 262 characters) the ratio is
+1.21, under the 1.4 uniform threshold, so this grid is a plain 2-up of three rows rather than invented
+asymmetry, which is the finding Task 2 recorded. Spans map through a literal class record, because Tailwind v4
+never sees a computed `md:col-span-${n}`. The whole card is the link, with the title as its accessible name and
+the hub-page fallback for browsers without `:has()` so focus is never invisible.
+
+Block 3 fixes a live rule 6 violation. `remoteDelivery` has exactly three items and they rendered as three equal
+bordered cards in a row, which rule 6 bans outright. They are now full-width rows, a phase name in a label
+column and the sentence beside it, so the page has no row of three cards at all and block 2 keeps the card
+family to itself. Phase names only (Meetings, While we work, Handover): no "Step 1" or "Stage 2" label, and no
+numerals, because the three phases are not a procedure the reader performs. The same three items still render as
+three equal cards in `CityTemplates.tsx`, on the eight city pages, which is outside this page's scope and is
+left for the fix wave.
+
+Block 4 is the security practice, now read from `src/content/notices.ts` rather than hardcoded: six items in
+three groups, each item either a claim gated in `brand.claims` or a published deliverable. The home page's
+`Security` section renders the same data in its own three-column group layout; this page renders it as a
+grouped two-up icon list in the body column, and the icons are the one thing the two share (`practiceIcons` in
+`parts.tsx`), because icons are not content.
+
+Block 5 is coverage, from the eight real city files, as a row of pill links to the city pages under
+`citiesLead`, which states that the work is remote. No `LocalBusiness` JSON-LD and no address: there is no
+office in any city, which is the decision `CityTemplates.tsx:32-34` records and nothing here contradicts it. No
+count is printed; eight links are their own quantity, and a count framed as an achievement is rule 8.
+
+The rail carries `brand.guarantee` with the placeholder disclosure `FactRail` already renders, and the CTA pair.
+It carries no claim `points`: block 4 is the full practice on this page, and the rail would print the same
+promises a second time in shorter words.
 
 ## v3 / contact (/contact/)
 
