@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BookLink, ChatButton } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
-import { Breadcrumbs, FactRail, h1, h2, LinkList, page, practiceIcons, Section } from "@/components/templates/parts";
+import { Breadcrumbs, cardLink, FactRail, h1, h2, LinkList, page, practiceIcons, Section, stretchedLink } from "@/components/templates/parts";
 import { brand } from "@/config/brand";
 import { cityNodes, hubIdOf, hubNodes, routes } from "@/config/routes";
 import { hubLead } from "@/content/hubs";
@@ -55,18 +55,11 @@ export default function About() {
             index made the same call for the same reason. */}
         <ul className="grid gap-4 md:grid-cols-2 md:gap-5">
           {hubs.map(({ node, lead }) => (
-            <li
-              key={node.path}
-              // Resting elevation is shadow-card; --shadow-lift is MASTER's hover shadow (MASTER.md:99,204).
-              className="group relative rounded-[20px] border border-line bg-surface p-6 shadow-card transition-[transform,box-shadow] duration-200 hover:shadow-lift active:scale-[0.98] has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-accent motion-reduce:transition-none"
-            >
+            <li key={node.path} className={cn(cardLink, "p-6")}>
               <h3 className="font-display text-lg leading-snug font-bold">
                 {/* Stretched link: the whole card is the target, the title is its accessible name, and the
                     outline is only dropped where :has() can put the ring on the card instead. */}
-                <Link
-                  href={node.path}
-                  className="flex min-h-11 items-center justify-between gap-3 supports-[selector(:has(*))]:outline-none after:absolute after:inset-0 after:rounded-[20px] group-hover:text-accent-text"
-                >
+                <Link href={node.path} className={cn("flex min-h-11 items-center justify-between gap-3", stretchedLink)}>
                   {node.title}
                   <CaretRightIcon
                     weight="duotone"

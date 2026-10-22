@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BookLink, ChatButton } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
-import { Breadcrumbs, h1, page, Versus } from "@/components/templates/parts";
+import { Breadcrumbs, cardLink, h1, page, stretchedLink, Versus } from "@/components/templates/parts";
 import { routes } from "@/config/routes";
 import { compares } from "@/content";
 import { cn } from "@/lib/utils";
@@ -26,16 +26,15 @@ export default function CompareIndex() {
         {compares.map((c) => (
           <li
             key={c.slug}
-            className="group relative grid gap-5 rounded-[20px] border border-line bg-surface p-6 shadow-card transition-[transform,box-shadow] duration-200 hover:shadow-lift active:scale-[0.98] has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-accent motion-reduce:transition-none md:grid-cols-[1.1fr_1fr] md:gap-8"
+            className={cn(cardLink, "grid gap-5 p-6 md:grid-cols-[1.1fr_1fr] md:gap-8")}
           >
             <div>
-              <Versus a={c.a} b={c.b} />
+              {/* decorative: the stretched link below prints "{a} vs {b}" as the card's accessible name, so
+                  announcing the chips too reads both products twice per card. */}
+              <Versus a={c.a} b={c.b} decorative />
               <h2 className="mt-4 font-display text-xl leading-snug font-bold">
                 {/* Stretched link: the whole card is the target; the title is its accessible name. */}
-                <Link
-                  href={routes.compare(c.slug)}
-                  className="inline-flex min-h-11 items-center gap-2 supports-[selector(:has(*))]:outline-none after:absolute after:inset-0 after:rounded-[20px] group-hover:text-accent-text"
-                >
+                <Link href={routes.compare(c.slug)} className={cn("inline-flex min-h-11 items-center gap-2", stretchedLink)}>
                   {c.a} vs {c.b}
                   <CaretRightIcon weight="duotone" className="size-5 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden />
                 </Link>

@@ -27,16 +27,33 @@ export const citiesLead = "We work with businesses across India remotely. Each p
  * half of that link and is in code: it reads the gate itself, so a claim the owner turns off drops its words.
  */
 export const claimLine = {
-  backupFirst: "Files and database backed up before anything changes", // brand.claims.backupFirst
-  fixedPrice: "You approve the price before any work starts", // brand.claims.fixedPrice
-  ownLogin: "We work through a login you create, never your password", // brand.claims.ownLogin
-  accessRemoved: "Our access is removed when the work is done", // brand.claims.accessRemoved
+  backupFirst: "Files and database are backed up before anything changes.", // brand.claims.backupFirst
+  fixedPrice: "You approve the price before any work starts.", // brand.claims.fixedPrice
+  ownLogin: "We work through a login you create, never your password.", // brand.claims.ownLogin
+  accessRemoved: "Our access is removed when the work is done.", // brand.claims.accessRemoved
 } as const;
 
 type ClaimKey = keyof typeof claimLine;
 
+/**
+ * Each line carries its own full stop, so the five places that render one agree: the rail printed them bare as
+ * list items while the pricing header, the contact panel and two lines of the booking flow appended a stop, and
+ * the same sentence read two ways (rule 14). The stop is in the data because four of the five uses are mid prose,
+ * where the sentence needs it; `backupFirst` gained its verb so the stop is honest on all four.
+ */
+
 /** The named claim lines that are confirmed on, in the order asked for. A claim that is off renders nothing. */
 export const claimPoints = (...keys: readonly ClaimKey[]): string[] => keys.filter((k) => brand.claims[k]).map((k) => claimLine[k]);
+
+/**
+ * The claim lines the conversion rail shows, in one order, read by every template that renders a rail. The
+ * service rail asked for (backupFirst, fixedPrice, ownLogin) and the guide rail for (backupFirst, ownLogin,
+ * accessRemoved), so a visitor got a different set of promises on a guide than on its parent service. Nothing in
+ * the briefs or the task reports records a reason for the split, so the two are aligned on all four claim lines
+ * rather than on a rationale invented after the fact. Every one is already gated and already shown site-wide by
+ * the home page's security section, so this adds no promise; it stops the rail making a different one per page.
+ */
+export const railPoints = claimPoints("backupFirst", "fixedPrice", "ownLogin", "accessRemoved");
 
 /**
  * How we handle access, data and money: the home page's security section and the about page both read this.

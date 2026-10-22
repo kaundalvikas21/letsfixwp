@@ -3,7 +3,7 @@ import Link from "next/link";
 import { BookLink, ChatButton, CheckLink } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
 import { SearchTrigger } from "@/components/sections/v3/ProblemSearch";
-import { Breadcrumbs, h1, h2, LinkList, page, Section, symptomsBesides, UrgencyBadge } from "@/components/templates/parts";
+import { Breadcrumbs, cardLink, h1, h2, LinkList, page, Section, stretchedLink, symptomsBesides, UrgencyBadge } from "@/components/templates/parts";
 import { routes } from "@/config/routes";
 import { getService, guides, guidesFor, services } from "@/content";
 import type { Guide, Urgency } from "@/content/schema";
@@ -34,10 +34,10 @@ const meaning: Record<Urgency, string> = {
 // guide restates its error in every symptom, and is there so a card can never end up with no line at all.
 const cardLine = (g: Guide) => symptomsBesides(g.symptoms, g.errorText)[0] ?? g.symptoms[0];
 
-// min-w-0 twice over: a grid item and a flex item both default to min-width auto, and the truncated error line
-// is nowrap, so without it one long error string sizes the whole column and the page scrolls sideways at 375.
-const card =
-  "group relative flex h-full min-w-0 flex-col rounded-[20px] border border-line bg-surface p-5 shadow-card transition-[transform,box-shadow] duration-200 hover:shadow-lift active:scale-[0.98] has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-accent motion-reduce:transition-none";
+// The shared interactive cell from parts.tsx, with this page's own box on top. min-w-0 twice over: a grid item
+// and a flex item both default to min-width auto, and the truncated error line is nowrap, so without it one long
+// error string sizes the whole column and the page scrolls sideways at 375.
+const errorCard = cn(cardLink, "flex h-full min-w-0 flex-col p-5");
 
 // Inside the closing band the link sits on --surface-2, where small accent text measures 4.31:1 (MASTER.md:49),
 // so this one is underlined body text rather than accent text. Accent text on --bg and --surface is fine.
@@ -81,15 +81,12 @@ export default function GuidesIndex() {
                 <li
                   key={g.slug}
                   // An odd last card spans the row instead of leaving half a row empty, the rule the hub grid follows.
-                  className={cn(card, items.length % 2 === 1 && i === items.length - 1 && "sm:col-span-2")}
+                  className={cn(errorCard, items.length % 2 === 1 && i === items.length - 1 && "sm:col-span-2")}
                 >
                   <p className="text-xs font-medium text-muted">{getService(g.parentService)!.title}</p>
                   <h4 className="mt-1 font-display text-lg leading-snug font-bold">
                     {/* Stretched link: the whole card is the target, and the title is its accessible name. */}
-                    <Link
-                      href={routes.guide(g.slug)}
-                      className="flex min-h-11 items-center supports-[selector(:has(*))]:outline-none after:absolute after:inset-0 after:rounded-[20px] group-hover:text-accent-text"
-                    >
+                    <Link href={routes.guide(g.slug)} className={cn("flex min-h-11 items-center", stretchedLink)}>
                       {g.title}
                     </Link>
                   </h4>

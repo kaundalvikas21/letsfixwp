@@ -5,7 +5,7 @@ import { SiteStatus } from "@/components/SiteStatus";
 import { primaryCtaFor } from "@/config/cta";
 import { routes } from "@/config/routes";
 import { getGuide } from "@/content";
-import { claimPoints } from "@/content/notices";
+import { railPoints } from "@/content/notices";
 import { servicePhotos } from "@/content/photos";
 import type { Service } from "@/content/schema";
 import { bentoSpans } from "@/lib/bento";
@@ -34,8 +34,9 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
     s.typicalTurnaround && { k: "Typical turnaround", v: s.typicalTurnaround },
     s.priceFrom && { k: "From", v: s.priceFrom },
   ].filter((x): x is { k: string; v: string } => !!x);
-  // Claim copy and its brand.claims gating both live in src/content/notices.ts, so no template holds the words.
-  const points = claimPoints("backupFirst", "fixedPrice", "ownLogin");
+  // Claim copy, its brand.claims gating and now the set itself all live in src/content/notices.ts: the two rails
+  // asked for different sets with no recorded reason, so both read the one `railPoints` order.
+  const points = railPoints;
   const spans = bentoSpans(s.whatWeDo.map((w) => w.detail.length));
 
   return (

@@ -177,11 +177,11 @@ export default function Pricing() {
             : "Nothing here is a guess. An engineer looks at your site first, then quotes the work."}
         </p>
         {/* The one wording of this claim, and its gate, both live in src/content/notices.ts. */}
-        {brand.claims.fixedPrice && <p className="mt-3 max-w-[68ch] text-muted">{claimLine.fixedPrice}.</p>}
+        {brand.claims.fixedPrice && <p className="mt-3 max-w-[68ch] text-muted">{claimLine.fixedPrice}</p>}
       </header>
 
       <Section id="tiers" title="How the work is priced">
-        <ul className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pt-2 pb-4 [scrollbar-width:none] md:mx-0 md:grid md:grid-cols-3 md:items-center md:gap-6 md:overflow-visible md:px-0">
+        <ul className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pt-2 pb-4 [scrollbar-width:none] md:mx-0 md:grid md:grid-cols-3 md:items-stretch md:gap-6 md:overflow-visible md:px-0">
           {TIERS.map((t) => (
             <li
               key={t.name}
@@ -230,6 +230,8 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
+              {/* mt-auto needs the cells stretched to equal height, which md:items-stretch above is for: under
+                  md:items-center each card was content height and the three CTAs sat at three different heights. */}
               <div className="mt-auto pt-8">{t.cta}</div>
             </li>
           ))}

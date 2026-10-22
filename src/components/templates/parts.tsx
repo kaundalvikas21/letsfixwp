@@ -28,10 +28,38 @@ import { cn } from "@/lib/utils";
 // pill buttons, two-layer tinted shadows, one accent, Cabinet Grotesk display over Inter Tight body.
 
 export const page = "mx-auto w-full max-w-6xl px-4 md:px-6";
+
+/**
+ * The canonical lead measure, and the written form of a convention the branch had only in practice: 68ch is the
+ * lead paragraph on every template and page (20 usages), 70ch the small secondary line that follows it, in a card
+ * summary, a link-row summary or an FAQ answer (7). Both sit inside the craft floor's 65 to 75ch. The narrower
+ * measures are deliberate and local, not a scale: 56ch and 52ch head a panel or a closing band, 48ch and 62ch
+ * carry one short line, and the sub-30ch ones are headline wrap controls rather than body copy. Six body measures
+ * are hand-typed across 38 usages; they are correct where they sit and are not worth a refactor. New lead copy
+ * takes `prose`, which is this measure; anything narrower states its own in place and reads as the exception.
+ */
 export const prose = "max-w-[68ch] text-muted";
+
 export const h1 = "font-display text-[2rem] leading-[1.08] font-extrabold tracking-[-0.02em] text-balance sm:text-4xl lg:text-[2.75rem]";
 export const h2 = "font-display text-2xl leading-tight font-extrabold tracking-[-0.01em] md:text-3xl";
-export const card = "rounded-[20px] border border-line bg-surface p-6 shadow-card";
+
+/** The resting card surface: MASTER's 20px cell. Padding is the caller's, because both p-5 and p-6 ship. */
+export const card = "rounded-[20px] border border-line bg-surface shadow-card";
+
+/**
+ * `card` as one interactive cell whose whole area is a stretched link, with `stretchedLink` below on the link.
+ * /about/, /guides/, /compare/ and the hub template each re-derived this same string, correctly, which was luck
+ * rather than a system. Resting elevation stays `shadow-card`; `--shadow-lift` is MASTER's hover shadow only
+ * (MASTER.md:99,204). `has-[a:focus-visible]` puts the ring on the cell rather than on the link inside it.
+ */
+export const cardLink = `group relative ${card} transition-[transform,box-shadow] duration-200 hover:shadow-lift active:scale-[0.98] has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-accent motion-reduce:transition-none`;
+
+/**
+ * The link inside a `cardLink`: the whole cell is the target and this link's text is its accessible name. The
+ * link's own outline is dropped only where `:has()` is supported, so `cardLink`'s ring is always the replacement
+ * and focus is never invisible. Callers add their own display, height and gap classes.
+ */
+export const stretchedLink = "supports-[selector(:has(*))]:outline-none after:absolute after:inset-0 after:rounded-[20px] group-hover:text-accent-text";
 
 /**
  * One icon per `securityPractice` item (src/content/notices.ts), by id. The words and their

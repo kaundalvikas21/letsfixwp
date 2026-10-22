@@ -55,7 +55,7 @@ export default async function Contact({ searchParams }: PageProps<"/contact">) {
           <h1 className={h1}>Tell us what your site is doing</h1>
           {/* brand.claims.fixedPrice: the second sentence is the shared claim copy, so it goes when the claim is off. */}
           <p className="mt-5 max-w-[46ch] text-lg text-muted">
-            An engineer reads every ticket.{brand.claims.fixedPrice ? ` ${claimLine.fixedPrice}.` : ""}
+            An engineer reads every ticket.{brand.claims.fixedPrice ? ` ${claimLine.fixedPrice}` : ""}
           </p>
           <p className="mt-6 text-sm text-muted">
             Rather talk first? <ChatButton location="contact" service={service || undefined} />

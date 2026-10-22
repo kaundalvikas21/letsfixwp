@@ -4,7 +4,7 @@ import { BookLink, ChatButton, CheckLink } from "@/components/Cta";
 import { faqLd, guideLd, JsonLd, nodeCrumbs } from "@/components/JsonLd";
 import { routes } from "@/config/routes";
 import { getService, guidesFor } from "@/content";
-import { claimPoints, coreFileWarning } from "@/content/notices";
+import { coreFileWarning, railPoints } from "@/content/notices";
 import type { Guide } from "@/content/schema";
 import { cn } from "@/lib/utils";
 import { Breadcrumbs, CauseFlow, DiagnosticPanel, FactRail, Faqs, h1, LinkRows, page, RealScreen, Section, symptomsBesides, UrgencyBadge } from "./parts";
@@ -23,8 +23,8 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
   // The panel shows the literal error text, or the first symptom on the 17 guides that print no message, so the
   // list drops whichever of the two it took (symptomsBesides carries the heuristic and its limits).
   const symptoms = symptomsBesides(g.symptoms, g.errorText ?? g.symptoms[0]);
-  // Claim copy and its brand.claims gating both live in src/content/notices.ts, so no template holds the words.
-  const points = claimPoints("backupFirst", "ownLogin", "accessRemoved");
+  // The same `railPoints` set the service rail shows: see src/content/notices.ts for why the two are aligned.
+  const points = railPoints;
 
   return (
     <article data-urgency={g.urgency} className={cn(page, "py-8 md:py-12")}>

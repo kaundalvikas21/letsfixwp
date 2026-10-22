@@ -9,7 +9,7 @@ import { hubLead } from "@/content/hubs";
 import type { Service } from "@/content/schema";
 import { bentoLayout } from "@/lib/bento";
 import { cn } from "@/lib/utils";
-import { Breadcrumbs, h1, h2, page, Section, UrgencyBadge } from "./parts";
+import { Breadcrumbs, cardLink, h1, h2, page, Section, stretchedLink, UrgencyBadge } from "./parts";
 
 const urgencyRank = { critical: 0, high: 1, standard: 2 } as const;
 
@@ -70,14 +70,11 @@ export function HubTemplate({ node }: { node: FlatNode }) {
           {services.map(({ node: n, s, c }, i) => (
             <li
               key={s.id}
-              className={cn(
-                "group relative rounded-[20px] border border-line bg-surface p-6 shadow-card transition-[transform,box-shadow] duration-200 hover:shadow-lift active:scale-[0.98] has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-accent motion-reduce:transition-none",
-                SPAN[spans[i] as keyof typeof SPAN],
-              )}
+              className={cn(cardLink, "p-6", SPAN[spans[i] as keyof typeof SPAN])}
             >
               <h3 className="font-display text-lg leading-snug font-bold">
                 {/* Stretched link: the whole card is the target, and the title is its accessible name. */}
-                <Link href={n.path} className="flex min-h-11 items-center justify-between gap-3 supports-[selector(:has(*))]:outline-none after:absolute after:inset-0 after:rounded-[20px] group-hover:text-accent-text">
+                <Link href={n.path} className={cn("flex min-h-11 items-center justify-between gap-3", stretchedLink)}>
                   {n.title}
                   <CaretRightIcon weight="duotone" className="mt-1 size-5 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden />
                 </Link>

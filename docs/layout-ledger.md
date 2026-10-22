@@ -15,6 +15,36 @@ One row per section, recorded before coding (docs/section-contract.md rule 3). O
 | --- | --- | --- | --- | --- | --- |
 | 0 | SiteShell: floating glass pill nav (md+), top bar + fixed bottom action bar (<768px), problem command palette | shell (not counted against page layout families) | no | no | BOOK (nav, bottom bar, palette footer with the highlighted problem's slug), CHAT (bottom bar icon, palette no-match) |
 
+## v3 / shared template primitives (src/components/templates/parts.tsx)
+
+Not a page. Three conventions that were in practice on four pages each but written down nowhere, which is how two
+of them drifted.
+
+**Body measure.** 68ch is the lead paragraph (20 usages) and 70ch the small secondary line that follows it, in a
+card summary, a link-row summary or an FAQ answer (7). Both are inside the craft floor's 65 to 75ch. The narrower
+measures are local exceptions, not a scale: 56ch and 52ch head a panel or a closing band, 48ch and 62ch carry one
+short line, and everything under 30ch is a headline wrap control rather than body copy. `parts.tsx`'s `prose` is
+the canonical lead measure and now says so in place, which is also the stable reference a parked ruling needs:
+it was cited once by a line number that has since drifted. Six body measures are hand-typed across 38 usages,
+they are correct where they sit, and 38 edits to centralise them would be a worse diff than the convention.
+
+**The interactive cell.** `cardLink` and `stretchedLink` are the idiom /about/, /guides/, /compare/ and the hub
+template each re-derived by hand, correctly, four times: the hover and press transition, the
+`has-[a:focus-visible]` ring on the cell, `motion-reduce:transition-none`, and the stretched link that drops its
+own outline only where `:has()` can replace it. All four now import them. Resting elevation is `shadow-card`;
+`--shadow-lift` is MASTER's hover shadow only (MASTER.md:99,204). Verified render-identical: every class attribute
+on all four pages, in document order, is byte for byte what it was before the consolidation.
+
+**The rail's claim set.** `railPoints` in src/content/notices.ts is the one set every `FactRail` shows. The
+service rail asked for (backupFirst, fixedPrice, ownLogin) and the guide rail for (backupFirst, ownLogin,
+accessRemoved), so a visitor got a different set of promises on a guide than on its parent service. Nothing in
+the briefs or the task reports records a reason for that split, so the two are aligned on all four claim lines
+rather than on a rationale invented after the fact. Each line is already gated and already shown site-wide by the
+home page's security section, so the alignment adds no promise. Each one also carries its own full stop now: the
+rail printed them bare as list items while the pricing header, the contact panel and two lines of the booking
+flow appended a stop, so the same sentence read two ways (rule 14). The stop is in the data because four of the
+five uses are mid prose, and `backupFirst` gained its verb so the stop is honest on all four.
+
 ## v3 / home
 
 | # | Section | Layout family | Eyebrow | Marquee | CTA intents |
@@ -226,7 +256,10 @@ trigger does nothing, and the whole catalogue is still on the page underneath it
 breaking.
 
 /pricing/ is one page of six blocks: a document header, the three tier cards, the outcome rows, the comparison
-table, the FAQ and the closing band. Six blocks, so ceil(6 / 3) = 2 eyebrows allowed and 0 used, no marquee, and
+table, the FAQ and the closing band. The tier grid is `md:items-stretch`, not `md:items-center`: the cards end on
+`mt-auto pt-8` so their CTAs align at the card foot, which only works when the cells are stretched to equal
+height, and under `items-center` each cell was content height and the three CTAs sat at three different heights.
+Stretched is also what the cards already do in the scroll-snap row below md, so both widths now agree. Six blocks, so ceil(6 / 3) = 2 eyebrows allowed and 0 used, no marquee, and
 no image-plus-text split anywhere, because the page carries no photography at all. Nothing is logged to
 image-todo: the page is not waiting on a photograph, and its one visual decision is typographic.
 

@@ -560,7 +560,7 @@ function ConfirmScreen({ b, serviceTitle, type }: { b: Booking; serviceTitle: st
       {(priceNote || brand.guarantee) && (
         <div className="mt-5 rounded-[12px] bg-surface-2 p-4 text-sm">
           {priceNote && <p className="font-semibold">{priceNote}</p>}
-          {type !== "check" && priceNote && <p className="mt-1 text-muted">An engineer reviews this and prices the work. {claimLine.fixedPrice}.</p>}
+          {type !== "check" && priceNote && <p className="mt-1 text-muted">An engineer reviews this and prices the work. {claimLine.fixedPrice}</p>}
           {/* The disclosure is its own line in the shared wording (parts.tsx), never a prefix: brand.guarantee.summary
               already opens with the same word while it is a placeholder, and prefixing it printed it twice. */}
           {brand.guarantee && (
@@ -611,7 +611,7 @@ function Success({
     type === "check"
       ? `An engineer checks the site and emails the summary to ${booking.email} within ${brand.claims.checkTurnaround}.`
       : // brand.claims.fixedPrice: the price half of this line is the shared copy and goes with the claim.
-        `An engineer reads it and replies to ${booking.email}.${brand.claims.fixedPrice ? ` ${claimLine.fixedPrice}.` : ""}`,
+        `An engineer reads it and replies to ${booking.email}.${brand.claims.fixedPrice ? ` ${claimLine.fixedPrice}` : ""}`,
     booking.access === "secure-link" && type === "fix"
       ? "A secure link for hosting or admin access comes with that reply. Nothing sensitive goes through this form."
       : "If anything is unclear, we ask before touching the site.",

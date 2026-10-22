@@ -29,7 +29,7 @@ export const bentoSpans = (weights: readonly number[]): number[] => {
  * The compare pages (1.0 to 1.5 on real verdicts) use the same number. If a future set lands wrong, move this
  * number or replace it with a per-caller choice.
  */
-export const UNIFORM_RATIO = 1.4;
+const UNIFORM_RATIO = 1.4;
 export const bentoLayout = (weights: readonly number[]): number[] =>
   Math.max(...weights) <= Math.min(...weights) * UNIFORM_RATIO
     ? weights.map((_, i) => (i === weights.length - 1 && i % 2 === 0 ? 6 : 3))
