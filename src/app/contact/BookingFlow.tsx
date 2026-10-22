@@ -561,11 +561,10 @@ function ConfirmScreen({ b, serviceTitle, type }: { b: Booking; serviceTitle: st
         <div className="mt-5 rounded-[12px] bg-surface-2 p-4 text-sm">
           {priceNote && <p className="font-semibold">{priceNote}</p>}
           {type !== "check" && priceNote && <p className="mt-1 text-muted">An engineer reviews this and prices the work. {claimLine.fixedPrice}.</p>}
+          {/* The disclosure is its own line in the shared wording (parts.tsx), never a prefix: brand.guarantee.summary
+              already opens with the same word while it is a placeholder, and prefixing it printed it twice. */}
           {brand.guarantee && (
-            <p className="mt-2 text-muted">
-              {brand.guarantee.placeholder && <span className="font-semibold">Placeholder: </span>}
-              {brand.guarantee.summary}
-            </p>
+            <p className="mt-2 text-muted">{brand.guarantee.placeholder ? "Placeholder, not a real offer yet." : brand.guarantee.summary}</p>
           )}
         </div>
       )}

@@ -351,6 +351,11 @@ Every fixed-price sentence on the page now reads `claimLine.fixedPrice` from src
 `brand.claims.fixedPrice`, with the `// brand.claims.x` marker beside it: the lead paragraph, the confirm note (both
 lines, and the note box with them) and the success reply line. With the claim off each one drops to a shorter
 sentence that still reads. `brand.claims.checkTurnaround` stays interpolated into the check flow's success line.
+The tabs are a deliberate MASTER deviation, not an oversight: MASTER's tabs spec wants an accent thumb animated
+with a shared `layoutId`, and these change background instead. Radix already supplies `role="tablist"` and
+arrow-key selection, which is the functional half of that spec, and the mode here is Operate: a motion island on
+a form buys no completion speed. The guarantee's placeholder disclosure is its own line in the shared wording
+rather than a prefix, because `brand.guarantee.summary` already opens with the same word while it is unset.
 Text-entry inputs carry the MASTER input spec in full, 12px 16px padding included; the radios inherit the label's
 14px, which is not an iOS zoom trigger. "Who hosts it?" is `autoComplete="off"`: no token names a hosting provider,
 and "organization" was offering the visitor's own employer.
