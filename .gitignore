@@ -50,3 +50,4 @@ __pycache__/
 # agent tooling residue (per-machine, written by skill launchers)
 .agents/
 .codex/
+.superpowers/
