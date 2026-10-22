@@ -27,19 +27,26 @@ export const metadata: Metadata = {
  * the price is set instead of standing empty, and prints the real "From" line the moment a price is published.
  * No figure here is invented, derived or stood in for.
  */
-function PriceSlot({ price, unit, quoted }: { price: Price | null; unit: string; quoted: string }) {
+function PriceSlot({ price, unit }: { price: Price | null; unit: string }) {
   return price ? (
     <div>
       <p className="font-display text-4xl leading-none font-extrabold">From {formatPrice(price)}</p>
       <p className="mt-2 text-sm text-muted">{unit}</p>
     </div>
   ) : (
-    <p className="font-display text-3xl leading-[1.05] font-extrabold tracking-[-0.02em] text-balance">{quoted}</p>
+    // One source for the unit: every unit reads "Per <something>", so the quoted line is the same words.
+    <p className="font-display text-3xl leading-[1.05] font-extrabold tracking-[-0.02em] text-balance">Quoted {unit.toLowerCase()}</p>
   );
 }
 
 const { planMonthly: m, planAnnual: a } = prices;
 const saving = annualSaving(m, a);
+
+// Care plan billing, stated only as far as the content backs it. "Per month" is what care-plans.summary calls
+// the plan ("A monthly plan where we handle updates, backups, monitoring and security checks"), so it holds
+// with nothing published. An annual option is named only once planAnnual is published, and the annual price
+// alone switches the card to it rather than being ignored.
+const planUnit = m && a ? "Monthly or annual" : a ? "Per year" : "Per month";
 
 type Tier = {
   intent: Service["intent"];
@@ -48,7 +55,9 @@ type Tier = {
   /** The service that is this tier's entry point. Named on the card and in the table, so neither claims to cover every service under the tier. */
   anchor: Service;
   unit: string;
-  price: ReactNode;
+  price: Price | null;
+  /** The care plan only: both prices published is the one case that earns the billing toggle. */
+  toggle?: boolean;
   cta: ReactNode;
   featured?: boolean;
   order: string;
@@ -66,10 +75,9 @@ const TIERS: Tier[] = [
     name: "Care plan",
     who: "Updates, backups and monitoring, handled every month.",
     anchor: getService("care-plans")!,
-    unit: "Monthly or annual",
-    // Both plan prices published is the one case that earns the billing toggle, and PlanPrice is the component
-    // that decides it: MASTER.md:222-225 asks for the toggle, rule 8 refuses to switch between two blanks.
-    price: m && a ? <PlanPrice monthly={formatPrice(m)} annual={formatPrice(a)} saving={saving && formatPrice(saving)} /> : <PriceSlot price={m} unit="Per month" quoted="Quoted per month" />,
+    unit: planUnit,
+    price: m ?? a,
+    toggle: true,
     cta: <PlansLink location="pricing:tiers" className="btn-primary w-full" />,
     featured: true,
     order: "md:order-2",
@@ -80,7 +88,7 @@ const TIERS: Tier[] = [
     who: "One problem on your site, found and fixed.",
     anchor: getService("emergency")!,
     unit: "Per fix",
-    price: <PriceSlot price={prices.fix} unit="Per fix" quoted="Quoted per fix" />,
+    price: prices.fix,
     cta: <BookLink location="pricing:tiers" className="btn-secondary w-full" />,
     order: "md:order-1",
   },
@@ -90,7 +98,8 @@ const TIERS: Tier[] = [
     who: "A build, a move or a redesign, agreed up front.",
     anchor: getService("website-design")!,
     unit: "Per project",
-    price: <PriceSlot price={null} unit="Per project" quoted="Quoted per project" />,
+    // No project entry exists in src/content/pricing.ts and none is implied: a project is quoted from its brief.
+    price: null,
     cta: <QuoteLink location="pricing:tiers" className="btn-secondary w-full" />,
     order: "md:order-3",
   },
@@ -99,16 +108,18 @@ const TIERS: Tier[] = [
 /** Reading order for everything below the cards: fix, plan, project, as the grid reads at md. */
 const READING = ["fix", "plan", "project"].map((i) => TIERS.find((t) => t.intent === i)!);
 
-// Six questions about price, referenced from the service files by exact question text, the mechanism the home
-// Faq section uses: reword one in the content and the build fails here instead of the two drifting apart.
-// Left out on purpose: care-plans "What is the difference between Basic, Pro and Business?", support-hours
-// "Do unused hours expire?" and maintenance-woocommerce "Where can I see plan prices?". Each is answered on its
-// own service page and each points back here, so asking it on this page would be the page answering itself.
+// Questions about price, referenced from the service files by exact question text, the mechanism the home Faq
+// section uses: reword one in the content and the build fails here instead of the two drifting apart.
+// Left out on purpose, and for a reason each: care-plans "What is the difference between Basic, Pro and
+// Business?" names three tiers this page does not itemise, and maintenance-woocommerce "Where can I see plan
+// prices?" answers "ask us", which on the page someone opened to see prices is the page deflecting the question
+// it exists to answer.
 const FAQ_REFS: [service: string, question: string][] = [
   ["website-design", "How much does a WordPress website cost?"],
   ["care-plans", "Is a care plan better than paying per job?"],
   ["support-hours", "Should I choose hours or a care plan?"],
   ["support-hours", "How do I know how many hours a task will use?"],
+  ["support-hours", "Do unused hours expire?"],
   ["hire-developer", "What does it cost to hire a WordPress developer?"],
   ["white-label", "How is white-label work priced?"],
 ];
@@ -183,12 +194,26 @@ export default function Pricing() {
             >
               <div className="flex items-center justify-between gap-3">
                 <h3 className="font-display text-2xl font-bold">{t.name}</h3>
-                {t.featured && prices.planIsBestValue && (
-                  <span className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-on-accent">Best value</span>
+                {/* The ring is not allowed to carry "this one" on its own (rule 9), so the badge is the text
+                    that says what the ringed card is. "Best value" is a ranking and needs published prices to
+                    bear it out; "Ongoing" is simply what a care plan is, and holds in either state. */}
+                {t.featured && (
+                  <span className="shrink-0 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-on-accent">
+                    {prices.planIsBestValue ? "Best value" : "Ongoing"}
+                  </span>
                 )}
               </div>
               <p className="mt-1 text-muted">{t.who}</p>
-              <div className="mt-6">{t.price}</div>
+              <div className="mt-6">
+                {/* MASTER.md:222-225 asks for the billing toggle and PlanPrice is the component that decides it:
+                    it renders only when both plan prices are published, so rule 8 never has it switching between
+                    two blanks. One price of the two still prints as an ordinary "From" line. */}
+                {t.toggle && m && a ? (
+                  <PlanPrice monthly={formatPrice(m)} annual={formatPrice(a)} saving={saving && formatPrice(saving)} />
+                ) : (
+                  <PriceSlot price={t.price} unit={t.unit} />
+                )}
+              </div>
               {/* The inclusions are one named service's deliverables, so the line that heads them says whose. */}
               <p className="mt-7 flex flex-wrap items-center gap-x-2 text-sm text-muted">
                 Included in{" "}
@@ -217,10 +242,9 @@ export default function Pricing() {
           const list = services.filter((s) => s.intent === t.intent);
           return (
             <div key={t.intent} className="mt-10 first:mt-0">
-              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-line pb-3">
-                <h3 className="font-display text-xl leading-snug font-bold">{t.name}</h3>
-                <p className="text-sm text-muted">{t.unit}</p>
-              </div>
+              {/* No unit beside the group name: the plan tier holds support-hours, which is bought as a block
+                  of hours rather than per month, so a tier-wide billing label would be wrong for it. */}
+              <h3 className="border-b border-line pb-3 font-display text-xl leading-snug font-bold">{t.name}</h3>
               <ul className="mt-5 divide-y divide-line overflow-hidden rounded-[20px] border border-line bg-surface shadow-card">
                 {list.map((s) => (
                   <li key={s.id}>
@@ -307,7 +331,9 @@ export default function Pricing() {
           <PlansLink location="pricing:closing" className="btn-secondary" />
         </div>
       </section>
-      <p className="mt-4 flex flex-wrap items-center gap-x-2 text-sm text-muted">
+      {/* gap-y as well as gap-x: these two 44px targets wrap onto separate lines at 375, and without it they
+          would stack with nothing between them (contract rule 5 asks for 8px between targets). */}
+      <p className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-2 text-sm text-muted">
         Not urgent? <CheckLink location="pricing:closing" className={quietLink} /> or{" "}
         <ChatButton location="pricing:closing" className={quietLink} />
       </p>

@@ -213,7 +213,10 @@ the fix tier, `care-plans` for the plan tier, `website-design` for the project t
 "One-time fix", the home page's own wording, rather than "emergency fix", because 15 services sit under it and
 `email-not-sending` and `elementor-issues` are not emergencies. Rule 6 bans three equal cards in a row and the
 cards follow the home precedent for that: the centre tier is ringed in the accent and scaled 1.04 at md, with
-`md:order` putting the care plan first in DOM order where the cards scroll. It keeps `shadow-card` at rest;
+`md:order` putting the care plan first in DOM order where the cards scroll. The ring never carries that emphasis
+on its own (rule 9): the card always shows a badge, reading "Ongoing", which is simply what a care plan is, and
+"Best value" only once `planIsBestValue` is set, because a ranking needs published prices behind it. It keeps
+`shadow-card` at rest;
 `--shadow-lift` is MASTER's hover shadow (MASTER.md:99,204) and using it at rest was a review finding on Task 1.
 
 All 32 services stay on the page as links, grouped under their tier instead of under their hub, and each row now
@@ -223,23 +226,31 @@ themselves lead with that paragraph, and the tier is what someone comparing pric
 
 The comparison table is the one MASTER asks for between the cards and the FAQ, and `deliverables` is its data.
 Rows are criteria, so each cell is real written content: whoItsFor, the `whatWeDo` verbs in the order the work
-happens, the full deliverables list, and how the work is billed. Typical turnaround is a row that appears only
+happens, the full deliverables list, and how the work is billed. That last row reads per the anchor and nothing
+wider: "Per month" is what care-plans.summary calls the plan, and an annual option is named only once
+`planAnnual` is published, so the page never states a billing option no content backs. Typical turnaround is a row that appears only
 once an anchor publishes one. It does not repeat the price: the cards carry the price slot, and repeating it here
 would be a second treatment of the same gated value.
 
-The FAQ reuses the mechanism from the home `Faq` section rather than new copy: six questions referenced by
+The FAQ reuses the mechanism from the home `Faq` section rather than new copy: seven questions referenced by
 service id and exact question text, resolved from the content files, so rewording a question fails the build
 instead of letting the two drift. It renders through `Faqs` (parts.tsx), the plain disclosure list, and emits
-`faqLd` beside the page's `breadcrumbLd`. Three pricing questions in the content are deliberately left out
-because they promise data this page does not have yet: care-plans "What is the difference between Basic, Pro and
-Business?", support-hours "Do unused hours expire?" and maintenance-woocommerce "Where can I see plan prices?" all
-answer "the pricing page lists it". They become usable once plan tiers and hour blocks exist in src/content.
-Four strings in the service content said this page lists plan tiers, plan prices or hour blocks, which it does
-not and cannot while that data is null. They were reworded in place (care-plans deliverable 5 and its tier FAQ,
-maintenance-woocommerce "Where can I see plan prices?", support-hours "Do unused hours expire?") so each is true
-with no published figures and stays true once figures land. They render on three service pages, not here, so the
-pricing page itself needed no exclusion for them: the care-plans deliverable is now shown on the card and in the
-table like any other.
+`faqLd` beside the page's `breadcrumbLd`. Two pricing questions in the content are left out, for a reason each:
+care-plans "What is the difference between Basic, Pro and Business?" names three tiers this page does not
+itemise, and maintenance-woocommerce "Where can I see plan prices?" answers "ask us", which on the page someone
+opened to see prices is the page deflecting the question it exists to answer.
+
+Four strings in the service content used to say this page lists plan tiers, plan prices or hour blocks, which it
+does not and cannot while that data is null. They render on three service pages, not here, so the fix was in the
+content: care-plans deliverable 5 and its tier FAQ, maintenance-woocommerce "Where can I see plan prices?" and
+support-hours "Do unused hours expire?" were each reduced to the minimum statement that is certainly true, with
+no causal explanation and no new promise attached, so none of them turns false when real prices land. Two
+consequences here: the care-plans deliverable is no longer circular, so it needs no exclusion and renders in the
+comparison table like any other (the card shows the first four of five, so it appears in the table only), and
+support-hours "Do unused hours expire?" became a usable pricing question and is now one of the seven.
+
+`PlanCompare` is not reused: it is a two-mode fix-versus-plan toggle built around two photographs, and this page
+needs a three-way comparison and carries no imagery, so the table carries it instead.
 
 No `FactRail` here, and so no second treatment of `brand.guarantee`: the rail is one DOM node built for a page
 whose body runs in a lead column, and this page is full-width cards and a full-width table. The guarantee stays
