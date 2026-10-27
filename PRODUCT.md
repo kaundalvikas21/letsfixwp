@@ -44,6 +44,10 @@ The service promises behind it, all confirmed by the owner: a fixed price agreed
 backup taken before any change, work done through a login the client creates (never their password), and
 that access removed when the job is done.
 
+The repairs are carried out by an in-house team, confirmed by the owner on 2026-10-22, which is what makes
+those promises ones the business can keep. Copy may say so; it may not imply a screened contractor bench, a
+24/7 rota, or named staff who do not exist.
+
 ## Operating Context
 
 **Booking.** Lives on `/contact/` (`src/app/contact/BookingFlow.tsx`), reused in `check` mode on
@@ -138,11 +142,22 @@ with businesses across India remotely"), the `en_IN` Open Graph locale, and the 
 **Voice.** Urgent but calm, trustworthy, direct, content-first, fast. Real specific copy. No filler verbs, no
 em-dashes or en-dashes.
 
-**Confirmed promises.** The eight entries in `brand.claims` are confirmed by the owner and are the only speed
-and safety claims that may appear anywhere: a broken site is back online the same day; every engineer is
-vetted; booking a fix takes about two minutes; fixes are fixed price, agreed before work starts; a full
-backup is taken before any change; we work through a login you create for us and never ask for your password;
-our access is removed when the work is done; a free site check comes back in two working days.
+**Promises, and which of them are actually confirmed.** `brand.claims` holds eight entries and they are the
+only speed and safety claims that may appear anywhere. They are not all confirmed, and every one of them is
+still wrapped in `confirm(...)` in `src/config/brand.ts`, which warns in dev and fails a production build
+until the owner replaces it with a plain value.
+
+Confirmed by the owner on 2026-10-22, and safe to say on the site: a broken site is back online the same day
+(`sameDay`); fixes are fixed price, agreed before work starts (`fixedPrice`); a full backup is taken before
+any change (`backupFirst`); we work through a login you create for us and never ask for your password, and
+that access is removed when the work is done (`ownLogin`, `accessRemoved`).
+
+Not confirmed, and not to be written as fact: **`vetted`** ("every engineer is vetted") is also the wrong
+description now, because the work is done by an in-house team rather than a screened contractor bench, so
+copy should say in-house, not vetted. **`bookingMinutes`** (booking takes about two minutes) and
+**`checkTurnaround`** (a free site check comes back in two working days) have never been confirmed by the
+owner at all; the hero interpolates `bookingMinutes` from the gate, so turning it off shortens the sentence
+rather than leaving a number nobody stands behind.
 
 **Hard ban: fixmywp.com.** That is a different company, still live and trading. None of its content, claims,
 testimonials, address, or legal text may appear here on any design variation. `brand.legacy.enabled` is

@@ -14,7 +14,7 @@ export const hubLead: Record<string, string> = {
   "wordpress-performance-migration":
     "Slow pages and risky moves share a cause, which is guesswork. We measure where a site actually loses time before changing anything, and when a site has to move host or platform, we build and test the copy before any traffic sees it.",
   "wordpress-development":
-    "Work that adds to a site rather than repairs it: a new design, a theme or plugin built for one job, an ongoing developer, or the search work that gets the result found. Each starts from what the site has to do, not from a template.",
+    "Work that adds to a site rather than repairs it: a new design, a theme or plugin built for one job, an ongoing developer, or the search work that gets the result found. Each project starts from what the site has to do, not from a template.",
   woocommerce:
     "A store has more to break than a site: checkout, payment gateways, tax settings and order emails all have to work together. These pages cover building a WooCommerce store, fixing one that has stopped taking orders, and the Indian payment and GST setup behind it.",
 };
