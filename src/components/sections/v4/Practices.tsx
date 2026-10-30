@@ -57,7 +57,9 @@ export function Practices() {
             {/* 17px against the 15px sentence beside it: the two used to share a size and were told
                 apart by weight alone, which is not a hierarchy at this heading scale. */}
             <span className="text-[17px] leading-snug font-semibold tracking-[-0.01em]">{title}</span>
-            <span className="col-start-2 max-w-[58ch] text-[15px] leading-relaxed text-muted md:col-start-3">{text}</span>
+            {/* One column further along than it was: the index numeral now takes the first column,
+                so the icon, the title and this sentence each move one to the right. */}
+            <span className="col-start-3 max-w-[58ch] text-[15px] leading-relaxed text-muted md:col-start-4">{text}</span>
           </Fragment>
         ))}
       </PracticeRows>

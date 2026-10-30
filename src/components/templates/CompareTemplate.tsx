@@ -4,7 +4,7 @@ import { primaryCtaFor } from "@/config/cta";
 import { nodeByPath, routes } from "@/config/routes";
 import type { Compare } from "@/content/schema";
 import { cn } from "@/lib/utils";
-import { Breadcrumbs, Section, h1, h2, page, pageY } from "./parts";
+import { Breadcrumbs, ClosingBand, PageMasthead, Section, page, pageY } from "./parts";
 
 /**
  * /compare/<slug>/. Layout family: verdict-by-scenario cards over a real comparison table. Factual and neutral:
@@ -29,12 +29,23 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
         ]}
       />
 
-      <header className="mt-6">
-        <h1 className={h1}>{title}</h1>
-        <p className="rise-in mt-5 max-w-[68ch] text-lg text-muted" style={{ animationDelay: "70ms" }}>
-          {c.seo.description}
-        </p>
-      </header>
+      {/* This page had no picture at all, because the catalogue holds no honest frame of two
+          technologies being weighed against each other and inventing one was never an option. A
+          comparison is a neutral document, so it takes the catalogue's neutral frame: `cables`, a
+          patch panel in black and white, which is mono and therefore the one tone that cannot imply
+          a verdict. Logged in docs/image-todo.md as a stand-in with the direction its real
+          photograph has to satisfy. */}
+      <PageMasthead
+        photo="cables"
+        title={title}
+        lead={c.seo.description}
+        actions={
+          <>
+            <Primary location={`${loc}:hero`} className="btn-primary" />
+            <ChatButton location={`${loc}:hero`} className="btn-secondary" />
+          </>
+        }
+      />
 
       <Section id="verdict" title="Which one fits">
         <ul className="grid gap-4 md:grid-cols-3">
@@ -90,15 +101,16 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
         </div>
       </Section>
 
-      <section aria-labelledby="compare-closing" className="reveal mt-20 flex flex-col gap-5 border-t border-line pt-10 md:mt-28 md:flex-row md:items-center md:justify-between md:pt-12">
-        <h2 id="compare-closing" className={cn(h2, "max-w-[28ch]")}>
-          Still deciding between {c.a} and {c.b}?
-        </h2>
-        <div className="flex shrink-0 flex-wrap gap-3">
-          <Primary location={`${loc}:closing`} className="btn-primary" />
-          <ChatButton location={`${loc}:closing`} className="btn-secondary" />
-        </div>
-      </section>
+      <ClosingBand
+        title={`Still deciding between ${c.a} and ${c.b}?`}
+        measure="max-w-[28ch]"
+        actions={
+          <>
+            <Primary location={`${loc}:closing`} className="btn-primary" />
+            <ChatButton location={`${loc}:closing`} className="btn-secondary" />
+          </>
+        }
+      />
     </article>
   );
 }

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BookLink, ChatButton } from "@/components/Cta";
 import { collectionLd, JsonLd, nodeCrumbs } from "@/components/JsonLd";
-import { Breadcrumbs, h1, h2, page, pageY } from "@/components/templates/parts";
+import { Breadcrumbs, ClosingBand, h1, h2, page, pageY } from "@/components/templates/parts";
 import { routes } from "@/config/routes";
 import { compares } from "@/content";
 import { cn } from "@/lib/utils";
@@ -150,18 +150,16 @@ export default function CompareIndex() {
         </ul>
       </section>
 
-      <section
-        aria-labelledby="compare-closing"
-        className="reveal mt-20 flex flex-col gap-5 border-t border-line pt-10 md:mt-28 md:flex-row md:items-center md:justify-between md:pt-12"
-      >
-        <h2 id="compare-closing" className={cn(h2, "max-w-[26ch]")}>
-          Want this answered for your site?
-        </h2>
-        <div className="flex shrink-0 flex-wrap gap-3">
-          <BookLink location="compare-index" className="btn-primary" />
-          <ChatButton location="compare-index" className="btn-secondary" />
-        </div>
-      </section>
+      <ClosingBand
+        title="Want this answered for your site?"
+        measure="max-w-[26ch]"
+        actions={
+          <>
+            <BookLink location="compare-index" className="btn-primary" />
+            <ChatButton location="compare-index" className="btn-secondary" />
+          </>
+        }
+      />
     </div>
   );
 }

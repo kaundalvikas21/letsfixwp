@@ -88,6 +88,15 @@ export type PhotoId = keyof typeof photos;
 /**
  * Which photograph each service page shows. v2's mapping (from v1), with the red frames swapped for v3:
  * alert and monitors are out, so their services moved to the nearest neutral frame.
+ *
+ * `drafting` is out too, and for the same kind of reason. It is the catalogue's one `daylight` frame,
+ * which v4's Imagery section rules off direction, and /pricing/ had already rejected it by name on
+ * tone: even under the scrim it was the brightest thing on a dark-locked page and read as a stock
+ * photograph pasted into the system. That was survivable while it sat in a 432px column. It is not
+ * now the photograph is the band, which is the largest element on the page, on three service pages,
+ * the development hub and every city page (a city takes its first highlighted service's frame, and
+ * that is `website-design` on most of them). Each moved to the nearest frame on direction rather
+ * than to the nearest subject: night, one warm source, dark page.
  */
 export const servicePhotos: Record<string, PhotoId> = {
   "audit-hardening": "terminal",
@@ -97,7 +106,7 @@ export const servicePhotos: Record<string, PhotoId> = {
   "custom-plugin": "terminal",
   "custom-theme": "night-desk",
   "database-connection-error": "racks",
-  "elementor-issues": "drafting",
+  "elementor-issues": "night-desk",
   "email-not-sending": "workspace",
   emergency: "emergency",
   "hire-developer": "terminal",
@@ -108,7 +117,7 @@ export const servicePhotos: Record<string, PhotoId> = {
   "payment-gateway-gst": "store",
   "platform-migration": "cables",
   "plugin-theme-conflict": "keys",
-  redesign: "drafting",
+  redesign: "workspace",
   "seo-services": "night-desk",
   "seo-spam-cleanup": "keys",
   "server-errors": "racks",
@@ -117,7 +126,7 @@ export const servicePhotos: Record<string, PhotoId> = {
   "speed-optimization": "cables",
   "support-hours": "workspace",
   "update-php-errors": "keys",
-  "website-design": "drafting",
+  "website-design": "terminal",
   "white-label": "night-desk",
   "white-screen": "night-desk",
   "woocommerce-development": "store",
@@ -130,7 +139,7 @@ export const hubPhotos: Record<string, PhotoId> = {
   "wordpress-security": "terminal",
   "wordpress-performance-migration": "racks",
   "wordpress-maintenance": "workspace",
-  "wordpress-development": "drafting",
+  "wordpress-development": "final-cta",
   woocommerce: "store",
 };
 

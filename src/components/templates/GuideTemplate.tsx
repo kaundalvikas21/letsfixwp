@@ -2,40 +2,27 @@ import { WarningIcon } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import { BookLink, ChatButton, CheckLink } from "@/components/Cta";
 import { faqLd, guideLd, JsonLd } from "@/components/JsonLd";
-import { hasScreen, Photo } from "@/components/Photo";
+import { CLOSING_ASK } from "@/config/cta";
 import { routes } from "@/config/routes";
 import { getService, guidesFor } from "@/content";
 import { coreFileWarning } from "@/content/notices";
 import { servicePhotos } from "@/content/photos";
 import type { Guide } from "@/content/schema";
 import { cn } from "@/lib/utils";
-import { Breadcrumbs, Faqs, LinkRows, RealScreen, Section, h1, page, pageY } from "./parts";
+import { Breadcrumbs, card, ClosingBand, Faqs, LinkCards, PageMasthead, RealScreen, Section, page, pageY, urgencyIcon } from "./parts";
 import { ReadingRail } from "./ReadingRail";
 
 /**
- * The banner box: 336px from 1152 up (col-span-4 of a 12-column grid on a 1104px inner container
- * with 48px gutters), the full container width below 1024, and a real fraction in between, where
- * the container is still narrower than its max.
- *
- * It was col-span-5, 432px, which is the box the service hero measures. That was the wrong number
- * here for a structural reason: the header ran 7/5 over a body that runs 8/4, so the banner and the
- * rail card under it were two different widths sharing a right edge, and the right column stepped
- * 96px sideways between them. One grid, 8/4 in both, is what makes the two panels one column. The
- * reading column is unaffected at 720px either way, and the h1 now sits on the same 720px as the
- * document under it.
- *
- * The middle condition is not pedantry: measured at 1024 the box is 288px, and declaring the 1152
- * figure there costs a 2x tablet a candidate step. 30vw carries 3 to 7% of headroom across that
- * band, because under-declaring `sizes` is the failure that shows (a blurred LCP image) and
- * over-declaring is only bytes. Both figures describe the grid cell; the image inside it is 16px
- * narrower than the cell, because the frame holds it in `p-2`.
- */
-const bannerSizes = "(min-width: 1152px) 336px, (min-width: 1024px) 30vw, 100vw";
-
-/**
- * This page's own heading scale, one step under the shared inner h2 (26/32), set here as a scoped
+ * This page's own heading scale, one step under the shared inner h2 (26/32), set as a scoped
  * descendant override rather than as a prop on `Section` so that `Faqs`'s heading moves with the
- * other five and no shared primitive changes signature. A guide is a reading document: against 17px
+ * other five and no shared primitive changes signature.
+ *
+ * It sits on the reading column and not on the `<article>`, which is where it started. That was the
+ * same thing while every section was in the column. Two are not any more: "Other errors we fix" and
+ * the closing band both run the full spine now, and from the article the override reached them too,
+ * so the closing band rendered at 26px on these 37 pages and 32px on the other eleven that share
+ * the identical component. The step-down is a property of the reading document, so it is scoped to
+ * the reading document. A guide is a reading document: against 17px
  * body a 26px h2 is a 1.53 ratio, which scans without shouting, and the heading is no longer the
  * loudest thing on a page that now also carries an error string, a banner and a rail.
  */
@@ -55,7 +42,7 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
   const siblings = guidesFor(g.parentService).filter((x) => x.slug !== g.slug);
 
   return (
-    <article data-urgency={g.urgency} className={cn(page, pageY, guideHeadings)}>
+    <article data-urgency={g.urgency} className={cn(page, pageY)}>
       <JsonLd data={[guideLd(g), faqLd(g.faqs)]} />
       <Breadcrumbs
         items={[
@@ -65,55 +52,36 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
         ]}
       />
 
-      <header className="mt-6 grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
-        <div className="lg:col-span-8">
-          {/* The headline paints at once: it is an LCP candidate, so it is one of the two things on
-              the page that never fade in. */}
-          <h1 className={h1}>{g.h1}</h1>
-          {/* The machine's own words, one beat later, and the anchor of the page: this string is what
-              the visitor pasted into a search box. Mono at 16px on the inset surface, not a thin
-              14px line under the headline. It wraps rather than scrolls, so there is no scrollable
-              region to strand a keyboard visitor in at 375, and anywhere is the only break rule that
-              holds a 90-character file path inside the 720px column. The plate is sized to the string
-              (`w-fit`, capped at the column): "502 Bad Gateway" in a 720px box read as an empty
-              panel with a few characters in the corner. 20 of 37 guides have one. */}
-          {g.errorText && (
-            <p
-              className="rise-in mt-7 w-fit max-w-full rounded-[14px] border border-line-strong bg-surface-2 px-5 py-4 font-mono text-[15px] leading-relaxed [overflow-wrap:anywhere] md:text-base"
-              style={{ animationDelay: "70ms" }}
-            >
-              <code>{g.errorText}</code>
-            </p>
-          )}
-        </div>
-        <div className="lg:col-span-4">
-          {/* The real capture of this error when one has been written, the parent service's own night
-              frame until then (contract rule 7, docs/image-todo.md): the pattern the service hero
-              already uses, which is what gives all 37 guides a banner rather than 4 of them. The
-              photograph does not depict the error, so it carries no alt: g.image.alt describes a
-              capture that does not exist on these pages, and using it would describe the wrong
-              picture. Preloaded in both arms, faded in in neither. */}
-          {hasScreen(`/screens/${g.image.slot}.png`) ? (
-            <RealScreen slot={g.image.slot} alt={g.image.alt} sizes={bannerSizes} preload />
-          ) : (
-            // Same frame as the capture arm, and 16:10 because that is the photographs' own ratio
-            // (1600x1000 in src/content/photos.ts), so the frame crops nothing. Deliberately not
-            // "the same height as the capture": the four captures are 2.13, 1.78, 1.66 and 1.78,
-            // measured from the files, so there is no single capture height to match. What is
-            // constant across all 37 pages is the frame and the column, not the height.
-            <figure className="overflow-hidden rounded-[14px] bg-surface-2 p-2">
-              <div className="aspect-[16/10] overflow-hidden rounded-[14px]">
-                <Photo id={servicePhotos[g.parentService]} decorative preload sizes={bannerSizes} />
-              </div>
-            </figure>
-          )}
-        </div>
-      </header>
+      {/* The 8/4 split is gone. The parent service's night frame was a 336px panel in the right-hand
+          four columns and is the band itself now, which is the shape every inner page here runs. The
+          error string moves onto it: the h1 says which error this is and the plate under it is the
+          error, so the two belong in one box. All 37 guides get a band, because the photograph is
+          the fallback arm and the capture was only ever on four of them.
+
+          The photograph does not depict the error, so it carries no alt: `g.image.alt` describes a
+          capture that does not exist on 33 of these pages, and using it would describe the wrong
+          picture. */}
+      {/* Two CTAs, and the same two the rail carries further down. The page is informational and
+          the reader arrived from a search for this exact string, so the band answers "is this my
+          error" first and offers the two ways out second: the high-commitment one that starts the
+          fix, and the low-friction one for the reader who is not ready to book. Neither is a third
+          choice, because a third is what makes a visitor choose nothing. */}
+      <PageMasthead
+        photo={servicePhotos[g.parentService]}
+        title={g.h1}
+        plate={g.errorText}
+        actions={
+          <>
+            <BookLink location={`${loc}:hero`} service={parent.id} guide={g.slug} className="btn-primary" />
+            <ChatButton location={`${loc}:hero`} service={parent.id} className="btn-secondary" />
+          </>
+        }
+      />
 
       {/* No top margin: the first Section's own 64/96 carries the gap, and the rail starts level with
           the body rather than 112px below the header. */}
       <div className="grid gap-10 lg:grid-cols-12 lg:gap-12">
-        <div data-rail-scope className="lg:col-span-8">
+        <div data-rail-scope className={cn("lg:col-span-8", guideHeadings)}>
           <Section id="symptoms" title="What you are seeing">
             {/* Capped on the same measure as every paragraph on the page: the column is 720px, which
                 is 88 characters of 17px Geist, and a symptom is a sentence. */}
@@ -122,6 +90,21 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
                 <li key={x}>{x}</li>
               ))}
             </ul>
+            {/* The real capture of this error, on the four guides that have one. It is what this
+                section is already about: the list says what you are seeing, and this is it.
+
+                No wrapper around it. There was one, and because `RealScreen` returns `null` while
+                its PNG does not exist and the wrapper did not, 33 of the 37 guides rendered an
+                empty `<figure>` carrying a live `mt-6`, and the four that do have a capture rendered
+                a figure inside a figure. The margin and the measure are the component's own
+                `className` now, so there is nothing left to render when there is nothing to show
+                (contract rule 7, docs/image-todo.md). */}
+            <RealScreen
+              slot={g.image.slot}
+              alt={g.image.alt}
+              sizes="(min-width: 816px) 680px, calc(100vw - 32px)"
+              className="mt-6 max-w-[68ch]"
+            />
           </Section>
 
           <Section id="causes" title="What usually causes it">
@@ -152,34 +135,52 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
             </p>
           </Section>
 
+          {/* The heading was already an invitation and the block still read as another article
+              section: a paragraph, a link, two loose buttons and a footnote, stacked in the reading
+              column with nothing marking them off from "What usually causes it" above.
+
+              It is a panel on the site's own card tokens, with the argument and the action
+              separated by a hairline. That separation is the whole design: above the rule is the
+              reason to hand this over, below it is the handing over. Stacked in one column they
+              read as four more paragraphs; split, the eye can take the offer without reading the
+              case for it again.
+
+              The free-site-check sits opposite the buttons rather than under them, because it is
+              the other door and not a footnote to the first one: it is for the reader whose site is
+              not down, who would otherwise find nothing here addressed to them.
+
+              The h2 stays outside the panel. It belongs to the document outline, and `ReadingRail`
+              derives its ticks from `h2[id]` inside the reading column. */}
           <Section id="call-us" title="When to call us">
-            <p className="max-w-[68ch] text-muted">{g.whenToCallUs}</p>
-            <p className="mt-4">
-              How we fix it:{" "}
-              <Link href={parent.path} className="font-semibold text-accent-text underline underline-offset-4 hover:no-underline">
-                {parent.title}
-              </Link>
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <BookLink location={`${loc}:call-us`} service={parent.id} guide={g.slug} className="btn-primary" />
-              <ChatButton location={`${loc}:call-us`} service={parent.id} className="btn-secondary" />
+            <div className={cn(card, "overflow-hidden p-6 md:p-8")}>
+              <span aria-hidden className="block h-px w-10 bg-accent" />
+              <p className="mt-5 max-w-[68ch] text-muted">{g.whenToCallUs}</p>
+              <p className="mt-4 text-[15px]">
+                How we fix it:{" "}
+                <Link href={parent.path} className="font-semibold text-accent-text underline underline-offset-4 hover:no-underline">
+                  {parent.title}
+                </Link>
+              </p>
+
+              {/* One wrapping row, not a `md:flex-row` split. The reading column is 704px and the
+                  panel's padding takes 64 of it, so the two buttons and the sentence never fit on
+                  one line here: forcing the split only made the buttons stack and the sentence sit
+                  beside the gap they left. Wrapping puts the sentence under them when it has to go
+                  there, and opposite them in any container wide enough to hold both. */}
+              <div className="mt-7 flex flex-wrap items-center justify-between gap-x-8 gap-y-4 border-t border-line pt-7">
+                <div className="flex flex-wrap gap-3">
+                  <BookLink location={`${loc}:call-us`} service={parent.id} guide={g.slug} className="btn-primary" />
+                  <ChatButton location={`${loc}:call-us`} service={parent.id} className="btn-secondary" />
+                </div>
+                <p className="text-sm text-muted">
+                  Nothing down right now? <CheckLink location={`${loc}:call-us`} service={parent.id} icon={null} />
+                </p>
+              </div>
             </div>
-            <p className="mt-4 text-sm text-muted">
-              Nothing down right now? <CheckLink location={`${loc}:call-us`} service={parent.id} />
-            </p>
           </Section>
 
           <Faqs faqs={g.faqs} />
 
-          {siblings.length > 0 && (
-            // It read "More wordpress critical error fix errors": the parent's title is a service
-            // name, not a noun phrase that can be interpolated into a sentence. It is the heading
-            // the service page already gives this same list of guides, which is a claim the site
-            // makes either way rather than a new one.
-            <Section id="related-guides" title="Other errors we fix">
-              <LinkRows items={siblings.map((x) => ({ href: routes.guide(x.slug), title: x.title, summary: x.symptoms[0] }))} />
-            </Section>
-          )}
         </div>
 
         {/* Orientation first, conversion second, which is the order this surface is read in: the
@@ -218,6 +219,46 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
           </div>
         </aside>
       </div>
+
+      {/* Outside the reading column, and the only section here that is. The page already spends a
+          2-up grid on the causes, so a second one inside the same eight columns would be the same
+          layout family twice (contract rule 3); four across on the full spine is a different thing,
+          and four cards in a 720px well would be narrower than the error strings they carry. The h2
+          still starts on the page's one left edge.
+
+          The heading: it read "More wordpress critical error fix errors", because the parent's title
+          is a service name and not a noun phrase that can be interpolated into a sentence. This is
+          the heading the service page already gives the same list, which is a claim the site makes
+          either way rather than a new one. */}
+      {siblings.length > 0 && (
+        <Section id="related-guides" title="Other errors we fix">
+          <LinkCards
+            cols={4}
+            items={siblings.map((x) => ({
+              href: routes.guide(x.slug),
+              title: x.title,
+              summary: x.symptoms[0],
+              code: x.errorText,
+              icon: urgencyIcon[x.urgency],
+            }))}
+          />
+        </Section>
+      )}
+
+      {/* The 37 guides were the one template with no closing band: they ended on the grid of sibling
+          errors, which is a set of doors to more reading rather than a way out. "When to call us"
+          and the rail both carry the pair higher up, but the rail is `lg`-only and sticky inside a
+          grid the reader has already scrolled past by here. The heading names the parent service
+          rather than the error, because the thing being offered is the fix, not the article. */}
+      <ClosingBand
+        title={CLOSING_ASK.BOOK}
+        actions={
+          <>
+            <BookLink location={`${loc}:closing`} service={parent.id} guide={g.slug} className="btn-primary" />
+            <ChatButton location={`${loc}:closing`} service={parent.id} className="btn-secondary" />
+          </>
+        }
+      />
     </article>
   );
 }

@@ -48,7 +48,7 @@ accent is ember and a second red in frame competes with it.
 | --- | --- | --- |
 | dark | hero-console, emergency, terminal, night-desk, store, workspace, final-cta | first choice |
 | mono | cables, keys, racks | fine anywhere |
-| daylight | drafting | off direction |
+| daylight | drafting | off direction, and since Task 9 used by nothing: see below |
 | red | monitors, alert, keyboard-red, laptop-hands | do not use: ember is the only accent |
 
 No placeholder is outstanding for the hero: `hero-console` (an engineer in a dark room reading a WordPress
@@ -131,3 +131,54 @@ The lesson for the next shoot: a night frame needs a real light source inside it
 of the darkest frames were tried behind the closing section's scrim first and both rendered as a black
 panel. `emergency` also has all its light in the left fifth (mean 143 there against 7 at the right), so the
 closing section mirrors it to put that light in the half the scrim does not cover.
+
+### Bands on the five inner templates (Task 9)
+
+Every inner page now opens on a photographic band, so three templates that had no picture at all
+needed a frame. None is a new asset: each is the nearest honest mapping the catalogue already
+offers, and each is a stand-in for a photograph that has still to be shot on the v4 direction.
+
+| Where | Stand-in | Size | Aspect | Art direction the real frame has to satisfy |
+| --- | --- | --- | --- | --- |
+| Compare template (`src/components/templates/CompareTemplate.tsx`) | `<PageMasthead photo="cables">` (mono, a patch panel in black and white) | 1600x1000 source | no aspect ratio; the band is content height, `md:min-h-[24rem]` | The catalogue holds no frame of two technologies being weighed against each other, and inventing one is not an option. Mono is the only tone that cannot imply a verdict on a page that declares no winner. A real frame would be neutral and night-lit: two identical screens side by side on one desk, no branding legible on either. |
+| City hub (`CityTemplates.tsx`, `CityHubTemplate`) | `<PageMasthead photo="racks">` (mono) | 1600x1000 | same | The work is remote and there is no office in any city, so no city gets a photograph of itself and none may be favoured. A real frame would be night-lit infrastructure, no signage, no skyline. |
+| City page (`CityTemplates.tsx`, `CityTemplate`) | `servicePhotos[c.servicesHighlighted[0]]`, the first service the city asks for | 1600x1000 | same | Shows the work rather than the place, for the same reason. No city landmark, no map, no flag: a landmark would assert a local presence that does not exist. |
+| Guide template, all 37 (`GuideTemplate.tsx`) | `servicePhotos[g.parentService]` | 1600x1000 | same | Unchanged direction from the 336px panel this replaces, now at band size. The photograph does not depict the error, so it stays `decorative` with an empty alt; `g.image.alt` describes a capture that does not exist on 33 of these pages. |
+
+Still outstanding from the v4 list above and unchanged by this pass: a phone lighting up with an
+alert on a dark desk, an owner's face lit by a laptop, and the matching restored-site capture for
+each of the four error captures in `public/screens/`.
+
+`drafting` now maps to no service and no hub. It was on `website-design`, `redesign`,
+`elementor-issues` and the development hub, which put the one daylight frame on three service pages,
+a hub and every city page once the photograph became the band. Each moved to the nearest frame on
+direction (`terminal`, `workspace`, `night-desk`, `final-cta`); `docs/layout-ledger.md` under Task 9
+has the table. The file stays in the catalogue because v3 lists it as its first choice.
+
+### The 33 guides with no capture (Task 19)
+
+"What you are seeing" shows the guide's own capture from `public/screens/<image.slot>.png`, and
+only four of those files exist. The other 33 guides render no image in that section at all, which
+is correct rather than broken: `RealScreen` returns `null` when the PNG is absent, contract rule 7
+says every visual is real, and the page's masthead already carries the parent service's photograph.
+
+**The parent service photo is deliberately not reused here.** It is the band at the top of the same
+page, so dropping it into this section would put one picture on screen twice.
+
+**How to fill them:** `npm run capture` drives `scripts/capture-errors.mjs`, which stands up a
+throwaway WordPress with `@wordpress/env`, breaks it one way at a time, and screenshots each result
+at 1600x1000 into `public/screens/<slot>.png`. The names already match `image.slot` in
+`src/content/guides/*.ts`, so a capture appears on its guide the moment its file lands, with no
+code change. **It needs Docker, and Docker is not available on this machine** (checked again this
+pass; the same note was made on 2026-10-13).
+
+Note the slot names, because they change what "fill them" means. **31 of the 33 are prefixed
+`illustration-`**, which is the content's own signal that those were never meant to be screenshots
+of a real error but drawings of one. `capture-errors.mjs` cannot produce those: they need the rule
+7a image-generation route, which is still unavailable (0 Higgsfield credits), or real photography.
+
+**Exactly two are genuine browser states the script can reach**: `stuck-in-maintenance-mode` and
+`too-many-redirects`. Those are the only two that a working Docker would turn into real files.
+
+So the realistic position is that 31 of these 33 sections stay imageless until an image-generation
+budget or an illustrator exists, and that is the honest outcome rather than a gap to paper over.

@@ -1,16 +1,16 @@
 import { BookLink, ChatButton, PlansLink, QuoteLink } from "@/components/Cta";
 import { faqLd, JsonLd, nodeCrumbs, serviceLd } from "@/components/JsonLd";
-import { hasScreen, Photo } from "@/components/Photo";
 import { SiteStatus } from "@/components/SiteStatus";
-import { primaryCtaFor } from "@/config/cta";
+import { CLOSING_ASK, primaryCtaFor } from "@/config/cta";
 import { routes } from "@/config/routes";
 import { getGuide } from "@/content";
 import { testimonials } from "@/content/testimonials";
+import { verbIcon } from "@/content/icons";
 import { servicePhotos } from "@/content/photos";
 import type { Service } from "@/content/schema";
 import { cn } from "@/lib/utils";
 import { ReadingRail } from "./ReadingRail";
-import { Breadcrumbs, Faqs, LinkList, LinkRows, RealScreen, Section, TickList, h1, h2, page, pageY } from "./parts";
+import { Breadcrumbs, ClosingBand, Faqs, LinkCards, LinkList, PageMasthead, Section, TickList, page, pageY, urgencyIcon } from "./parts";
 
 const Primary = ({ intent, ...rest }: { intent: ReturnType<typeof primaryCtaFor>; location: string; service: string; className?: string }) =>
   intent === "PLANS" ? <PlansLink {...rest} /> : intent === "QUOTE" ? <QuoteLink {...rest} /> : <BookLink {...rest} />;
@@ -24,8 +24,6 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
   const intent = primaryCtaFor(s.intent);
   const loc = `service:${s.id}`;
   const guides = s.guideSlugs.map((slug) => getGuide(slug)!).filter(Boolean);
-  // The first of this service's guides whose capture has actually been written.
-  const capture = guides.find((g) => hasScreen(`/screens/${g.image.slot}.png`));
   // One quote, and only a real one: placeholders belong on the home page where they are marked as
   // such, never on a service page where they would read as a client's words (src/content/testimonials.ts).
   const quote = testimonials.find((t) => !("placeholder" in t && t.placeholder));
@@ -39,29 +37,27 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
       <JsonLd data={[serviceLd(s), faqLd(s.faqs)]} />
       <Breadcrumbs items={nodeCrumbs(s.path)} />
 
-      <header className="mt-6 grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
-        <div className="lg:col-span-7">
-          {/* The headline paints at once and the buttons arrive under it a beat later. It is the
-              LCP element here, so it is deliberately the one thing on the page that never fades in. */}
-          <h1 className={h1}>{s.h1}</h1>
-          <div className="rise-in mt-7 flex flex-wrap gap-3" style={{ animationDelay: "70ms" }}>
+      {/* The 7/5 split is gone: the service's night frame is the band now, not a picture in the
+          right-hand five columns. No lead inside it, which is the same reason the old header had no
+          subtext, the shortest line in the content is 25+ words and the hero cap is 20, so
+          service.summary still renders as the lead paragraph below. */}
+      <PageMasthead
+        photo={servicePhotos[s.id]}
+        title={s.h1}
+        actions={
+          <>
             <Primary intent={intent} location={`${loc}:hero`} service={s.id} className="btn-primary" />
             <ChatButton location={`${loc}:hero`} service={s.id} className="btn-secondary" />
-          </div>
-          {s.intent === "fix" && <SiteStatus />}
-        </div>
-        <div className="lg:col-span-5">
-          {/* A real capture of one of this service's own errors when one exists, the service's night
-              frame until then (contract rule 7, docs/image-todo.md). */}
-          {capture ? (
-            <RealScreen slot={capture.image.slot} alt={capture.image.alt} sizes="(min-width: 1024px) 432px, 100vw" preload />
-          ) : (
-            <div className="aspect-[4/3] overflow-hidden rounded-[14px]">
-              <Photo id={servicePhotos[s.id]} decorative preload sizes="(min-width: 1024px) 40vw, 100vw" />
-            </div>
-          )}
-        </div>
-      </header>
+          </>
+        }
+      />
+      {s.intent === "fix" && <SiteStatus />}
+
+      {/* No capture under the band. It used to sit here, on the four services whose errors have a
+          screenshot written, and it read as a second banner on a page whose banner is the band. The
+          guide this service links to carries the same shot, in its "What you are seeing" section,
+          which is where a picture of an error belongs and where a reader who wants to recognise
+          their screen is already going. */}
 
       <div className="mt-12 grid gap-10 lg:grid-cols-12 lg:gap-12">
         <div data-rail-scope className="lg:col-span-8">
@@ -95,7 +91,14 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
                     s.whatWeDo.length % 2 === 1 && i === s.whatWeDo.length - 1 && "sm:col-span-2",
                   )}
                 >
-                  <span className="font-display text-sm font-bold tracking-wide text-accent-text">{w.verb}</span>
+                  {/* The verb already carries the step; the mark lets the four be told apart at a
+                      glance instead of read in sequence. Keyed off `w.verb` through one map, so the
+                      same verb is the same mark on all 32 service pages. */}
+                  {(() => {
+                    const Mark = verbIcon[w.verb as keyof typeof verbIcon];
+                    return <Mark weight="duotone" aria-hidden className="size-5 text-accent-text" />;
+                  })()}
+                  <span className="mt-3 block font-display text-sm font-bold tracking-wide text-accent-text">{w.verb}</span>
                   <p className="mt-1.5 text-sm">{w.detail}</p>
                 </li>
               ))}
@@ -105,12 +108,6 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
           <Section id="deliverables" title="What you get">
             <TickList items={s.deliverables} cols={2} />
           </Section>
-
-          {guides.length > 0 && (
-            <Section id="guides" title="Errors we fix here">
-              <LinkRows items={guides.map((g) => ({ href: routes.guide(g.slug), title: g.title, summary: g.symptoms[0] }))} />
-            </Section>
-          )}
 
           {quote && (
             <Section id="quote" title="In a client's words">
@@ -162,16 +159,45 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
         </aside>
       </div>
 
+      {/* Outside the reading column on purpose, and it is the one section on this page that is.
+          Two reasons, and they point the same way. The page already spends a 2-up grid on "What we
+          do", so a second 2-up inside the same eight columns would be the same layout family twice
+          (contract rule 3); on the full spine, four across, this is a different thing. And four
+          cards in an eight-column well would be 160px wide, which is narrower than the error
+          strings they carry. The h2 still starts on the page's one left edge, so the break-out
+          costs the reading rhythm nothing.
+
+          Each card is an error, so each card's mark is the error's own urgency and its own literal
+          string, not a picture of a desk. */}
+      {guides.length > 0 && (
+        <Section id="guides" title="Errors we fix here">
+          <LinkCards
+            cols={4}
+            items={guides.map((g) => ({
+              href: routes.guide(g.slug),
+              title: g.title,
+              summary: g.symptoms[0],
+              code: g.errorText,
+              icon: urgencyIcon[g.urgency],
+            }))}
+          />
+        </Section>
+      )}
+
       {/* Closing band: split, not a centred panel, so it does not repeat the home page's final CTA family. */}
-      <section aria-labelledby="closing" className="reveal mt-20 flex flex-col gap-5 border-t border-line pt-10 md:mt-28 md:flex-row md:items-center md:justify-between md:pt-12">
-        <h2 id="closing" className={cn(h2, "max-w-[24ch]")}>
-          {s.title}
-        </h2>
-        <div className="flex shrink-0 flex-wrap gap-3">
-          <Primary intent={intent} location={`${loc}:closing`} service={s.id} className="btn-primary" />
-          <ChatButton location={`${loc}:closing`} service={s.id} className="btn-secondary" />
-        </div>
-      </section>
+      {/* `s.title` before this, so the band read "WordPress emergency fix" beside two buttons: the
+          service's own name used as a heading, which labels the block instead of asking the reader
+          anything. The question follows the page's intent, the same field that already chooses the
+          primary button. */}
+      <ClosingBand
+        title={CLOSING_ASK[intent]}
+        actions={
+          <>
+            <Primary intent={intent} location={`${loc}:closing`} service={s.id} className="btn-primary" />
+            <ChatButton location={`${loc}:closing`} service={s.id} className="btn-secondary" />
+          </>
+        }
+      />
     </article>
   );
 }

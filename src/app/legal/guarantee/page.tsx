@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BookLink, ChatButton } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
-import { Breadcrumbs, card, h1, page, pageY, Promises, Section } from "@/components/templates/parts";
+import { Breadcrumbs, card, ClosingBand, h1, page, pageY, Promises, Section } from "@/components/templates/parts";
 import { brand } from "@/config/brand";
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/utils";
@@ -112,6 +112,18 @@ export default function Guarantee() {
           </p>
         </section>
       </div>
+      {/* The answer card above carries the same pair, but it is `lg:sticky` and scrolls out of the
+          column well before the reader reaches the end of the terms. The band is what the page ends
+          on, the way every other reading page here does. */}
+      <ClosingBand
+        title="Want us to look at your site?"
+        actions={
+          <>
+            <BookLink location="guarantee:closing" className="btn-primary" />
+            <ChatButton location="guarantee:closing" className="btn-secondary" />
+          </>
+        }
+      />
     </article>
   );
 }

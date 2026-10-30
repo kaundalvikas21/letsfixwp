@@ -3,7 +3,7 @@ import Link from "next/link";
 import { BookLink, ChatButton, CheckLink } from "@/components/Cta";
 import { Finder, type FinderLabels } from "@/components/Finder";
 import { collectionLd, JsonLd, nodeCrumbs } from "@/components/JsonLd";
-import { Breadcrumbs, h1, h2, page, pageY } from "@/components/templates/parts";
+import { Breadcrumbs, ClosingBand, h1, h2, page, pageY } from "@/components/templates/parts";
 import { routes } from "@/config/routes";
 import { guides, guidesFor, matchIndex, services } from "@/content";
 import { cn } from "@/lib/utils";
@@ -134,20 +134,17 @@ export default function GuidesIndex() {
         </div>
       </section>
 
-      <section
-        aria-labelledby="guides-closing"
-        className="reveal mt-20 flex flex-col gap-5 border-t border-line pt-10 md:mt-28 md:flex-row md:items-center md:justify-between md:pt-12"
-      >
-        <h2 id="guides-closing" className={cn(h2, "max-w-[24ch]")}>
-          Cannot see your error here?
-        </h2>
-        <div className="flex shrink-0 flex-wrap gap-3">
-          <BookLink location="guides-index" className="btn-primary" />
-          <ChatButton location="guides-index" className="btn-secondary" />
-        </div>
-      </section>
+      <ClosingBand
+        title="Cannot see your error here?"
+        actions={
+          <>
+            <BookLink location="guides-index" className="btn-primary" />
+            <ChatButton location="guides-index" className="btn-secondary" />
+          </>
+        }
+      />
       <p className="mt-5 text-sm text-muted">
-        Nothing down right now? <CheckLink location="guides-index" />
+        Nothing down right now? <CheckLink location="guides-index" icon={null} />
       </p>
     </div>
   );

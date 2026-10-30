@@ -103,6 +103,10 @@
   transition: transform 150ms ease, box-shadow 200ms ease;
   &:hover { box-shadow: var(--shadow-lift); }
   &:active { transform: scale(0.98); }
+  /* The chip is flush with the inner padding, so the right inset drops to the gap. `:has` rather
+     than a modifier class: the button does not need to know whether it was given an icon. */
+  &:has(.cta-chip) { padding-inline: 1.25rem 0.5rem; }
+  & .cta-chip { background: color-mix(in srgb, var(--on-accent) 12%, transparent); }
   @media (prefers-reduced-motion: reduce) {
     transition: none;
     &:active { transform: none; }
@@ -122,6 +126,10 @@
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
+  /* It had no `gap`, which did not show while these buttons were label-only. */
+  gap: 0.5rem;
+  &:has(.cta-chip) { padding-inline: 1.25rem 0.5rem; }
+  & .cta-chip { background: color-mix(in srgb, var(--text) 10%, transparent); }
   transition: transform 150ms ease, box-shadow 200ms ease;
   /* It carried no hover state at all, so CHAT sat dead under the pointer on every page of the site.
      Lift and nothing else: an ember border here would compete with the primary standing beside it. */
@@ -130,6 +138,108 @@
   @media (prefers-reduced-motion: reduce) {
     transition: none;
     &:active { transform: none; }
+  }
+}
+
+/* The icon chip inside a CTA. One mark per intent, and the only thing on a button that moves.
+   What it communicates: the button is a door, not a label (MASTER's motion table, "arrow chip on
+   the closing CTA"). The label never moves, because a label that slides is a label you re-read.
+
+   `translate`, not `transform`, in the transition. Tailwind writes `translate-x-*` to the
+   standalone `translate` property, so a transition naming `transform` moves nothing and the chip
+   snaps its 2px: the same trap `Faqs` records for `rotate`. Written here in plain CSS, the property
+   and the transition are the same word, which is what makes it hard to get wrong again.
+
+   Gated on `(hover: hover)`, or a tap on a phone leaves the chip shifted with nothing to clear it.
+   The background is set by the button, because near-black on ember and page text on a surface are
+   two different inks. */
+@utility cta-chip {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 14px;
+  transition: translate 150ms ease-out;
+  @media (prefers-reduced-motion: reduce) { transition: none; }
+}
+
+@media (hover: hover) {
+  .btn-primary:hover .cta-chip,
+  .btn-secondary:hover .cta-chip { translate: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    .btn-primary:hover .cta-chip,
+    .btn-secondary:hover .cta-chip { translate: none; }
+  }
+}
+
+/* The closing band, and the one interaction it has.
+   Reaching for the button is the only thing anyone does in this section, so that is the only thing
+   it answers: the ember rule above the heading runs out to the heading's full width, and the
+   panel's own edge firms from `--line` to `--line-strong`. Two properties, both named, nothing
+   using `all`.
+
+   What it communicates is feedback, and the honest kind: the section the page ends on acknowledges
+   the hand going for the thing it asked for. It is not a hover on a non-interactive panel, which
+   the Hover Earns It rule forbids; the trigger is the control inside it.
+
+   `:focus-visible` gets the identical pair, so a keyboard reader sees what a pointer user sees.
+   The hover arm is behind `(hover: hover) and (pointer: fine)` because a tap would otherwise leave
+   the band lit with nothing to clear it.
+
+   260ms on the house spring curve. Under the 300ms that UI feedback has to stay inside, and the
+   rule starts at `scale: 0.1`, never 0: a mark that grows out of nothing reads as an effect, and
+   one that is already there reads as a mark. */
+@utility closing-band {
+  transition: border-color 260ms var(--ease-spring);
+  @media (prefers-reduced-motion: reduce) { transition: none; }
+}
+
+@utility closing-tick {
+  display: block;
+  height: 1px;
+  background: var(--accent);
+  transform-origin: left center;
+  scale: 0.1 1;
+  transition: scale 260ms var(--ease-spring);
+  @media (prefers-reduced-motion: reduce) { transition: none; }
+}
+
+.closing-band:has(.btn-primary:focus-visible, .btn-secondary:focus-visible) { border-color: var(--line-strong); }
+.closing-band:has(.btn-primary:focus-visible, .btn-secondary:focus-visible) .closing-tick { scale: 1 1; }
+
+@media (hover: hover) and (pointer: fine) {
+  .closing-band:has(.btn-primary:hover, .btn-secondary:hover) { border-color: var(--line-strong); }
+  .closing-band:has(.btn-primary:hover, .btn-secondary:hover) .closing-tick { scale: 1 1; }
+}
+
+/* The hollow index numeral on a practice row, ported from shopdev.studio's capability rows.
+   Theirs: `color: transparent` with a 1px `-webkit-text-stroke` in the muted tone, stroke colour
+   going to the brand colour on hover over 400ms. Same here, with ember as the one accent.
+
+   Written as CSS rather than as utilities because `-webkit-text-stroke-color` is not a Tailwind
+   property and the transition has to name it exactly, which is the trap this file keeps recording.
+
+   The fallback matters: unsupported, `color: transparent` alone would render the numeral invisible
+   rather than plain. So the solid muted numeral is the base and the outline is applied only inside
+   `@supports`, which every current engine passes and no engine fails into a blank row. */
+@utility practice-index {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+@supports (-webkit-text-stroke: 1px currentColor) {
+  .practice-index {
+    color: transparent;
+    -webkit-text-stroke: 1px var(--muted);
+    transition: -webkit-text-stroke-color 400ms ease;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .practice-index { transition: none; }
+  }
+  @media (hover: hover) {
+    .practice-row:hover .practice-index { -webkit-text-stroke-color: var(--accent); }
   }
 }
 

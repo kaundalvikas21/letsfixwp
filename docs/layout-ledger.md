@@ -2274,3 +2274,916 @@ client-side measurement exists.
 surfaced was measuring the animation's own state at a scroll position where it should not yet have
 run. `scrollTrigger` is used exactly once in this repo, so there is nothing else to audit today, but
 a second use would fail the same way.
+
+## v4 / one masthead, and link rows become card grids (Task 9)
+
+Two things the owner asked for, and they turned out to be one change each rather than seven: every
+inner page's header becomes the photographic band `/about/` already proved, and every stacked list
+of links becomes a grid of cards. Both were already duplicated across the codebase, so both
+collapsed into a primitive in `src/components/templates/parts.tsx`.
+
+### What the layout families are now
+
+| Template or page | Was | Is |
+| --- | --- | --- |
+| Service, `/<hub>/<service>/` | 7/5 title block with photo | masthead over a photographic band, capture figure under it on the four services that have one |
+| Hub, `/<hub>/` | full-width h1 over a 6 / empty / 5 lead and photo split | masthead over a photographic band |
+| Guide, `/guides/<slug>/` | 8/4, the error plate left and the picture right | masthead over a photographic band, the error plate on the band |
+| Compare, `/compare/<slug>/` | h1 and lead, no picture at all | masthead over a photographic band |
+| City hub and city | bare h1, no picture at all | masthead over a photographic band |
+| `/about/`, `/pricing/` | the same band, hand-written twice | the shared `PageMasthead`, same output |
+
+| Section | Was | Is |
+| --- | --- | --- |
+| Service, "Errors we fix here" | link rows, in the reading column | icon-led error card grid, on the full spine |
+| Guide, "Other errors we fix" | link rows, in the reading column | icon-led error card grid, on the full spine |
+| Hub, "What we do here" | ruled split rows | card grid, up to four across |
+| `/about/`, "What we work on" | ruled split rows | card grid, two across |
+| City hub, the city directory | link rows | card grid, two across |
+| City, "What <city> clients ask for" | link rows | card grid, two across |
+
+`LinkRows` had no caller left and was deleted with them. The ledger's standing refusal to widen it
+to take a `ReactNode` title (recorded under `/compare/`) is unaffected and now moot: the replacement
+is a separate primitive, which is what that entry said the sanctioned route was.
+
+### Rule 3, which the move actually tripped
+
+The service page already spends a 2-up grid on "What we do", and the guide page spends one on its
+cause tiles. A 2-up card grid for the errors in the same reading column would have been the same
+layout family twice on one page. So that one section leaves the eight-column well and runs the full
+1104px spine, four across, which is a different family and not a second helping of the first. It is
+the only section on either template that sits outside the reading column.
+
+Two consequences, both accepted:
+
+- **It leaves `data-rail-scope`,** so its heading is no longer a tick on `ReadingRail`. That is
+  correct rather than tolerated: the rail is where you are in the reading document, it is `lg`-only
+  and sticky inside that grid, and by the time this grid is on screen the rail is not. Both
+  templates still have well over the three `h2[id]` the rail needs before it renders at all.
+- **Its h2 still starts on the page's one left edge,** because the spine and the eight-column well
+  share a left edge. The x=168 rule is untouched by the break-out.
+
+### The h1 is inset from the h2s now, on every route
+
+Measured at 1440 on `/wordpress-fix/white-screen/`: the h1 sits at x=225 and every h2 in flow at
+x=161. The 64px is the band's own `lg:p-16`, so the headline is inside a box and the headings under
+it are on the spine.
+
+This is not new and it is not a drift. `/about/` and `/pricing/` have shipped exactly this since the
+masthead was built, and the x=168 rule it appears to bend is a rule about headings **in flow**: a
+headline inside a bordered, photographed box is not on the same edge as the page because it is not
+on the page, it is in a frame. What changed is only that it is now true of 99 routes rather than 2.
+Worth stating plainly so the next craft pass does not read it as a regression and "fix" it by
+stripping the band's padding, which would put the type hard against the photograph's edge.
+
+### Columns are a ceiling, not a count
+
+Measured from the content, not guessed: a service lists 1, 2, 3 or 4 errors; a guide has 1 to 3
+siblings; a hub holds 3, 4, 4, 4, 6 or 11 services; there are 8 cities and each city highlights 3 or
+4 services. A grid that always opened four wide put a single card in a quarter of the spine with
+three empty cells beside it, which reads as a layout that failed rather than as one door. So
+`LinkCards` takes `cols` as a maximum and opens `n` wide below four.
+
+**Three is never a column count.** Contract rule 6 bans three equal cards in a row, and sets of
+three are common here, so three runs two across with the last card taking the full width. That is
+the odd-trailing pattern `ServiceTemplate`'s "What we do" tiles and the hub's problem grid already
+use, for the same reason.
+
+### Contrast, and why it holds for every frame
+
+Measured in the browser on the production build, compositing the flat `--photo-scrim`
+(`rgb(12 12 14 / 0.66)`) over the actual served image and taking the **brightest pixel in the whole
+band**, not an average:
+
+| Band | Box at 1440 | Worst pixel anywhere | `--text` against it |
+| --- | --- | --- | --- |
+| Service, `/wordpress-fix/emergency/` | 1104x384 | rgb(95, 95, 94) | 5.61:1 |
+
+That figure is the floor for every band on the site and it is tone-independent: this scrim
+composites a blown-out white pixel to rgb(95, 95, 95), so no photograph in the catalogue, and no
+photograph that replaces one later, can drive the band below 5.6:1. Which is the whole argument for
+rolling one component out rather than measuring five headers. `--muted` is still banned on these
+bands at 2.55:1; `PageMasthead` sets the lead to `--on-photo` and gives the caller no way to change
+it.
+
+### Motion: nothing new
+
+No Motion, no GSAP, no client island. The band runs the existing `rise-in` utility and the grids
+inherit `Section`'s existing `reveal`. The h1 is never faded, on any of the five templates, for the
+reason `globals.css` already records: it is the LCP element on all 99 routes.
+
+One change to the beat. `rise-in` delays now step 70ms per element that **actually renders** rather
+than per slot, because the service and city bands carry a headline and buttons and no lead, and a
+fixed "buttons at 140ms" left them waiting out a beat nothing filled.
+
+### Deliberately not done
+
+- **No viewport full-bleed.** The owner chose the contained band. Edge-to-edge would have cost the
+  all-soft 14px shape lock, which is binding spec.
+- **No second accent and no status hue**, including the "success green for resolved" line in the
+  generated `design-system/letsfixwp-v4/pages/guide.md`. Three urgency levels are told with three
+  Phosphor shapes in one ember, never with colour, which is also what keeps them off rule 6's
+  colour-only-indicator ban.
+- **No photo on the cards.** The catalogue holds 15 frames against 32 services and 37 guides, so a
+  picture per card would have been the same desk eleven times. The mark is the error's own urgency
+  and its own literal string instead.
+- **The captures were not made the band.** A screenshot behind type is a screenshot nobody can read,
+  and the scrim that makes the type legible is the thing that would hide it. They sit under the
+  band, held to `max-w-3xl`: at the band's full 1104px a capture was taller than the band above it
+  and read as a second hero.
+- **Two pre-existing `grid-cols-3` rows are still three equal cards in a row**, which rule 6 bans:
+  `CityTemplates.tsx`'s remote-delivery strip and `CompareTemplate.tsx`'s verdict-by-scenario cards.
+  Found during this pass and left alone: neither is a link list and neither is a header, so both are
+  outside what was asked for. They need their own pass.
+
+### The one content change: the daylight frame is off the bands
+
+`drafting` is the catalogue's only `daylight` frame and v4's Imagery section rules it off direction.
+`/pricing/` had already rejected it by name on tone, in its own words: even under the scrim it was
+the brightest thing on a dark-locked page and read as a stock photograph pasted into the system.
+
+That was survivable while it sat in a 432px column beside the type. It is not once the photograph
+*is* the band, and the mapping put it on three service pages, the development hub and **every city
+page** (a city takes its first highlighted service's frame, and that is `website-design` on most of
+them). So four entries in `src/content/photos.ts` moved to the nearest frame on direction, chosen on
+tone rather than on subject:
+
+| Service or hub | Was | Is |
+| --- | --- | --- |
+| `website-design` | `drafting` | `terminal`, hands on a laptop with an editor open, warm low light |
+| `redesign` | `drafting` | `workspace`, a tidy desk with a curved monitor under a floor lamp |
+| `elementor-issues` | `drafting` | `night-desk` |
+| hub `wordpress-development` | `drafting` | `final-cta`, a dark home office with one monitor glowing |
+
+No asset was added or removed. `drafting` stays in the catalogue, now used by nothing on this
+branch, because v3 lists it as its first choice and the file is shared.
+
+### Worth carrying forward: `transition-transform` does not cover `translate-x` on Tailwind v4
+
+The card's caret travels 2px on hover. Written the way the rest of the site writes it,
+`transition-transform duration-200 group-hover:translate-x-0.5`, it **jumped** those 2px instead of
+travelling them, and nothing in `tsc`, `lint`, `build` or axe can see that. Measured in the browser
+on the production build with the pointer held on a card:
+
+```
+getComputedStyle(svg).transform          none
+getComputedStyle(svg).translate          2px
+getComputedStyle(svg).transitionProperty color, transform
+```
+
+Tailwind v4 emits `translate-x-*`, `scale-*` and `rotate-*` as the standalone `translate`, `scale`
+and `rotate` properties, not as `transform`, so a transition that names `transform` never covers
+them. The fix is to name the property that actually changes: `transition-[color,translate]`.
+
+**This was already known on the branch for one of the three.** `Faqs` in the same file carries the
+note verbatim for `rotate` ("Tailwind v4 writes rotate-180 to the standalone `rotate` property, so
+naming `transform` transitions nothing and the caret snaps while the colour fades. Measured in the
+browser") and uses `transition-[rotate,color]`. `ProblemTiles` half knew it too, which is why its
+reduced-motion cancels are `scale-100!` and `translate-none!` rather than `transform-none`. What
+nobody did was carry the finding from `rotate` across to `translate` and `scale`.
+
+**Three places on the branch still name the wrong property** and therefore still snap rather than
+move. All three are home-page sections, outside what this pass was asked for, and all three are one
+word each: `ProblemTiles.tsx:42` and `:46` (`transition-transform` with `group-hover:scale-105`) and
+`ProblemTiles.tsx:55` (`transition-transform` with `group-hover:translate-x-0.5`). The deleted
+`LinkRows` had it too, which is how long it had been shipping unnoticed.
+
+## v4 / CTA marks, two CTAs per band, and nothing under the hero (Task 10)
+
+Three asks, and the first two turned out to be one file each because the CTAs were already
+centralised and the bands already were by Task 9.
+
+### Every CTA wears its own mark
+
+`src/components/Cta.tsx` now carries a `CTA_ICON` map, one Phosphor icon per intent, and renders it
+inside a chip unless the call site passes `icon={null}`. The map:
+
+| Intent | Label | Mark | Why that one |
+| --- | --- | --- | --- |
+| BOOK | Fix my site | `WrenchIcon` | a wrench repairs |
+| CHAT | Chat with an engineer | `ChatCircleTextIcon` | a speech bubble talks to a person |
+| PLANS | See plans | `ListChecksIcon` | a checklist is what a care plan is |
+| QUOTE | Get a quote | `ReceiptIcon` | a receipt is what a quote becomes |
+| CHECK | Get a free site check | `MagnifyingGlassIcon` | a magnifier looks the site over |
+
+**Not an arrow on all five.** Five arrows say "forward" five times, which is decoration rather than
+meaning. Every mark is `aria-hidden`: the label beside it already says what the button does, and the
+accessibility tree still reads exactly "Fix my site", not "Fix my site wrench" (verified in the
+rendered tree).
+
+Three call sites pass `icon={null}`, all of them CTAs set in running text rather than as buttons:
+the home page's final `ChatButton`, and the inline `CheckLink` in the knowledge base, the pricing
+page and the guide rail ("Nothing down right now? Get a free site check"). A chip inside a run of
+underlined text reads as a bullet that wandered in.
+
+### The hover, and the trap it walked into
+
+The chip is the only thing on a button that moves, and it answers the MASTER's own motion line for
+the closing CTA: **the button is a door, not a label.** The label never moves, because a label that
+slides is a label you re-read.
+
+It lives in `globals.css` as `@utility cta-chip` plus two rules on the button utilities, so a chip
+cannot be given a hover the button does not know about:
+
+```
+@media (hover: hover) { .btn-primary:hover .cta-chip, .btn-secondary:hover .cta-chip { translate: 2px } }
+```
+
+Written in plain CSS the property and the transition are the same word, which is what makes the
+Tailwind v4 trap recorded under Task 9 hard to repeat here. `FinalCta`'s bespoke chip was walking
+straight into it and has been corrected: `transition-transform` with `group-hover:translate-x-0.5`
+moved nothing, so the home page's largest CTA had been snapping its 2px since it shipped.
+
+Two smaller things the marks exposed:
+
+- **`btn-secondary` had no `gap`.** It never showed while these buttons were label-only.
+- **Padding is `:has`-driven**, `padding-inline: 1.25rem 0.5rem` when a chip is present, so the chip
+  sits flush with the inner edge. The button does not need to know whether it was given an icon.
+
+Measured on the production build with the pointer held: chip `translate: 2px` under
+`transition: translate 0.15s`, 28x28 at the 14px radius, button still 44px tall, shadow lifted.
+
+### Two CTAs on every band
+
+| Band | Before | Now |
+| --- | --- | --- |
+| Service, hub, city, `/about/`, `/pricing/` | primary + CHAT | unchanged |
+| Guide | none, just the error plate | primary + CHAT, the same pair the rail carries |
+| Compare | none | primary (node intent) + CHAT |
+| City hub | a pair at the foot of the directory, below fourteen rows | moved onto the band |
+
+Two, never three, and always the same shape: the high-commitment action and the low-friction one. A
+third choice is what makes a visitor choose nothing. The guide band is the one that gains most: the
+reader arrived from a search for that exact string, so the band answers "is this my error" with the
+plate and then offers the two ways out, all above the fold.
+
+Hero element counts still clear contract rule 4. The guide band is the fullest at four: h1, error
+plate, two buttons.
+
+### Nothing under the hero
+
+The owner's third note: the banner image is the hero's background and nothing after the hero should
+read as another banner. The `RealScreen` capture that Task 9 parked directly under the band was
+exactly that, so:
+
+- **Guide template:** the capture moved into "What you are seeing", under the symptom list. That is
+  where a picture of an error belongs and where a reader trying to recognise their screen is already
+  going. Held to the reading measure.
+- **Service template:** the capture is gone. The guide it links to carries the same shot, so nothing
+  is lost from the site; `hasScreen` and the `capture` lookup went with it.
+
+Four guides have a real capture and 33 do not, and `RealScreen` still renders nothing at all until
+the PNG exists, so the other 33 are untouched.
+
+### 21st.dev: searched, nothing installed
+
+The catalogue's CTA buttons are glow halos, pearl sheens, star bursts and glassmorphism wrappers.
+Every one of those is on this variation's anti-pattern list (no ember glows, no gradients, no
+complex shadows, no 3D), and the one close match, an animated-arrow button, is the pattern
+`FinalCta` already ships by hand. Installing one would have meant stripping it back to what the site
+already had, so the house chip was generalised instead.
+
+## v4 / one closing band, and a row wipe ported from a reference (Task 11)
+
+### The closing band is one component now
+
+Nine pages carried the band's markup byte for byte: the same section class string, the same heading
+measure, the same `shrink-0 flex-wrap gap-3` pair. `ClosingBand` in `parts.tsx` is the only copy.
+
+| | |
+| --- | --- |
+| Already had one, now share it | service, hub, city, compare template, `/about/`, `/pricing/`, `/guides/`, `/compare/` |
+| **Gained one** | **the 37 guides**, the city hub, `/legal/guarantee/` |
+| Deliberately still without | `/` (its own centred `FinalCta` family), `/contact/`, `/free-site-check/`, `/case-studies/` |
+
+The id is `closing` on every page now, where it had been `about-closing`, `hub-closing`,
+`city-closing` and five more. Nothing anchored to the old ones, checked across `src` and `docs`.
+
+**Three findings from doing it:**
+
+- **The 37 guide pages had no closing CTA at all.** They ended on the grid of sibling errors, which
+  is a set of doors to more reading rather than a way out. "When to call us" and the rail both carry
+  the pair higher up, but the rail is `lg`-only and sticky inside a grid the reader has scrolled
+  past by then. This was the largest gap in the consistency the owner asked for, and it was on the
+  37 money pages.
+- **The city hub lost its pair in Task 10** when it moved onto the band, leaving the foot of a
+  fourteen-row directory with nothing after it.
+- **`/case-studies/` was left alone, against the owner's "add it to these three".** Its composed
+  empty state already ends on a centred pair of the same two buttons, about 100px above where the
+  band would sit, on a page under one screen tall. Two identical pairs that close together is worse
+  than the inconsistency. Flagged rather than built.
+
+### The row wipe, ported from shopdev.studio
+
+The owner asked for the hover on that site's "WHAT WE BUILD" rows, on "How we work on your site".
+Their recipe, read off their stylesheet: a `::before` panel at `translateX(-102%)` to `0` over
+650ms, a `.capability-sweep` gradient scaling in over 800ms, the heading to the brand colour, a
+large outlined numeral whose `-webkit-text-stroke` fills with the brand colour, and an arrow
+rotating 45 degrees.
+
+**What came across, and what the variation refused:**
+
+| Their move | Here |
+| --- | --- |
+| Panel wipes in from the left, 650ms | **Ported.** Same duration, same direction |
+| Gradient sweep in the brand colour | **Refused.** Gradients are banned outside the hero scrim and the guarantee mask. An ember fill under a row would also read as a selected state rather than a hover |
+| Heading to brand colour | Already ours: the ember rail under the row says the same thing |
+| Outlined `01`–`04` numerals filling with the accent | **Refused.** Numbered rows are a step label, which contract rule 6 bans outright |
+| Arrow rotating 45 degrees | **Refused.** An arrow claims the row is a link. Theirs are `<a>`; ours are five promises and link nowhere |
+| Preview image scaling on hover | **Refused.** These rows have no image, and the catalogue has no honest frame for "a vetted engineer" |
+
+The panel is flat `--surface`, one step up from the page, which reads as a reading highlight rather
+than as a claim that the row is clickable. That distinction is the whole reason the port is
+defensible under DESIGN.md's Hover Earns It rule.
+
+**Two implementation notes that are not obvious:**
+
+- **`scale-x` from the left, not `translateX(-102%)`.** For a flat fill the two are the same
+  picture: either way one solid edge crosses the row left to right. What `scale` avoids is the
+  panel's resting position. Translated fully left it sits in the gutter beside the row and needs
+  `overflow-hidden` to stay out of sight, and that would clip the ember rail, which is deliberately
+  one pixel outside the box. At `scale-x-0` there is nothing to hide.
+- **The row keeps no horizontal padding.** The reference pads its rows 8px, which would move the
+  words off the page's one left edge. The fill is bled `-inset-x-3` instead, so the highlight has an
+  edge without the text moving. Measured: the h2 and the row's first column both start at x=161.
+
+### The rail had been snapping since it shipped
+
+`PracticeRows`' ember rail is `scale-x-0` to `scale-x-100` under `transition-transform`. Tailwind v4
+writes `scale-x-*` to the standalone `scale` property, so the transition covered nothing and the
+rail appeared at full width instantly. Now `transition-[scale]`, and measured in the browser:
+`getComputedStyle(span).transitionProperty` reads `scale`, resting `scale: 0 1`, hovered `scale: 1`,
+the neighbouring row unchanged.
+
+That is the fourth instance of this trap, after the three recorded under Task 9. The file's own
+header comment had even written down the cause ("unlike Tailwind's scale-* utilities, which write
+`scale`") while the rail three lines below it named `transform`.
+
+**One mistake worth recording, because the fix was backwards before it was right.** Both overlays
+first shipped with `motion-reduce:scale-100!`, copied from `ProblemTiles`, where that cancel is
+correct: there the hover scales an image **up** from a resting 100, so forcing 100 removes the
+movement. Here the resting state is `scale-x-0` and the hover **is** the 100, so forcing it pinned
+every row permanently highlighted under reduced motion. The cancel is gone; reduced motion drops the
+transition and keeps the hover, which is a state change arriving instantly rather than a movement.
+
+### Also found while reading the reference, not built
+
+Their process list draws an accent hairline across a row when its disclosure opens
+(`:has([aria-expanded="true"])`). Our FAQ would take it as one CSS rule on `details[open]`,
+transform-only, no client code. The owner chose the row wipe alone this pass; this is the one other
+thing on that site worth having.
+
+Their closing CTA's per-line mask reveal and its marquee were both rejected before being offered:
+the site already runs `MaskRise`, and a second marquee would break the one-per-page budget.
+
+## v4 / the index numerals, and a CTA on every page (Task 12)
+
+### The numerals, built after being refused once
+
+Last pass this was turned down on contract rule 6, which bans step labels. The owner asked again,
+so it is built, with the one change that removes the thing rule 6 is actually protecting against.
+
+Ported from the reference verbatim in behaviour: `color: transparent` over a 1px
+`-webkit-text-stroke` in the muted tone, the stroke colour going to the accent on hover over 400ms.
+Theirs runs 48 / 42 / 28px; ours runs 36 / 28, a step down because this section's own heading is
+48px and a 48px numeral beside it competes rather than indexes.
+
+**The numeral is `aria-hidden` and the list stays a `<ul>`.** That is the whole mitigation and it is
+not cosmetic. These five are promises and nothing about them runs in an order; a screen reader
+announcing "zero one, vetted engineers" would assert a sequence the page does not have, which is
+what rule 6 exists to stop. Sighted readers get what the reference gives its own readers, a
+typographic anchor on the left of each row. Verified in the rendered accessibility tree: the
+practices region reads the five titles and their sentences, with no numeral in it.
+
+**The fallback is the part worth keeping.** `-webkit-text-stroke` is non-standard, and
+`color: transparent` without it renders the numeral invisible rather than plain. So the solid muted
+numeral is the base rule and the outline is applied only inside
+`@supports (-webkit-text-stroke: 1px currentColor)`. No engine can fall into a blank column.
+
+Written as CSS in `globals.css` rather than as utilities, because `-webkit-text-stroke-color` is not
+a Tailwind property and the transition has to name it exactly. That is the same trap this file has
+now recorded five times; in plain CSS the property and the transition are the same word.
+
+Measured on the production build: resting stroke `rgb(163 163 173)` on all five, hovered row's
+stroke `rgb(255 90 54)` with the other four unchanged, transition
+`-webkit-text-stroke-color 0.4s`. Tabular figures, so 01 through 05 hold one width and the icons
+beside them stay on a line. 36px at desktop, 28px at 500px, no horizontal scroll.
+
+The row grid gained a column: `[2rem, 1.25rem, 1fr]` stacked and
+`[3.25rem, 1.25rem, 17rem, 1fr]` from md, so the numeral takes the spine's left edge and the icon,
+title and sentence each move one column right.
+
+### Every public route now carries a CTA section
+
+| | |
+| --- | --- |
+| **Gained one** | `/legal/terms/`, `/legal/privacy/` (both via `LegalPending`), `/case-studies/` |
+| Already had one | every other public route, all through `ClosingBand` |
+| Deliberately without | `/` (its own `FinalCta`), `/contact/` and `/free-site-check/` (they are the form), `/preview/` (`robots: noindex`, internal) |
+
+**`LegalPending` was the real find.** Terms and privacy render a stub reading "This page is being
+prepared. Until it is published, **write to us** with any question about it." They were the only
+public routes on the site with no call to action at all, so that sentence invited an action and
+then offered no way to take it. The band is on the stub itself, so both pages get it from one
+place, and it will keep working if a third legal stub is ever added.
+
+**`/case-studies/` is resolved rather than doubled.** It was the page flagged last pass as the only
+centred CTA block and the only 20px CTA heading, and adding a band under it would have put the same
+two buttons on screen twice within one view. Its empty state gave up its own button pair and kept
+the "Read the guides instead" link, which is what an empty state owes a reader; the offer moved to
+the band, where it is on every other page. One CTA section per page, one shape.
+
+### Closing band heading size, corrected
+
+`ClosingBand` was rendering at 26px on the 37 guide pages and 32px on the other eleven that share
+the identical component. `GuideTemplate` carries `guideHeadings`, a scoped `[&_h2]` descendant
+override that steps every heading down for the reading document, and it sat on the `<article>`.
+That was the same thing while every section was in the reading column; two are not any more, since
+"Other errors we fix" and the closing band both moved to the full spine.
+
+The override now sits on the reading column, which is what its own comment always described.
+Measured on a guide page after the change: `symptoms` `causes` `call-us` at 26px, `related-guides`
+and `closing` at 32px, matching every other page on the site.
+
+## v4 / two CTA blocks that did not read as CTA blocks (Task 13)
+
+The owner named two: the guide's "When to call us" and a closing band headed "WordPress emergency
+fix". They fail for opposite reasons, which is why they needed opposite fixes.
+
+### The closing band: right treatment, wrong words
+
+`ServiceTemplate` passed `s.title` and `GuideTemplate` passed `parent.title` into the band's
+heading, so 69 of the site's pages ended on:
+
+> **WordPress 500, 502 and 503 error fix**  `[Fix my site]` `[Chat with an engineer]`
+
+A product name standing next to two controls. It labels the block; it asks the reader nothing. Every
+other closing band on the site asks something, and that is the thing that makes the block read as
+the offer rather than as a caption:
+
+> "Want a price for your site?" · "Cannot see your error here?" · "Not sure which one you need?"
+
+`CLOSING_ASK` in `src/config/cta.ts` now holds one question per intent, which is the whole set,
+because a page's intent already chooses its primary button and can choose the sentence above it too.
+In `cta.ts` rather than in the templates because it is CTA wording and that file owns CTA wording.
+
+| Intent | Heading | Example route |
+| --- | --- | --- |
+| BOOK | Want this fixed on your site? | `/wordpress-fix/emergency/`, all 37 guides |
+| PLANS | Want us to look after your site? | `/wordpress-maintenance/care-plans/` |
+| QUOTE | Want a quote for this? | `/wordpress-development/hire-developer/` |
+
+The city page was the same class of fault and was not named: "A WordPress team for Chennai" is a
+statement, not an ask. It is now "Want a WordPress team for Chennai?", which keeps the city in the
+heading and turns it into a question.
+
+**Verified on the production build**, one route per intent plus a guide and a city page: five
+headings, five questions, each matching its page's primary button.
+
+### "When to call us": right words, no treatment
+
+The opposite problem. The heading is already an invitation; what was missing was anything to mark
+the block off. It rendered as a paragraph, a link, two loose buttons and a footnote, stacked in the
+reading column, visually identical to "What usually causes it" directly above it.
+
+Its body now sits in `card`, which is the site's existing shape for an offer inside a reading page,
+the same one the guarantee's answer card and both conversion rails use. Nothing new was invented.
+
+**The h2 stays outside the panel**, which matters for two reasons: it belongs to the document
+outline, and `ReadingRail` derives its ticks from `h2[id]` inside the reading column, so moving the
+heading in would have cost the section its tick.
+
+### What was deliberately not changed
+
+- **The guide page still has four CTA moments**: the hero band, this card, the sticky rail and the
+  closing band. That reads like a lot written down, and it is the ordinary shape of a long reading
+  page: top, middle, persistent and end. The complaint was never that there were too many, it was
+  that one of them did not look like one.
+- **The rail card's heading stays the parent service's name.** It reads as a label there because it
+  is one: that line is a link to the service page, not the heading of an offer.
+
+## v4 / the two CTA blocks as panels, and a terminal field in the footer (Task 14)
+
+### Which skills were applied, and which were set aside
+
+The owner named four. `high-end-visual-design` wants `rounded-full` pills, `rounded-[2rem]`
+squircles, radial mesh gradients, `backdrop-blur-2xl` glass and blur-based scroll reveals. Every one
+of those is an anti-pattern in this variation, and contract rule 1 puts the taste-skill's hard bans
+and this project's locks above a skill's house style. What was taken from it is the part that is
+system-agnostic: nested depth, the trailing-icon button (already shipped as `cta-chip`), a hairline
+separating argument from action, and heavier padding.
+
+`ui-styling` is shadcn/Tailwind token guidance, and CLAUDE.md maps those token names away from this
+project explicitly. `apple-design` is gesture and spring physics, which neither of these two static
+blocks has. Both were read and not applied; saying so here so the next pass does not re-litigate it.
+
+### Both blocks are panels now
+
+| | Was | Is |
+| --- | --- | --- |
+| `ClosingBand`, 12+ pages | a top hairline with a heading on one side and buttons on the other | a `--surface` panel at the 14px radius with `--shadow-card`, `p-8 md:p-12` |
+| Guide "When to call us" | a flat `card` with four stacked blocks | a panel with the argument and the action split by a hairline |
+
+The closing band read as a divider that happened to have controls near it. The lit top edge inside
+`--shadow-card` is what makes the panel work: MASTER calls that 5% white inset the main device of
+this variation, and at this size it is the difference between a panel and a grey rectangle.
+
+Both now open on the same mark, a 40px ember rule above the heading. That is the existing house
+tick from the about page's rail and the practice rows, used as punctuation rather than decoration,
+and it is what makes the two blocks read as one family.
+
+**The "When to call us" action row does not split.** `md:flex-row ... justify-between` was tried
+first and the reading column is 704px with 64px of panel padding, so two buttons and the
+free-site-check sentence never fit on one line: the split only made the buttons stack and left the
+sentence beside the gap. One wrapping row puts the sentence under the buttons where it has to go
+and opposite them in any container wide enough, which this one is not.
+
+### The footer's terminal field: built, then removed
+
+The owner asked to port `previews.shaders.com/sections/terminal-ascii-footer`. Reading its source
+rather than its screenshot changed what "port" could mean. It is not a shader file; it is a TresJS
+scene: a 3D blob with rim lighting and dispersion, post-processed into ASCII in three greens, under
+a `bg-gradient-to-t` fade, on 2.5MB raw / 705KB gzipped of Three.js. Four of this variation's own
+rules rule that out (3D effects, gradients outside two named places, one accent, and the perf
+budget on a footer that renders on all 99 routes), so what was built was the idea instead: a field
+of terminal glyphs from the reference's own ramp `@#8960543271`, as real text in Geist Mono, flat
+rather than faded, measured at 8% so a footer link still cleared 6.57:1.
+
+**The owner then asked for it to be removed, and it is gone.** `SiteFooter.tsx` is byte for byte
+what it was before; the `ascii-field` utility is out of `globals.css`.
+
+**Worth carrying forward, because the removal is also a bug fix.** The verification sweep reported
+`0 axe violations over 112 runs` and, in the same pass, **horizontal page scroll on five routes**
+(`/`, `/legal/guarantee/`, `/legal/terms/`, `/case-studies/`, `/wordpress-development/cities/chennai/`).
+Those are the short pages. The field was 160 glyphs of `white-space: pre` at 13px with 0.24em
+tracking, far wider than any viewport, held in by `overflow: hidden` on an `inset-0` absolute
+layer. On a page tall enough the footer contained it; on a short page it did not, and the document
+grew sideways.
+
+Two things to take from that:
+
+- **A decorative layer that is wider than its container is a layout risk even behind
+  `overflow: hidden`**, because the clip depends on the container having the size you assumed. A
+  texture should be built from a tile that cannot exceed the box, not from one long line trimmed.
+- **axe does not catch horizontal scroll.** It reported zero violations on exactly the routes that
+  were scrolling sideways. The overflow assertion in the sweep is a separate check and it earned
+  its place; contract rule 12 asks for it by name.
+
+## v4 / a shader behind the home page's closing CTA (Task 15)
+
+`@paper-design/shaders-react`'s `NeuroNoise`, behind `FinalCta` and nowhere else.
+
+### Why only the home page
+
+Measured before anything was written, by installing the package and building a throwaway import:
+the shader **code-splits to its own chunk and that chunk is referenced only by the route that uses
+it**. Confirmed on the real build: `grep` for the chunk across `.next/server/app` returns
+`index.html` and nothing else. Total client JS moved 1626KB to 1650KB raw.
+
+That is cheap enough for one page and not for ninety-nine. `ClosingBand` does the same job on about
+99 routes, so putting it there would mean a WebGL context and a render loop on every page of the
+site against a 200ms INP budget. `FinalCta` is the home page's own CTA family, which MASTER already
+treats as distinct, and it is one context on one route.
+
+This is the opposite call from Task 14's footer, and the difference is the number: that port was
+705KB gzipped of Three.js on all 99 routes, this is a 12KB chunk on one.
+
+### What the pasted component asked for, and what it got
+
+| Asked | Here |
+| --- | --- |
+| `next-themes` + a `resolvedTheme` branch | dropped; this variation is dark-locked and has no second theme |
+| `lucide-react` `ArrowUpRight` | dropped; Phosphor is the one icon set, and this button already had its arrow |
+| shadcn `Button`, `text-foreground`, `text-muted-foreground` | dropped; CLAUDE.md maps those names away from this project. The section's own `BookLink` and `ChatButton` are unchanged |
+| `rounded-xl`, `shadow-lg/5` | dropped; 14px shape lock, two shadow tokens |
+| `mask-l-from-30%` | dropped; that is a gradient, and this variation allows two |
+| `colorBack`/`colorMid`/`colorFront` as literals | read from the tokens at runtime (below) |
+| `speed={1}` | `0.32`, and `0` under reduced motion |
+
+### Colours come from the tokens
+
+A WebGL uniform cannot read a CSS variable, and the obvious shortcut is pasting `#FF5A36` into the
+props, which puts the accent in two places and breaks silently the next time a token moves. The
+values are read off `document.documentElement` and handed to the shader instead.
+
+Only `colorMid` is ember. `colorBack` is `--bg` and `colorFront` is `--surface-2`, so the accent
+reads as filaments through a dark field rather than a wash competing with the primary button, which
+is what the one-accent lock requires.
+
+`useSyncExternalStore`, not `useState` in an effect. Two reasons, and `Magnetic` two files over made
+the same call: writing state from an effect body is the cascading render
+`react-hooks/set-state-in-effect` rejects outright, and a `useState` initializer reading the tokens
+would render the shader on the client's first pass while the server rendered nothing, which is a
+hydration mismatch. The server snapshot is `null`, so both agree on the first frame.
+
+### The photograph came out
+
+`FinalCta` was a mirrored `emergency` frame under the flat scrim, chosen because it is the brightest
+real scene in the library and its light fell away from the type. That reasoning was sound and is
+kept here because the change is one line to reverse. The two cannot both be the background: a
+photograph under a flowing field is two backgrounds competing, and the scrim that makes either
+legible flattens both. The scrim itself is untouched, so the section's contrast guarantee does not
+depend on what is behind it.
+
+### WebGL is not assumed
+
+The library throws `Paper Shaders: WebGL is not supported in this browser` as an **uncaught promise
+rejection**, which no error boundary catches because it is not a render error. That is not
+hypothetical: the browser these changes were checked in has no WebGL, and so does any visitor on a
+driver blocklist, with hardware acceleration off, or behind a privacy setting that disables the
+context.
+
+So support is probed on a detached canvas before the component mounts. Where WebGL is missing the
+component renders nothing, the section falls back to the `--bg` layer and the scrim already beneath
+it, and the console stays clean. Verified both ways here: with the guard absent the error appears
+and the canvas sits at its default 300x150 painting black; with it present there is no canvas, no
+error, and the section is a complete design.
+
+**Not verified: how it actually looks.** This browser cannot run WebGL, so the field itself has
+never been seen rendering. Everything around it is checked, the fallback included. The shader's own
+appearance needs a real browser.
+
+### Asked and declined: the shader on every closing band
+
+Raised straight after Task 15 and settled the same way, written down so it is not re-opened.
+
+`ClosingBand` is a server component rendering on about 99 routes. Counted from the source at the
+time:
+
+| Routes | Client islands today |
+| --- | --- |
+| 6 hubs, 3 compares, 8 cities + the city hub, `/about/`, `/compare/`, `/case-studies/`, `/legal/terms/`, `/legal/privacy/` | **none at all** |
+| 32 services, 37 guides, `/legal/guarantee/` | one, `ReadingRail`, and it is `lg`-only |
+| `/pricing/`, `/guides/` | one each (`ExpandingRows`, `Finder`) |
+
+Putting the shader in the band would make roughly **23 routes that currently download and execute
+no JavaScript** open a WebGL context and run a GPU loop, for decoration behind a button, and would
+give the 69 service and guide pages a second always-on island where their only one is desktop-only.
+
+Three further reasons, none of them about bytes:
+
+- MASTER's motion table ends "Nothing else moves", and that sentence is what the rest of the table
+  is worth.
+- `FinalCta` reads as the page's finale **because** nothing else on the site does this. Spending the
+  effect everywhere spends that.
+- A render loop on every route is a battery cost on exactly the phone belonging to someone whose
+  site is down at the time.
+
+The bands keep the panel, the ember tick and the scroll reveal from Tasks 13 and 14. The shader
+stays on the home page alone.
+
+## v4 / the closing band, second pass (Task 16)
+
+Asked for after the shader was declined on the inner bands: make the band itself better, SaaS-grade,
+and interactive, without the WebGL. It is still one component, so all ~99 routes move together.
+
+### A grid, not a flex row
+
+It was `flex ... justify-between`, which let the **heading** set where the buttons sat: a 24ch
+question and a 28ch one put them in two different places, so the band looked subtly different on
+every template. On a 12-column grid the actions sit on one column edge on all 99 routes, which is
+the point of there being one component at all.
+
+**Six and six, not seven and five.** Five was tried first and measured wrong: at 1440 the panel's
+inner width is about 1008px, a five-column track is ~395px, and the widest pair the site ships
+(BOOK at ~150px beside CHAT at ~243px, plus the gap) needs about 405. The buttons wrapped into a
+stack on every page. Six gives ~480 and the pair holds one line at every intent, with
+`md:flex-nowrap` to say so rather than leave it to luck. Verified on the build: both buttons report
+the same `top`.
+
+### The one interaction, and why it is allowed
+
+Reaching for the button is the only thing anyone does in this section, so it is the only thing the
+section answers. On hover or focus of either control:
+
+| | |
+| --- | --- |
+| The ember rule above the heading | `scale-x` 0.1 to 1, running out to exactly the heading's measure |
+| The panel's own edge | `--line` to `--line-strong` |
+
+Nothing else, and both properties named rather than `all`.
+
+This is not a hover on a non-interactive panel, which the Hover Earns It rule forbids: the trigger
+is the control inside it, and what it communicates is feedback, the section acknowledging the hand
+going for the thing it asked for.
+
+**`:focus-visible` gets the identical pair**, so a keyboard reader sees what a pointer user sees.
+The hover arm alone sits behind `(hover: hover) and (pointer: fine)`, or a tap would leave the band
+lit with nothing to clear it. Both confirmed in the built stylesheet.
+
+**260ms on `--ease-spring`**, inside the 300ms that interface feedback has to stay under, and the
+rule starts at `scale: 0.1` rather than 0: a mark that grows out of nothing reads as an effect,
+where one that is already there reads as a mark. Measured on the build: 27px at rest, 271px held,
+which is the heading's own cap to the pixel.
+
+### Skills, again
+
+`emil-design-eng` applies here almost unchanged and most of it was already in place: custom curves
+over the CSS defaults, `:active` scale on press, hover gated behind `(hover: hover) and (pointer:
+fine)`, named properties rather than `all`, transitions rather than keyframes for anything
+interruptible. The one thing it changed was the duration, down from a first draft at 420ms.
+
+`ui-styling` is shadcn token guidance, which CLAUDE.md maps away from this project, and
+`ui-ux-pro-max` chooses palettes and styles that are locked here. `apple-design` is gesture and
+spring physics; this band has no gesture. Read, not applied.
+
+## v4 / semantic icons on inner sections (Task 17)
+
+Three text-only sections now carry a mark each, so they can be scanned instead of read.
+
+### The rule all three follow
+
+**An icon is keyed to a field that already exists in the content, never chosen per string at the
+call site.** `src/content/icons.ts` holds three maps and nothing else does:
+
+| Map | Keyed on | Entries | Renders in |
+| --- | --- | --- | --- |
+| `hubIcon` | hub id | 6 | the about page's "What we work on" cards |
+| `verbIcon` | `service.whatWeDo[].verb` | 36 | "What we do" on all 32 service pages |
+| `deliveryIcon` | `remoteDelivery[].label` | 3 | "How working with us runs" on the 8 city pages |
+
+Picking a mark inline beside each tile is how a site ends up with three different icons for "Back
+up" on three different pages. A map is checkable, is identical everywhere that content appears, and
+**fails the build** when the content grows a value it does not cover, which is the same integrity
+guard `photos.ts` uses for frames.
+
+### Choices worth stating
+
+**Near-synonyms get different marks on purpose**, because they sit in the same list as each other:
+`Fix` is the wrench and `Repair` the toolbox, `Measure` the gauge and `Optimize` the lightning,
+`Maintain` the cycle and `Update` the up-arrow. Two identical icons in one four-step list would say
+the two steps were the same step.
+
+`Test` and `Verify` do share `SealCheck`. That is the single exception and it was checked rather
+than assumed: no service lists both verbs, so the two never appear together. If one ever does, split
+them.
+
+**The about page's own "How working with us runs" was left alone.** The same three entries run down
+a rail there, where each already meets the rail on a short ember tick. Adding an icon would be a
+second mark on one line. The city page renders the same three as cards with nothing to mark them,
+which is why only that one gained icons.
+
+### About the reference
+
+The owner offered a competitor's plans page. Only its **icon grammar** was read: it runs Font
+Awesome and reaches for wrench, shield, save, repeat, clock, cog, users and star for the same
+categories this map lands on, which was useful confirmation that the semantic families are the
+obvious ones. Not one word of its copy, claims or structure was taken, and CLAUDE.md's rule about a
+trading competitor's content is intact.
+
+Worth noting for anyone who repeats the exercise: that page carries **five SVGs in total, all
+social links in the footer**, so the "icons" are an icon font and a DOM inspection for `<svg>` finds
+nothing. The vocabulary is in the `<i class="fa ...">` class names.
+
+### Build guard, second time
+
+`scripts/check-content.ts` failed this pass on `src/components/templates/CityTemplates.tsx:108`,
+"hardcoded internal path, use routes.ts". The offender was a slash-wrapped route written inside a
+JSX comment. It is the second time this session the content guard has caught prose rather than code
+(the first was a CTA label quoted in a doc comment), and both times it was right to: the cheap fix
+is to name routes in prose rather than as paths inside comments.
+
+## v4 / "Everything we quote on", redesigned (Task 18)
+
+The pricing page's 32-service directory. It was six bare headings over 32 identical text rows with
+hairlines between them, which reads as a sitemap rather than as a catalogue of work.
+
+### What changed
+
+| | Was | Is |
+| --- | --- | --- |
+| Each hub group | a heading and a divided list, on the page background | a panel on the site's card tokens, `p-5 md:p-6` |
+| The hub heading | a text link | the hub's own mark from `content/icons.ts` beside the label |
+| Group scale | nothing | a count, right-aligned, read off the list it sits above |
+| A service row | title, colour change on hover | title, a caret, and the site's row hover |
+
+The marks are the `hubIcon` map built in Task 17, so the six areas carry the same icon here as on the
+about page. That is the point of the map existing.
+
+The count is derived from the filtered list in the same expression that renders it, so it cannot
+drift from what is underneath it. It is a count of rows on screen, not a claim, so contract rule 8
+has nothing to say about it.
+
+### The column flow survived, and that was the point of checking
+
+`md:columns-2` is unchanged, and the reasoning in the original comment is why: the six groups hold
+11, 4, 4, 3, 6 and 4 services, so a two-column **grid** aligns its tracks by row, lets the
+eleven-row Fixes group set the height of the row beside it, and leaves roughly 360px of hole under
+Security at 1440. A column flow balances by height instead. Making the groups into cards does not
+change that arithmetic, so the cards went inside the existing flow rather than replacing it with
+the grid that was already rejected once.
+
+`break-inside-avoid` was already on each group and still keeps a card whole.
+
+### The row hover
+
+The same idiom the practice rows use, not a new one: the row's own hairline is replaced by an ember
+one growing from the left, so nothing thickens and nothing moves. The caret travels 2px and goes
+ember with the title.
+
+`transition-[scale]`, never `transition-transform`, because Tailwind v4 writes `scale-x-*` to the
+standalone `scale` property. Behind `[@media(hover:hover)]`, or a tap leaves a row lit with no way
+to clear it.
+
+Measured on the build, pointer held on the first row: hairline `scale: 1`, caret
+`rgb(255 90 54)` and `translate: 2px`, title `rgb(255 90 54)`, and the row below it still
+`scale: 0 1` with a muted caret.
+
+### Held
+
+Rows are still 51px against the 44px floor, so a 32-link directory still needs no target exception.
+The hub heading keeps its `min-h-11` box. The caret and the hairline are both `aria-hidden`, so the
+accessibility tree reads one clean link per service and the hub link with its count. One column at
+500px, no horizontal scroll.
+
+### Skills
+
+The brief named four. What actually applied was `emil-design-eng`, and mostly as confirmation:
+named properties over `all`, a custom curve, hover gated behind a media query, sub-300ms feedback.
+`high-end-visual-design` contributed the panel-over-flat-list idea and nothing else, since its
+pills, mesh gradients and glass are all anti-patterns here. `ui-ux-pro-max` and `apple-design` had
+nothing to add to a static directory with one hover.
+
+## v4 / the empty figure in "What you are seeing" (Task 19)
+
+A defect introduced in Task 12, when the guide capture moved out of the hero and into the symptoms
+section. It was wrapped like this:
+
+```tsx
+<figure className="mt-6 max-w-[68ch]">
+  <RealScreen slot={g.image.slot} ... />
+</figure>
+```
+
+`RealScreen` returns `null` while its PNG does not exist. The wrapper did not. So:
+
+- **33 of the 37 guides rendered an empty `<figure>` carrying a live `mt-6`**, which is a stray
+  element and 24px of dead space under the symptom list on every one of them.
+- **The four that do have a capture rendered a `<figure>` inside a `<figure>`**, since `RealScreen`
+  is itself one.
+
+Fixed by giving `RealScreen` an optional `className` and rendering it directly, with no wrapper:
+margin and measure now travel with the thing that may or may not exist. Verified on the build: a
+guide with no capture reports 0 `<figure>` elements, one with a capture reports exactly 1, carrying
+both the component's bezel classes and the caller's `mt-6 max-w-[68ch]`.
+
+`RealScreen` has one caller, so the bug could not be anywhere else. Checked rather than assumed.
+
+**Worth carrying forward:** a component that can return `null` should own its own outer spacing. A
+caller that wraps it in a positioned or margined box has written an element that renders when the
+content does not, and nothing in `tsc`, `lint` or the route test can see it: the page is valid HTML
+and returns 200. It took looking at the markup to find.
+
+### What is actually missing, and why it stays missing
+
+33 guides have no capture file. `docs/image-todo.md` now lists the position: **31 of the 33 carry an
+`illustration-` slot prefix**, which is the content declaring they were never screenshots of a real
+error but drawings of one, so `scripts/capture-errors.mjs` cannot make them. **Only two**,
+`stuck-in-maintenance-mode` and `too-many-redirects`, are browser states the script could reach, and
+Docker is unavailable on this machine (checked again).
+
+The parent service's photograph is deliberately **not** used as a stand-in here: it is already the
+masthead band at the top of the same page, so it would put one picture on screen twice.
+
+## v4 / `npm run capture` on Windows (Task 20)
+
+The owner ran it and got `spawnSync ...\node_modules\.bin\wp-env ENOENT`. Two separate things, and
+the second is the one that matters.
+
+### The crash: a shim that does not exist on Windows
+
+`@wordpress/env` **is** installed. npm writes three shims for it:
+
+```
+node_modules/.bin/wp-env       a POSIX shell script
+node_modules/.bin/wp-env.cmd   Windows
+node_modules/.bin/wp-env.ps1   PowerShell
+```
+
+The script named the extensionless one, which Windows cannot execute, so the run died before Docker
+was ever reached.
+
+**Naming `wp-env.cmd` would have been the wrong fix**: it breaks every other platform, and `.cmd`
+needs `shell: true` on current Node since the CVE-2024-27980 change, which would then put
+`sh -c "<php>"` through a shell with its own opinions about quotes. `@wordpress/env`'s real entry,
+`bin/wp-env`, is a plain `#!/usr/bin/env node` script, so it is handed to `process.execPath`
+instead: one path, identical on every platform, no shell involved.
+
+### The preflight, because the next failure was no clearer
+
+Docker is still not running on this machine, and without a check that surfaced several calls later
+as a container error that reads like a bug in the script. There is now a `docker info` probe before
+anything is created, which exits with what is actually wrong and where to read about it.
+
+### What a working run would actually produce
+
+Two files. Not thirty-three.
+
+`docs/image-todo.md` has the detail: **31 of the 33 guides without a capture carry an
+`illustration-` slot prefix**, which is the content declaring they were never screenshots of a real
+error but drawings of one. `capture-errors.mjs` breaks a real WordPress and photographs the result,
+so it cannot make those at all. Only `stuck-in-maintenance-mode` and `too-many-redirects` are
+browser states it can reach.
+
+So installing Docker to run this is worth doing for two guides, and the other 31 need the rule 7a
+image-generation route or an illustrator. Worth knowing before anyone spends an afternoon on it.

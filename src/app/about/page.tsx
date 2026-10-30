@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { BookLink, ChatButton } from "@/components/Cta";
 import { aboutLd, JsonLd, nodeCrumbs } from "@/components/JsonLd";
-import { Photo } from "@/components/Photo";
-import { Breadcrumbs, LinkRows, Section, h1, h2, page, pageY } from "@/components/templates/parts";
+import { Breadcrumbs, ClosingBand, LinkCards, PageMasthead, Section, h2, page, pageY } from "@/components/templates/parts";
 import { brand } from "@/config/brand";
 import { hubIdOf, hubNodes, routes } from "@/config/routes";
 import { guides, services } from "@/content";
 import { hubLead } from "@/content/hubs";
+import { hubIcon } from "@/content/icons";
 import { remoteDelivery } from "@/content/notices";
 import { servicePhotos } from "@/content/photos";
 import { cn } from "@/lib/utils";
@@ -18,15 +18,6 @@ export const metadata: Metadata = {
   description,
   alternates: { canonical: routes.about },
 };
-
-/**
- * The banner is the full spine, so its box is the inner container and nothing else: 1104px from
- * 1152 up (max-w-6xl, 1152, less the 24px md gutters on both sides), `100vw - 48px` while the
- * container is still narrower than its max at md, and `100vw - 32px` below md where the gutter is
- * 16px. Declared rather than left to `100vw` because the default over-fetches by one whole
- * candidate step at every width: this is the page's LCP image and it is eager.
- */
-const bannerSizes = "(min-width: 1152px) 1104px, (min-width: 768px) calc(100vw - 48px), calc(100vw - 32px)";
 
 /**
  * /about/. Layout family: masthead over a full-width photographic band.
@@ -57,45 +48,25 @@ export default function About() {
       <Breadcrumbs items={nodeCrumbs(routes.about)} />
 
       {/* The words sit ON the photograph rather than above it, which is what makes this a masthead
-          and not a lead block with a picture parked under it. The band is the one `relative isolate`
-          box on the page: photograph and scrim both at -z-10, type in normal flow above them, which
-          is `FinalCta`'s shape exactly and the only shape on this site measured for type over
-          photography.
-
-          Height comes from the content plus its padding, never from an aspect ratio. An aspect
-          ratio was what the two-box version used, and it cannot survive type being moved inside it:
-          at 375 a 16/9 band is 211px and the h1, the sentence and the two buttons need more than
-          300px, so the words would have overflowed the frame they are supposed to sit in. The
-          `md:min-h-[24rem]` is the opposite guard, holding enough frame open at desktop that the
-          photograph still reads as a photograph once the type stops filling it. */}
-      <header className="relative isolate mt-6 flex flex-col justify-end overflow-hidden rounded-[14px] p-6 shadow-card sm:p-10 md:min-h-[24rem] md:p-14 lg:p-16">
-        {/* Hands at a keyboard under one warm light, which is the Imagery section's own art
-            direction almost word for word, and the catalogue's one frame of the work itself rather
-            than of a desk. The fix hub's `emergency` frame was tried first: cold, and at this crop
-            mostly a dark mass, which on a dark page reads as a hole. Real alt text, not
-            `decorative`: on a page whose job is to say who we are, the picture is content and no
-            sentence beside it describes it. No animation on it at all, because it is the largest
-            paint on the page. */}
-        <Photo id={servicePhotos["hire-developer"]} preload sizes={bannerSizes} className="absolute inset-0 -z-10" />
-        {/* The flat scrim, never a gradient, and the token the site already measured for this:
-            `--text` over `--photo-scrim` is 5.6:1 against the brightest pixel a photograph can
-            hold. It is why the sentence below is `--on-photo` and no longer `--muted`: muted over
-            this same scrim is 2.55:1 and would have failed outright the moment the type moved onto
-            the picture. */}
-        <span aria-hidden className="absolute inset-0 -z-10 bg-photo-scrim" />
-
-        {/* Never faded: it is the first thing painted and an LCP candidate. The sentence under it
-            arrives one beat later and the buttons that act on it one beat after that, which is the
-            same 70/140ms the hub and the guarantee headers run. */}
-        <h1 className={h1}>About {brand.name}</h1>
-        <p className="rise-in mt-5 max-w-[60ch] text-lg text-on-photo" style={{ animationDelay: "70ms" }}>
-          We fix WordPress sites that are down, hacked or slow, look after them afterwards, and build new ones.
-        </p>
-        <div className="rise-in mt-7 flex flex-wrap gap-3" style={{ animationDelay: "140ms" }}>
-          <BookLink location="about:hero" className="btn-primary" />
-          <ChatButton location="about:hero" className="btn-secondary" />
-        </div>
-      </header>
+          and not a lead block with a picture parked under it. Every reason this shape holds, and
+          every number measured for it, now lives on `PageMasthead` in parts.tsx, because the other
+          four templates run it too. The only thing left here is what is true of this page alone:
+          the picture is not decorative. On a page whose job is to say who we are, hands at a
+          keyboard under one warm light are content, and no sentence beside the band describes them.
+          The fix hub's `emergency` frame was tried first and is cold, mostly a dark mass at this
+          crop, which on a dark page reads as a hole. */}
+      <PageMasthead
+        photo={servicePhotos["hire-developer"]}
+        decorative={false}
+        title={`About ${brand.name}`}
+        lead="We fix WordPress sites that are down, hacked or slow, look after them afterwards, and build new ones."
+        actions={
+          <>
+            <BookLink location="about:hero" className="btn-primary" />
+            <ChatButton location="about:hero" className="btn-secondary" />
+          </>
+        }
+      />
 
       {/* This section once had to refuse `reveal`: the banner puts its heading within a few pixels
           of the fold at 768, it parked inside its own entry range at load, and a scrubbed opacity
@@ -118,12 +89,19 @@ export default function About() {
         <p className="mt-6 max-w-[60ch] text-muted">
           The {hubNodes.length} areas below hold {services.length} services and {guides.length} written guides to specific WordPress errors.
         </p>
-        {/* `split` is new on this call site, and it is the thing that turns this from a stacked
-            block of six title-over-paragraph rows into a ruled two-column list: titles in one
-            scannable column on the page spine, summaries answering across the gutter from md up.
-            The variant exists for exactly this shape and the hub template already uses it. */}
+        {/* Six hubs, six doors, so they are cards rather than the ruled two-column rows this used
+            to render: the sentence above counts them and the grid is where the reader picks one. Two
+            across, which divides six evenly and leaves no card stranded beside a hole, and the page
+            carries no other card grid for it to repeat. */}
         <div className="mt-6">
-          <LinkRows split items={hubNodes.map((h) => ({ href: h.path, title: h.title, summary: hubLead[hubIdOf(h.path)] }))} />
+          <LinkCards
+            items={hubNodes.map((h) => ({
+              href: h.path,
+              title: h.title,
+              summary: hubLead[hubIdOf(h.path)],
+              icon: hubIcon[hubIdOf(h.path) as keyof typeof hubIcon],
+            }))}
+          />
         </div>
       </section>
 
@@ -154,18 +132,15 @@ export default function About() {
           contract rule 3 forbids a family repeating within one page, and the last thing every
           reading page says is the same offer in the same shape. The heading gives the two buttons a
           question to answer instead of restating the page title. */}
-      <section
-        aria-labelledby="about-closing"
-        className="reveal mt-20 flex flex-col gap-5 border-t border-line pt-10 md:mt-28 md:flex-row md:items-center md:justify-between md:pt-12"
-      >
-        <h2 id="about-closing" className={cn(h2, "max-w-[24ch]")}>
-          Want us to look at your site?
-        </h2>
-        <div className="flex shrink-0 flex-wrap gap-3">
-          <BookLink location="about:closing" className="btn-primary" />
-          <ChatButton location="about:closing" className="btn-secondary" />
-        </div>
-      </section>
+      <ClosingBand
+        title="Want us to look at your site?"
+        actions={
+          <>
+            <BookLink location="about:closing" className="btn-primary" />
+            <ChatButton location="about:closing" className="btn-secondary" />
+          </>
+        }
+      />
     </article>
   );
 }

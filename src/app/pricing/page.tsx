@@ -1,12 +1,13 @@
+import { CaretRightIcon } from "@phosphor-icons/react/ssr";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BookLink, ChatButton, CheckLink, PlansLink } from "@/components/Cta";
 import { collectionLd, faqLd, JsonLd, nodeCrumbs } from "@/components/JsonLd";
-import { Photo } from "@/components/Photo";
-import { Breadcrumbs, Faqs, Promises, Section, TickList, h1, h2, page, pageY } from "@/components/templates/parts";
+import { Breadcrumbs, ClosingBand, Faqs, PageMasthead, Promises, Section, TickList, page, pageY } from "@/components/templates/parts";
 import { brand } from "@/config/brand";
-import { HUB_LABELS, hubNodes, routes } from "@/config/routes";
+import { HUB_LABELS, hubIdOf, hubNodes, routes } from "@/config/routes";
 import { getService, services } from "@/content";
+import { hubIcon } from "@/content/icons";
 import { formatPrice, prices, type Price } from "@/content/pricing";
 import { cn } from "@/lib/utils";
 
@@ -50,15 +51,6 @@ export const metadata: Metadata = {
   description: seo.description,
   alternates: { canonical: routes.pricing },
 };
-
-/**
- * The masthead's box is the inner container and nothing else: 1104px from 1152 up (max-w-6xl, 1152,
- * less the 24px md gutters on both sides), `100vw - 48px` while the container is still narrower than
- * its max at md, and `100vw - 32px` below md where the gutter is 16px. The same arithmetic and the
- * same string as /about/, because it is the same box. Declared rather than left to `100vw`, which
- * over-fetches by a whole candidate step at every width on the page's LCP image.
- */
-const bannerSizes = "(min-width: 1152px) 1104px, (min-width: 768px) calc(100vw - 48px), calc(100vw - 32px)";
 
 /**
  * A price renders only once the owner publishes it. `src/content/pricing.ts` holds four nulls today
@@ -163,51 +155,42 @@ export default function Pricing() {
       <Breadcrumbs items={nodeCrumbs(routes.pricing)} />
 
       {/* The /about/ masthead, which is this site's one measured pattern for type over photography
-          (commit 4557bb4) and the pattern the brief routes here rather than inventing a second one:
-          one `relative isolate` box, photograph and flat `bg-photo-scrim` both at -z-10, type in
-          normal flow above them. Height comes from content plus padding and never from an aspect
-          ratio: at 375 a 16/9 band is 211px and an h1, a sentence and two buttons need more than
-          300px, so an aspect-driven box would have type overflowing the frame it sits in.
-          `md:min-h-[22rem]` is the opposite guard, holding enough frame open at desktop that the
-          photograph still reads as a photograph.
+          (commit 4557bb4). It is `PageMasthead` now, shared with the five templates, so the box,
+          the flat scrim, the no-aspect-ratio rule and the 70/140ms beat all live in parts.tsx and
+          this page states only what is true of it alone.
 
-          The lead is `text-on-photo` and never `text-muted`: muted over this scrim measures 2.55:1.
-          `--on-photo` is `--text`, and the scrim's own floor is tone-independent, because the scrim
-          composites a blown-out white pixel to rgb(95 95 95) against which `--text` is 5.6:1. */}
-      <header className="relative isolate mt-6 flex flex-col justify-end overflow-hidden rounded-[14px] p-6 shadow-card sm:p-10 md:min-h-[22rem] md:p-14 lg:p-16">
-        {/* A tidy desk under one warm floor lamp against a dark wall, which is the Imagery section's
-            own art direction: night-time photography, a single warm source, against the dark page.
-            `drafting` was tried first, because a hand drawing a wireframe is the only frame in the
-            catalogue whose *subject* is this page's subject, a scope agreed before work starts. It
-            was rejected on tone: it is a `daylight` frame, and even under the scrim it was the
-            brightest thing on a dark-locked page and read as a stock photograph pasted into the
-            system. The variation's lock is binding spec and subject relevance is a preference.
+          `workspace`: a tidy desk under one warm floor lamp against a dark wall, which is the
+          Imagery section's own art direction. `drafting` was tried first, because a hand drawing a
+          wireframe is the only frame in the catalogue whose *subject* is this page's subject, a
+          scope agreed before work starts. It was rejected on tone: it is a `daylight` frame, and
+          even under the scrim it was the brightest thing on a dark-locked page and read as a stock
+          photograph pasted into the system. The variation's lock is binding spec and subject
+          relevance is a preference.
 
-            `decorative` therefore, with an empty alt. The frame is here for register, not for
-            evidence, and nothing on this page is about desks: announcing "a tidy desk with a curved
-            monitor" to a screen reader in the middle of a pricing headline would be noise. That is
-            the opposite call from /about/'s masthead and it is the opposite situation; there, the
-            photograph was the page's only evidence of who does the work. No animation on it at all,
-            because it is the largest paint on the page. */}
-        <Photo id="workspace" decorative preload sizes={bannerSizes} className="absolute inset-0 -z-10" />
-        <span aria-hidden className="absolute inset-0 -z-10 bg-photo-scrim" />
+          Decorative therefore, with an empty alt. The frame is here for register, not for evidence,
+          and nothing on this page is about desks: announcing "a tidy desk with a curved monitor" to
+          a screen reader in the middle of a pricing headline would be noise. That is the opposite
+          call from /about/'s masthead and it is the opposite situation; there, the photograph was
+          the page's only evidence of who does the work.
 
-        {/* The pricing model is the headline while the claim behind it holds. `brand.claims.fixedPrice`
-            is an **unconfirmed** claim whose own approved wording is "fixes are fixed price, agreed
-            before work starts", and this is that clause rather than a new claim; `MASTHEAD` above
-            carries both arms and the reason for the gate. Never faded: the h1 is the LCP candidate.
-            The sentence under it is the one this page already carried, less the half that apologised
-            for the missing prices. 70ms and 140ms behind the h1, the same beat as the hub, the
-            knowledge base and /about/. */}
-        <h1 className={h1}>{MASTHEAD.h1}</h1>
-        <p className="rise-in mt-5 max-w-[58ch] text-lg text-on-photo" style={{ animationDelay: "70ms" }}>
-          {MASTHEAD.lead}
-        </p>
-        <div className="rise-in mt-7 flex flex-wrap gap-3" style={{ animationDelay: "140ms" }}>
-          <BookLink location="pricing:hero" className="btn-primary" />
-          <ChatButton location="pricing:hero" className="btn-secondary" />
-        </div>
-      </header>
+          `22rem` rather than the shared `24rem`: the lead here is one line shorter, and the band was
+          measured at this height.
+
+          The headline is the pricing model while the claim behind it holds. `brand.claims.fixedPrice`
+          is an **unconfirmed** claim whose approved wording is "fixes are fixed price, agreed before
+          work starts", and `MASTHEAD` above carries both arms and the reason for the gate. */}
+      <PageMasthead
+        photo="workspace"
+        title={MASTHEAD.h1}
+        lead={MASTHEAD.lead}
+        minH="md:min-h-[22rem]"
+        actions={
+          <>
+            <BookLink location="pricing:hero" className="btn-primary" />
+            <ChatButton location="pricing:hero" className="btn-secondary" />
+          </>
+        }
+      />
 
       {/* Three full-width ruled rows, not the home page's `ExpandingRows` and not three cards.
           `ExpandingRows` is a client island that shows one row at a time, which is right for a
@@ -296,50 +279,71 @@ export default function Pricing() {
         <p className="max-w-[60ch] text-muted">
           {services.length} services across {hubNodes.length} areas. Each page sets out its own scope, what you get and the questions people ask about it.
         </p>
-        {/* `columns`, not `grid-cols-2`. A two-column grid aligns its tracks by row, and these six
-            groups hold 11, 4, 4, 3, 6 and 4 services, so the eleven-row Fixes group set the height
-            of the row beside it and left roughly 360px of hole under Security at 1440, measured off
-            the screenshot of that version. A column flow balances the two columns by height instead and packs the groups against each other.
-            `break-inside-avoid` keeps a group whole; the tallest group is well under half the
-            section, so none of them has to be split. Reading order is unchanged, because a column
-            flow runs in DOM order down one column and then down the next. */}
+        {/* `columns`, not `grid-cols-2`, and the reason is measured rather than stylistic: the six
+            groups hold 11, 4, 4, 3, 6 and 4 services, so in a two-column grid the eleven-row Fixes
+            group sets the height of the row beside it and leaves roughly 360px of hole under
+            Security at 1440. A column flow balances the two columns by height and packs the groups
+            against each other. `break-inside-avoid` keeps a group whole, and the tallest is well
+            under half the section so none has to split. Reading order is unchanged: a column flow
+            runs in DOM order down one column, then down the next.
+
+            That reasoning survives the groups becoming cards, which is what changed here. It was 32
+            identical text rows under six bare headings, which reads as a sitemap rather than as a
+            catalogue of work. Each group is a panel on the site's own card tokens now, carrying the
+            hub's own mark from `content/icons.ts` and a count of what is in it, and each row answers
+            the pointer. */}
         <div className="mt-8 md:columns-2 md:gap-x-10 lg:gap-x-16">
-          {hubNodes.map((hub) => (
-            <div key={hub.path} className="mb-10 break-inside-avoid last:mb-0">
-              {/* Same 44px repair as the three way names above, and the same three classes
-                  `src/app/guides/page.tsx` already carries on this grouped-directory heading link:
-                  the six
-                  hub labels were 22px inline targets sitting directly above 51px service rows,
-                  which is the one inconsistency a thumb would actually feel. No compensating
-                  margin, exactly as the knowledge base index does it: the 44px box centres the
-                  label and so grows the
-                  heading by roughly 8px above and 8px below, which is separation between two
-                  adjacent targets rather than a gap to claw back. The list below drops from `mt-3`
-                  to `mt-2` for the same reason. */}
-              <h3 className="font-display text-lg font-bold [font-variation-settings:'opsz'_18]">
-                <Link href={hub.path} className="inline-flex min-h-11 items-center transition-colors duration-200 hover:text-accent-text">
-                  {HUB_LABELS[hub.path]}
-                </Link>
-              </h3>
-              <ul className="mt-2 divide-y divide-line border-t border-line">
-                {services
-                  .filter((s) => s.path.startsWith(hub.path))
-                  .map((s) => (
+          {hubNodes.map((hub) => {
+            const inHub = services.filter((s) => s.path.startsWith(hub.path));
+            const Mark = hubIcon[hubIdOf(hub.path) as keyof typeof hubIcon];
+            return (
+              <div key={hub.path} className="mb-8 break-inside-avoid rounded-[14px] border border-line bg-surface p-5 shadow-card last:mb-0 md:p-6">
+                {/* The 44px box is the same repair the knowledge base index carries on this heading:
+                    these six were 22px inline targets sitting directly above 51px service rows,
+                    which is the one inconsistency a thumb would actually feel. The count is read off
+                    the list below it, so it cannot drift from what is there. */}
+                <h3 className="flex items-center justify-between gap-3 font-display text-lg font-bold [font-variation-settings:'opsz'_18]">
+                  <Link href={hub.path} className="inline-flex min-h-11 items-center gap-2.5 transition-colors duration-200 hover:text-accent-text">
+                    <Mark weight="duotone" aria-hidden className="size-5 shrink-0 text-accent-text" />
+                    {HUB_LABELS[hub.path]}
+                  </Link>
+                  <span className="shrink-0 text-sm font-semibold tabular-nums text-muted">{inHub.length}</span>
+                </h3>
+                <ul className="mt-2 divide-y divide-line border-t border-line">
+                  {inHub.map((s) => (
                     <li key={s.id}>
-                      {/* py-3 against a 27px line makes a 51px row, over the contract's 44px
-                          floor, so a 32-link directory needs no exception for its targets. */}
+                      {/* py-3 against a 27px line makes a 51px row, over the contract's 44px floor,
+                          so a 32-link directory needs no exception for its targets.
+
+                          The hover is the site's row idiom, the one the practice rows use: the row's
+                          own hairline is replaced by an ember one growing from the left, so nothing
+                          thickens and nothing moves. `transition-[scale]`, never `transition-transform`,
+                          because Tailwind v4 writes `scale-x-*` to the standalone `scale` property.
+                          Mouse only, or a tap would leave a row lit with no way to clear it. */}
                       <Link
                         href={s.path}
-                        className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 py-3 transition-colors duration-200 hover:text-accent-text"
+                        className="group relative flex items-center justify-between gap-x-4 py-3 transition-colors duration-200 hover:text-accent-text"
                       >
                         <span>{s.title}</span>
-                        {s.priceFrom && <span className="font-display text-sm font-bold tabular-nums">From {s.priceFrom}</span>}
+                        <span className="flex shrink-0 items-center gap-3">
+                          {s.priceFrom && <span className="font-display text-sm font-bold tabular-nums">From {s.priceFrom}</span>}
+                          <CaretRightIcon
+                            weight="duotone"
+                            aria-hidden
+                            className="size-4 text-muted transition-[translate,color] duration-200 ease-out group-hover:translate-x-0.5 group-hover:text-accent-text motion-reduce:transition-none"
+                          />
+                        </span>
+                        <span
+                          aria-hidden
+                          className="pointer-events-none absolute inset-x-0 -bottom-px h-px origin-left scale-x-0 bg-accent transition-[scale] duration-[260ms] ease-[var(--ease-spring)] motion-reduce:transition-none [@media(hover:hover)]:group-hover:scale-x-100"
+                        />
                       </Link>
                     </li>
                   ))}
-              </ul>
-            </div>
-          ))}
+                </ul>
+              </div>
+            );
+          })}
         </div>
       </Section>
 
@@ -351,24 +355,21 @@ export default function Pricing() {
       {/* The closing band every reading page on this site ends on, which is a repeat across routes
           and a deliberate one: the last thing each page says is the same offer in the same shape.
           The heading gives the buttons a question to answer instead of restating the page title. */}
-      <section
-        aria-labelledby="pricing-closing"
-        className="reveal mt-20 flex flex-col gap-5 border-t border-line pt-10 md:mt-28 md:flex-row md:items-center md:justify-between md:pt-12"
-      >
-        <h2 id="pricing-closing" className={cn(h2, "max-w-[24ch]")}>
-          Want a price for your site?
-        </h2>
-        <div className="flex shrink-0 flex-wrap gap-3">
-          <BookLink location="pricing:closing" className="btn-primary" />
-          <ChatButton location="pricing:closing" className="btn-secondary" />
-        </div>
-      </section>
+      <ClosingBand
+        title="Want a price for your site?"
+        actions={
+          <>
+            <BookLink location="pricing:closing" className="btn-primary" />
+            <ChatButton location="pricing:closing" className="btn-secondary" />
+          </>
+        }
+      />
       {/* `checkTurnaround` is a confirmed claim ("two working days") and the only turnaround figure
           on the site that is not null, so it is the one number this page may print. Gated, because
           an unconfirmed claim renders nothing. */}
       {brand.claims.checkTurnaround && (
         <p className="mt-6 text-sm text-muted">
-          Not urgent? <CheckLink location="pricing" />, back in {brand.claims.checkTurnaround}.
+          Not urgent? <CheckLink location="pricing" icon={null} />, back in {brand.claims.checkTurnaround}.
         </p>
       )}
     </div>

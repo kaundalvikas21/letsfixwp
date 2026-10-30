@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { BookLink, ChatButton, PlansLink, QuoteLink } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
-import { Photo } from "@/components/Photo";
 import { primaryCtaFor } from "@/config/cta";
 import { hubIdOf, nodes, routes, serviceIdOf, type FlatNode } from "@/config/routes";
 import { getService, guidesFor } from "@/content";
 import { hubLead } from "@/content/hubs";
 import { hubPhotos } from "@/content/photos";
 import { cn } from "@/lib/utils";
-import { Breadcrumbs, LinkRows, Section, h1, h2, page, pageY } from "./parts";
+import { Breadcrumbs, ClosingBand, LinkCards, PageMasthead, Section, cardLink, page, pageY } from "./parts";
 
 const urgencyRank = { critical: 0, high: 1, standard: 2 } as const;
 
@@ -50,37 +49,30 @@ export function HubTemplate({ node }: { node: FlatNode }) {
     <article className={cn(page, pageY)}>
       <Breadcrumbs items={nodeCrumbs(node.path)} />
 
-      {/* The headline takes the whole 1104px spine instead of five sevenths of it, which is what makes
-          this opening a hub's rather than a service's: the hub titles are short enough to set on one
-          line at that width, and the lead and the photograph then sit under it in a 6 / empty / 5 split
-          rather than the service page's 7 / 5. The headline paints at once (it is the LCP element),
-          then what it means, then the buttons that act on it, 70ms apart. CSS and no observer: all
-          three are above the fold. */}
-      <header className="mt-6">
-        <h1 className={h1}>{node.title}</h1>
-        <div className="mt-8 grid gap-8 lg:mt-10 lg:grid-cols-12 lg:gap-12">
-          <div className="lg:col-span-6">
-            <p className="rise-in max-w-[68ch] text-lg text-muted" style={{ animationDelay: "70ms" }}>
-              {hubLead[id]}
-            </p>
-            <div className="rise-in mt-7 flex flex-wrap gap-3" style={{ animationDelay: "140ms" }}>
-              <Primary location={`${loc}:hero`} className="btn-primary" />
-              <ChatButton location={`${loc}:hero`} className="btn-secondary" />
-            </div>
-          </div>
-          <div className="lg:col-span-5 lg:col-start-8">
-            <div className="aspect-[4/3] overflow-hidden rounded-[14px] shadow-card">
-              {/* 432px is the real box: 5 columns of a 12-column grid on a 1104px container with 48px
-                  gutters. The 40vw it declared before preloaded a 576px candidate into it at 1440. */}
-              <Photo id={hubPhotos[id]} decorative preload sizes="(min-width: 1024px) 432px, 100vw" />
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* The hub's photograph used to sit in a 5-column box beside the lead. It is the band itself
+          now, which is what the owner asked for across every inner page and the shape /about/ had
+          already proved: the type on the picture rather than next to it. The 6 / empty / 5 split
+          goes with it, and so does the hand-written `sizes` for a 432px box that no longer exists.
+          The beat is unchanged, headline then lead then buttons, and `PageMasthead` holds it. */}
+      <PageMasthead
+        photo={hubPhotos[id]}
+        title={node.title}
+        lead={hubLead[id]}
+        actions={
+          <>
+            <Primary location={`${loc}:hero`} className="btn-primary" />
+            <ChatButton location={`${loc}:hero`} className="btn-secondary" />
+          </>
+        }
+      />
 
       <Section id="services" title="What we do here" className="mt-20 md:mt-32">
-        <LinkRows
-          split
+        {/* Ruled rows before this: one column of titles, one of summaries, a caret at the end. The
+            directory is the page's whole job, and every row is a different service page, so it reads
+            as a set of doors rather than a list to work down. Four across on the spine, which is the
+            widest the ban on three equal cards in a row allows. */}
+        <LinkCards
+          cols={4}
           items={serviceChildren.map((n) => ({
             href: n.path,
             title: n.title,
@@ -106,7 +98,7 @@ export function HubTemplate({ node }: { node: FlatNode }) {
               <li key={g.slug} className={cn(leadWide && i === 0 && "sm:col-span-2")}>
                 <Link
                   href={routes.guide(g.slug)}
-                  className="group block rounded-[14px] border border-line bg-surface p-5 shadow-card transition-[border-color,box-shadow] duration-200 hover:border-line-strong hover:shadow-lift"
+                  className={cardLink}
                 >
                   <span className="block font-display text-lg font-bold transition-colors duration-200 [font-variation-settings:'opsz'_18] group-hover:text-accent-text">
                     {g.title}
@@ -136,18 +128,15 @@ export function HubTemplate({ node }: { node: FlatNode }) {
           twice on one page and the last thing the page said was its own title. This is the question a
           visitor who has just read three to eleven service rows actually has, and it gives the two
           buttons beside it something to answer. */}
-      <section
-        aria-labelledby="hub-closing"
-        className="reveal mt-20 flex flex-col gap-5 border-t border-line pt-10 md:mt-28 md:flex-row md:items-center md:justify-between md:pt-12"
-      >
-        <h2 id="hub-closing" className={cn(h2, "max-w-[24ch]")}>
-          Not sure which one you need?
-        </h2>
-        <div className="flex shrink-0 flex-wrap gap-3">
-          <Primary location={`${loc}:closing`} className="btn-primary" />
-          <ChatButton location={`${loc}:closing`} className="btn-secondary" />
-        </div>
-      </section>
+      <ClosingBand
+        title="Not sure which one you need?"
+        actions={
+          <>
+            <Primary location={`${loc}:closing`} className="btn-primary" />
+            <ChatButton location={`${loc}:closing`} className="btn-secondary" />
+          </>
+        }
+      />
     </article>
   );
 }
