@@ -1,13 +1,13 @@
 import { ArrowUpRightIcon } from "@phosphor-icons/react/ssr";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import type { IllustrationId } from "@/content/photos";
 import { routes } from "@/config/routes";
 import { matchIndex } from "@/content";
-import type { PhotoId } from "@/content/photos";
 const BentoGrid = dynamic(() => import("./BentoMotion").then((m) => m.BentoGrid));
 const BentoCell = dynamic(() => import("./BentoMotion").then((m) => m.BentoCell));
 const SeeAllButton = dynamic(() => import("./BentoMotion").then((m) => m.SeeAllButton));
-import { hasScreen, Photo, Screen } from "./Photo";
+import { hasScreen, Illustration, Screen } from "./Photo";
 
 // Cell 2 shows the real capture in a device frame once `npm run capture` (needs Docker) has written it.
 // Until then: the v1 photograph of an engineer reading a real WordPress fatal error. Logged in docs/image-todo.md.
@@ -23,7 +23,7 @@ type Cell = {
   href: string;
   place: string; // grid span at md (2 columns) and explicit position at lg (4 columns x 3 rows)
   look: string;
-  photo?: PhotoId;
+  photo?: IllustrationId;
 };
 
 // Links follow contract rule 16: a category is its SITEMAP hub; a single problem is its service page.
@@ -34,7 +34,7 @@ const CELLS: Cell[] = [
     href: routes.hub("wordpress-security"),
     place: "md:col-span-2 md:row-span-2 lg:col-start-1 lg:row-start-1",
     look: onPhoto,
-    photo: "keys",
+    photo: "settings-and-gears",
   },
   {
     title: "White screens and fatal errors",
@@ -42,7 +42,7 @@ const CELLS: Cell[] = [
     href: routes.hub("wordpress-fix"),
     place: "md:col-span-2 lg:col-start-3 lg:row-start-1",
     look: hasCapture ? "bg-surface-2" : onPhoto,
-    photo: hasCapture ? undefined : "hero-console",
+    photo: hasCapture ? undefined : "browser-with-code",
   },
   {
     title: "Plugin and theme conflicts",
@@ -62,7 +62,7 @@ const CELLS: Cell[] = [
     href: routes.service("woocommerce-fixes"),
     place: "md:row-span-2 lg:col-start-4 lg:row-start-2",
     look: onPhoto,
-    photo: "store",
+    photo: "team-at-work",
   },
   {
     title: "Locked out of wp\u2011admin", // non-breaking hyphen keeps "wp-admin" on one line
@@ -104,7 +104,7 @@ export function Bento() {
             <Link href={c.href} className={`${cell} ${c.look}`}>
               {c.photo && (
                 <>
-                  <Photo id={c.photo} decorative sizes="(min-width: 1024px) 50vw, 100vw" className="absolute inset-0" />
+                  <Illustration id={c.photo} sizes="(min-width: 1024px) 50vw, 100vw" className="absolute inset-0" />
                   <span className="absolute inset-0 bg-photo-scrim" aria-hidden />
                 </>
               )}

@@ -45,6 +45,11 @@ const input = {
   // { days, summary } to publish LetsFixWP's real guarantee, or null for none.
   // Never the old business's guarantee in legacyFacts below: it is not this company's promise.
   guarantee: confirm("guarantee: LetsFixWP's own guarantee (days and a one-sentence summary), or null for none", { days: 14, summary: "Placeholder: one sentence on what the guarantee covers and how to claim it.", placeholder: true } as Guarantee | null),
+  // The home page's "What we don't do" section (src/components/sections/v3/Boundaries.tsx), whose four lines live
+  // in src/content/notices.ts. One gate for the section, not one per line: the owner edits the words there and
+  // confirms here that the four limits are true of this business. false removes the section. fixed.net's own list
+  // (no custom development, no web design, no new sites) cannot be reused: src/config/sitemap.ts sells all three.
+  boundaries: confirm("the four things LetsFixWP does not do (see boundaries in src/content/notices.ts)", true),
   legacy: {
     // Confirmed false by the owner on 2026-10-07: letsfixwp.com is a different business from fixmywp.com, which
     // is still live and trading. Nothing belonging to that company may appear here. The branch below is dead as
@@ -101,6 +106,7 @@ export const brand = {
   chatProvider: v(input.chatProvider),
   bookingProvider: v(input.bookingProvider),
   guarantee: v(input.guarantee),
+  boundaries: v(input.boundaries),
   claims: {
     sameDay: v(input.claims.sameDay),
     vetted: v(input.claims.vetted),

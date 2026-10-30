@@ -71,6 +71,7 @@ Rules that fall out of the table:
 |---------|--------|
 | Cards, bento cells, device frames, image containers | `20px` |
 | Inputs, selects, textareas | `12px` |
+| Icon tiles (the section-header marker) | `12px` |
 | Buttons, chips, segmented controls, pricing toggle | full pill (`9999px`) |
 
 No other radii. Nested elements inside a card use `20px - padding` only if they would visibly clash, otherwise follow the table.
@@ -211,9 +212,23 @@ Library: **Motion** (`motion/react`), not installed yet. **No GSAP. No marquee i
 
 ## Imagery
 
-- Bright daylight lifestyle-tech photography: a laptop on a clean desk showing a healthy WordPress site; a shop owner checking orders on a phone. Natural light, neutral and green tones, no red.
+- **Flat vector illustration is the primary visual language**, and the illustrations are Unsplash files, not
+  authored SVG (changed 2026-10-30, owner's decision; see src/content/photos.ts for ids, authors and licence).
+  Six files live in `public/site_images/illustrations/`, downloaded rather than hotlinked so no third-party
+  image host ships in production. Every one is `images.unsplash.com/vector-*`, the free Unsplash Licence;
+  `plus.unsplash.com/premium_vector-*` is Unsplash+ subscription and must never be used.
+- **Colour-lock exception.** These illustrations are blue and orange, which is the one place on the site where
+  a hue other than the green accent appears. The owner chose the files knowing that; it is a recorded exception
+  rather than drift, and it does not license a second accent anywhere else: UI, type and controls stay on the
+  single green accent. If the lock is to hold absolutely, the illustrations have to be recoloured or replaced.
+- Photography is no longer used anywhere. The v1 photo library in `src/content/photos.ts` is still registered
+  and `<Photo>` still works, but nothing renders it; the bento cells, the step tabs, the plan comparison and
+  every hero now use `<Illustration>`.
 - Real dashboard and site captures from `public/screens/` inside the device frame above.
-- One soft green-to-surface radial mesh, allowed on the final CTA only. No other gradients.
+- One soft green-to-surface radial mesh, allowed on **each page's final CTA** and nowhere else. No other
+  gradients. Written when the home page was the only page with a closing panel, so it read as one gradient on
+  the whole site; since 2026-10-30 every page closes on the shared `ClosingCta`, which is that panel. The rule
+  is still one gradient treatment, used once per page, at the bottom.
 - Photo library: `src/content/photos.ts` (tone per frame; never use `red` on v3), rendered with `<Photo id>` from `src/components/sections/v3/Photo.tsx`.
 - No pills or labels on images. Order of sourcing and logging follows section-contract rule 7.
 

@@ -1,19 +1,31 @@
-import { CaretRightIcon, CheckIcon } from "@phosphor-icons/react/ssr";
+import { ClosingCta } from "@/components/sections/v3/ClosingCta";
+import {
+  ArrowUpRightIcon,
+  CheckIcon,
+  ClockIcon,
+  SealCheckIcon,
+  SignpostIcon,
+  TagIcon,
+  UsersThreeIcon,
+} from "@phosphor-icons/react/ssr";
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
+import { Illustration } from "@/components/sections/v3/Photo";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { BookLink, ChatButton, CheckLink, PlansLink, QuoteLink } from "@/components/Cta";
 import { faqLd, JsonLd, nodeCrumbs } from "@/components/JsonLd";
-import { Breadcrumbs, Faqs, h1, h2, page, Section } from "@/components/templates/parts";
+import { Breadcrumbs, cardGrid, Faqs, h1, h2, HeroSplit, LinkCard, page, Section, StepRow, TickList, TrustChips, whatWeDoIcons } from "@/components/templates/parts";
 import { brand } from "@/config/brand";
 import { routes } from "@/config/routes";
 import { getService, services } from "@/content";
-import { claimLine } from "@/content/notices";
+import { cardArt } from "@/content/photos";
+import { claimLine, heroChips, jobSteps, railPoints } from "@/content/notices";
 import { annualSaving, formatPrice, prices, type Price } from "@/content/pricing";
 import type { Service } from "@/content/schema";
 import { cn } from "@/lib/utils";
 
+const ServiceTabs = dynamic(() => import("@/components/sections/v3/ServiceTabs").then((m) => m.ServiceTabs));
 const PlanPrice = dynamic(() => import("@/components/sections/v3/PlanPrice").then((m) => m.PlanPrice));
 
 export const metadata: Metadata = {
@@ -133,11 +145,43 @@ const faqs = FAQ_REFS.map(([id, q]) => {
 
 // Rows of the comparison table. Each cell is written content from the tier's anchor service, so the table makes
 // no claim of its own. Turnaround is null on all 32 services today, so that row renders only once one is set.
-const ROWS: { label: string; cell: (t: Tier) => ReactNode }[] = [
-  { label: "Who it is for", cell: (t) => t.anchor.whoItsFor },
-  { label: "How the work runs", cell: (t) => t.anchor.whatWeDo.map((w) => w.verb).join(", ") },
+/**
+ * The comparison rows. Two of these used to be prose: "How the work runs" was a comma-joined list of verbs and
+ * "How it is priced" a bare sentence, which made the table four paragraphs wide and something you read rather
+ * than scan.
+ *
+ * They are now shapes. The verbs render as their own icons from `whatWeDoIcons`, the same map the service pages
+ * use, so a reader sees the shape of the work before reading a word and the two surfaces cannot disagree about
+ * which glyph means which verb. The unit renders as a pill. Only "Who it is for" is still a sentence, because it
+ * genuinely is one and inventing a shape for it would be decoration.
+ *
+ * `icon` is the row's own marker, so the left column is scannable too.
+ */
+const ROWS: { label: string; icon: typeof CheckIcon; cell: (t: Tier) => ReactNode }[] = [
+  { label: "Who it is for", icon: UsersThreeIcon, cell: (t) => t.anchor.whoItsFor },
+  {
+    label: "How the work runs",
+    icon: SignpostIcon,
+    cell: (t) => (
+      <ul className="flex flex-wrap gap-2">
+        {t.anchor.whatWeDo.map((w) => {
+          const I = whatWeDoIcons[w.verb]!;
+          return (
+            <li
+              key={w.verb}
+              className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-2 px-2.5 py-1 text-xs font-medium"
+            >
+              <I weight="duotone" className="size-4 shrink-0 text-accent-text" aria-hidden />
+              {w.verb}
+            </li>
+          );
+        })}
+      </ul>
+    ),
+  },
   {
     label: "What you get",
+    icon: SealCheckIcon,
     cell: (t) => (
       <ul className="space-y-2">
         {t.anchor.deliverables.map((d) => (
@@ -149,10 +193,18 @@ const ROWS: { label: string; cell: (t: Tier) => ReactNode }[] = [
       </ul>
     ),
   },
-  { label: "How it is priced", cell: (t) => t.unit },
+  {
+    label: "How it is priced",
+    icon: TagIcon,
+    cell: (t) => (
+      <span className="inline-flex items-center rounded-full bg-accent-tint px-3 py-1 font-display text-sm font-bold">{t.unit}</span>
+    ),
+  },
 ];
 
-const th = "border-b border-line-strong px-4 py-3 text-left align-bottom font-display text-sm font-bold";
+// sticky: on a four-row table the head scrolls away before the last row, so which column you are in
+// stops being obvious. top-0 inside the scroll region, not the page.
+const th = "sticky top-0 z-10 border-b border-line-strong bg-surface px-4 py-3 text-left align-bottom font-display text-sm font-bold";
 const td = "border-b border-line px-4 py-4 align-top text-sm";
 // On --surface-2 small accent text measures 4.31:1 (MASTER.md:49), so the quiet links in the closing row are
 // underlined body text rather than accent text. min-h-11 makes each one a 44px target (contract rule 5).
@@ -160,7 +212,9 @@ const quietLink = "inline-flex min-h-11 items-center font-semibold underline und
 
 export default function Pricing() {
   const turnaround = READING.some((t) => t.anchor.typicalTurnaround);
-  const rows = turnaround ? [...ROWS, { label: "Typical turnaround", cell: (t: Tier) => t.anchor.typicalTurnaround }] : ROWS;
+  const rows = turnaround
+    ? [...ROWS, { label: "Typical turnaround", icon: ClockIcon, cell: (t: Tier) => t.anchor.typicalTurnaround }]
+    : ROWS;
   // Only the values this page can actually show: the fix tier, the plan tier and the per-service rows.
   const published = [prices.fix, m, a].some(Boolean) || services.some((s) => !!s.priceFrom);
 
@@ -169,7 +223,7 @@ export default function Pricing() {
       <JsonLd data={faqLd(faqs)} />
       <Breadcrumbs items={nodeCrumbs(routes.pricing)} />
 
-      <header className="mt-6">
+      <HeroSplit art={<Illustration id="charts-and-plans" sizes="(min-width: 1024px) 40vw, 100vw" />}>
         <h1 className={h1}>Pricing</h1>
         <p className="mt-5 max-w-[68ch] text-lg text-muted">
           {published
@@ -178,7 +232,8 @@ export default function Pricing() {
         </p>
         {/* The one wording of this claim, and its gate, both live in src/content/notices.ts. */}
         {brand.claims.fixedPrice && <p className="mt-3 max-w-[68ch] text-muted">{claimLine.fixedPrice}</p>}
-      </header>
+        <TrustChips items={heroChips} />
+      </HeroSplit>
 
       <Section id="tiers" title="How the work is priced">
         <ul className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pt-2 pb-4 [scrollbar-width:none] md:mx-0 md:grid md:grid-cols-3 md:items-stretch md:gap-6 md:overflow-visible md:px-0">
@@ -240,43 +295,57 @@ export default function Pricing() {
 
       {/* All 32 services, grouped under their tier instead of their hub, each row carrying the outcome it sells
           (its first deliverable) and its own published price and turnaround when either is set. */}
-      <Section id="services" title="Every service, grouped by the work">
-        {READING.map((t) => {
-          const list = services.filter((s) => s.intent === t.intent);
-          return (
-            <div key={t.intent} className="mt-10 first:mt-0">
-              {/* No unit beside the group name: the plan tier holds support-hours, which is bought as a block
-                  of hours rather than per month, so a tier-wide billing label would be wrong for it. */}
-              <h3 className="border-b border-line pb-3 font-display text-xl leading-snug font-bold">{t.name}</h3>
-              <ul className="mt-5 divide-y divide-line overflow-hidden rounded-[20px] border border-line bg-surface shadow-card">
-                {list.map((s) => (
-                  <li key={s.id}>
-                    <Link href={routes.service(s.id)} className="group flex min-h-14 items-start gap-4 px-5 py-4 hover:bg-surface-2 sm:px-6">
-                      <span className="min-w-0 flex-1">
-                        {/* The hover affordance is the row tint and the chevron, not accent text: an 18px bold
-                            title is not WCAG large text, and accent on --surface-2 measures 4.31:1
-                            (MASTER.md:49). The chevron is an icon, so 3:1 applies and the accent holds. */}
-                        <span className="block font-display text-lg leading-snug font-bold">{s.title}</span>
-                        <span className="mt-1 block max-w-[70ch] text-sm text-muted">{s.deliverables[0]}</span>
+      {/* Same primitive and same content as the service and hub pages, so the process is described once. */}
+      <Section id="how-priced" revealBody={false} title="How the work runs">
+        <StepRow steps={jobSteps} />
+      </Section>
+
+      {/* What holds whichever option you pick. Read from the gated claim set, so a promise the owner turns
+          off disappears here too, and the list renders nothing if all of them are off. */}
+      {railPoints.length > 0 && (
+        <Section id="included" revealBody={false} title="True of every option here">
+          <TickList items={railPoints} cols={2} />
+        </Section>
+      )}
+
+      {/* Tabs, not three stacked lists: the old shape printed all 32 services at once and a reader scrolled
+          past two thirds of them to reach the third group. The tabs are the Service.intent values the content
+          already carries, so no copy changed and the labels are the tier names. */}
+      <Section id="services" revealBody={false} title="Every service, grouped by the work">
+        <ServiceTabs
+          groups={READING.map((t) => {
+            const list = services.filter((s) => s.intent === t.intent);
+            return {
+              name: t.name,
+              count: list.length,
+              content: (
+                <ul className={cardGrid}>
+                  {list.map((s, n) => (
+                    <LinkCard key={s.id} href={routes.service(s.id)} art={cardArt(s)} index={n}>
+                      <span className="flex items-start gap-3">
+                        <span className="min-w-0 flex-1 font-display text-lg leading-snug font-bold group-hover:text-accent-text">
+                          {s.title}
+                        </span>
+                        <ArrowUpRightIcon
+                          weight="duotone"
+                          className="mt-0.5 size-5 shrink-0 text-muted transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent-text motion-reduce:transition-none"
+                          aria-hidden
+                        />
                       </span>
+                      <span className="mt-2 block text-sm text-muted">{s.deliverables[0]}</span>
                       {(s.priceFrom || s.typicalTurnaround) && (
-                        <span className="shrink-0 text-right text-sm">
-                          {s.priceFrom && <span className="block font-display font-bold">From {s.priceFrom}</span>}
+                        <span className="mt-auto block pt-4 text-sm">
+                          {s.priceFrom && <span className="font-display font-bold">From {s.priceFrom}</span>}
                           {s.typicalTurnaround && <span className="block text-muted">{s.typicalTurnaround}</span>}
                         </span>
                       )}
-                      <CaretRightIcon
-                        weight="duotone"
-                        className="mt-1 size-5 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-accent-text motion-reduce:transition-none"
-                        aria-hidden
-                      />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          );
-        })}
+                    </LinkCard>
+                  ))}
+                </ul>
+              ),
+            };
+          })}
+        />
       </Section>
 
       <Section id="compare" title="What each one covers">
@@ -298,8 +367,11 @@ export default function Pricing() {
                   <span className="sr-only">What is compared</span>
                 </th>
                 {READING.map((t) => (
-                  <th key={t.name} scope="col" className={th}>
+                  <th key={t.name} scope="col" className={cn(th, t.featured && "bg-accent-tint")}>
                     {t.name}
+                    {/* The tint is not the only marker: the badge is the text that says which column it is,
+                        matching the tier cards above (rule 9, never colour alone). */}
+                    {t.featured && <span className="ml-2 align-middle text-xs font-semibold text-accent-text">Ongoing</span>}
                     <span className="mt-1 block text-xs font-medium text-muted">{t.anchor.title}</span>
                   </th>
                 ))}
@@ -309,10 +381,13 @@ export default function Pricing() {
               {rows.map((r) => (
                 <tr key={r.label}>
                   <th scope="row" className={cn(td, "font-semibold")}>
-                    {r.label}
+                    <span className="flex items-start gap-2.5">
+                      <r.icon weight="duotone" className="mt-0.5 size-5 shrink-0 text-accent-text" aria-hidden />
+                      {r.label}
+                    </span>
                   </th>
                   {READING.map((t) => (
-                    <td key={t.name} className={cn(td, "text-muted")}>
+                    <td key={t.name} className={cn(td, "text-muted", t.featured && "bg-accent-tint/40")}>
                       {r.cell(t)}
                     </td>
                   ))}
@@ -325,20 +400,18 @@ export default function Pricing() {
 
       <Faqs faqs={faqs} title="Questions about price" />
 
-      <section aria-labelledby="pricing-closing" className="mt-16 flex flex-col gap-5 border-t border-line pt-8 md:flex-row md:items-center md:justify-between">
-        <h2 id="pricing-closing" className={cn(h2, "max-w-[24ch]")}>
-          Get a price for your site
-        </h2>
-        <div className="flex shrink-0 flex-wrap gap-3">
-          <BookLink location="pricing:closing" className="btn-primary" />
-          <PlansLink location="pricing:closing" className="btn-secondary" />
-        </div>
-      </section>
+      <ClosingCta
+        id="pricing-closing"
+        title="Get a price for your site."
+        sub="An engineer looks at the site first, then quotes the work. Nothing starts until you have approved it."
+        location="pricing:closing"
+        showCheck
+      />
       {/* gap-y as well as gap-x: these two 44px targets wrap onto separate lines at 375, and without it they
           would stack with nothing between them (contract rule 5 asks for 8px between targets). */}
       <p className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-2 text-sm text-muted">
-        Not urgent? <CheckLink location="pricing:closing" className={quietLink} /> or{" "}
-        <ChatButton location="pricing:closing" className={quietLink} />
+        Not urgent? <CheckLink location="pricing:closing" icon={false} className={quietLink} /> or{" "}
+        <ChatButton location="pricing:closing" icon={false} className={quietLink} />
       </p>
     </div>
   );

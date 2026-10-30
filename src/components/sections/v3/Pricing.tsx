@@ -51,7 +51,7 @@ const TIERS: Tier[] = [
 /** v3 home: three pricing tiers with unequal emphasis; the care plan carries the billing toggle. */
 export function Pricing() {
   return (
-    <section aria-labelledby="pricing" className="mx-auto max-w-6xl px-4 py-16 md:px-6 lg:py-24">
+    <section data-reveal aria-labelledby="pricing" className="mx-auto max-w-6xl px-4 py-16 md:px-6 lg:py-24">
       <h2 id="pricing" className="font-display text-4xl leading-[1.05] font-extrabold tracking-[-0.02em] md:text-5xl">
         Choose how you want help
       </h2>

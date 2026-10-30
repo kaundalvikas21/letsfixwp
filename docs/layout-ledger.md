@@ -51,31 +51,318 @@ rail printed them bare as list items while the pricing header, the contact panel
 flow appended a stop, so the same sentence read two ways (rule 14). The stop is in the data because four of the
 five uses are mid prose, and `backupFirst` gained its verb so the stop is honest on all four.
 
+## v3 / illustration (every page)
+
+Not a section. Every page on the site is illustrated, and the illustrations are **Unsplash files**, not authored
+SVG. Six of them live in `public/site_images/illustrations/` and render through `<Illustration>` in
+src/components/sections/v3/Photo.tsx, which is the single entry point, so the image unveil and the sizing live
+in one place and a new illustration inherits them by being registered in src/content/photos.ts.
+
+Where they appear: the hero of home, hub, city, compare, guide, /pricing/, /about/ and /guides/; the service
+hero, by node intent; the service page's outcome panel; three home bento cells; the four step tabs; and both
+sides of the plan comparison. Guide pages do get one, reversing the 2026-10-30 decision to skip them, at the
+owner's instruction.
+
+Downloaded, not hotlinked, so next.config.ts needs no `remotePatterns` and nothing third-party is fetched at
+runtime: measured at 0 off-origin image requests on all nine page types. Every file is
+`images.unsplash.com/vector-*`, the free Unsplash Licence; the `plus.unsplash.com/premium_vector-*` results
+that dominate the same searches are Unsplash+ subscription assets and were deliberately excluded. Ids, authors
+and licence sit beside the registry entries.
+
+Two earlier attempts at this are gone and should not be revived without reading this. `OutcomeArt` and
+`HeroArt` were hand-authored SVG plates in a `--art-*` ramp, built because no reference site used photography
+and because authored SVG themes for dark mode and costs nothing over the network. They were replaced on the
+owner's explicit instruction after three rounds: the brief was Unsplash illustrations, not authored vector.
+The `--art-*` tokens were removed with them.
+
+Assignment is semantic, added 2026-10-30 after the first pass reused one scene everywhere: `hubArt` in
+HubTemplate keys an illustration per hub id, and `serviceArt` in ServiceTemplate reads hub first and intent
+second, so a security service shows the shield whatever kind of work it is. Both fall back, so a hub or intent
+added to SITEMAP renders rather than failing on a missing key.
+
+**Colour-lock exception.** Most of the files are blue and orange, and `shield-and-firewall` is the first
+green-family one. That is the one place a hue other than the green accent appears, it was chosen knowingly, and it does not extend to UI, type or controls. MASTER.md records it
+the same way.
+
+## v3 / navigation is not disclosure (every page)
+
+Not a section. `LinkRows` was redesigned on 2026-10-30 and renamed in the tables above from "link rows" to
+"stacked link cards", because it and `Faqs` had become the same component by sight.
+
+They were identical, class for class: both `divide-y divide-line border-y border-line`, both rows titled
+`font-display text-lg font-bold`, both ending in `CaretRightIcon size-5 text-muted`. The only difference was
+what the caret did on interaction. That is worse than repetition, it is the wrong affordance: a divided row
+list ending in a right chevron is the web's standard "expand me", so four sections were promising disclosure
+and delivering navigation. And the pair is **adjacent** on both content templates, guide rows 7 then 8 and
+service rows 7 then 8, so a reader met the same object twice in a row with two different behaviours.
+
+The split is now carried by three things at once, not one:
+
+| | Disclosure (`Faqs`) | Navigation (`LinkRows`) |
+| --- | --- | --- |
+| Container | divided rows inside one card | separate cards, gap-separated |
+| Glyph | `CaretRight`, rotates on open | `ArrowUpRight`, nudges on hover |
+| Hover | none, it is not a link | lifts to `--shadow-lift` |
+
+`ArrowUpRight` was not invented for this: it is already the navigation glyph on the home bento cells and the
+quote cards, so the caret is now exclusively the disclosure signal site-wide. The hub's "Most urgent problems"
+list took the same glyph change for the same reason; it stays a ranked panel, which its urgency badges already
+distinguish, so its family is unchanged.
+
+Family collisions were checked per page rather than assumed. Stacked link cards are full-width, compact and
+gap-separated, which keeps them clear of the service page's bento (varied spans, `min-h-40` cells), the guide's
+cause tiles (a grid of small grey tiles) and the city page's delivery bento. `Faqs` gaining a card brings it
+into line with the home page's own FAQ, which has been "searchable accordion inside a card" since v3 shipped;
+the template version was the odd one out at "plain disclosure list", and the tables now say so.
+
+## v3 / the link-card grid (three callers)
+
+Not a section. `LinkCard`, `cardGrid` and `GuideCard` in templates/parts.tsx are the one implementation behind
+three grids: the pricing page's service directory inside its tabs, the hub's "Most urgent problems", and the
+guide page's "More <parent> errors".
+
+Extracted on the third caller rather than copied a third time. All three had the same twenty lines of frame,
+banner and hover, which is three places for the hover to drift. `GuideCard` goes further and holds the whole
+guide card body, because the hub grid and the guide grid show the same object and had already started describing
+it differently.
+
+The hover is four things and none touch layout: the card lifts, the banner scales, the arrow nudges, the shadow
+deepens. The scale sits on a frame inside the banner, never on the `<img>`, so it cannot compound with the image
+unveil's own `scale(1.06)` start.
+
+**`min-w-0` is load-bearing in three places here and the reason is the same each time.** A CSS grid item takes
+its automatic minimum size from its min-content width, so one unbreakable string anywhere inside it widens the
+item rather than wrapping or ellipsing. Guide symptoms quote literal error text and file paths, and the guide
+cards carry a truncated error line, so without it the page scrolled sideways at 375 in breach of rule 12. It sits
+on `LinkCard`'s `li` and its body span, and on the guide template's `lg:col-span-8` body column. Found by
+measuring `document.documentElement.scrollWidth` per page, not by eye: three of five pages were over.
+
+Family check per page, not assumed. On the guide page row 4 is cause tiles, a two-column grid of small text-only
+tiles, and row 8 is now a three-up image-led card grid: different column count, different content, a banner on
+every cell. On the hub, row 2 is the span-varied text-led symptom bento and row 3 is this uniform image-led grid.
+Both are defensible as distinct families and both are recorded here rather than left to be re-argued.
+
+**The repetition is now at its worst on a guide page and is still unresolved.** Every sibling of a guide shares
+its parent service, so `guideArt` correctly returns one illustration for all of them, and that illustration is
+also the page's own hero. A guide page can therefore show the same picture five or six times. Subject-driven
+mapping is doing the right thing and the result is wrong, because eight illustrations cannot cover thirty-two
+services. The standing recommendation, made four times and not yet taken, is to swap the card banner for the
+per-service Phosphor icon tile, which varies immediately and needs no new assets.
+
+## v3 / closing CTA (every page)## v3 / closing CTA (every page)
+
+Not a section of one page. `ClosingCta` (src/components/sections/v3/ClosingCta.tsx) is the last block on home,
+the service, hub, compare and city templates, /pricing/, /about/ and /guides/. Eight closing blocks became one
+component on 2026-10-30, so the last thing a visitor sees is the same offer in the same shape wherever they are
+and a change to it is one edit rather than eight. The home page's `FinalCta` is now a wrapper holding only its
+own words.
+
+Seven of those pages were the split-band family (text left, buttons right) and the home page was the gradient
+panel; all eight are now the panel. That is a family change on seven pages and a deliberate one, so the tables
+above say "closing panel" rather than "split band".
+
+Shaped past the headline-and-buttons the home page had, because the brief asked for CRO: an outcome headline, a
+line saying what happens next, the page's own primary beside chat, and a reassurance line. The reassurance reads
+`railPoints`, the same gated claim set the conversion rail shows, so nothing is promised here that is not
+promised elsewhere and an owner turning a claim off empties it. The primary follows the page's node intent, so a
+plan page closes on "See plans" and a project page on "Get a quote". CHECK appears only on /pricing/ and
+/guides/, the two closers where the visitor is not in an emergency (foundation.md).
+
+**The mesh rule was widened, not broken.** MASTER allowed one radial mesh on "the final CTA only", written when
+the home page was the only page that had one. It now reads as each page's final CTA, recorded in MASTER. Still
+one gradient treatment, used once per page, at the bottom of it.
+
+## v3 / CTA icons (every page)
+
+Not a section. Every CTA carries an icon chosen for the action: a wrench for having the site fixed, a speech
+bubble for chat, a shield for ongoing cover, a receipt for a quote, a stethoscope for a check-up on a site that
+still works. They live in src/components/Cta.tsx, which is already the only place a CTA label or target can come
+from, so the icon cannot drift from the label.
+
+`btn-primary` already set `gap: 0.5rem` for one; `btn-secondary` never had a gap and its glyph would have sat
+flush to the label, so that was added too.
+
+`icon` defaults on and is off in five places: the four quiet inline text links inside sentences ("Nothing down
+right now? Get a free site check"), where a glyph mid-sentence reads as debris, and `CtaPair`, which renders
+unstyled links in a paragraph.
+
+## v3 / typed section headers (every page)## v3 / typed section headers (every page)
+
+Not a section. Every `Section` now carries an icon tile left of its heading, looked up from `sectionIcons` in
+templates/parts.tsx by the `id` the component already receives. No call site passes it, and a `Section` whose
+id has no entry renders the old bare heading, so the map can stay partial without breaking a page.
+
+Added 2026-10-30 against a diagnosis taken from the rendered page rather than the source. On
+/guides/error-establishing-database-connection/, 3,706px tall, five sections sat under one h1 with the same
+`font-display text-2xl font-extrabold` heading and nothing else: "What you are seeing" measured 0 icons and
+0 cards, "When to call us" 0 and 0 while being the page's conversion moment, and the FAQ 802 characters with
+0 cards. The page read as five interchangeable black headings over grey text, so a reader could not tell a
+section's kind without reading it. That is the defect; the entrance, the reveals and the process row from
+earlier passes did not touch it.
+
+**The tile is not an eyebrow and does not spend the eyebrow budget.** The budget counts the small text label
+above a heading; this is a glyph, carries no text and carries no number, so it is also clear of rule 6's ban
+on section-number eyebrows. That distinction is what makes it legal on pages already at their limit, which is
+most of them.
+
+Contrast: the glyph is `--accent-text` on `--accent-tint`. MASTER measures accent text on `--surface-2` at
+4.31:1 and restricts it to large text and icons there; `--accent-tint` is a different token and was measured
+separately for this, in both themes. Nothing text-sized goes on the tile.
+
+MASTER's shape lock did not cover icon tiles. It lists cards at 20px, inputs at 12px and controls as pills,
+and an icon tile is none of those, so it was added to the table at 12px rather than guessed per use.
+
+## v3 / entrance (every page)
+
+Not a section. One entrance for the whole site: an element carrying `data-reveal` rises 16px and fades
+in once, the first time it enters the viewport. `Reveal.tsx` is the single IntersectionObserver that adds
+`.revealed`; `globals.css` holds the two rules; nothing else is involved and no dependency was added.
+
+Reverse-engineered from the reference the brief names, gotechark.com (2026-10-28, its own stylesheet and
+markup): WOW.js over animate.css, `.wow` on 50 elements, `fadeInUp` on 44 of them, `fadeInLeft` on 4 and
+`fadeInRight` on 2, `.animated` at 1s with fill both on the browser default ease, `data-wow-delay` on only
+2 of the 50, and the reduced-motion kill switch animate.css ships. Two findings decided our build. Its
+trigger fires **once per element and then stops watching**, which is why nothing there ever sits
+half-faded. And it animates at **element** granularity, not section: what makes that page feel alive is 50
+things arriving separately, not the easing curve.
+
+Three things were deliberately not copied. `fadeInUp` travels `translate3d(0, 100%, 0)`, a full element
+height, which on a tall card is hundreds of pixels of float; ours travels 16px. Its 1s on the default ease
+drifts; ours is 600ms on `--ease-spring`, the site's existing curve. And it costs a library plus a
+stylesheet; ours is one observer and one CSS rule.
+
+This replaced a scroll-linked `view()` timeline built earlier the same day. That version was cheaper
+(no JS at all) but wrong on both counts above: it tracked the scrollbar rather than triggering, so
+progress followed the reader's scroll position, and it only ever worked per section. Firefox's lack of
+scroll-driven animations stopped mattering with it.
+
+Granularity per surface: `Section` in templates/parts.tsx reveals its heading and, unless
+`revealBody={false}`, its body as one block. The four sections whose children are cards pass false and
+mark the cards instead, so nothing fades inside something that is also fading: the hub's service cards
+and urgent-problem rows, and the service page's "What we do" cells and "What you get" rows. On the home
+page, Security and Boundaries mark their eyebrow, heading and each group or pair; the other sections are
+single compositions, where the section is the right unit. The hero never reveals, on any template: it is
+above the fold and has its own CSS entrance. The home bento never reveals, because BentoMotion already
+runs a staggered in-view entrance on its cells.
+
+**Coverage, completed 2026-10-30.** The entrance now reaches every page that is meant to be browsed. The
+shared primitives carry it, which is why most of this was not a per-template edit: `Section` reveals a
+heading and, unless `revealBody={false}`, its body; `LinkRows` and `TickList` reveal each row with a `--i`
+index, so their four and one callers inherit it and so does any future one. Per-template lists that do not
+go through a primitive carry it directly: the guide's causes and safe checks, the compare verdict cards and
+table rows, and the city page's context paragraphs and delivery cards. `LinkList` is deliberately left
+whole: it renders small chips, and a chip row reads better arriving as one row than as eight chips.
+
+**Three surfaces are excluded on purpose, and this is a standing decision, not an unfinished job.**
+
+- `/legal/terms/`, `/legal/privacy/` and `/legal/guarantee/`. These are documents of ten or more headings
+  that people arrive at in order to *read*, often linked straight to one clause. Content that waits to be
+  scrolled into view is friction on a legal page rather than polish, and somebody checking a refund term
+  should never have to scroll it into existence.
+- `/contact/`. A booking flow: the visitor is transacting, not browsing, and a form whose steps animate as
+  you scroll is the one place on a site where motion costs conversions outright.
+- `/free-site-check/`. Added to this list after reading it rather than from the plan: it is a lead form with
+  its copy and its fields side by side in a single viewport, so there is nothing to scroll an entrance into.
+  A reveal on content that never leaves the fold only risks a flash on load and buys nothing.
+- `/preview/`. Internal.
+
+A test asserts the absence rather than trusting the omission: the verification run reports the
+`[data-reveal]` count on those routes and expects zero, because an exclusion nobody checks is just a gap.
+
+No stagger, matching the reference, where only 2 of 50 elements carry a delay. Rows in a grid already
+arrive separately because they cross the trigger line at different scroll positions.
+
+Measured in a real browser rather than read off the stylesheet (Playwright, chromium 1248): home 17
+animated elements, /wordpress-fix/ 19, /wordpress-fix/emergency/ 19. On every one of them each element is
+hidden before its trigger, every element is revealed after a full scroll, and none is left part-faded. On
+the hub, 3 elements are already revealed at first paint because they are in the viewport on load, which is
+the observer firing on observe rather than a missed trigger. Three ways content could have been stranded
+are all closed and all tested: `prefers-reduced-motion: reduce` reveals everything and never observes
+(0 of 19 hidden), scripts disabled leaves everything visible through the `<noscript>` rule in
+app/layout.tsx (0 of 19 hidden), and a 3s failsafe in the observer reveals anything still hidden if it
+never fired.
+
+## v3 / image entrance (every page)
+
+Not a section. Photographs do not use the rise-and-fade the text uses: the frame opens and the picture
+settles into it. `[data-reveal="image"]` in globals.css animates `clip-path: inset(12%)` out to
+`inset(0%)` while `transform: scale(1.06)` eases back to 1, over 900ms on `--ease-spring`. The same
+observer (Reveal.tsx) triggers it, once, on entry.
+
+Reverse-engineered from infiniareserve.com (2026-10-28, its own markup). That site is the same stack as
+this one, Next.js with motion, plus Lenis for smooth scroll, and drives the effect from its own
+`data-unveil` attribute in two layers: a wrapper at `clip-path: inset(12%)` over an image held at
+`transform: scale(1.06)`. The scrape caught one frame mid-flight at `inset(9.3363%)`, which is what fixes
+the direction and the 12% start rather than leaving them guessed. Ours composes both on the single
+element, because the image already is that element and no call site should have to add a wrapper to get
+the effect. 900ms against the text's 600ms is deliberate: a photograph is a larger object, and a large
+thing moving at a small thing's speed reads as cheap.
+
+**The SSOT is `Photo` and `Illustration` in src/components/sections/v3/Photo.tsx**, with its registry in
+src/content/photos.ts. Every photograph on the site goes through that component, so the attribute is set
+there once and nothing else carries it. A photograph added later inherits the entrance by existing in
+the registry and being rendered through `<Photo>`; the failure mode is a new component reaching for
+`next/image` directly, which opts itself out silently. `Screen`, the real-capture frame in the same
+file, carries it too.
+
+`preload` is the entire opt-out list. A preloaded photograph is the above-the-fold one, so it is the LCP
+element and its wrapper already runs `settle` (the home hero and the service hero both do). Animating a
+clip-path there would double that entrance and put a paint-blocking effect on the metric rule 13 caps at
+2.5s.
+
+Measured in a real browser (Playwright, chromium 1248): on the home page 9 photographs carry the unveil
+and 1 opts out, every one reads `inset(12%)` with `scale(1.06)` before its trigger and `inset(0%)` with
+`scale(1)` after a full scroll, transition 0.9s, none left clipped. Under
+`prefers-reduced-motion: reduce`, 0 of 9 are clipped.
+
+One bug was found by running that test rather than reading the stylesheet. The `<noscript>` rule in
+app/layout.tsx reset `opacity` and `transform` but not `clip-path`, so with scripts disabled all 9
+photographs stayed clipped to their middle 76%. The rule now resets `clip-path` as well, and the same
+test reads 0 of 9.
+
+Coverage is currently thin on the pages this most needs to land on, and that is a content gap rather than
+a code one: `<Photo>` appears in Hero, Bento, Steps and PlanCompare on the home page, and once in the
+service template, where it is the preloaded hero and therefore opted out. A service page has exactly one
+photograph and /about/ has none, so the unveil is effectively a home-page effect until the inner pages
+get the imagery docs/image-todo.md already tracks.
+
 ## v3 / home
 
 | # | Section | Layout family | Eyebrow | Marquee | CTA intents |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Hero | split with overlapping offset image (6/6 at lg, image overlaps next section by 48px) | no | no | BOOK, CHAT |
-| 2 | Built on | static logo grid (4x2, 2 columns under 768px; no marquee in v3) | no | no | none |
-| 3 | What we fix | bento grid, 7 cells (4x3 at lg, 2 columns at md, 1 column below) | yes ("What we fix") | no | none (cells link to problem pages; cell 7 opens the problem palette) |
-| 4 | Four moves | tabbed showcase (Radix Tabs, sliding pill; panel = text 5 / image 7 at md, stacked below; tabs scroll-snap 8px apart under 768px, one bordered segmented track from md) | no | no | none |
+| 2 | What we fix | bento grid, 7 cells (4x3 at lg, 2 columns at md, 1 column below) | yes ("What we fix") | no | none (cells link to problem pages; cell 7 opens the problem palette) |
+| 3 | Four moves | tabbed showcase (Radix Tabs, sliding pill; panel = text 5 / image 7 at md, stacked below; tabs scroll-snap 8px apart under 768px, one bordered segmented track from md) | no | no | none |
+| 4 | Pricing | pricing tiers with billing toggle (3 tiers, care plan centre at 1.04 with accent ring; scroll-snap cards under 768px, care plan first) | no | no | PLANS (care plan), BOOK (one-time fix), BOOK with service=malware-removal (cleanup) |
 | 5 | Prevent the next one | interactive toggle comparison (radio pill toggle with sliding thumb; card = content left, photo right at md) | yes ("Prevent the next one") | no | BOOK or PLANS, following the toggle |
-| 6 | Pricing | pricing tiers with billing toggle (3 tiers, care plan centre at 1.04 with accent ring; scroll-snap cards under 768px, care plan first) | no | no | PLANS (care plan), BOOK (one-time fix), BOOK with service=malware-removal (cleanup) |
-| 7 | Quotes | masonry of quote cards (CSS columns 2 at md, 3 at xl; heights by content; no carousel) | no | no | none (third card links to case studies) |
-| 8 | Security | grouped icon list (3 groups x 2 items; group label 3 cols, items in 2 columns; one soft divider between groups) | yes ("Security") | no | none |
-| 9 | Guarantee | centered manifesto card (large numeral, H2, one sentence, text link). Renders nothing until brand.guarantee is set | no | no | none (text link to /legal/guarantee/) |
-| 10 | FAQ | searchable accordion inside a card (labelled filter input above 6 Radix accordion items; filtered-out items leave with layout animation; composed empty state) | no | no | CHAT (empty state only) |
-| 11 | Final CTA | gradient panel (the one gradient on the site, static radial green mesh; centred) | no | no | BOOK, CHAT |
+| 6 | Security | grouped icon list (3 groups x 2 items; group label 3 cols, items in 2 columns; one soft divider between groups) | yes ("Security") | no | none |
+| 7 | What we don't do | definition grid (4 term and description pairs, 2x2 from md, 1 column below, no icons) | no | no | none |
+| 8 | Guarantee | centered manifesto card (large numeral, H2, one sentence, text link). Renders nothing until brand.guarantee is set | no | no | none (text link to /legal/guarantee/) |
+| 9 | FAQ | searchable accordion inside a card (labelled filter input above 7 Radix accordion items; filtered-out items leave with layout animation; composed empty state) | no | no | CHAT (empty state only) |
+| 10 | Final CTA | gradient panel (the one gradient on the site, static radial green mesh; centred) | no | no | BOOK, CHAT |
 
-Note for section 2: the hero photo hangs 48px into it at lg, so its first row needs at least 48px of clear space on the right half.
+Reordered on 2026-10-28 to the spine all three reviewed competitors share (fixed.net, gotechark.com, fixmysite.com):
+hero, then the problem catalogue, then the process, then price, and the care plan only after the thing it upsells.
+The bento moves 3 -> 2, the tabbed showcase 4 -> 3, pricing 6 -> 4, the toggle comparison 5 -> 5, security 8 -> 6.
+No component changed; only its position did.
 
-Sections 1 and 4 carry the page's claims and now read their gates. The hero asserts five, not the two the fix
+Two sections left the page in the same pass. The static logo grid is gone because a tech-stack grid was the weakest
+thing that could hold slot 2, and the quote masonry is gone because src/content/testimonials.ts holds two marked
+placeholders, so it rendered placeholder cards above the price. Both component files stay in
+src/components/sections/v3/: Quotes returns to slot 4 the day two real quotes exist, and the logo grid is a
+candidate for /about/. The page is 10 sections as a result.
+
+Note for section 2: the hero photo hangs 48px into it at lg. The logo grid used to absorb that with `lg:pt-28`;
+the bento's own `lg:py-24` is 96px, so the overlap lands in padding and nothing was added. The cell in the first
+row's right half at lg is cell 2 (col-start-3), which is what the photo hangs over.
+
+Sections 1 and 3 carry the page's claims and now read their gates. The hero asserts five, not the two the fix
 routing named: `sameDay` is the headline's "today", and `vetted`, `bookingMinutes`, `fixedPrice` and `backupFirst`
 are the four halves of the subtext. All five are composed from `brand.claims` at module scope, so the hero stays a
 Server Component with a CSS-only entrance and no client JS in the LCP path, and the headline is still one string
 the h1 splits per word for the `rise` stagger. `bookingMinutes` is interpolated rather than spelled out, the
 pattern `checkTurnaround` already uses on /free-site-check/ and in the booking flow, so the number on screen is the
-gated value itself; that is the one copy change, "two minutes" to "2 minutes". Section 4 gates three lines, one of
+gated value itself; that is the one copy change, "two minutes" to "2 minutes". Section 3 gates three lines, one of
 them `alt` text, because assistive tech reads it. Measured by flipping each claim off and rebuilding: the headline
 drops to "Your WordPress site, back online.", the subtext to "Book a vetted WordPress engineer in 2 minutes. Full
 backup first." or "... Fixed price.", and the Approve and Fix steps to "quotes the work" and "We fix the cause".
@@ -90,51 +377,65 @@ measured lines across the guides and city files, so a rule wide enough to read i
 ("Take a backup of files and database before any change") is a real process step, kept by explicit ruling; if
 `brand.claims.backupFirst` is ever set false it needs a manual content edit, as no automated check will catch it.
 
-Eyebrow budget for this page: 11 sections, so ceil(11 / 3) = 3 eyebrows allowed, and 3 are used (sections 3, 5 and 8).
+Eyebrow budget for this page: 10 sections, so ceil(10 / 3) = 4 eyebrows allowed, and 3 are used (sections 2, 5 and 6).
 Two unstyled foundation sections ("Site down or hacked right now", "What we do") sat after the final CTA until the
-QA pass; they duplicated the bento and the footer and were removed, which is what brings the page to 11 sections.
+QA pass; they duplicated the bento and the footer and were removed. Section 7 is the one section on this page with
+no competitor equivalent but fixed.net's: it publishes what LetsFixWP does not do. Its wording is gated on
+brand.boundaries, because fixed.net's own list (no custom development, no web design, no new sites) would be a
+false statement here, where src/config/sitemap.ts sells all three.
 
 ## v3 / service template (/<hub>/<service>/)
 
 | # | Section | Layout family | Eyebrow | Marquee | CTA intents |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Hero | split with a content-height portrait photo frame | no | no | node intent, CHAT |
+| 1 | Hero, with the trust chip row inside it | split with a content-height portrait photo frame | no | no | node intent, CHAT |
 | 2 | Lead statement (summary, then "Who this is for") with the conversion rail: in flow under 1024px, sticky beside the lead column from lg | lead column with conversion rail | no | no | node intent, CHAT (rail, lg only) |
 | 3 | Does your site show this? (fix intent only) | icon-marked tick list | no | no | none |
-| 4 | What we do | bento grid, spans varied per item count | no | no | none |
-| 5 | What you get | tinted outcome panel, statement stack | no | no | none |
-| 6 | Errors we fix here | link rows | no | no | none |
-| 7 | Questions | plain disclosure list | no | no | none |
-| 8 | Related | chip row | no | no | none |
-| 9 | Closing | split band (text left, buttons right) | no | no | node intent, CHAT |
+| 4 | How this job runs | numbered step row (4 steps, 2x2 from sm, 1 column below) | no | no | none |
+| 5 | What we do | bento grid, spans varied per item count, one duotone icon per verb | no | no | none |
+| 6 | What you get | tinted outcome panel, statement stack, one 16/10 photograph | no | no | none |
+| 7 | Errors we fix here | stacked link cards | no | no | none |
+| 8 | Questions | disclosure list in a card | no | no | none |
+| 9 | Related | chip row | no | no | none |
+| 10 | Closing | split band (text left, buttons right) | no | no | node intent, CHAT |
 
-Eyebrow budget for this page: 9 sections on a fix page, so ceil(9 / 3) = 3 eyebrows allowed, and 0 are used.
-A plan or project page drops row 3 and runs 8 sections, so ceil(8 / 3) = 3 allowed, and 0 used. No row repeats a
-layout family. Marquee is `no` on every row: v3 has no marquee anywhere. Only row 1 is an image-plus-text split,
-so the 2-consecutive-splits limit is never approached.
+Eyebrow budget: 10 sections on a fix page, so ceil(10 / 3) = 4 allowed, and 0 are used. A plan or project
+page drops row 3 and runs 9, so ceil(9 / 3) = 3 allowed, and 0 used. No row repeats a layout family.
+Marquee is `no` on every row: v3 has no marquee anywhere.
+
+Rows 1, 4, 5 and 6 changed on 2026-10-28, from an audit of the three reference sites' own service pages
+(fixed.net /wordpress-security, fixmysite /wordpress-malware-removal, gotechark
+/fix-my-wordpress-website). All three carry a numbered process, two of three carry trust chips under the
+hero, and one carries six icon cards where we had text-only cells. The target the brief actually names is
+that a section should be understandable before its text is read, and this page was `h2 → text` nine times
+with only bento cell widths and one tinted panel as non-text signal.
+
+**The trust chips are inside the hero block, not their own section, and that is a contract constraint
+rather than a preference.** Row 9 (Related) is already this page's chip row, and rule 3 refuses a second
+section in a family already on the page. Putting them in the hero also matches the references, where the
+chips are hero support: fixed.net sets its price line in exactly that position.
+
+Row 4 reads `STEPS` from src/content/notices.ts, which is where that array now lives so the home page's
+tabbed showcase and this row cannot drift apart. It stayed out of the other content files because it gates
+`fixedPrice` and `backupFirst`, and notices.ts is the one file under src/content allowed to read a claim
+gate. The four moves are generic to every job, so this row needed no new copy: 32 service pages gained a
+process section without a word being written for it. It is 2x2 rather than 4 across because the row sits in
+the 8-of-12 content column, where four cards measure about 175px and wrap a 20-word step to seven lines.
+
+Row 5's icons come from `whatWeDoIcons` in templates/parts.tsx, built the same way as `practiceIcons`
+beside it: the key is a union of the real verbs, not `string`, so a service that introduces a verb with no
+icon fails to compile instead of rendering `undefined` as a component. 159 items across the 32 services use
+36 distinct verbs, which is what made one icon per verb a 36-line map rather than a per-service decision.
+
+Row 6's photograph is a seeded picsum placeholder under contract rule 7, logged in docs/image-todo.md, and
+is a deliberate choice by the owner over an icons-only treatment after being told it will read as obviously
+fake on 32 live pages. It renders through the same markup as `<Photo>` so it inherits the
+`data-reveal="image"` unveil; next/image used directly would opt out silently.
 
 Hero carries no subtext: the shortest service field is 25+ words, over the contract's 20-word hero cap, so
-service.summary renders as the lead statement below the hero.
-
-Row 2 carries `whoItsFor` as a definition row under the summary, which is why row 3 is now fix-only. Before this
-pass a ternary showed `symptoms` on the 15 fix services and `whoItsFor` on the other 17, so each field was dead
-on the pages of the other intent; `whoItsFor` is written for all 32 and now renders on all 32.
-
-Row 1's photo frame takes its height from the title block at lg (`lg:h-full lg:min-h-[26rem]`) rather than a
-fixed ratio, which is what keeps it off the hub hero's `aspect-[4/3]` box. Its resting elevation is `shadow-card`:
-`--shadow-lift` is the hover shadow in MASTER and the frame is not interactive.
-
-Row 3 is the page's only icon-marked list, which is why row 5 stopped being a tick list: deliverables are
-outcomes and now carry the weight of a panel instead.
-
-The conversion rail (`FactRail` in `src/components/templates/parts.tsx`) is one DOM node at every width, not two.
-From lg it is the sticky rail beside the lead column, carrying the page title, its CTA pair, then the guarantee
-and the gated brand claims. Under 1024px the same node falls into normal flow between Related and the closing
-band as a reassurance panel: CSS hides the title and the CTA pair there, because the global fixed bottom bar is
-the persistent CTA below lg, so what appears is the guarantee and the claims and nothing else. It is still row 2's
-layout family rather than a row of its own, because it is the same node in the same component with the same
-content; what changes is where the grid puts it. `typicalTurnaround` and `priceFrom` are null on all 32 services,
-so no number is shown; a fact row appears automatically if either is ever filled in (contract rule 8).
+service.summary renders as the lead statement below the hero. Row 1 is still the only image-plus-text
+split, and row 6's photograph sits inside a panel rather than a split, so the 2-consecutive-splits limit is
+not approached.
 
 ## v3 / guide template (/guides/<slug>/)
 
@@ -145,9 +446,20 @@ so no number is shown; a fact row appears automatically if either is ever filled
 | 3 | What you are seeing, with the conversion rail beside the whole body column | lead column with conversion rail | no | no | node intent, CHAT (rail, lg only) |
 | 4 | What usually causes it | cause tiles with an inline cause-to-check diagram | no | no | none |
 | 5 | Safe things to try first | numbered procedure with a warning note | no | no | none |
-| 6 | When to call us | prose with inline CTA row | no | no | BOOK (parent service), CHAT, CHECK |
-| 7 | Questions | plain disclosure list | no | no | none |
-| 8 | More errors | link rows | no | no | none |
+| 6 | When to call us | accent-tinted call-out panel with an inline CTA row | no | no | BOOK (parent service), CHAT, CHECK |
+| 7 | Questions | disclosure list in a card | no | no | none |
+| 8 | More errors | uniform image-led card grid (3 up at lg, 2 at sm), severity badge per card | no | no | none |
+
+Row 6 became a call-out panel on 2026-10-30: it was a four-line grey paragraph carrying the page's only
+conversion moment, and measured 0 icons and 0 cards. It is tinted with `--accent-tint` rather than
+`--surface-2` so it stays distinct from the warning note inside row 5 immediately above it, which is the one
+real adjacency risk in the change. Row 3's symptoms list also stopped being plain `list-disc` bullets and now
+uses `TickList` with a warning mark, because a check mark reads as "we provide this" and these are symptoms.
+
+The five cause tiles in row 4 were deliberately left alone. They are already this page's one non-uniform
+family, each cause is a single sentence with no natural lead to emphasise and no per-cause icon derivable from
+the data, and numbering them would repeat the numbered circles in row 5 directly below. Improving them means
+writing new content, which is a content decision rather than a layout one.
 
 Eyebrow budget for this page: 8 sections, so ceil(8 / 3) = 3 eyebrows allowed, and 0 are used. A guide with no
 capture in public/screens/ drops row 2 and runs 7 sections, so ceil(7 / 3) = 3 allowed, and still 0 used. No row
@@ -186,12 +498,36 @@ Knowledge Base pair, so the crumb titles follow SITEMAP and the trail inherits t
 
 | # | Section | Layout family | Eyebrow | Marquee | CTA intents |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Hero | single-column title block with lead and CTA pair, no visual | no | no | node intent, CHAT |
+| 1 | Hero, with the trust chip row inside it | split: title block with lead and CTA pair, HeroArt right from lg | no | no | node intent, CHAT |
 | 2 | Which of these is your site doing | span grid of symptom cards (bentoLayout): a bento on three hubs, uniform 2-up on the other three | no | no | none |
-| 3 | Most urgent problems | ranked list in one panel, severity badge per row | no | no | none |
-| 4 | Not sure which one | left-aligned prompt band, CTA pair | no | no | node intent, CHAT |
+| 3 | Most urgent problems | uniform image-led card grid (3 up at lg, 2 at sm), severity badge per card | no | no | none |
+| 4 | What happens next | numbered step row (4 steps, 2x2 from sm, 1 column below) | no | no | none |
+| 5 | Not sure which one | closing panel (shared ClosingCta) | no | no | node intent, CHAT |
 
-Eyebrow budget: 4 sections, ceil(4 / 3) = 2 allowed, 0 used. No marquee. No image-plus-text splits at all.
+Eyebrow budget: 5 sections, ceil(5 / 3) = 2 allowed, 0 used. No marquee. No image-plus-text splits at all.
+
+Rows 1 and 4 changed on 2026-10-30, carrying the service template's 2026-10-28 audit across to the six hubs,
+which were the thinnest page type on the site at three sections plus a hero. Row 4 is the same `StepRow`
+primitive and the same `jobSteps` content the service pages use, so a third copy of the process was not
+written and the hub cannot describe a different one. Its heading is "What happens next" rather than the
+service page's "How this job runs" because a hub is a category page where nothing has been chosen yet.
+It sits after row 3 and before the closing band so the reassurance is adjacent to the CTA, which is where
+it does conversion work.
+
+Repeating the four moves on both the hub and its services is deliberate. Many visitors land on a hub and
+convert from it without opening a service page, and all three reference sites repeat their process at both
+funnel depths for the same reason.
+
+**No photograph was added, and that is a standing decision rather than an omission.** The hero dropped its
+photograph in an earlier pass because the available hub frames were reused and several were dark, against
+MASTER's bright-daylight direction, and an index panel only repeated the grid below it; `hubPhotos` was
+deleted, so hubs carry no photo data at all. The service pages' placeholder photograph was an explicit
+owner decision for that template and does not extend here.
+
+**No subject icon was added to the row 2 cards.** They already carry a navigational caret, and their text
+fit is tuned: `bentoLayout` weighs each card on the copy it actually holds and the 1.4 ratio was hand-tuned
+against exactly this content. An icon per service would need a 32-entry map and would compete with the
+symptom list inside the same cell, so the span variation stays the differentiator.
 
 Row 2 reads the real intent mix of each hub. Measured: wordpress-fix 11 fix; wordpress-security 3 fix, 1 project; woocommerce 1 fix, 3 project; wordpress-maintenance 3 plan, 1 project; wordpress-performance-migration 3 project; wordpress-development 6 project. `symptoms` is empty on every non-fix service (serviceSchema refine), so a card shows its first three symptoms when it has them and otherwise its `summary`, `whoItsFor` and the first three `deliverables`. The heading follows: "Which of these is your site doing?" only when at least one card has symptoms, "Pick the work that fits" when none does. Row 3 renders only when the hub has guides (4 of 6 do: maintenance and development have none). It ranks by `Guide.urgency` and shows the urgency in words plus an icon (`UrgencyBadge`), never colour alone. The hero drops the photograph and carries no visual (contract rule 4 allows text plus CTA): the old hub photographs were reused frames, several dark, against the bright-daylight direction in MASTER, and an index panel only repeated the grid. `hubPhotos` is removed, so hubs carry no photo data. Row 4 replaces a closing band that repeated the node title and both hero buttons; it renders the page's primary CTA (`primaryCtaFor(node.intent)`, so PLANS on maintenance and QUOTE on development) beside `ChatButton`, which is the same pair the hero shows.
 
@@ -212,15 +548,49 @@ and `wordpress-performance-migration` (1.12, three cards, 3,3,6). The three that
 (1.67, eleven cards, ending on a 6), `wordpress-security` (2.63) and `woocommerce` (2.06). 1.4 was tuned by hand
 against exactly this split, which is why the number lives beside the function and not in a template.
 
+## Shared: the guide card has no banner, and the related block is one grid (2026-10-30)
+
+Two changes that touch every page type, recorded here rather than in one template's table because both are now
+single sources of truth read from several places.
+
+**The banner came off `GuideCard`.** It was `guideArt(parent)`, which resolves from the parent service's hub and
+intent. Every grid of guide cards on this site is grouped by parent or by hub, so that function could never
+differentiate one card from its neighbour. Counted over the real content: all 26 guides under /wordpress-fix/
+resolve to `working-at-laptop`, all 5 under /wordpress-security/ to `shield-and-firewall`, the 4 under
+/wordpress-performance-migration/ to `metrics-and-team`, and a service page's 2 to 4 siblings to one picture by
+construction. Every one of those grids was showing the same image three or four times down the column. The hub
+template's own comment claimed the banner was "the thing that distinguishes one card from the next"; that was
+wrong, and the comment is corrected in place. What actually distinguishes them is the urgency badge, the symptom
+and the literal message, which is what a reader arriving from an error on their screen is matching against.
+`guideArt` is deleted rather than flagged per caller, because there is no caller it was right for. This is the
+image repetition that had been raised four times and recorded as recommended-and-not-taken; it is taken now.
+
+`LinkCard`'s `art` is optional as a result. A banner belongs on a card only when it differs from card to card,
+which is true of the pricing directory (32 services across six hubs) and of nothing else that uses the card.
+
+**"Related" is `RelatedGrid`.** Only the service template ends on a related block today, across 32 pages, and it
+was `LinkList`: a flat chip row of titles. Those paths point at four different kinds of page (category, service,
+guide, comparison) and the chip said nothing about which, so the one fact a reader needed before clicking was
+the one the control withheld. The grid card carries that kind as its label, from `kindForPath`, which reads the
+same three sources `titleForPath` already resolves rather than inventing a second lookup. Two up, because the
+measured content is 3 paths on 19 services and 4 on 13, which fills two columns with nothing stranded.
+
+Rule 3 on the service page: the body now holds the what-we-do bento (icon tiles, not links, span-varied), the
+guide card grid and the related grid. Three grids, which a strict reading of one-family-per-page does not love.
+They are kept apart deliberately and by weight, not by hoping: the bento is unlinked icon tiles at varying
+spans, the guide cards are full cards on `surface` with badges and a mono message line at three columns, and the
+related cards are the lightest thing on the page, `surface-2` with no shadow, no summary and no banner, at two
+columns. The alternative is to leave "Errors we fix here" as a row list, which is what was asked to change.
+
 ## v3 / city template (/wordpress-development/cities/<city>/)
 
 | # | Section | Layout family | Eyebrow | Marquee | CTA intents |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Hero | narrow document header | no | no | QUOTE, CHAT |
+| 1 | Hero | split: narrow document header, HeroArt right from lg | no | no | QUOTE, CHAT |
 | 2 | Local context | prose column | no | no | none |
-| 3 | What <city> clients ask for | link rows | no | no | none |
+| 3 | What <city> clients ask for | stacked link cards | no | no | none |
 | 4 | How working with us runs | span bento of labelled delivery cards (bentoLayout) | no | no | none |
-| 5 | Questions | plain disclosure list | no | no | none |
+| 5 | Questions | disclosure list in a card | no | no | none |
 | 6 | Closing | split band | no | no | QUOTE, CHAT |
 
 Row 4 rendered `remoteDelivery`'s three items as three equal cards in a row, which contract rule 6 bans outright;
@@ -236,7 +606,7 @@ class record that covers 2, 3, 4 and 6. The grid is one column below 768px, wher
 
 | # | Section | Layout family | Eyebrow | Marquee | CTA intents |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Hero | document header with lettered A/B chips | no | no | none |
+| 1 | Hero | split: document header with lettered A/B chips, HeroArt right from lg | no | no | none |
 | 2 | Which one fits | verdict bento (2-up when the verdicts are near-equal length, odd last card spans the row) | no | no | none |
 | 3 | Side by side | real comparison table, lettered and ruled column heads | no | no | none |
 | 4 | Closing | split band | no | no | collection intent, CHAT |
@@ -251,11 +621,108 @@ apart by a letter plus a coloured rule, never by colour alone. Breadcrumbs alrea
 | --- | --- | --- | --- | --- |
 | /free-site-check/ | lead magnet: preview panel left, form card right | no | no | CHECK (form submit), CHAT |
 | /case-studies/ | composed empty state card | no | no | BOOK, CHAT |
-| /pricing/ | scope and outcome: three equal tier cells with the centre ringed and scaled, outcome rows per tier, a real comparison table, a disclosure FAQ and a split closing band | no | no | BOOK, PLANS, QUOTE, CHECK, CHAT |
+| /pricing/ | scope and outcome: trust chips in the header, three equal tier cells with the centre ringed and scaled, outcome rows per tier, a numbered step row, an icon-marked inclusion list, a tabbed service card grid, a real comparison table, a disclosure FAQ and a split closing band | no | no | BOOK, PLANS, QUOTE, CHECK, CHAT |
 | /about/ | company document: uniform hub cards two a row, ruled engagement rows, a grouped practice list, a city chip row and a closing band, with the shared rail beside the body from lg | no | no | BOOK, CHAT |
 | /guides/ | urgency-grouped error cards under a search panel, then a service chip row and a closing prompt band | no | no | BOOK, CHAT, CHECK |
+
+"Pick the error you are seeing" was cut down on 2026-10-30. The family did not change: it was a card grid and
+it stays a card grid, which is what keeps the page at one family. What changed is density, measured first on
+the rendered page at 1280: the section was 3,954px of a 6,901px document, 57% of the page, 37 cards and 1,053
+words, each card four stacked text blocks of near-identical shape (grey service label, bold title, a two-line
+grey symptom sentence, mono error strip). Matching an error against 37 paragraphs is reading, not scanning,
+which is the complaint.
+
+The card now holds two lines. Line 1 is the title. Line 2 is what the screen actually says: the literal
+`errorText` in mono where the software prints one (20 guides), and otherwise the first symptom that does not
+restate it, in plain muted text (17 guides). The mono/plain split is not decoration, it is the distinction
+between a quoted message and a description of behaviour, and it is the second recognition key after the title.
+Dropped: the parent-service label, which repeated down a group (five services cover most of the 20 critical
+guides) and is still reachable from the chip row below, and the standalone symptom sentence, which is the first
+thing the guide page itself says.
+
+The grid went 2-up to 3-up at lg (`cardGrid`, the same constant the hub urgent grid and the pricing directory
+read), so the groups read in a third fewer rows. The odd-last-card row span came out with it: that rule exists
+for a 2-column grid, and in three columns a remainder of one or two cards is the ordinary shape. Each group
+head gained its count, so a reader can judge a group's size and skip it without scrolling through it.
+
+Not taken: collapsing the two lower-urgency groups behind disclosure. It would shorten the page further and it
+is the obvious move, but the page already carries a real disclosure control in the FAQ family elsewhere on the
+site, and 2026-10-30's earlier finding on this site was exactly that two sections which look alike and behave
+oppositely are worse than a long list. A reader who is down right now should not have to open anything.
+
 | /compare/ | stacked full-width comparison cards, each with A/B chips, summary and the criteria compared | no | no | BOOK, CHAT |
-| /wordpress-development/cities/ | link rows | no | no | QUOTE, CHAT |
+| /wordpress-development/cities/ | stacked link cards | no | no | QUOTE, CHAT |
+
+/pricing/ gained three things on 2026-10-30, from the audit against fixmysite's own plans page: `TrustChips`
+in the header, a numbered `StepRow` ("How the work runs") and an icon-marked list of what every option
+includes, read from the gated `railPoints`. All three are existing components and existing gated content, so
+nothing new was written. Families: the step row and the tick list are both new to this page, and the eight
+blocks give ceil(8 / 3) = 2 eyebrows allowed with 0 used.
+
+"Every service, grouped by the work" became a tabbed directory on 2026-10-30. It was three stacked lists under
+three subheadings, so the page printed all 32 services at once and the reader scrolled past two thirds of them to
+reach the third. The tabs are the three `Service.intent` values the content already carries, which is why no
+content changed and the labels came free from the tier names: One-time fix (15 services), Care plan (3) and
+Project (14).
+
+Each panel is a card grid, not a row list: 2 up from sm and 3 from lg, every card carrying the illustration for
+that service's subject (`serviceArt` in src/content/photos.ts, the same map the service hero reads, so the two
+can never disagree). The row list it replaced gave 32 services one shape and no visual cue to which kind of work
+each was.
+
+Card banners use `cardArt` (src/content/photos.ts), which returns **landscape illustrations only**. The square
+files are badge compositions on white: centred artwork with wide margins baked into the file, so cropped to a
+16/10 banner they leave white down both sides that reads as padding and cannot be removed in CSS without cutting
+the subject. They stay in heroes, where the frame is nearer square.
+
+**Known and unresolved: a tab shows two distinct banners across fifteen cards.** Eleven of the fifteen one-time
+fix services are in `wordpress-fix` and are all, semantically, the same subject, so a subject-driven map
+correctly gives them the same picture. That is right and it still looks repetitive. Resolving it needs either
+more landscape illustrations, or a per-service visual that is not a photograph: the Phosphor icon tile already
+used by the typed section headers varies per service with no new assets. Raised with the owner rather than
+decided here.
+
+The hover scale sits on a frame inside the card rather than on the `<img>`, so the unveil's `scale(1.06)` start
+and the hover's `1.04` never compound into 1.10 on first hover. They do not actually fight for one property:
+Tailwind v4 emits `scale:` and `translate:` as standalone properties while the unveil writes the `transform`
+shorthand, so the two compose. **Measuring a Tailwind v4 hover through `getComputedStyle(el).transform` reads
+`none` and looks broken.** Read `scale` and `translate` instead; two passes were wasted on that here.
+
+The hover is three things moving together and nothing moving the layout: the card lifts to `--shadow-lift`, the
+illustration scales to 1.04 inside the card's own `overflow-hidden`, and the arrow nudges up and right. Transform
+and opacity only, per rule 10, so nothing reflows and nothing shifts the cards around it; `motion-reduce` drops
+all three. The scale sits on the image and not the card, because scaling a card in a grid moves its neighbours'
+perceived alignment even when it does not reflow them.
+
+It reuses the `StepsTabs` idiom rather than inventing a second tab pattern: Radix `Tabs` for arrow keys, Home and
+End and roving focus, a shared-layout pill on the active trigger, panels kept mounted and `inert` so the change is
+a real crossfade. `layoutId` is `service-pill`, distinct from the home page's `steps-pill`, so the two can never
+animate into each other. Family check: /pricing/ had no tabbed section before this, and the home page's tabbed
+showcase is a different page.
+
+"What each one covers" was redesigned on 2026-10-30: it was four rows of prose, three columns wide, and had to
+be read rather than scanned. It is still a table, which is the right semantic for a comparison and the only
+instance of that family on the page, but the cells are now shapes.
+
+"How the work runs" was a comma-joined list of verbs and is now one pill per verb carrying its own glyph from
+`whatWeDoIcons`, the same map the service pages use, so the shape of the work reads before a single word does
+and the two surfaces cannot disagree about which glyph means which verb. "How it is priced" is a pill rather
+than a sentence. Every row label carries its own icon, so the left column is scannable too. The head is
+`sticky` inside the scroll region, because on a four-row table it scrolled away before the last row and which
+column you were in stopped being obvious.
+
+The care-plan column is tinted and carries an "Ongoing" text badge. The tint is never the only marker (rule 9),
+and the badge is the same word the tier card above it uses.
+
+21st.dev was searched for this and nothing could be installed: its comparison components are all boolean
+check-and-cross matrices, and these cells are prose, verb lists and deliverables. What transferred was the
+principle, that a comparison should be read by shape, plus the sticky head and the highlighted column.
+
+Two of the reference's pricing devices were deliberately not copied. Its price-comparison matrix needs
+numbers, and every `priceFrom` is still null, while the page's existing "What each one covers" table already
+does the comparison job without them. And its FAQ is grouped under six labelled headings because it carries
+about 28 questions; ours carries 7, where grouping would be scaffolding around nothing. A flat disclosure
+list is the right shape at that size, so the FAQ was left alone.
 
 The booking form (src/app/contact/BookingFlow.tsx) is shared by /free-site-check/ and /contact/, so it carries one
 v3 style: 12px inputs on --line-strong, 44px targets, a step progress bar, and inline errors under each field.
@@ -263,6 +730,14 @@ v3 style: 12px inputs on --line-strong, 44px targets, a step progress bar, and i
 /guides/ is one page of four blocks, which is why its single layout-family cell reads as a list: a document header
 holding the search panel, the catalogue, the chip row and the closing band. Four blocks, so ceil(4 / 3) = 2
 eyebrows allowed and 0 used, no marquee, no image-plus-text split anywhere on it.
+
+A topic filter was approved in the 2026-10-30 audit, after fixed.net's /resources, and then not built. Three
+reasons, all found while implementing it. This page already rejected one in writing: the search panel is the
+site's own command palette, chosen "rather than a second filter written for this page". It would be the third
+discovery axis here, after that palette and the urgency grouping. And a `?category=` filter turns one index
+into seven near-identical views of the same 37 guides, which is the thin-content shape foundation.md warns
+about for city pages, and would need canonicals and sitemap handling to be safe. The per-element entrance on
+the group headers and the cards was added; the filter was raised with the owner instead of shipped.
 
 The catalogue groups by `Guide.urgency`, not by parent service: urgency is the only ranking signal in the guide
 data and someone reading this page may be down right now. Measured distribution: 20 critical, 13 high, 4 standard.
@@ -332,7 +807,7 @@ would be a second treatment of the same gated value.
 
 The FAQ reuses the mechanism from the home `Faq` section rather than new copy: seven questions referenced by
 service id and exact question text, resolved from the content files, so rewording a question fails the build
-instead of letting the two drift. It renders through `Faqs` (parts.tsx), the plain disclosure list, and emits
+instead of letting the two drift. It renders through `Faqs` (parts.tsx), the disclosure list in a card, and emits
 `faqLd` beside the page's `breadcrumbLd`. Two pricing questions in the content are left out, for a reason each:
 care-plans "What is the difference between Basic, Pro and Business?" names three tiers this page does not
 itemise, and maintenance-woocommerce "Where can I see plan prices?" answers "ask us", which on the page someone

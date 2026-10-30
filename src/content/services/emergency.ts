@@ -39,6 +39,7 @@ export default serviceSchema.parse({
     { q: "Why did one update break the whole site?", a: "WordPress loads every active plugin and the theme on each request. If one of them hits a fatal PHP error, the whole page stops, not just that feature." },
     { q: "What access do you need?", a: "Hosting control panel or SFTP access, plus a WordPress admin login if wp-admin still loads. When wp-admin is down we work from hosting access alone." },
     { q: "Should I turn off automatic updates?", a: "Turning them off avoids surprise breakage but leaves security fixes waiting. Updating on a schedule and testing on a staging copy first is the safer middle ground." },
+    { q: "What if you cannot fix it?", a: "We find the cause first and tell you what we found. If the repair is not possible, or the site needs rebuilding rather than fixing, we say so and what that would take instead." },
   ],
   guideSlugs: ["site-down-after-update", "stuck-in-maintenance-mode"],
   relatedPaths: ["/wordpress-maintenance/care-plans/", "/wordpress-fix/critical-error/", "/guides/site-down-after-update/", "/guides/stuck-in-maintenance-mode/"],

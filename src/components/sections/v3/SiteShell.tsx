@@ -6,6 +6,7 @@ import { nodeByPath, routes } from "@/config/routes";
 import { getGuide, getService, matchIndex } from "@/content";
 import { ChatProvider } from "./ChatProvider";
 import { ChatIconButton, MobileMenu } from "./MobileNav";
+import { Reveal } from "./Reveal";
 import { ProblemSearch, SearchTrigger, type ProblemItem } from "./ProblemSearch";
 
 const links = [
@@ -40,6 +41,7 @@ const Wordmark = () => (
 export function SiteShell({ children }: { children: ReactNode }) {
   return (
     <ChatProvider>
+      <Reveal />
       <ProblemSearch items={problems}>
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:rounded-full focus:bg-surface focus:px-4 focus:py-3">
         Skip to content

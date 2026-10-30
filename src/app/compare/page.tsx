@@ -1,4 +1,4 @@
-import { CaretRightIcon } from "@phosphor-icons/react/ssr";
+import { ArrowUpRightIcon } from "@phosphor-icons/react/ssr";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BookLink, ChatButton } from "@/components/Cta";
@@ -23,9 +23,11 @@ export default function CompareIndex() {
         Each one sets out where the two differ and which fits a given scenario. No winner is declared, because it depends on what you are running.
       </p>
       <ul className="mt-8 space-y-4 md:space-y-5">
-        {compares.map((c) => (
+        {compares.map((c, i) => (
           <li
             key={c.slug}
+            data-reveal
+            style={{ "--i": i } as React.CSSProperties}
             className={cn(cardLink, "grid gap-5 p-6 md:grid-cols-[1.1fr_1fr] md:gap-8")}
           >
             <div>
@@ -36,7 +38,7 @@ export default function CompareIndex() {
                 {/* Stretched link: the whole card is the target; the title is its accessible name. */}
                 <Link href={routes.compare(c.slug)} className={cn("inline-flex min-h-11 items-center gap-2", stretchedLink)}>
                   {c.a} vs {c.b}
-                  <CaretRightIcon weight="duotone" className="size-5 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden />
+                  <ArrowUpRightIcon weight="duotone" className="size-5 shrink-0 text-muted transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden />
                 </Link>
               </h2>
               <p className="mt-2 max-w-[68ch] text-sm text-muted">{c.summary ?? c.seo.description}</p>

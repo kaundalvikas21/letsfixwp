@@ -11,7 +11,7 @@ export function GuaranteeCard() {
   const g = brand.guarantee;
   if (!g) return null;
   return (
-    <section aria-labelledby="guarantee" className="mx-auto max-w-6xl px-4 py-16 md:px-6 lg:py-24">
+    <section data-reveal aria-labelledby="guarantee" className="mx-auto max-w-6xl px-4 py-16 md:px-6 lg:py-24">
       <div className="mx-auto max-w-4xl rounded-[20px] border border-line bg-surface px-6 py-14 text-center shadow-card md:px-16 md:py-20">
         {g.placeholder && (
           <p className="mx-auto mb-6 max-w-md rounded-[12px] border border-dashed border-line-strong px-3 py-2 text-sm text-muted">

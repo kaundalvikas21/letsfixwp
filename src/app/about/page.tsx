@@ -1,9 +1,11 @@
-import { CaretRightIcon } from "@phosphor-icons/react/ssr";
+import { ClosingCta } from "@/components/sections/v3/ClosingCta";
+import { ArrowUpRightIcon } from "@phosphor-icons/react/ssr";
 import type { Metadata } from "next";
+import { Illustration } from "@/components/sections/v3/Photo";
 import Link from "next/link";
 import { BookLink, ChatButton } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
-import { Breadcrumbs, cardLink, FactRail, h1, h2, LinkList, page, practiceIcons, Section, stretchedLink } from "@/components/templates/parts";
+import { Breadcrumbs, cardLink, FactRail, h1, h2, HeroSplit, LinkList, page, practiceIcons, Section, stretchedLink } from "@/components/templates/parts";
 import { brand } from "@/config/brand";
 import { cityNodes, hubIdOf, hubNodes, routes } from "@/config/routes";
 import { hubLead } from "@/content/hubs";
@@ -40,12 +42,12 @@ export default function About() {
     <div className={cn(page, "py-8 md:py-12")}>
       <Breadcrumbs items={nodeCrumbs(routes.about)} />
 
-      <header className="mt-6">
+      <HeroSplit art={<Illustration id="desk-with-laptop" sizes="(min-width: 1024px) 40vw, 100vw" />}>
         <h1 className={h1}>About {brand.name}</h1>
         <p className="mt-5 max-w-[68ch] text-lg text-muted">
           We fix WordPress sites that are down, hacked or slow, look after them afterwards, and build new ones.
         </p>
-      </header>
+      </HeroSplit>
 
       <Section id="what-we-do" title="What we work on">
         {/* Two a row, which rule 6 allows; it bans three. Not a bento: `bentoLayout` reads 2.10 on the six card
@@ -61,9 +63,9 @@ export default function About() {
                     outline is only dropped where :has() can put the ring on the card instead. */}
                 <Link href={node.path} className={cn("flex min-h-11 items-center justify-between gap-3", stretchedLink)}>
                   {node.title}
-                  <CaretRightIcon
+                  <ArrowUpRightIcon
                     weight="duotone"
-                    className="size-5 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
+                    className="size-5 shrink-0 text-muted transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 motion-reduce:transition-none"
                     aria-hidden
                   />
                 </Link>
@@ -135,18 +137,12 @@ export default function About() {
         </aside>
       </div>
 
-      <section
-        aria-labelledby="about-closing"
-        className="mt-16 flex flex-col gap-5 border-t border-line pt-8 md:flex-row md:items-center md:justify-between"
-      >
-        <h2 id="about-closing" className={cn(h2, "max-w-[24ch]")}>
-          Tell us what your site is doing
-        </h2>
-        <div className="flex shrink-0 flex-wrap gap-x-3 gap-y-3">
-          <BookLink location="about:closing" className="btn-primary" />
-          <ChatButton location="about:closing" className="btn-secondary" />
-        </div>
-      </section>
+      <ClosingCta
+        id="about-closing"
+        title="Hand it to someone who does this daily."
+        sub="Tell us what your site is doing and an engineer picks it up, through a login you create for us."
+        location="about:closing"
+      />
     </div>
   );
 }

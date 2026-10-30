@@ -1,3 +1,5 @@
+import { ClosingCta } from "@/components/sections/v3/ClosingCta";
+import { Illustration } from "@/components/sections/v3/Photo";
 import Link from "next/link";
 import { ChatButton, QuoteLink } from "@/components/Cta";
 import { faqLd, JsonLd, nodeCrumbs, serviceLd } from "@/components/JsonLd";
@@ -7,7 +9,7 @@ import { citiesLead, remoteDelivery } from "@/content/notices";
 import type { City } from "@/content/schema";
 import { bentoLayout } from "@/lib/bento";
 import { cn } from "@/lib/utils";
-import { Breadcrumbs, Faqs, h1, h2, LinkRows, page, Section } from "./parts";
+import { Breadcrumbs, Faqs, h1, h2, HeroSplit, LinkRows, page, Section } from "./parts";
 
 // bentoLayout returns 3 for a uniform pair and 2, 4 or 6 otherwise; written out so Tailwind's scanner sees
 // every class. A computed `md:col-span-${n}` is never emitted by the v4 scanner.
@@ -58,27 +60,27 @@ export function CityTemplate({ city: c, node }: { city: City; node: FlatNode }) 
       />
       <Breadcrumbs items={nodeCrumbs(node.path)} />
 
-      <header className="mt-6">
+      <HeroSplit art={<Illustration id="desk-with-laptop" sizes="(min-width: 1024px) 40vw, 100vw" />}>
         <h1 className={h1}>WordPress development in {c.city}</h1>
         <div className="mt-7 flex flex-wrap gap-3">
           <QuoteLink location={`${loc}:hero`} service={highlighted[0]?.id} className="btn-primary" />
           <ChatButton location={`${loc}:hero`} service={highlighted[0]?.id} className="btn-secondary" />
         </div>
-      </header>
+      </HeroSplit>
 
       <div className="mt-10 space-y-5">
-        {c.localContext.map((p) => (
-          <p key={p.slice(0, 32)} className="max-w-[68ch] text-muted">
+        {c.localContext.map((p, i) => (
+          <p key={p.slice(0, 32)} data-reveal style={{ "--i": i } as React.CSSProperties} className="max-w-[68ch] text-muted">
             {p}
           </p>
         ))}
       </div>
 
-      <Section id="services" title={`What ${c.city} clients ask for`}>
+      <Section id="services" revealBody={false} title={`What ${c.city} clients ask for`}>
         <LinkRows items={highlighted.map((s) => ({ href: s.path, title: s.title, summary: s.summary }))} />
       </Section>
 
-      <Section id="remote" title="How working with us runs">
+      <Section id="remote" revealBody={false} title="How working with us runs">
         {/* Three items rendered as three equal cards in a row, which contract rule 6 bans outright; /about/ fixed
             the same breach on the same data. Spans now come from `bentoLayout` on the line each card actually
             holds, the weighting the hub grid uses, and the label is a label row rather than part of that line.
@@ -86,7 +88,7 @@ export function CityTemplate({ city: c, node }: { city: City; node: FlatNode }) 
             returns (3,3,6): two a row, which rule 6 allows, and the odd last card spans the row. */}
         <dl className="grid gap-4 md:grid-cols-6 md:gap-5">
           {remoteDelivery.map((r, i) => (
-            <div key={r.label} className={cn("rounded-[20px] border border-line bg-surface p-5", SPAN[spans[i] as keyof typeof SPAN])}>
+            <div key={r.label} data-reveal style={{ "--i": i } as React.CSSProperties} className={cn("rounded-[20px] border border-line bg-surface p-5", SPAN[spans[i] as keyof typeof SPAN])}>
               <dt className="font-display text-sm font-bold tracking-wide text-accent-text">{r.label}</dt>
               <dd className="mt-1.5 text-sm">{r.text}</dd>
             </div>
@@ -96,15 +98,13 @@ export function CityTemplate({ city: c, node }: { city: City; node: FlatNode }) 
 
       <Faqs faqs={c.faqs} />
 
-      <section aria-labelledby="city-closing" className="mt-16 flex flex-col gap-5 border-t border-line pt-8 md:flex-row md:items-center md:justify-between">
-        <h2 id="city-closing" className={cn(h2, "max-w-[24ch]")}>
-          A WordPress team for {c.city}
-        </h2>
-        <div className="flex shrink-0 flex-wrap gap-3">
-          <QuoteLink location={`${loc}:closing`} service={highlighted[0]?.id} className="btn-primary" />
-          <ChatButton location={`${loc}:closing`} service={highlighted[0]?.id} className="btn-secondary" />
-        </div>
-      </section>
+      <ClosingCta
+        id="city-closing"
+        title={`Building or fixing a site in ${c.city}?`}
+        sub="Tell us what you need and we will scope it, with the meetings on video at a time you pick."
+        intent="QUOTE"
+        location={`${loc}:closing`}
+      />
 
       <p className="mt-8 text-sm text-muted">
         <Link href={routes.cities} className="underline underline-offset-4 hover:no-underline">

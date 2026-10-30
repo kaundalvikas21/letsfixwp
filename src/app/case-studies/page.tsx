@@ -20,7 +20,7 @@ export default function CaseStudies() {
       <h1 className={cn(h1, "mt-6")}>Case studies</h1>
 
       {/* Real case files only. None exist yet: src/content/testimonials.ts holds placeholders, not quotes. */}
-      <div className="mt-8 rounded-[20px] border border-dashed border-line-strong bg-surface p-8 text-center md:p-12">
+      <div data-reveal className="mt-8 rounded-[20px] border border-dashed border-line-strong bg-surface p-8 text-center md:p-12">
         <NotePencilIcon weight="duotone" className="mx-auto size-10 text-muted" aria-hidden />
         <p className="mt-5 font-display text-xl font-bold">No case studies are published yet</p>
         <p className="mx-auto mt-3 max-w-[48ch] text-muted">

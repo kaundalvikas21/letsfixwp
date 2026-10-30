@@ -1,3 +1,5 @@
+import { ClosingCta } from "@/components/sections/v3/ClosingCta";
+import { Illustration } from "@/components/sections/v3/Photo";
 import { BookLink, ChatButton, PlansLink, QuoteLink } from "@/components/Cta";
 import { compareLd, JsonLd } from "@/components/JsonLd";
 import { primaryCtaFor } from "@/config/cta";
@@ -5,7 +7,7 @@ import { nodeByPath, routes } from "@/config/routes";
 import type { Compare } from "@/content/schema";
 import { cn } from "@/lib/utils";
 import { bentoLayout } from "@/lib/bento";
-import { Breadcrumbs, h1, h2, page, Section, Versus } from "./parts";
+import { Breadcrumbs, h1, h2, HeroSplit, page, Section, Versus } from "./parts";
 
 // Literal classes so Tailwind's scanner emits them; a computed `md:col-span-${n}` would not.
 const SPAN = { 3: "md:col-span-3", 2: "md:col-span-2", 4: "md:col-span-4", 6: "md:col-span-6" } as const;
@@ -34,16 +36,16 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
         ]}
       />
 
-      <header className="mt-6">
+      <HeroSplit art={<Illustration id="charts-and-plans" sizes="(min-width: 1024px) 40vw, 100vw" />}>
         <Versus a={c.a} b={c.b} decorative className="mb-5" />
         <h1 className={h1}>{title}</h1>
         <p className="mt-5 max-w-[68ch] text-lg text-muted">{c.summary ?? c.seo.description}</p>
-      </header>
+      </HeroSplit>
 
-      <Section id="verdict" title="Which one fits">
+      <Section id="verdict" revealBody={false} title="Which one fits">
         <ul className="grid gap-4 md:grid-cols-6 md:gap-5">
           {c.verdictByScenario.map((v, i) => (
-            <li key={v.scenario} className={cn("rounded-[20px] border border-line bg-surface p-5 shadow-card", SPAN[spans[i] as keyof typeof SPAN])}>
+            <li key={v.scenario} data-reveal style={{ "--i": i } as React.CSSProperties} className={cn("rounded-[20px] border border-line bg-surface p-5 shadow-card", SPAN[spans[i] as keyof typeof SPAN])}>
               <h3 className="font-display text-base font-bold">{v.scenario}</h3>
               <p className="mt-2 max-w-[68ch] text-sm text-muted">{v.verdict}</p>
             </li>
@@ -91,15 +93,12 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
         </div>
       </Section>
 
-      <section aria-labelledby="compare-closing" className="mt-16 flex flex-col gap-5 border-t border-line pt-8 md:flex-row md:items-center md:justify-between">
-        <h2 id="compare-closing" className={cn(h2, "max-w-[28ch]")}>
-          Still deciding between {c.a} and {c.b}?
-        </h2>
-        <div className="flex shrink-0 flex-wrap gap-x-3 gap-y-3">
-          <Primary location={`${loc}:closing`} className="btn-primary" />
-          <ChatButton location={`${loc}:closing`} className="btn-secondary" />
-        </div>
-      </section>
+      <ClosingCta
+        id="compare-closing"
+        title="Still weighing it up?"
+        sub="An engineer will look at your site and say which of the two actually fits what you are running."
+        location={`${loc}:closing`}
+      />
     </article>
   );
 }

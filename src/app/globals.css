@@ -12,6 +12,9 @@
   --accent: #15803d;
   --on-accent: #fcfcfd;
   --accent-text: #15803d;
+  /* One step of the accent, for button hover. Darker in light, lighter in dark, so the label keeps its
+     contrast either way: white on #126b33 and #0d0f12 on #6ee7a0 both clear AA. */
+  --accent-hover: #126b33;
   --shadow-card: 0 1px 2px hsl(220 20% 40% / 0.06), 0 8px 24px -6px hsl(220 20% 40% / 0.1);
   --shadow-lift: 0 2px 4px hsl(220 20% 40% / 0.07), 0 16px 40px -10px hsl(220 20% 40% / 0.16);
   --scrim: hsl(220 30% 8% / 0.4);
@@ -39,6 +42,7 @@
     --accent: #4ade80;
     --on-accent: #0d0f12;
     --accent-text: #4ade80;
+    --accent-hover: #6ee7a0;
     --shadow-card: inset 0 1px 0 rgb(255 255 255 / 0.04), 0 1px 2px hsl(220 30% 2% / 0.5), 0 12px 32px -8px hsl(220 30% 2% / 0.6);
     --shadow-lift: inset 0 1px 0 rgb(255 255 255 / 0.04), 0 2px 4px hsl(220 30% 2% / 0.55), 0 20px 48px -12px hsl(220 30% 2% / 0.7);
     /* Dark: deep green base, accent blobs kept low so the lightest overlap still holds white at 6.69:1. */
@@ -60,6 +64,7 @@
   --color-accent: var(--accent);
   --color-on-accent: var(--on-accent);
   --color-accent-text: var(--accent-text);
+  --color-accent-hover: var(--accent-hover);
   --color-scrim: var(--scrim);
   --color-photo-scrim: var(--photo-scrim);
   --color-on-photo: var(--on-photo);
@@ -110,15 +115,34 @@
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
-  transition: transform 150ms ease, box-shadow 200ms ease;
-  &:hover { box-shadow: var(--shadow-lift); }
+  /*
+   * The hover was a box-shadow swap only, which on a pill is close to invisible, so the buttons read as having
+   * no hover at all. It is now three things at once: the accent steps one tone, the button lifts 1px, and the
+   * shadow deepens. Transform and colour only, nothing that reflows, and the transition is on the base rule so
+   * it eases out as smoothly as it eases in.
+   *
+   * Ideas were taken from 21st.dev's button catalogue in principle only. Its popular entries are gradient,
+   * glow and shimmer buttons, and MASTER allows exactly one gradient on the site (the final CTA mesh) while
+   * section-contract rule 6 bans neon glows, so none of those could ship here.
+   */
+  transition: transform 150ms ease, box-shadow 200ms ease, background-color 200ms ease;
+  &:hover {
+    background: var(--accent-hover);
+    box-shadow: var(--shadow-lift);
+    transform: translateY(-1px);
+  }
   &:active { transform: scale(0.98); }
+  @media (prefers-reduced-motion: reduce) {
+    &:hover { transform: none; }
+    &:active { transform: none; }
+  }
 }
 
 @utility btn-secondary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.5rem;
   min-height: 44px;
   padding-inline: 1.25rem;
   border-radius: 9999px;
@@ -128,8 +152,22 @@
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
-  transition: transform 150ms ease;
+  /* Had no hover state whatsoever. It now takes the accent on its border plus a tinted fill and a 1px lift,
+     which is how a secondary says "also clickable" without competing with the primary for attention.
+     The label deliberately stays --text: accent text on --accent-tint measures 4.16:1, under AA for a 16px
+     semibold label, and MASTER flags the same pairing on --surface-2 at 4.31 as large-text-or-icons only. */
+  transition: transform 150ms ease, box-shadow 200ms ease, background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+  &:hover {
+    border-color: var(--accent);
+    background: var(--accent-tint);
+    box-shadow: var(--shadow-card);
+    transform: translateY(-1px);
+  }
   &:active { transform: scale(0.98); }
+  @media (prefers-reduced-motion: reduce) {
+    &:hover { transform: none; }
+    &:active { transform: none; }
+  }
 }
 
 /* Web approximation of a frosted material, not Apple Liquid Glass. Used on the floating nav only. */
@@ -173,6 +211,82 @@
 @keyframes acc-close {
   from { height: var(--radix-accordion-content-height); opacity: 1; }
   to { height: 0; opacity: 0; }
+}
+
+/*
+ * Entrance. Every element carrying `data-reveal` rises 16px and fades in once, the first time it
+ * enters the viewport; src/components/sections/v3/Reveal.tsx is the one observer that adds `.revealed`
+ * and explains what was and was not copied from the reference.
+ *
+ * A transition rather than a keyframe, because the start state has to hold before the trigger fires and
+ * `transition` expresses that in two rules instead of a keyframe plus a fill mode. Transform and opacity
+ * only, so it composites and never lays out (contract rule 10).
+ *
+ * The hidden start state is inside prefers-reduced-motion: no-preference, so a reader who asked for less
+ * motion is never served hidden content waiting on a script. The <noscript> rule in app/layout.tsx covers
+ * the other case, where the script never arrives at all.
+ *
+ * What it communicates: each part of the page arrives as its own answer, and the page is responding to
+ * the reader rather than sitting finished before they got there.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  /* Text, cards and panels: rise and fade. */
+  [data-reveal]:not([data-reveal="image"]) {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  /*
+   * Stagger. A grid child that sets --i to its index waits that many beats before its own entrance, so a
+   * row of cards arrives in reading order instead of as a block. 60ms is MASTER's figure for the bento
+   * cells, so this applies the design system's existing number rather than inventing a second one.
+   *
+   * It is declared inside each .revealed rule, after the `transition` shorthand, and not as a rule of its
+   * own. Two reasons, both found by measuring a computed `transition-delay` of 0s: the shorthand resets
+   * transition-delay to 0 for anything declared before it, and a selector like `[data-reveal].revealed` is
+   * a specificity step below `[data-reveal]:not([data-reveal="image"]).revealed`, so it loses even when it
+   * comes later in the file.
+   *
+   * Capped at 8 beats: past about half a second the last card in a long grid reads as lag, not sequence.
+   * The delay is only on the way in, so it never postpones hiding and cannot flash the final frame.
+   */
+  [data-reveal]:not([data-reveal="image"]).revealed {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 600ms var(--ease-spring),
+      transform 600ms var(--ease-spring);
+    transition-delay: calc(min(var(--i, 0), 8) * 60ms);
+  }
+
+  /*
+   * Photographs do not fade in; the frame opens and the picture settles into it. Reverse-engineered
+   * from infiniareserve.com (2026-10-28), which runs the same idea off its own `data-unveil`
+   * attribute as two layers: a wrapper animating `clip-path: inset(12%)` out to `inset(0%)` over an
+   * image held at `transform: scale(1.06)` that eases back to 1. The scrape caught a frame
+   * mid-flight at `inset(9.3363%)`, which is what fixes the direction and the 12% start.
+   *
+   * Ours composes both on the one element the image already is, because every photograph on this
+   * site goes through <Photo> and nothing else should have to be wrapped to inherit the effect. The
+   * visible region is the middle 76% of a 1.06x picture, opening to the whole of a 1x one, which
+   * reads the same and costs no extra DOM.
+   *
+   * 900ms, not the 600ms the text uses: a photograph is a larger object than a line of type, and a
+   * large thing that moves at the speed of a small one reads as cheap.
+   *
+   * What it communicates: the picture is being presented, not just loaded.
+   */
+  [data-reveal="image"] {
+    clip-path: inset(12%);
+    transform: scale(1.06);
+  }
+  [data-reveal="image"].revealed {
+    clip-path: inset(0%);
+    transform: scale(1);
+    transition:
+      clip-path 900ms var(--ease-spring),
+      transform 900ms var(--ease-spring);
+    transition-delay: calc(min(var(--i, 0), 8) * 60ms);
+  }
 }
 
 /* The one gradient on the site (MASTER: final CTA only). Static: no animation, no scroll reaction. */

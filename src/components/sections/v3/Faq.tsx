@@ -5,7 +5,7 @@ import type { Faq as FaqItem } from "./FaqAccordion";
 
 const FaqAccordion = dynamic(() => import("./FaqAccordion").then((m) => m.FaqAccordion));
 
-// Six standard objections, each taken from the service page that already answers it. Referenced, not copied:
+// Seven standard objections, each taken from the service page that already answers it. Referenced, not copied:
 // if the wording changes in the content file, the build fails here instead of the two drifting apart.
 const REFS: [service: string, question: string][] = [
   ["critical-error", "Will I lose content?"],
@@ -14,6 +14,7 @@ const REFS: [service: string, question: string][] = [
   ["site-recovery", "Can you recover a site with no backup?"],
   ["care-plans", "Do I need to move my hosting to join a plan?"],
   ["care-plans", "Is a care plan better than paying per job?"],
+  ["emergency", "What if you cannot fix it?"],
 ];
 
 const faqs: FaqItem[] = REFS.map(([id, q]) => {
@@ -22,10 +23,10 @@ const faqs: FaqItem[] = REFS.map(([id, q]) => {
   return found;
 });
 
-/** v3 home: searchable accordion of standard objections, inside a card. FAQPage JSON-LD for the same six. */
+/** v3 home: searchable accordion of standard objections, inside a card. FAQPage JSON-LD for the same seven. */
 export function Faq() {
   return (
-    <section aria-labelledby="faq" className="mx-auto max-w-4xl px-4 py-16 md:px-6 lg:py-24">
+    <section data-reveal aria-labelledby="faq" className="mx-auto max-w-4xl px-4 py-16 md:px-6 lg:py-24">
       <JsonLd data={faqLd(faqs)} />
       <h2 id="faq" className="font-display text-4xl leading-[1.05] font-extrabold tracking-[-0.02em] md:text-5xl">
         Questions people ask first

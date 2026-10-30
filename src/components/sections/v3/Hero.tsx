@@ -1,6 +1,6 @@
+import { Illustration } from "@/components/sections/v3/Photo";
 import { BookLink, ChatButton } from "@/components/Cta";
 import { brand } from "@/config/brand";
-import { Photo } from "./Photo";
 
 /**
  * The hero asserts five claims, and every one of them reads its gate in brand.claims (src/config/brand.ts), so a
@@ -54,8 +54,9 @@ export function Hero() {
 
         <div className="relative z-10 lg:col-span-6 lg:-mb-12 lg:self-end">
           <div className="aspect-[4/3] overflow-hidden rounded-[20px] shadow-lift motion-safe:animate-[settle_600ms_var(--ease-spring)_both]">
-            {/* The only daylight frame in the set; still short of the brief, see docs/image-todo.md. */}
-            <Photo id="drafting" decorative preload sizes="(min-width: 1152px) 528px, (min-width: 1024px) 50vw, 100vw" />
+            {/* The plate the whole site now uses. It replaced the one daylight photograph in the library,
+                which was the last photograph in a hero anywhere. */}
+            <Illustration id="working-at-laptop" preload sizes="(min-width: 1152px) 528px, (min-width: 1024px) 50vw, 100vw" />
           </div>
         </div>
       </div>

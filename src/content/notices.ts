@@ -4,6 +4,7 @@
  */
 
 import { brand } from "../config/brand";
+import type { PhotoId } from "./photos";
 
 /** Guide pages, under the safe checks. A safety warning, not a sales line. */
 export const coreFileWarning =
@@ -53,6 +54,23 @@ const claimPoints = (...keys: readonly ClaimKey[]): string[] => keys.filter((k) 
  * rather than on a rationale invented after the fact. Every one is already gated and already shown site-wide by
  * the home page's security section, so this adds no promise; it stops the rail making a different one per page.
  */
+/**
+ * Four short facts for the chip row inside a service page hero. Two of the three reference sites put a
+ * strip like this directly under the headline, because the first question on a service page is whether
+ * this is safe to hand a site to, not what the service is called.
+ *
+ * These are the same promises `claimLine` carries, cut to chip length: the rail states them as sentences
+ * further down the page, and a chip has no room for one. Each reads its own gate, so a claim the owner
+ * turns off loses its chip rather than appearing here unqualified, and the row renders nothing if every
+ * one of them is off.
+ */
+export const heroChips: string[] = [
+  brand.claims.vetted && "Vetted engineers",
+  brand.claims.fixedPrice && "Price agreed first",
+  brand.claims.backupFirst && "Backup before changes",
+  brand.claims.ownLogin && "Your login, not your password",
+].filter((x): x is string => typeof x === "string");
+
 export const railPoints = claimPoints("backupFirst", "fixedPrice", "ownLogin", "accessRemoved");
 
 /**
@@ -99,3 +117,74 @@ const PRACTICE: { group: string; items: { id: PracticeId; claim?: ClaimKey; titl
 export const securityPractice = PRACTICE.map((g) => ({ ...g, items: g.items.filter((i) => !i.claim || brand.claims[i.claim]) })).filter(
   (g) => g.items.length > 0,
 );
+
+/**
+ * The home page's "What we don't do" section. Gated on brand.boundaries, which is why these words sit in this
+ * file: it is the one file under src/content that imports brand and gates its own copy (docs/layout-ledger.md,
+ * v3/home). An empty array renders nothing.
+ *
+ * Each line is a limit this business can actually stand behind, checked against src/config/sitemap.ts: there is
+ * no hosting service, the two migration services both run towards WordPress and WooCommerce, and nothing in the
+ * tree sells copywriting, data entry, paid media or social. fixed.net's list (no custom development, no web
+ * design, no new sites) is the opposite of true here, where /wordpress-development/ sells all three.
+ */
+export const boundaries: { term: string; text: string }[] = brand.boundaries
+  ? [
+      { term: "Hosting", text: "We do not sell hosting. We work on the host you already have, and tell you when the host is the fault." },
+      { term: "Other platforms", text: "We build on WordPress and WooCommerce. We move sites onto them from Wix, Squarespace and Shopify, not away." },
+      { term: "Writing and data entry", text: "We do not write your pages or key in a catalogue by hand. Send us a file and we import it." },
+      { term: "Ads and social", text: "We do not run ad campaigns or post to your accounts. Search work we do, paid media we do not." },
+    ]
+  : [];
+
+/**
+ * The four moves every job runs through, from broken to fixed. Shared, because two surfaces show them: the
+ * home page's tabbed showcase (Steps.tsx) and the numbered row on every service page. Holding one array
+ * stops a visitor being told a different process on a service page than on the home page.
+ *
+ * It lives in this file and not beside the services because three of its lines gate a claim and read the
+ * gate: the Approve step's sentence and its alt text read `fixedPrice`, and the Fix step's first clause
+ * reads `backupFirst`. notices.ts is the one file under src/content allowed to do that (see the rail note
+ * above). Alt text is included deliberately: assistive tech reads it, so an ungated promise there is still
+ * a promise. Each claim off leaves a step that still describes the move.
+ *
+ * `capture` is the real screenshot the home tabs show once it exists, and `standIn` the photograph used
+ * until then (docs/image-todo.md). The service row shows neither; it needs only verb and text.
+ */
+// Each step shows its real capture in a device frame once the file exists; until then a stand-in photo
+// (docs/image-todo.md). booking and quote: screenshots of /contact once v3 styles it. before and after:
+// `npm run capture` (needs Docker). Stand-ins avoid frames the hero and bento already use on this page.
+// Three lines assert a claim gated in brand.claims and read their gate: the Approve step's sentence and its
+// alt text (fixedPrice) and the Fix step's first clause (backupFirst). Alt text counts, because assistive
+// tech reads it. Each one off leaves a step that still describes the move.
+const { fixedPrice, backupFirst } = brand.claims;
+export const jobSteps: { verb: string; text: string; capture: string; alt: string; standIn: PhotoId }[] = [
+  {
+    verb: "Describe",
+    text: "Tell us what your site is doing and where it lives. Not sure what broke? Describe what you see.",
+    capture: "/screens/booking.png",
+    alt: "The booking form asking what the site is doing and which site it is",
+    standIn: "terminal",
+  },
+  {
+    verb: "Approve",
+    text: `An engineer looks at the problem and quotes ${fixedPrice ? "a fixed price" : "the work"}. No work starts until you approve it.`,
+    capture: "/screens/quote.png",
+    alt: `A ${fixedPrice ? "fixed-price " : ""}quote waiting for approval`,
+    standIn: "emergency",
+  },
+  {
+    verb: "Fix",
+    text: `${backupFirst ? "We take a full backup, then fix" : "We fix"} the cause, not the symptom. Your content, settings and design stay as they were.`,
+    capture: "/screens/critical-error-on-this-website.png",
+    alt: 'Before: the WordPress page reading "There has been a critical error on this website."',
+    standIn: "racks",
+  },
+  {
+    verb: "Verify",
+    text: "We test the home page, forms, logins and checkout before calling it done. You get a note of what changed.",
+    capture: "/screens/restored.png",
+    alt: "After: the same WordPress site loading normally",
+    standIn: "workspace",
+  },
+];
