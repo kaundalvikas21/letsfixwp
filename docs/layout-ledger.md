@@ -3187,3 +3187,715 @@ browser states it can reach.
 
 So installing Docker to run this is worth doing for two guides, and the other 31 need the rule 7a
 image-generation route or an illustrator. Worth knowing before anyone spends an afternoon on it.
+
+## v4 / the reference's section reveal, ported to all 99 routes (Task 21)
+
+The owner gave gotechark.com as the reference and asked for its text-section animation, on every
+page, as it is.
+
+### What the reference actually runs
+
+Measured off the shipped page and the theme's own assets, not guessed:
+
+| | |
+| --- | --- |
+| Library | **WOW.js** (`wow.min.js`) over animate.css keyframes. Not GSAP. |
+| Trigger | `new WOW({ boxClass: 'wow', animateClass: 'animated', offset: 0, mobile: true, live: true })`: one class, the first time a box crosses the viewport's bottom edge, never replayed. |
+| Granularity | The whole element. No SplitText, no char, word or line split anywhere on the page. |
+| Keyframe | `fadeInUp`: `opacity 0 -> 1` with `translate3d(0, 100%, 0) -> 0`. Also `fadeInLeft` and `fadeInRight` at ±100% X on two headings. |
+| Duration | `.animated { animation-duration: 1s; animation-fill-mode: both }`, no custom timing function, so the browser default `ease`. |
+| Stagger | By hand, `data-wow-delay="0.2s"` and `"0.4s"` on sibling elements. |
+| Smooth scroll | **None.** `ScrollSmoother.min.js` is enqueued and never initialised; there is no Lenis and no Locomotive. GSAP and ScrollTrigger are there for the pinned panel sequence and the `duration: 9, ease: "none"` marquees, not for the text. |
+
+So "smooth animate like the reference" is this reveal and nothing else. No smooth-scroll layer was
+added here, because the reference does not have one running either, and contract rule 6 bans the
+scroll listener one would need.
+
+### What was ported and what was not
+
+Kept: the trigger (first entry, once), the 1s length, and the stagger, so a section's children rise
+in reading order rather than the block sliding as a slab.
+
+Changed, both deliberately:
+
+- **70ms between children, not 200 and 400.** The site's mastheads already run 70, and 400ms between
+  a heading and its own sentence reads as two arrivals rather than one settling. Capped at 280ms from
+  the fifth child on, or a nine-child section has the reader waiting 560ms for a paragraph that was
+  on screen when the first one moved.
+- **14px, not `translate3d(0, 100%, 0)`.** 100% is the element's own height, so on a 600px grid the
+  reference's own keyframe is a 600px slide: a different animation on every block and a very long one
+  on the tall ones. 14px is what `rise` already uses, and it is the same distance everywhere.
+
+### Why this let opacity back in
+
+The old `reveal` was a view timeline, and Task 12's note explains at length why it had to drop
+opacity: a scrubbed animation parks wherever the reader stops, and axe measured serious
+`color-contrast` on /about/, /guides/ and /compare/wordpress-vs-wix/ at those park positions, the
+ember `.btn-primary` compositing against the page while its section was translucent.
+
+A played animation has no park state. There is no scroll position at which it can be caught part
+way, so the fade is safe in a way it never was on a timeline. Re-measured with axe-core on all three
+of those routes after walking the full page: **zero `color-contrast` violations**, nothing left
+translucent. Do not put a view timeline back here without reading this paragraph and that one.
+
+### The hydration mismatch, and why nothing is written to the DOM
+
+The first build of this ran the reveal the obvious way: the script set `data-in` on a section when it
+came into view and `data-rv` on the ones it had already seen, and CSS keyed a keyframe off
+`[data-in]`. It worked in the browser and reported a hydration mismatch on all nine home sections in
+`next dev`.
+
+The reason is the thing that makes the script worth having. It runs before React hydrates, by design,
+so the start state is painted rather than flashed. Every attribute or class it adds to a
+server-rendered element in that window is one React then finds on an element it thought it knew, and
+React does not patch those up. The old version also added `reveal-js` to `<html>`, which is the same
+fault on the element every theme script touches.
+
+So the rule now is that the script writes nothing React can see. The animation is handed to the Web
+Animations API, which is a running effect rather than a document change, and the already-watched set
+is a `WeakSet` rather than the `data-rv` marker. `<html>` carries `suppressHydrationWarning` for the
+one class that must be added, the standard arrangement for a script that has to run this early.
+
+That moves the 14px / 1000ms / 70ms spec out of the stylesheet and into `layout.tsx`, because a WAAPI
+animation cannot be started from CSS without a class or attribute to toggle, which is exactly what
+caused the mismatch. `--ease-spring` is still read off the stylesheet with `getComputedStyle`, so the
+curve keeps one definition. What stays in CSS is the half that has to: the `opacity: 0` start state,
+applied by that one class, plus the reduced-motion guard.
+
+Reduced motion is now checked in both places on purpose. The stylesheet keeps an untouched section
+visible and responds to a mid-session change without a reload; the script checks `matchMedia` before
+animating, because a WAAPI fill would otherwise override the stylesheet on a section that had already
+come into view. Verified both: zero running animations and every child opaque under `reduce`.
+
+### The start state is applied by a script that cannot fail to arrive
+
+`.reveal-js` is set by an inline script, first child of `<body>` in `app/layout.tsx`, not by the
+bundle. The hidden state exists only once code the HTML parser has already run says so, so a blocked
+or slow bundle leaves all 99 pages fully readable rather than blank. No `IntersectionObserver`, no
+`Element.prototype.animate`, or a curve the browser will not parse, and the class comes straight back
+off, so an old browser gets the static page rather than an empty one. This is the same reasoning that kept `rise-in` and `hero-word`
+out of Motion: `MaskRise` and `CtaReveal` ship `opacity: 0` in the server HTML and wait for
+hydration, which is the one thing a page of body copy must not do.
+
+The `MutationObserver` beside it is the reference's `live: true`, and it is not optional here. Next
+soft-navigates, so without it a second page's sections would mount after the sweep had finished and
+sit at opacity 0 for good. Verified: clicking through to a guide picks up all six of its sections.
+
+### Where it is applied
+
+One level per section, never nested, so nothing animates twice. `Section` in `parts.tsx` covers every
+inner route (h2 at 0ms, its content block at 70ms, which is the reference's own heading-then-body
+beat; delay is the child's index, capped from the fifth on), `ClosingBand` carries it already, and nine home sections were tagged. Two home sections were
+left alone on purpose: `Hero` is above the fold and has `HeroWords`, and `FinalCta`'s direct children
+are its absolute shader and scrim layers, which a transform would lift out of place. `FinalCta`
+already runs `MaskRise` and `CtaReveal`.
+
+`Faq`'s `JsonLd` moved outside its `<section>`: `reveal` staggers by child position, and a
+`display: none` script holding slot one put the heading a beat behind the only two things on screen.
+
+### Checks
+
+`npm run build` (99 routes), `npx tsc --noEmit`, `eslint`, `npm run check` all clean. In Chrome at
+1440 and at phone width: no horizontal scroll, h1 stays at opacity 1 throughout (it is the LCP
+element on every one of these routes and an element at opacity 0 is not painted), every section
+fires on a reader-paced scroll, none left hidden, no console errors. Under
+`prefers-reduced-motion: reduce` every child is opaque with `animation-name: none` from the first
+paint, and no section writes a single attribute, so `next dev` reports no hydration mismatch.
+
+A jump that skips a section entirely, an anchor link or a restored scroll position, leaves it hidden
+until the reader scrolls back to it, at which point it reveals. That is exactly WOW.js's behaviour on
+the reference and it self-heals, so it is left as is.
+
+## v4 / the reference's reveal, dropped to element level (Task 22)
+
+Task 21 ported gotechark.com's reveal at section level. The owner asked again, for every component
+on every page. This is the granularity pass, and the measurement is what shaped it.
+
+### What the reference actually runs, across the whole site
+
+| Effect | Mechanism | Where |
+| --- | --- | --- |
+| **Element reveal** | WOW.js `{offset:0, mobile:true, live:true}` over animate.css `fadeInUp` | everywhere |
+| Pinned panel sequence | GSAP ScrollTrigger, `pin: true`, `scrub: 3`, desktop >=1200 | home only |
+| Number counters | jQuery `.animate()` on a scroll handler, 850ms `swing` | two pages |
+| Carousels | Swiper | 8 to 43 nodes per page |
+| MotionPath orbit | GSAP MotionPathPlugin, `duration: 9`, `repeat: -1` | /about-us/ only |
+| Custom cursor | TweenMax 0.016s lerp loop | one slider |
+| Image hover zoom | CSS `scale(1.1)`, `transition: all .3s` | card images |
+| Sticky header | CSS keyframe `top: -50% -> 0` | global |
+| Scroll cue | CSS keyframe `MoveUpDown` | hero |
+
+`wow fadeInUp` appears **67 times on /wordpress-websites/, 314 on /portfolio/, 23 on /about-us/, 4
+on /services/**. Everything else is one or two pages. The reference reads as uniformly animated
+because of the one effect, at a granularity we did not have.
+
+It has **no smooth-scroll layer**: `ScrollSmoother.min.js` is enqueued and never initialised, no
+Lenis, no Locomotive. animate.css ships 88 keyframes; three are used.
+
+### Why `.reveal` had to change meaning
+
+It meant "observe this container, animate its direct children". Measured on the running build, the
+list items worth animating sit **3 to 6 levels below** their nearest `.reveal` ancestor: section,
+heading, `mt-6` wrapper, `ul`, `li`. Marking the inner `ul` as well double-animates, because the
+wrapper rises and the items rise inside it, multiplying opacities and summing translates.
+
+So `.reveal` on a container now means **each direct child is observed and animated on its own
+entry**, and `.reveal-self` marks a lone element. Both collect into one selector,
+`.reveal > *, .reveal-self`. A grid of twenty cards costs one class on the `ul`.
+
+**One owner per ancestor chain.** A deeper marker always means the ancestor gives its own up. The
+check that catches every instance, run on five routes, must return empty:
+
+```js
+[...document.querySelectorAll('.reveal, .reveal-self')].filter(n => n.parentElement?.closest('.reveal, .reveal-self'))
+```
+
+A `:has()` exclusion was considered and rejected: a browser that drops the selector parks the
+wrapper at opacity 0 forever, which is the exact failure the inline-script design exists to prevent.
+
+### No stagger, and that is the ported behaviour
+
+The element is its own trigger now, so there is nothing left to stagger: siblings in a row cross the
+viewport edge together and rise together. The reference is the same. It hand-writes `data-wow-delay`
+and does it **once** across 67 `wow` nodes on /wordpress-websites/. The 70ms ladder stays where the
+reference keeps its own, above the fold, in `rise-in` on the masthead. The `Math.min(k,4)` cap and
+the index arithmetic are gone.
+
+### The cascade finding, which decided the whole shape
+
+A WAAPI animation created with `fill: both` sits in the **animation origin**, which outranks author
+normal declarations *and inline styles*, and it never leaves its after phase. Probed on the running
+build against a `TileGrid` tile: after the reveal finished, writing `style.transform =
+translateX(120px)` set the attribute and `getComputedStyle` still reported the identity matrix.
+
+So every Motion and GSAP island on the site would be permanently frozen if a sweep selector reached
+it: `TileGrid`'s layout projection, `ZoomImage`, `Magnetic`, the `LogoMarquee` track, the `FaqTabs`
+pill, `GuaranteeHeading`'s stroke draw. **Never sweep.** Placement is by hand, and these are banned
+as targets:
+
+- anything inside a Motion or GSAP island
+- an `absolute`/`fixed` layer, or an element an absolutely positioned descendant resolves against
+- an ancestor of a `position: sticky` element, which would otherwise stick to the transform
+- children of a clipping container, which an `IntersectionObserver` reports as never intersecting
+  and which therefore stay hidden for good
+- a `<script>`, an `sr-only` node, anything inside an `<svg>`
+- an image or figure in the first viewport, or one that preloads
+
+### Two prohibitions this pass appears to break, and does not
+
+**The view timeline ban stands.** The failure was the scrub, not the animation: a reader who stops
+mid-range parks at arbitrary opacity, and axe measured serious `color-contrast` on /about/, /guides/
+and /compare/wordpress-vs-wix/ at those positions. This is the same played animation as Task 21,
+with a different target and a larger count.
+
+**`LinkCards`' refusal of a per-card entrance is retired,** for the same reason, and its comment now
+says so rather than being deleted. Both of its bans still stand on their own terms: no view timeline,
+no delay ladder.
+
+### Opacity finishes at 30%
+
+A played animation has no park state but it is not instantaneous either, and `docs/qa-report.md`
+records this site's own instrument catching two serious `color-contrast` violations at a 300ms
+settle that were gone at 1500ms. One section at a time that window sat mostly above the reader's
+eye; at element level a scrolling reader always has something in flight. The fade now finishes in
+300ms while the travel takes the full second.
+
+**Bug found while verifying this, worth not repeating:** written as
+`[{opacity:0,...},{opacity:1,offset:0.3},{transform:'none'}]`, every element faded in and then
+straight back out to invisible. A property missing from the last keyframe does not hold its previous
+value; WAAPI synthesises an implicit one from the element's underlying style, which here is the
+`opacity: 0` start state. Measured on /pricing/: 58 targets, 58 still hidden after a full scroll.
+Opacity is written on all three keyframes.
+
+### The reduced-motion arm is nested inside the hide rule
+
+They used to be two blocks 17 lines apart. Widen one and not the other and a reduced-motion visitor
+gets 130 invisible elements on all 99 routes, with nothing in the build, tsc, eslint or check able to
+see it. It is also `!important` now, because a normal declaration loses to a running or filled
+animation: a visitor who turns the setting on mid-session would otherwise keep every reveal in
+flight along with its offset.
+
+### Where the markers went
+
+`parts.tsx` reaches all 99 routes: `reveal` off `Section` and `ClosingBand`'s `<section>`, onto the
+heading (`reveal-self`) and the inner grid; `reveal` on the `ul` in `TickList`, `Promises`,
+`LinkCards`, `Faqs`; `reveal-self` on `LinkList`'s chip row, which is orientation furniture rather
+than content. Then the hand-rolled lists in the five templates, and `about`, `compare`, `guides`,
+`pricing`.
+
+**Skipped deliberately:** the `columns-*` flows on /guides/ and /pricing/, because a transform on a
+column-fragmented box is under-specified across engines. /pricing/ is marked one level in instead, on
+the `break-inside-avoid` card's own list. /guides/ gets its heading and lead only.
+
+**The home page took no markup edit and improved anyway.** Its nine sections keep `reveal` on the
+`<section>`; the script now watches their children individually, so a heading fires when the heading
+crosses rather than when the section does. Going deeper would mean reaching into nine Motion and
+GSAP islands, which the cascade finding forbids. The reference has the same shape: 4 `wow` nodes on
+its /services/, 314 on its content directories.
+
+### The three extras
+
+**Image hover zoom was already shipped, and was quietly broken.** The only image inside an
+interactive element is `ProblemTiles`, which already had the effect. But it was written
+`transition-transform ... group-hover:scale-105`, and Tailwind v4 emits `scale-105` as the standalone
+`scale` property, so the transition covered nothing and **the zoom snapped instead of easing over
+500ms**. The file's own comment documents this trap for the reduced-motion cancel and then walks
+into it for the transition.
+
+Grepping every caller rather than the one line found eight in total, all snapping:
+`ProblemTiles` (both images, and its caret), `Proof`'s arrow, `NavBar`'s wordmark underline,
+`compare/page` (hairline and caret), `ExpandingRows`' caret, `MegaMenu`'s caret. All eight fixed to
+name the real property. `FaqTabs` is not a victim: it writes an inline `transform`, so
+`transition-transform` is correct there.
+
+**The count-up was skipped, and the reasons are worth keeping.** There is one honest call site on
+the whole site, the `<dl>` on /compare/. Everywhere else the numbers are inline in running sentences
+(`The 6 areas below hold 55 services`) or single digits. Beyond that: contract rule 6 bans invented
+statistics and a count-up prints about fifty of them on the way to the real one; `toLocaleString`
+is a no-op because no number on any of the 99 routes reaches four digits; two of the three sites
+would reflow their paragraph as the digit count changes; and it would need a fourth rule-10
+exception, because it animates text content.
+
+**The sticky-header slide-in was redirected.** The reference's header becomes sticky partway down and
+slides in from `top: -50%`; ours is `fixed` from the first pixel and never leaves, so there is no bar
+to slide. The thing that does arrive is the blurred backdrop panel, which faded in on opacity alone
+at 8px of scroll. It now also slides, `useSpring(useTransform(scrollY, [0,8], [-64,0]))` through the
+site's one spring, -64 being the bar's own height. Transform, not `top`: `top` is not
+compositor-animatable and would relayout a full-width fixed overlay every frame at first paint on all
+99 routes. Watch for one thing: the panel carries `backdrop-filter`, and a filter inside an animating
+transform samples its backdrop in the shifted space, so a restored scroll position could ghost.
+
+### Measured
+
+Production build, Chrome, 1440 and 375.
+
+- **Nesting:** zero on home, /pricing/, /about/, a service page, a guide, /compare/wordpress-vs-wix/.
+- **axe `color-contrast`, two settles per scroll stop (200ms and 1500ms)** on /about/,
+  /compare/wordpress-vs-wix/ and /guides/white-screen-of-death/, walking in 40% viewport steps:
+  **zero violations at both settles**, and no `.btn-primary` ever sampled between 0.02 and 0.999.
+- **Targets:** 58 on /pricing/ (was 9), 23 on home, 21 on a hub, 28 on a service page at 375.
+  Nothing left hidden after a reader-paced walk on any of them.
+- **LCP** is still the masthead `<img>` on /pricing/, a service page and
+  /guides/white-screen-of-death/, where the `RealScreen` figure is deliberately unmarked and sits at
+  opacity 1. **CLS 0.**
+- **Animations:** 58 on /pricing/, all `finished` rather than running, so the fill persists without
+  ongoing compositor work.
+- **No DOM writes** (`[data-in],[data-rv]` is empty everywhere) and **no hydration mismatch** in
+  `next dev`, under both motion settings.
+- **Reduced motion:** every target opaque from first paint, `document.getAnimations()` empty.
+- **Soft navigation:** 21 targets on the next page picked up by the `#main` MutationObserver.
+- **Islands intact:** `TileGrid` tiles and the marquee track are not markers' children, and the
+  marquee runs in view and pauses off it, as before.
+- **Hover zoom** now reports `transition-property: scale` over 0.5s, where it reported `transform`
+  and snapped.
+- No horizontal scroll at 375 or 1440; no-JS leaves every page fully visible.
+
+## v4 / side rays in the home hero (Task 23)
+
+The owner asked for reactbits.dev's `SideRays` in the hero. First brief said the left side; the
+owner then supplied a reference image of a broad soft beam entering a **top-right** corner and
+confirmed that corner, which is also the safer one here: the headline sits on the left at lg, so
+light entering over the photograph fades before it reaches the words.
+
+### Two files, not one
+
+`SideRays.tsx` is the vendored renderer, converted to TypeScript and otherwise the author's shader
+and render loop. `HeroRays.tsx` is the leaf that knows this site: it reads the palette off
+`document.documentElement` and sets the dials. Replacing the vendored source later means swapping
+one file and leaving the other alone.
+
+Its two-rule stylesheet was folded into class names rather than added as `SideRays.css`, so the
+branch gains no stray CSS file: `relative size-full overflow-hidden` on the host,
+`absolute inset-0 block size-full` on the canvas.
+
+### What the integration changed
+
+- **`origin="top-right"`**, confirmed against the owner's reference image.
+- **Tuned to that image rather than to the component's defaults.** The first pass read as a fan of
+  thin shafts; the reference is one broad beam with a couple of softer ones beside it. `density` is
+  what decides that (4 cut the light into stripes, 2.6 leaves it whole), with `sharpness: 0.22` and
+  `falloff: 1.15` for a soft edge that still reaches the far corner.
+- **The second accent is stripped.** The component ships amber `#FFC46B` and blue `#96c8ff`, which
+  is two accents and CLAUDE.md removes one on sight. Here it is `--accent` against `--text`: one
+  ember edge riding a near-white core, which is the shape of the light in the reference image.
+  White is not an accent, so the lock holds. `blend: 0.55`, past half, so the core leads.
+- **Colours are read from the tokens, never pasted.** A WebGL uniform cannot read a CSS variable,
+  and a literal `#ff5a36` in the props would put the accent in two places. Same
+  `useSyncExternalStore` arrangement as `CtaShader`, with a `null` server snapshot so both render
+  passes agree on the first frame and nothing paints at the component's amber-and-blue defaults.
+- **Reduced motion gets `speed: 0`, `intro: false`, `followMouse: false`** — lit and still, which is
+  the final static state rule 10 asks for. The component's own reduced-motion branch only slows its
+  clock to 0.3x, so this does not rely on it.
+- **A ref write moved out of render.** The original assigns `settingsRef.current = settings` during
+  the render body so prop changes reach the loop without tearing down the GL context. That is a
+  side effect React is allowed to discard, so it is an effect here.
+
+### Where it sits, and the layer that hid it first
+
+`aria-hidden`, `pointer-events-none`, `absolute inset-0`, **last child of the hero `<section>`,
+after the scrim.**
+
+It shipped at `-z-10` first, by analogy with `CtaShader`, and the owner reported seeing no rays at
+all. `hero-scrim` is `linear-gradient(to right, var(--bg) 0%, var(--bg) 68%, transparent 96%)`:
+**opaque `--bg` across the left two thirds**, which is exactly where light from the left lands. It
+is `absolute` at the auto level, so it painted straight over anything negative, and at lg there was
+nothing to see. Lesson worth keeping: `-z-10` is the right layer in `FinalCta`, whose only
+underlying layers are its own `--bg` and a flat scrim, and the wrong one here. Check what else
+paints in the section before copying a z-index across.
+
+Above the scrim and the photograph now, still below the type: the heading column is `relative z-10`
+and this is at the auto level. **The headline is the LCP element on this route and nothing is
+allowed over it.**
+
+Verified after the move, with a stand-in gradient painted onto the host because this browser cannot
+render the shader: the layer reads from the left across both the scrim and the photograph, and the
+h1, the subtext and both buttons sit on top of it. `elementFromPoint` on the headline returns the
+`hero-word` span and on the primary CTA returns the anchor, so the layer intercepts nothing. LCP is
+still the hero `<img>`, CLS 0, no horizontal scroll, and the host is not a reveal target.
+
+### The honest gap
+
+**The rays have not been looked at.** The browser available in this environment reports no WebGL at
+all (`webgl2: false`, `webgl1: false`), so the canvas renders nothing in it. That did confirm the
+fallback: `getContext` returns null, the effect leaves early, and the result is a transparent canvas
+with no console error and no layout effect, which is why this needs no `hasWebGl` probe of the kind
+`CtaShader` carries for a library that rejects an uncatchable promise.
+
+What it could not confirm is the look, or the contrast. `intensity`, `glow` and `opacity` are set to
+roughly two thirds of the component's defaults, reasoned from the token contrast rather than seen:
+`--text` on `--bg` measures about 17:1 and `--muted` about 7.3:1, so there is headroom for light
+behind them, but light behind them spends it, and the brightest moment is the first second after
+mount while the intro is still growing. All three numbers live in one place in `HeroRays.tsx`.
+
+**Still owed, on a machine with a GPU:** one pass by eye at 1440 and 375, and an axe
+`color-contrast` run on the hero with the rays lit. A contrast scan in a browser without WebGL is
+measuring the unlit page and proves nothing about this.
+
+### Also worth knowing
+
+The home page now holds two WebGL contexts, this one and `CtaShader`'s in the closing CTA. Both
+sleep: this one reschedules `requestAnimationFrame` only while something moves, and an
+`IntersectionObserver` plus `visibilitychange` stop it off-screen and in a background tab.
+
+## v4 / hero-background.png as the hero's background (Task 24)
+
+The owner supplied `public/site_images/hero-background.png` and asked for it as the hero background.
+Registered in `src/content/photos.ts` as `hero-background`, tone `dark`, with its real pixel size.
+
+### The shape of the file decided the layout
+
+**1774 x 522, a 3.4:1 panorama.** That one number ruled out the obvious move. The hero's photograph
+slot was a half-width panel, `lg:inset-y-0 lg:right-0 lg:left-1/2`, which at 1440 is 720x900, a
+0.8:1 box. `object-cover` of a 3.4:1 source into 0.8:1 shows a narrow vertical slice of the middle
+and throws the desk, the plant and the person away. Dropping the new file into the existing slot
+would have looked broken.
+
+So the slot became the background it was asked to be: `lg:inset-0`, full bleed. That still crops, to
+about the middle 47% of the width, and upscales about **1.72x** to reach `min-h-[100dvh]`, which
+this frame takes because nearly all of it is unlit bokeh. `focus: 45% 50%` puts the monitors and the
+WordPress logo in that window.
+
+Under lg it is a `2/1` band in flow, not the panorama's own 3.4:1, which at 375 would be a 110px
+strip, and not the `4/3` the previous portrait source wanted, which would crop this one to its
+middle third. `sizes` is `100vw` at every width now, which is simply what it is; the old 83vw note
+was arithmetic about a half-width panel that no longer exists.
+
+### The scrim had to come back, or there was nothing to see
+
+`hero-scrim` was `linear-gradient(to right, var(--bg) 0%, var(--bg) 68%, transparent 96%)`. Against
+a half-width panel that was right. Against a full-bleed background it blanked two thirds of the
+photograph and what was left read as an unidentifiable silhouette: first build showed the back of a
+head and no screen.
+
+Now `--bg 0%, --bg 55%, transparent 92%`. 55% is the last column that has to be opaque: the headline
+runs to about 53% of the viewport at 1440 and the subtext and buttons stop well before it. axe
+`color-contrast` on the hero subtree: zero violations.
+
+### A free LCP win, and why
+
+**LCP moved off the photograph and onto the headline, at 104ms** (it was the photograph at about
+1.27s in `docs/qa-report.md`). Chrome excludes an image that covers the whole viewport from being an
+LCP candidate, treating it as a background, so the first headline line now takes it. Worth knowing
+before anyone reads the improvement as something they did.
+
+At 375 the LCP is still the `<img>`, because there the image is a band in flow rather than a
+full-viewport layer. CLS 0 at both widths, no horizontal scroll.
+
+### Still soft, and the only real fix is upstream
+
+522px of source height stretched to a 900px hero is a 1.72x upscale. It holds here because the frame
+is soft bokeh and the one sharp thing, the WordPress logo, is large. A source around 1100px tall at
+the same aspect would remove the upscale entirely at 1440. Worth asking for if the hero is ever
+shot again.
+
+### Note for whoever looks next
+
+`HeroRays` now sits over this photograph, and the photograph already carries strong ember lighting
+of its own. The two were tuned separately and have not been seen together, because this environment
+has no WebGL. If the combination is too hot, the rays are the thing to pull back, not the image.
+
+## v4 / the hero photograph becomes a background at every width (Task 25)
+
+Task 24 made the photograph a full-bleed background at lg and left an in-flow band below it, so on a
+phone the picture arrived *after* the buttons instead of behind them. The owner asked for it to be
+the background on mobile and tablet too.
+
+### One layer now, at every width
+
+The `<Photo>` moved out of the grid and became `absolute inset-0`, the first child of the section.
+The scrim lost `hidden lg:block` and renders everywhere.
+
+**`object-position` is per breakpoint, not per photograph.** The source is 3.4:1, so how much of it
+survives depends entirely on the viewport: a 1440x900 window keeps about the middle 47%, a 375x812
+phone keeps about **14%**, a vertical slice barely wider than one object. `57%` puts the lit monitor
+and the WordPress mark inside the phone's slice; `45%` opens out at lg to take in the plant, the mug
+and the desk. Set as classes, which is why this registry entry carries no `focus`: `Photo` writes
+`focus` as an inline style and an inline style beats a class.
+
+### The contrast failure axe could not see
+
+Below lg the type sits on the photograph, so the scrim went flat, which is what contract rule 6
+requires of a scrim over a photograph, and the lead went `--on-photo`, because `--muted` over a
+scrimmed photograph is the 2.55:1 `parts.tsx` already records.
+
+At the shared `--photo-scrim` (0.66) axe reported **zero violations and five `incomplete`**:
+*"background color could not be determined because element contains an image node."* axe does not
+compute contrast against a photograph, so a clean run here means nothing.
+
+Measured directly instead, compositing every pixel of the visible crop under the scrim and taking
+the worst case, at native resolution:
+
+| scrim alpha | `--on-photo` text | `--accent` "today." |
+| --- | --- | --- |
+| 0.66 | 5.8:1 | **2.1:1 — fails** |
+| 0.80 | 9.6:1 | 3.5:1 |
+| **0.84** | **11.1:1** | **4.1:1** |
+
+The ember word is the one that failed, because the lit WordPress mark sits directly behind it. At
+30px bold it is large text, so its floor is 3:1, not 4.5:1. Same picture at 375, 768 and 1023.
+
+So the hero has its own token, `--hero-scrim` at 0.84, rather than moving the shared
+`--photo-scrim`, which is measured for mastheads at 0.66 and used across the site. At lg nothing
+changed: the type is back in its own column on solid `--bg` and the scrim is still the horizontal
+wipe, with the lead back to `--muted`.
+
+**The lever, if the photograph should read brighter, is `object-position`, not the scrim.** Moving
+the bright mark out from behind the headline buys contrast without dimming the frame.
+
+### Measured
+
+375, 768, 1024 and 1440: photograph behind the type at all four, no horizontal scroll, CLS 0, axe
+`color-contrast` zero violations on the hero subtree. Desktop verified unchanged: gradient scrim,
+`--muted` lead, 45% focus, LCP still the headline span. Hero height at 768 is exactly 1024, so
+removing the in-flow band also stopped the hero running past 100dvh on small screens.
+
+## v4 / the photograph leads on small screens, and the hero CTAs stack (Task 26)
+
+Two asks: the hero CTAs stacked at full container width, and on a phone the photograph shown first
+and in full, with the words after it.
+
+### The photograph leads below lg, and is the background at lg
+
+Task 25 put it behind the type at every width. On a phone that meant a 3.4:1 picture in a 0.46:1
+window, which keeps about **14% of its width**: a vertical slice barely wider than one object. It
+was a background, but it was not the photograph.
+
+Below lg it is now a band at the top of the hero, before the headline, running at the source's own
+`aspect-[1774/522]` and bleeding edge to edge. Nothing is cropped: the plant, the headphones, the
+mug, the lit monitor and the person are all in frame. Measured at 375: the box is 360x106 at ratio
+3.40 against the source's 3.40, so the crop is zero.
+
+At lg it is still `lg:absolute lg:inset-0` against the section, with `lg:mx-0`, because an
+absolutely positioned box with both insets set still answers its margins and the full-bleed
+negatives would otherwise push it past the viewport.
+
+### Which retires the heavy scrim, and the contrast problem with it
+
+The type is back on solid `--bg` below lg, so:
+
+- `hero-scrim` is `hidden lg:block` again and back to the single horizontal gradient.
+- The lead is `--muted` at every width again, not `--on-photo`.
+- `--hero-scrim` at 0.84 is **deleted**. It existed only to carry the ember headline word over the
+  lit WordPress mark, and there is no longer any type over the photograph at these widths. The
+  measurement that produced it is kept in Task 25 and summarised in the `hero-scrim` comment, in
+  case that layout ever returns; it is not a number anyone should have to derive twice.
+
+Worth noticing: moving the picture out from under the words solved an accessibility problem rather
+than trading one off. The failure Task 25 had to engineer around simply stopped existing.
+
+### CTAs
+
+`flex flex-col gap-3 sm:flex-row sm:flex-wrap`, with `w-full sm:w-auto` on both buttons. Two
+content-width buttons on separate lines read as a ragged edge, and the primary is the page's whole
+job here, so below sm it gets the column. `w-full` is safe on both utilities: each is an
+`inline-flex` box that already centres its own label and chip, so nothing inside them moves.
+
+Measured at 375: both 328x44, same left edge, which is the container's full width inside its 16px
+gutters and over the 44px floor contract rule 5 sets. At 1440 they are back to a row at content
+width, 151 and 244.
+
+### Measured
+
+375, 768 and 1440. Image above the headline below lg and absolute at lg; zero crop at 375; CTAs
+stacked below sm and a row above it; scrim hidden below lg and shown at lg; axe `color-contrast`
+zero violations on the hero at 1440; CLS 0 and no horizontal scroll at all three; LCP still the
+headline span at 1440.
+
+## v4 / the hero stops being a hole with a picture in it on small screens (Task 27)
+
+The owner sent a phone screenshot: too much empty space above and below, and asked for the
+photograph a little zoomed.
+
+### Measured first, because the obvious fix was the wrong one
+
+At 375 before this: 94px between the header and the photograph, 126px below the last button, and
+**65% of the viewport used by content**.
+
+The instinct is to trim the padding. That makes it worse. The hero was `min-h-[100dvh]` with
+`items-center`, and its content is about 565px against an 812px screen, so the 250px difference was
+being split above and below. Shrinking the padding shrinks the content and hands the same number
+straight back to the centring. Total emptiness is `viewport - content`, and padding is not in it.
+
+### Two changes, in the order they were tried
+
+**The zoom, which the owner asked for and which helps because it makes the content taller.** The
+band below lg was running at the source's own 3.4:1, which is 106px on a 360px screen, a letterbox
+strip. Now `aspect-[3/2]` on a phone and `aspect-[2/1]` from md: 240px and 377px. 3/2 keeps the
+middle 44% of the frame, the mug, the lit monitor with the mark on it, and the person, which is the
+part of this picture that says what the page is about.
+
+That alone took the gaps to 75 and 107, and the fill to 70%. Better, not fixed.
+
+**`lg:min-h-[100dvh]` instead of `min-h-[100dvh]`, which is the actual fix and a deliberate contract
+deviation.** Rule 4 asks a hero to fill the screen. On a wide window this one does, and nothing
+there changed. On a phone it cannot, and forcing it only manufactured the hole. Below lg the section
+now sizes to its content.
+
+Rule 4's real requirement, *CTA visible without scrolling*, is better served than before, and the
+next section now peeks above the fold, which tells the reader the page scrolls. One token to revert
+if the owner would rather keep the rule literally.
+
+### After
+
+| | 375 before | 375 after | 768 after | 1440 |
+| --- | --- | --- | --- | --- |
+| header to photograph | 94px | **32px** | 32px | n/a, background |
+| last CTA to section end | 126px | **64px** | 64px | n/a |
+| photograph height | 106px | **240px** | 377px | full bleed |
+| content fill | 65% | **78%** | 80% | full |
+
+CLS 0 and no horizontal scroll at all three. CTA above the fold at all three. At 1440 the hero is
+still exactly 900px, the photograph is still the absolute background and the gradient scrim is still
+shown, so nothing about the desktop composition moved.
+
+## v4 / the supplied service renders, audited and placed (Task 28)
+
+Eight 359x149 renders arrived in `public/site_images/services/`. The owner asked for an audit and a
+purposeful home.
+
+### The audit
+
+They are not photographs and not icons: single-object 3D renders on a dark bokeh desk, one lit
+subject each. Contract rule 7a allows generated imagery using the variation's art direction, so
+they are legitimate; they are simply a **different visual language** from the documentary
+photographs the templates already use, which is the argument for keeping them to one place rather
+than scattering them into existing photograph slots.
+
+**Half of them carry a second accent.** Measured in the browser as the warm/cool split of lit
+pixels, skipping near-black and near-grey:
+
+| | warm | | | warm |
+| --- | --- | --- | --- | --- |
+| speed-optimization | 100% | | backup-recovery | 31% |
+| emergency-fixes | 94% | | hacked-site-cleanup | 25% |
+| woocommerce-help | 91% | | malware-cleanup | 23% |
+| maintenance-care | 50% | | site-migration | 10% |
+
+v4 has a one-accent lock and CLAUDE.md strips a second accent on sight, but you cannot strip a
+colour out of a raster the way you strip a token. The owner chose to ship the four warm ones and
+regenerate the rest; all four cool files are logged in docs/image-todo.md with the direction.
+
+**359x149 is small**, so the placement had to be one where the render is never asked to be large:
+about 1.5x upscale on a 1440 desktop card and 1.8x on a 2x phone. That rules out a masthead, which
+is 1104px wide and would be a 3x upscale of a soft source.
+
+### Placed on the hub cards, and the grid had to be made whole
+
+**Superseded the same day by Task 29: the render is the card's background now, not a banner across
+its top. The `anyBanner` box described below no longer exists. The audit above still stands.**
+
+`LinkCardItem` gained an optional `banner`, and `/about/`'s six hub cards pass it through
+`hubBanners`. The banner cancels the card padding, owns the two top corners at the 14px radius, and
+runs at the source's own `aspect-[359/149]` so nothing is cropped. It scales 1.05 on hover like the
+home tiles, behind `(hover: hover)`, with `transition-[scale]` rather than `transition-transform`,
+because Tailwind v4 writes `scale-105` to the standalone `scale` property.
+
+**The first build keyed the box off `i.banner` and looked unfinished.** Four hubs have a usable
+render and two do not, so the grid rendered four cards with a picture beside two with a small icon
+and an empty space where the picture would be. Screenshotted, and it read as a bug rather than a
+design.
+
+So the box is drawn for every card in a grid where *any* card has one: `anyBanner`. A card with no
+render centres its existing icon in the same box at display size. Every card in the row keeps one
+silhouette, and a render arriving later is one line in `hubBanners` with no layout consequence.
+Measured after: six cards, all six with the box, four photographs, two icon fallbacks, all 416px
+tall at 1440.
+
+### Measured
+
+- `/about/`: axe clean on the section at 375, CLS 0, no horizontal scroll, banner alts empty
+  (decorative, the card's heading already names the destination).
+- **No other route changed.** `LinkCards` renders on five templates across 99 routes; `anyBanner` is
+  false everywhere except `/about/`, confirmed on a hub route: 17 cards, 0 banner boxes.
+
+## v4 / the hub card renders move from a banner to the card background (Task 29)
+
+The owner asked for the renders behind the cards rather than in a strip across the top.
+
+### What changed
+
+The picture is `absolute inset-0 -z-20` inside the card's own `isolate`, with a flat scrim at
+`-z-10`, both above the card's `bg-surface` and below every child in flow. `overflow-hidden` on the
+card is what makes the 14px radius clip the picture. The `anyBanner` box is gone, and with it the
+icon-fallback: a card with no render simply keeps the plain surface and its icon, and because there
+is no empty box to fill, the two treatments sit together without looking unfinished.
+
+### A prediction I got wrong, and the measurement that corrected it
+
+Before building it I estimated the background treatment would crop to the middle 54% of the render
+and upscale about 2.8x, against 1.5x for the banner, and said so. That was wrong, and wrong in a
+useful direction: it assumed a 416px-tall card, which was the height **with** the banner box adding
+~220px to it. Take the banner away and the card is 219px tall.
+
+Measured on the shipped layout: the card is 542x219 at 1440, which is 2.47:1 against the render's
+own 2.41:1. So the crop is almost nothing and the upscale is **1.51x**, 1.63x on a phone. The
+background treatment is the better of the two on resolution, not the worse.
+
+### The scrim, measured twice
+
+Type on the picture needs a heavier scrim than the shared `--photo-scrim`, and the binding
+constraint is not the body copy, it is the title's ember hover, which needs 3:1 as large text.
+Worst case across the four renders, compositing every pixel of the visible crop:
+
+| scrim | `--on-photo` | `--muted` | ember hover title |
+| --- | --- | --- | --- |
+| 0.66 (shared `--photo-scrim`) | 6.1 | **2.8 fails** | **2.25 fails** |
+| 0.78 (`--card-scrim`) | 9.4 | 4.28 | **3.45** |
+| 0.84 | 11.5 | 5.25 | 4.23 |
+
+0.78 with the summary moved to `--on-photo`, which is the same swap the hero lead makes and for the
+same reason: `--muted` is 4.28:1 here and body copy needs 4.5. The caret stays `--muted` because it
+is a UI graphic at 3:1. The numbers were first taken against the wrong 540x416 box and re-taken
+against the real 542x219 one; they are unchanged, because the brightest pixel in `emergency-fixes`
+is near the centre and survives either crop.
+
+At 0.78 the picture is about a fifth of its own brightness. It reads as a lit texture behind the
+words rather than as a photograph, which is the trade any text-over-image card makes.
+
+### Measured
+
+Six cards, four with a picture and two plain, all 219px tall at 1440 and 219 to 244 at 375 where
+the grid is one column. Scrim resolves to `rgba(12, 12, 14, 0.78)`, title and summary to
+`rgb(241, 240, 238)` on picture cards and the summary back to `--muted` on the plain ones. CLS 0 and
+no horizontal scroll at both widths. No other route changed: `LinkCards` renders on five templates
+across 99 routes and only `/about/` passes a `banner`.

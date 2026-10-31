@@ -57,6 +57,32 @@ export const photos = {
     src: "/site_images/services/store.jpg", width: 1600, height: 1000, tone: "dark", focus: "45% 50%",
     alt: "Close-up of hands holding a phone in warm low light",
   },
+  /* The four warm renders of the eight the owner supplied. Object-on-a-lit-surface 3D renders, a
+     different visual language from the documentary photographs above, so they are kept to one
+     place: the hub cards. 359x149 is small, which is why they are used at card width and never in
+     a masthead. The other four glow blue, which is a second accent this site does not have, and
+     are logged in docs/image-todo.md for regeneration rather than used. Measured warm/cool split
+     of the lit pixels is in docs/layout-ledger.md Task 28. */
+  "hub-fix": {
+    src: "/site_images/services/emergency-fixes.png", width: 359, height: 149, tone: "dark",
+    alt: "A glowing life ring on a desk beside a laptop showing the WordPress logo",
+  },
+  "hub-performance": {
+    src: "/site_images/services/speed-optimization.png", width: 359, height: 149, tone: "dark",
+    alt: "A speedometer lit in amber, its needle swinging up through the dial",
+  },
+  "hub-woocommerce": {
+    src: "/site_images/services/woocommerce-help.png", width: 359, height: 149, tone: "dark",
+    alt: "A glowing shopping trolley on a pad beside a laptop showing a shop page",
+  },
+  "hub-maintenance": {
+    src: "/site_images/services/maintenance-care.png", width: 359, height: 149, tone: "dark",
+    alt: "A steel gear resting on a pad lit from beneath in amber",
+  },
+  "hero-background": {
+    src: "/site_images/hero-background.png", width: 1774, height: 522, tone: "dark",
+    alt: "A developer at night at a two-monitor desk, a WordPress site open in a code editor, warm lamplight behind",
+  },
   "hero-console": {
     src: "/site_images/hero-console-bg.jpg", width: 1600, height: 1200, tone: "dark", focus: "60% 50%",
     alt: "An engineer in a dark room reading a WordPress fatal error and stack trace on a monitor",
@@ -141,6 +167,21 @@ export const hubPhotos: Record<string, PhotoId> = {
   "wordpress-maintenance": "workspace",
   "wordpress-development": "final-cta",
   woocommerce: "store",
+};
+
+/**
+ * The hub card banner, where one exists.
+ *
+ * Deliberately partial, and deliberately not covered by the integrity check below. A banner is an
+ * enhancement to a card that already works, not a requirement of a hub, so a hub without one is
+ * not a build error. `wordpress-security` has renders but both glow blue, and
+ * `wordpress-development` has none at all; both are logged in docs/image-todo.md.
+ */
+export const hubBanners: Partial<Record<string, PhotoId>> = {
+  "wordpress-fix": "hub-fix",
+  "wordpress-performance-migration": "hub-performance",
+  "wordpress-maintenance": "hub-maintenance",
+  woocommerce: "hub-woocommerce",
 };
 
 // Integrity: a new service or hub in SITEMAP without a photograph fails the build here.

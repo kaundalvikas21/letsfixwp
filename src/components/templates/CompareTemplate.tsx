@@ -48,7 +48,7 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
       />
 
       <Section id="verdict" title="Which one fits">
-        <ul className="grid gap-4 md:grid-cols-3">
+        <ul className="reveal grid gap-4 md:grid-cols-3">
           {c.verdictByScenario.map((v) => (
             <li key={v.scenario} className="rounded-[14px] border border-line bg-surface p-5 shadow-card">
               <p className="font-display text-base font-bold">{v.scenario}</p>

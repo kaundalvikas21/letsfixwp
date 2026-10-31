@@ -59,7 +59,7 @@ const ROWS: Row[] = [
 /** Three ways to work with us, one row open at a time. */
 export function Plans() {
   return (
-    <section aria-labelledby="plans" className="mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
+    <section aria-labelledby="plans" className="reveal mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
       <h2
         id="plans"
         className="font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_30] sm:text-5xl sm:[font-variation-settings:'opsz'_48]"

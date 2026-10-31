@@ -74,8 +74,8 @@ export function Section({ id, title, children, className }: { id: string; title:
     // 64/96 is exactly half the home page's 128/192 between-section value: the same system at half
     // density, which is what a seven-section reading document wants. It was 56/80 against a 24px
     // heading-to-body gap, which at 375 let adjacent sections merge into one another.
-    <section aria-labelledby={id} className={cn("reveal mt-16 md:mt-24", className)}>
-      <h2 id={id} className={h2}>
+    <section aria-labelledby={id} className={cn("mt-16 md:mt-24", className)}>
+      <h2 id={id} className={cn("reveal-self", h2)}>
         {title}
       </h2>
       <div className="mt-6">{children}</div>
@@ -234,13 +234,13 @@ export function ClosingBand({
   return (
     <section
       aria-labelledby={id}
-      className="closing-band reveal mt-20 overflow-hidden rounded-[14px] border border-line bg-surface p-8 shadow-card md:mt-28 md:p-12"
+      className="closing-band mt-20 overflow-hidden rounded-[14px] border border-line bg-surface p-8 shadow-card md:mt-28 md:p-12"
     >
       {/* A 7/5 grid, not a flex row with `justify-between`. The flex version let the heading set the
           gap, so a 24ch question and a 28ch one put the buttons in two different places and the
           band looked slightly different on every template. On a grid the actions sit on one column
           edge on all 99 routes, which is the whole point of there being one component. */}
-      <div className="grid gap-8 md:grid-cols-12 md:items-center md:gap-12">
+      <div className="reveal grid gap-8 md:grid-cols-12 md:items-center md:gap-12">
         <div className={cn("md:col-span-6", measure)}>
           {/* Sized by the column rather than given a width of its own, so the rule it runs out to
               is exactly the measure the heading wraps at. */}
@@ -294,7 +294,7 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
 export function Faqs({ faqs, title = "Questions" }: { faqs: { q: string; a: string }[]; title?: string }) {
   return (
     <Section id="faq" title={title}>
-      <div className="divide-y divide-line border-y border-line">
+      <div className="reveal divide-y divide-line border-y border-line">
         {faqs.map((f) => (
           // The question is a real heading. It was display type inside a bare summary, so the same
           // content had a proper outline on the home page's FaqTabs and a flat one on every
@@ -341,7 +341,7 @@ export function Faqs({ faqs, title = "Questions" }: { faqs: { q: string; a: stri
  */
 export function Promises({ className, compact = false }: { className?: string; compact?: boolean }) {
   return (
-    <ul className={cn("grid gap-3", className)}>
+    <ul className={cn("reveal grid gap-3", className)}>
       {promises
         .filter(([confirmed]) => confirmed)
         .map(([, words]) => (
@@ -356,7 +356,7 @@ export function Promises({ className, compact = false }: { className?: string; c
 
 export function TickList({ items, cols = 1 }: { items: readonly string[]; cols?: 1 | 2 }) {
   return (
-    <ul className={cn("grid gap-3", cols === 2 && "sm:grid-cols-2 sm:gap-x-8")}>
+    <ul className={cn("reveal grid gap-3", cols === 2 && "sm:grid-cols-2 sm:gap-x-8")}>
       {items.map((x) => (
         <li key={x} className="flex gap-3">
           <CheckIcon weight="duotone" className="mt-1 size-5 shrink-0 text-accent-text" aria-hidden />
@@ -388,7 +388,7 @@ export function TickList({ items, cols = 1 }: { items: readonly string[]; cols?:
  * semantic mark, so it is keyed to something real about the destination (a guide's `urgency`) and
  * never picked for decoration.
  */
-export type LinkCardItem = { href: string; title: string; summary?: string; code?: string; icon?: Icon };
+export type LinkCardItem = { href: string; title: string; summary?: string; code?: string; icon?: Icon; banner?: PhotoId };
 
 /**
  * A guide's mark, keyed to the one field that already ranks it.
@@ -424,9 +424,19 @@ export const urgencyIcon = {
  * repair breaks WCAG 2.5.3. The caret is the same "go there" mark the rows used, kept distinct from
  * the FAQ's CaretDown, which means "open this".
  *
- * No entrance animation of its own. `Section` already carries `reveal`, so the grid settles as the
- * reader reaches it; a per-card stagger on a scroll timeline is what parked cards at part opacity
- * and failed axe on contrast before (docs/layout-ledger.md).
+ * Each card rises on its own entry. `reveal` is on the `ul`, so every `li` is watched individually
+ * and fires when it crosses the viewport edge rather than when its section does, which is what the
+ * reference does on its own card grids. There is no stagger: cards on one row cross together and
+ * arrive together.
+ *
+ * This replaces a refusal, so the reason it was refused has to survive. What parked cards at part
+ * opacity and failed axe on contrast was the scroll timeline, not the per-card animation: a scrubbed
+ * animation stops wherever the reader stops. This is a played WAAPI animation with no park state,
+ * re-measured clean on /about/, /guides/ and /compare/wordpress-vs-wix/. Both of the old bans still
+ * stand on their own terms: no view timeline (docs/layout-ledger.md, Task 12) and no delay ladder.
+ *
+ * `Section` no longer carries `reveal`, and that is what makes this safe: one animated element per
+ * ancestor chain, never a grid inside an animated wrapper.
  */
 export function LinkCards({ items, cols = 2 }: { items: LinkCardItem[]; cols?: 2 | 4 }) {
   const n = items.length;
@@ -442,17 +452,46 @@ export function LinkCards({ items, cols = 2 }: { items: LinkCardItem[]; cols?: 2
   const across = n < 4 ? (n === 3 ? 2 : n) : cols;
   const wideLast = across === 2 && n % 2 === 1;
   return (
-    <ul className={cn("grid items-stretch gap-4", across >= 2 && "sm:grid-cols-2", across === 4 && "xl:grid-cols-4")}>
+    <ul className={cn("reveal grid items-stretch gap-4", across >= 2 && "sm:grid-cols-2", across === 4 && "xl:grid-cols-4")}>
       {items.map((i, index) => {
         const Icon = i.icon;
         return (
           <li key={i.href} className={cn(wideLast && index === n - 1 && "sm:col-span-2")}>
-            <Link href={i.href} className={cn(cardLink, "flex h-full flex-col")}>
+            <Link href={i.href} className={cn(cardLink, "flex h-full flex-col", i.banner && "relative isolate overflow-hidden")}>
+              {/* The render is the card's background, not a strip across its top.
+
+                  `-z-20` for the picture and `-z-10` for the scrim, both inside the card's own
+                  `isolate`, so they paint above the card's `bg-surface` and below every child in
+                  flow. `overflow-hidden` is what makes the 14px radius clip the picture.
+
+                  Two costs, both real and both measured. A 2.41:1 render in a 540x416 card is
+                  cropped to the middle 54% and upscaled about 2.8x, against 1.5x when it was a
+                  banner at the card's own ratio, so it is softer and shows less of itself. And it
+                  now has type on it: `--card-scrim` is 0.78 rather than the shared 0.66 because the
+                  title's ember hover needs 3:1 as large text and measures 2.25:1 at 0.66. At 0.78
+                  the picture is about a fifth of its own brightness, so it reads as a lit texture
+                  behind the words rather than as a photograph. That is the trade this layout makes.
+
+                  A card with no render keeps the plain surface and its icon; there is no empty box
+                  to fill, so `anyBanner` is not needed here the way it was for the banner. */}
+              {i.banner && (
+                <>
+                  <Photo
+                    id={i.banner}
+                    decorative
+                    sizes="(min-width: 1280px) 264px, (min-width: 640px) 50vw, calc(100vw - 32px)"
+                    className="absolute inset-0 -z-20 transition-[scale] duration-500 ease-out motion-reduce:transition-none [@media(hover:hover)]:group-hover:scale-105 motion-reduce:scale-100!"
+                  />
+                  <span aria-hidden className="absolute inset-0 -z-10 bg-card-scrim" />
+                </>
+              )}
+              <span className="flex h-full flex-col">
               {Icon && <Icon weight="duotone" aria-hidden className="size-7 shrink-0 text-accent-text" />}
               <span
                 className={cn(
                   "block max-w-[40ch] font-display text-lg leading-snug font-bold transition-colors duration-200 [font-variation-settings:'opsz'_18] group-hover:text-accent-text motion-reduce:transition-none",
                   Icon && "mt-4",
+                  i.banner && "text-on-photo",
                 )}
               >
                 {i.title}
@@ -465,7 +504,9 @@ export function LinkCards({ items, cols = 2 }: { items: LinkCardItem[]; cols?: 2
                   `line-clamp-3 block` the plain utility won and the clamp did nothing, which is how
                   the hub's eleven cards shipped with seven-line summaries. The full sentence is on
                   the page this card opens; what the card owes the reader is enough to choose. */}
-              {i.summary && <span className="mt-2 line-clamp-3 text-sm text-muted">{i.summary}</span>}
+              {/* --on-photo on a card with a picture behind it: --muted measures 4.28:1 over this
+                  scrim and body copy needs 4.5. Same swap the hero lead makes for the same reason. */}
+              {i.summary && <span className={cn("mt-2 line-clamp-3 text-sm", i.banner ? "text-on-photo" : "text-muted")}>{i.summary}</span>}
               {/* Bottom right, which is where a card's "go there" mark belongs and where the row it
                   replaced kept it. `mt-auto` pushes it to the floor so every caret in a row sits on
                   one line however long the titles above them run, and `self-end` puts it on the far
@@ -485,6 +526,7 @@ export function LinkCards({ items, cols = 2 }: { items: LinkCardItem[]; cols?: 2
                   // the `!` because the hover utility is the more specific of the two.
                   className="size-5 shrink-0 text-muted transition-[color,translate] duration-200 ease-out group-hover:translate-x-0.5 group-hover:text-accent-text motion-reduce:transition-none motion-reduce:translate-none!"
                 />
+              </span>
               </span>
             </Link>
           </li>
@@ -509,7 +551,9 @@ export const titleForPath = (p: string) => {
 
 export function LinkList({ paths }: { paths: string[] }) {
   return (
-    <ul className="flex flex-wrap gap-2">
+    // `reveal-self` on the row, not `reveal` on it: these are related links, orientation furniture
+    // rather than content, and nine chips arriving one at a time is the row performing.
+    <ul className="reveal-self flex flex-wrap gap-2">
       {paths.map((p) => (
         <li key={p}>
           <Link

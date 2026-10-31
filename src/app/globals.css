@@ -17,6 +17,12 @@
   --shadow-lift: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 2px 4px rgb(0 0 0 / 0.7);
   --scrim: rgb(12 12 14 / 0.72);
   --photo-scrim: rgb(12 12 14 / 0.66); /* flat, never a gradient */
+  /* Heavier than --photo-scrim because a hub card puts four kinds of type on the picture, and the
+     binding one is the title's ember hover, which needs 3:1 as large text. Measured over the crop
+     a 540x416 card shows, worst case across the four renders: at 0.66 the ember is 2.25:1 and
+     fails; at 0.78 it is 3.45:1, --on-photo is 9.4:1 and the muted caret is 4.28:1. The summary
+     moves to --on-photo at the same time, because --muted is 4.28:1 here and body copy needs 4.5. */
+  --card-scrim: rgb(12 12 14 / 0.78);
   --on-photo: #f1f0ee;
   --accent-tint: color-mix(in srgb, var(--accent) 10%, var(--surface));
   /* Transitional: the v3 sections still on the pages until the v4 rebuild. v4 itself ships no gradient. */
@@ -41,6 +47,7 @@
   --color-accent-text: var(--accent-text);
   --color-scrim: var(--scrim);
   --color-photo-scrim: var(--photo-scrim);
+  --color-card-scrim: var(--card-scrim);
   --color-on-photo: var(--on-photo);
   --color-accent-tint: var(--accent-tint);
   --color-on-cta: var(--on-cta);
@@ -246,8 +253,22 @@
 /* The one gradient in v4, and a legibility scrim rather than decoration: the hero type sits on solid
    --bg to 68% of the viewport, so it keeps the contrast measured in the MASTER table, and the night
    photograph behind it fades in towards the bleeding right edge. */
+/* Legibility, not decoration: solid --bg under the type, then out of the way so the photograph
+   behind it is actually visible. The headline runs to about 53% of the viewport at 1440 and the
+   subtext and buttons stop well before that, so 55% is the last column that has to be opaque. It
+   was 68% to 96% when the photograph was a half-width panel on the right; against a full-bleed
+   background those numbers left a narrow strip of visible image and the frame read as a silhouette. */
+/* lg only, and the element itself carries `hidden lg:block`. Below lg the photograph is a band
+   above the words rather than behind them, so there is nothing to veil: the type is on solid --bg
+   and needs no scrim at all. A flat --hero-scrim at 0.84 lived here while the photograph was behind
+   the type at every width; it was measured (the ember headline word read 2.14:1 at 375 against the
+   lit WordPress mark, under the 3:1 a 30px bold word needs, and 0.84 brought it to 4.1:1) and is
+   recorded in docs/layout-ledger.md Task 25 in case that layout ever comes back.
+
+   Solid under the words, out of the way over the picture: the headline runs to about 53% of the
+   viewport at 1440, so 55% is the last column that has to be opaque. */
 @utility hero-scrim {
-  background: linear-gradient(to right, var(--bg) 0%, var(--bg) 68%, transparent 96%);
+  background: linear-gradient(to right, var(--bg) 0%, var(--bg) 55%, transparent 92%);
 }
 
 /* v4 nav, scrolled state: --bg at 90% with blur. The one translucent surface in this variation. */
@@ -384,43 +405,61 @@
   }
 }
 
-/* Below-fold sections arrive as the reader reaches them, on a view timeline rather than an observer:
-   no JS, so there is no opacity that can fail to resolve, and outside the @supports a browser
-   without view timelines renders the page exactly as it did before this pass. Anything already in
-   view at load is past `entry 5%` and paints at its final state, so nothing above the fold hides.
-   One 12px beat and no more: the craft floor refuses an identical entrance on every section, and
-   this has to read as the page settling under the reader rather than each section performing. */
-@utility reveal {
-  @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) {
-      animation: reveal-rise 1s var(--ease-spring) both;
-      animation-timeline: view();
-      animation-range: entry 5% entry 40%;
-    }
+/* Below-fold sections arrive as the reader reaches them, element by element, which is the move ported
+   from gotechark.com: WOW.js at `offset: 0` adding one `animated` class the first time a box crosses
+   the viewport's bottom edge, over animate.css's 1s `fadeInUp`. Three things are kept from it and one
+   is deliberately not.
+
+   Kept: the trigger (first entry, once, never replayed) and the length (1s).
+
+   Not kept: `translate3d(0, 100%, 0)`. 100% is the element's own height, so on a 600px grid that is
+   a 600px slide, a different animation on every block and a very long one on the tall ones. 14px is
+   the beat `rise` already uses and is the same distance everywhere.
+
+   Also not kept, and this one is the reference's own behaviour rather than a departure from it:
+   there is no stagger. Each element is its own trigger, so siblings in a row cross the viewport edge
+   together and rise together. The reference hand-writes `data-wow-delay` and does it exactly once
+   across 67 `wow` nodes on its /wordpress-websites/. The 70ms ladder stays where the reference keeps
+   its own, above the fold, in `rise-in` on the masthead.
+
+   It plays once rather than scrubbing on a view timeline, and that is precisely what lets the fade
+   back in. The scrubbed version had to drop opacity entirely: a reader who stops mid-range parks the
+   animation at whatever opacity that position holds, and axe measured serious `color-contrast` on
+   /about/, /guides/ and /compare/wordpress-vs-wix/ at those park positions, the ember .btn-primary
+   compositing against the page while its section was translucent. A played animation has no park
+   state, so there is no position at which opacity can be caught part way. Moving the trigger from
+   the section down to the element does not touch that argument: same played animation, only the
+   target and the count changed. Do not reintroduce a view timeline here without reading that entry
+   in docs/layout-ledger.md first.
+
+   What a played animation does still have is a window while it runs, and the script answers that
+   rather than this file: the fade finishes at 30% and the travel takes the rest. See the note there.
+
+   `.reveal-js` is set by the inline script in layout.tsx, never by the bundle: the start state is only
+   ever applied by code that cannot fail to arrive, so a blocked or slow bundle leaves all 99 of these
+   pages fully readable rather than blank. Same reasoning that kept this whole pass out of Motion.
+
+   The move itself is in layout.tsx on the Web Animations API, which is an effect rather than a
+   document change, so the trigger needs no class or attribute on a server-rendered element and React
+   has nothing to reconcile when it hydrates. The keyframe that used to be here was reachable only
+   through a `[data-in]` attribute the script wrote onto nine sections before hydration, which React
+   found and reported as a mismatch on every one.
+
+   The reduced-motion arm is nested inside this rule rather than written as a second block further
+   down, because the two have to be widened together: hide 130 elements and forget to un-hide them
+   and a reduced-motion visitor gets blank pages on all 99 routes, with nothing in the build, tsc,
+   eslint or check able to see it. `!important` because a normal declaration loses to a running or
+   already-filled animation, and a visitor who turns the setting on mid-session would otherwise keep
+   every reveal in flight along with its 14px offset. The script checks the same query, so a section
+   that has not been reached yet is never animated at all. */
+:where(.reveal-js) .reveal > *,
+:where(.reveal-js) .reveal-self {
+  opacity: 0;
+
+  @media (prefers-reduced-motion: reduce) {
+    opacity: 1 !important;
+    transform: none !important;
   }
-}
-
-/* Not `rise`, because a view timeline is scrubbed rather than played: a reader who stops scrolling
-   parks the animation wherever they left it, at whatever opacity that position holds.
-
-   The first repair is kept here because it is the reasoning that must not be tried again. It read
-   `0% { opacity: 0 } 33% { opacity: 1 } 100%`, on the theory that finishing the fade early made the
-   failing window small enough to be gone. A smaller window is not a closed one: a reader can stop
-   anywhere, including inside the first third, and a scrubbed park is a state the page can hold
-   indefinitely. Measured on the shipped build, parked inside the entry range, axe reports
-   `color-contrast` serious on /about/ (opacity 0.174 and 0.625), /guides/ (0.183, 0.550) and the
-   untouched /compare/wordpress-vs-wix/ (0.191, 0.132), the same nodes every time. The failing node
-   is also not the --muted body copy the old note assumed: it is the ember .btn-primary, whose fill
-   and near-black label both composite against the page while the section is translucent.
-
-   So there is no opacity here at all, and the fade is not compressed further but gone. The reveal
-   is the translate alone, which cannot change a contrast ratio at any scroll position or any width,
-   so no park state can fail; transform only is a strict subset of what contract rule 10 allows. The
-   12px beat is unchanged, and it was already the whole of the motion past the first third: what it
-   communicates is the page settling under the reader, not each section announcing itself. */
-@keyframes reveal-rise {
-  from { transform: translateY(12px); }
-  to { transform: translateY(0); }
 }
 
 /* The FAQ answer opens instead of appearing. block-size is animated outside transform and opacity,

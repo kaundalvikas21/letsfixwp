@@ -18,7 +18,7 @@ export function Guarantee() {
   if (!g) return null;
 
   return (
-    <section aria-labelledby="guarantee" className="mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
+    <section aria-labelledby="guarantee" className="reveal mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
       {/* The masked words are the heading, not a decoration above one. This section briefly carried
           both: a 48px "Guarantee" sitting on top of a 136px "14-day guarantee", so the h2 was smaller
           than the display text it introduced and repeated its own word. The mask leaves real text in

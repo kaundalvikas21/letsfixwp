@@ -29,7 +29,7 @@ const Framed = ({ children }: { children: React.ReactNode }) => (
  */
 export function Restored() {
   return (
-    <section aria-labelledby="same-site" className="mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
+    <section aria-labelledby="same-site" className="reveal mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
       <ZoomImage>
         {hasScreen(CAPTURE) && hasScreen(BROKEN) ? (
           // Both captures exist, so the visitor can do the repair themselves.

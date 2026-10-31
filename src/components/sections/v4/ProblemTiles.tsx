@@ -39,11 +39,11 @@ const tiles: Tile[] = matchIndex.map((c) => {
       >
         {critical &&
           (hasScreen(capture) ? (
-            <Image src={capture} alt="" width={1600} height={1000} sizes="(min-width: 1024px) 30vw, 92vw" className="absolute inset-0 size-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 group-focus-visible:scale-105 motion-reduce:transition-none motion-reduce:scale-100!" />
+            <Image src={capture} alt="" width={1600} height={1000} sizes="(min-width: 1024px) 30vw, 92vw" className="absolute inset-0 size-full object-cover transition-[scale] duration-500 ease-out group-hover:scale-105 group-focus-visible:scale-105 motion-reduce:transition-none motion-reduce:scale-100!" />
           ) : (
             // No capture yet (docs/image-todo.md): the service's own night frame stands in, so the
             // tile still reads as a screen you would recognise rather than an empty box.
-            <Photo id={servicePhotos[service.id]} decorative sizes="(min-width: 1024px) 30vw, 92vw" className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-105 group-focus-visible:scale-105 motion-reduce:transition-none motion-reduce:scale-100!" />
+            <Photo id={servicePhotos[service.id]} decorative sizes="(min-width: 1024px) 30vw, 92vw" className="absolute inset-0 transition-[scale] duration-500 ease-out group-hover:scale-105 group-focus-visible:scale-105 motion-reduce:transition-none motion-reduce:scale-100!" />
           ))}
         {/* Flat scrim, never a gradient. --text over it measures 5.6:1 against the brightest photo,
             which is why both lines on an image tile use --text and not --muted (2.55:1 there). */}
@@ -52,7 +52,7 @@ const tiles: Tile[] = matchIndex.map((c) => {
           <span className="line-clamp-2 font-display text-lg leading-tight font-bold text-balance">{title}</span>
           <ArrowUpRightIcon
             weight="duotone"
-            className="mt-1 size-5 shrink-0 text-accent-text transition-transform duration-150 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-focus-visible:translate-x-0.5 group-focus-visible:-translate-y-0.5 motion-reduce:transition-none motion-reduce:translate-none!"
+            className="mt-1 size-5 shrink-0 text-accent-text transition-[translate] duration-150 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-focus-visible:translate-x-0.5 group-focus-visible:-translate-y-0.5 motion-reduce:transition-none motion-reduce:translate-none!"
             aria-hidden
           />
         </span>
@@ -76,7 +76,7 @@ const categories = [...new Set(ordered.map((t) => t.category))];
  */
 export function ProblemTiles() {
   return (
-    <section aria-labelledby="pick-your-problem" className="mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
+    <section aria-labelledby="pick-your-problem" className="reveal mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
       <h2
         id="pick-your-problem"
         className="max-w-[18ch] font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_30] sm:text-5xl sm:[font-variation-settings:'opsz'_48]"

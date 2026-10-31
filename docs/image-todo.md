@@ -182,3 +182,45 @@ of a real error but drawings of one. `capture-errors.mjs` cannot produce those: 
 
 So the realistic position is that 31 of these 33 sections stay imageless until an image-generation
 budget or an illustrator exists, and that is the honest outcome rather than a gap to paper over.
+
+---
+
+## v4 hub card banners (Task 28)
+
+Eight 359x149 renders were supplied in `public/site_images/services/`. Four are live on the
+`/about/` hub grid through `hubBanners` in `src/content/photos.ts`. Four are **not used** and two
+hubs have no banner at all.
+
+### Not used: a blue glow is a second accent
+
+v4 has a one-accent lock (ember). These four glow cool, measured as the warm/cool split of their
+lit pixels, so putting them on the page would introduce a second accent that CLAUDE.md says to
+strip on sight:
+
+| File | Cool | Subject | Needed as |
+| --- | --- | --- | --- |
+| `malware-cleanup.png` | 77% | shield with a tick | the `wordpress-security` banner |
+| `hacked-site-cleanup.png` | 75% | padlock in front of server racks | spare for security |
+| `backup-recovery.png` | 69% | database stack with a cloud | spare for maintenance |
+| `site-migration.png` | 90% | two arrows crossing between slabs | spare for performance and migration |
+
+**To make them usable:** regenerate with the glow in the ember accent (`--accent`, `#ff5a36`)
+instead of blue, same framing, same 359x149, same dark bokeh background. The four that work
+(`emergency-fixes`, `speed-optimization`, `woocommerce-help`, `maintenance-care`) are the reference
+for the direction. Dropping a regenerated file in at the same path and adding one line to
+`hubBanners` is the whole change; the card already reserves the box.
+
+### Missing
+
+| Hub | Status |
+| --- | --- |
+| `wordpress-security` | falls back to its shield icon until `malware-cleanup` is regenerated warm |
+| `wordpress-development` | **no render exists.** Wants one in the same set: something that reads as building rather than repairing, lit in ember, 359x149 |
+
+### Two notes on the set itself
+
+- **359x149 is small for this job.** On a 2x phone the banner renders about 652 device pixels wide
+  from a 359px source, a 1.8x upscale; on a 1440 desktop card it is about 1.5x. It holds because
+  these are soft renders with one lit subject, but a 720x299 source would need no upscaling at all.
+- They are PNG at 8-bit palette. Fine for flat-ish renders, but these have long gradient falloffs,
+  so a higher bit depth or a WebP would band less and weigh less.

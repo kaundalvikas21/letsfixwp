@@ -102,7 +102,7 @@ export function CityTemplate({ city: c, node }: { city: City; node: FlatNode }) 
       </Section>
 
       <Section id="remote" title="How working with us runs">
-        <dl className="grid gap-4 sm:grid-cols-3">
+        <dl className="reveal grid gap-4 sm:grid-cols-3">
           {remoteDelivery.map((r) => (
             <div key={r.label} className="rounded-[14px] border border-line bg-surface p-5">
               {/* The about page runs these same three entries down a rail, where a short ember tick

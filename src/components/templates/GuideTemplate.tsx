@@ -85,7 +85,7 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
           <Section id="symptoms" title="What you are seeing">
             {/* Capped on the same measure as every paragraph on the page: the column is 720px, which
                 is 88 characters of 17px Geist, and a symptom is a sentence. */}
-            <ul className="ml-5 max-w-[68ch] list-disc space-y-2 text-muted marker:text-accent-text">
+            <ul className="reveal ml-5 max-w-[68ch] list-disc space-y-2 text-muted marker:text-accent-text">
               {g.symptoms.map((x) => (
                 <li key={x}>{x}</li>
               ))}
@@ -109,7 +109,7 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
 
           <Section id="causes" title="What usually causes it">
             {/* Tiles, not a second bullet list: no layout family repeats on a page (contract rule 3). */}
-            <ul className="grid gap-3 sm:grid-cols-2">
+            <ul className="reveal grid gap-3 sm:grid-cols-2">
               {g.likelyCauses.map((x) => (
                 <li key={x} className="rounded-[14px] border border-line bg-surface p-4 text-sm text-muted">
                   {x}
@@ -119,7 +119,7 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
           </Section>
 
           <Section id="safe-checks" title="Safe things to try first">
-            <ol className="max-w-[68ch] space-y-4">
+            <ol className="reveal max-w-[68ch] space-y-4">
               {g.safeChecks.map((x, i) => (
                 <li key={x} className="flex gap-4">
                   <span className="grid size-8 shrink-0 place-items-center rounded-[14px] bg-accent-tint font-display text-sm font-bold text-accent-text">
@@ -152,7 +152,7 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
               The h2 stays outside the panel. It belongs to the document outline, and `ReadingRail`
               derives its ticks from `h2[id]` inside the reading column. */}
           <Section id="call-us" title="When to call us">
-            <div className={cn(card, "overflow-hidden p-6 md:p-8")}>
+            <div className={cn(card, "reveal-self overflow-hidden p-6 md:p-8")}>
               <span aria-hidden className="block h-px w-10 bg-accent" />
               <p className="mt-5 max-w-[68ch] text-muted">{g.whenToCallUs}</p>
               <p className="mt-4 text-[15px]">

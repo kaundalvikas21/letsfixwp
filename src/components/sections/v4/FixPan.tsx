@@ -71,7 +71,7 @@ export function FixPan() {
   return (
     // Full width, so the rail can run off the right edge of the window rather than stopping at the
     // 72rem container. Only the heading block is held to the spine.
-    <section aria-labelledby="the-fix" className="py-16 md:py-24">
+    <section aria-labelledby="the-fix" className="reveal py-16 md:py-24">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 md:flex-row md:items-end md:justify-between md:gap-10 md:px-6">
         <h2
           id="the-fix"

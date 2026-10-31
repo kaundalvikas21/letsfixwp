@@ -7,6 +7,7 @@ import { hubIdOf, hubNodes, routes } from "@/config/routes";
 import { guides, services } from "@/content";
 import { hubLead } from "@/content/hubs";
 import { hubIcon } from "@/content/icons";
+import { hubBanners } from "@/content/photos";
 import { remoteDelivery } from "@/content/notices";
 import { servicePhotos } from "@/content/photos";
 import { cn } from "@/lib/utils";
@@ -68,16 +69,17 @@ export default function About() {
         }
       />
 
-      {/* This section once had to refuse `reveal`: the banner puts its heading within a few pixels
-          of the fold at 768, it parked inside its own entry range at load, and a scrubbed opacity
-          ramp meant axe read the heading, the lead and all twelve directory strings at part
-          opacity. `reveal-rise` no longer touches opacity (globals.css records why), so a park can
-          no longer change a contrast ratio and the exception is retired: this section settles like
-          every other one. Still written out rather than built with `Section` for the remaining,
-          smaller reason: `Section` wraps its children in one `mt-6` div and this one has two blocks
-          with their own spacing. The margins and the heading are `Section`'s own. */}
-      <section aria-labelledby="what-we-do" className="reveal mt-16 md:mt-24">
-        <h2 id="what-we-do" className={h2}>
+      {/* This section once had to refuse `reveal` altogether: the banner puts its heading within a
+          few pixels of the fold at 768, it parked inside its own entry range at load, and a scrubbed
+          opacity ramp meant axe read the heading, the lead and all twelve directory strings at part
+          opacity. The reveal is played rather than scrubbed now, so there is no park position for a
+          contrast ratio to be caught at, and the exception is retired. Written out rather than built
+          with `Section` for the remaining, smaller reason: `Section` wraps its children in one
+          `mt-6` div and this one has two blocks with their own spacing. The margins and the heading
+          are `Section`'s own, and so is the marker placement: the heading and the sentence carry
+          their own, and the card grid carries its own inside `LinkCards`. */}
+      <section aria-labelledby="what-we-do" className="mt-16 md:mt-24">
+        <h2 id="what-we-do" className={`reveal-self ${h2}`}>
           What we work on
         </h2>
         {/* All three counted from src/content at build time, which is the only kind of number this
@@ -86,7 +88,7 @@ export default function About() {
             opens it, because `hubNodes.length` sets a numeral where the word "Six" used to be: the
             six was the one figure here that was typed rather than counted, and a sentence that
             argues these numbers cannot drift may not hardcode one of them. */}
-        <p className="mt-6 max-w-[60ch] text-muted">
+        <p className="reveal-self mt-6 max-w-[60ch] text-muted">
           The {hubNodes.length} areas below hold {services.length} services and {guides.length} written guides to specific WordPress errors.
         </p>
         {/* Six hubs, six doors, so they are cards rather than the ruled two-column rows this used
@@ -100,6 +102,9 @@ export default function About() {
               title: h.title,
               summary: hubLead[hubIdOf(h.path)],
               icon: hubIcon[hubIdOf(h.path) as keyof typeof hubIcon],
+              // Four of the six have one; the other two keep the icon they always had. See
+              // hubBanners in src/content/photos.ts for why the map is partial.
+              banner: hubBanners[hubIdOf(h.path)],
             }))}
           />
         </div>
@@ -111,7 +116,7 @@ export default function About() {
             carries it: no numbers and no stage labels, which contract rule 6 bans. Each entry meets
             the rail on a short ember tick, so the group reads as stations on a line rather than as
             one indented block of text. */}
-        <dl className="max-w-[70ch] space-y-8 border-l border-line pl-6 md:space-y-10 md:pl-8">
+        <dl className="reveal max-w-[70ch] space-y-8 border-l border-line pl-6 md:space-y-10 md:pl-8">
           {remoteDelivery.map((r) => (
             <div key={r.label} className="relative">
               {/* Inside the dt, not beside it: a div inside a dl may hold only dt and dd, so a span

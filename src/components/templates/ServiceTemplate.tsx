@@ -74,12 +74,12 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
             </Section>
           ) : (
             <Section id="who" title="Who this is for">
-              <p className="max-w-[68ch] text-muted">{s.whoItsFor}</p>
+              <p className="reveal-self max-w-[68ch] text-muted">{s.whoItsFor}</p>
             </Section>
           )}
 
           <Section id="what-we-do" title="What we do">
-            <ol className="grid gap-4 sm:grid-cols-2">
+            <ol className="reveal grid gap-4 sm:grid-cols-2">
               {s.whatWeDo.map((w, i) => (
                 <li
                   key={w.verb}
@@ -111,7 +111,7 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
 
           {quote && (
             <Section id="quote" title="In a client's words">
-              <figure className="rounded-[14px] border border-line bg-surface p-6">
+              <figure className="reveal-self rounded-[14px] border border-line bg-surface p-6">
                 <blockquote className="font-display text-lg leading-snug font-bold [font-variation-settings:'opsz'_18] md:text-xl md:[font-variation-settings:'opsz'_20]">
                   &ldquo;{quote.excerpt}&rdquo;
                 </blockquote>

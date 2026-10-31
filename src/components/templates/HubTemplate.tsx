@@ -93,7 +93,7 @@ export function HubTemplate({ node }: { node: FlatNode }) {
         // a third subject. Four of the six hubs have guides and render the grid (fix 6 panels, security 5, performance-migration 4,
         // woocommerce 2); maintenance and development have none and render nothing here.
         <Section id="guides" title="Most urgent problems" className="mt-16 md:mt-16">
-          <ul className="grid items-start gap-4 sm:grid-cols-2">
+          <ul className="reveal grid items-start gap-4 sm:grid-cols-2">
             {topGuides.map((g, i) => (
               <li key={g.slug} className={cn(leadWide && i === 0 && "sm:col-span-2")}>
                 <Link

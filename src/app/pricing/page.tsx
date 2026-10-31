@@ -309,7 +309,10 @@ export default function Pricing() {
                   </Link>
                   <span className="shrink-0 text-sm font-semibold tabular-nums text-muted">{inHub.length}</span>
                 </h3>
-                <ul className="mt-2 divide-y divide-line border-t border-line">
+                {/* The marker goes here rather than on the `columns-2` container above: a transform on a
+                    column-fragmented box is under-specified across engines, and this card is
+                    `break-inside-avoid`, so nothing inside it is fragmented. */}
+                <ul className="reveal mt-2 divide-y divide-line border-t border-line">
                   {inHub.map((s) => (
                     <li key={s.id}>
                       {/* py-3 against a 27px line makes a 51px row, over the contract's 44px floor,

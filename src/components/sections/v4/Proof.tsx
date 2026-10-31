@@ -39,7 +39,7 @@ const logos = LOGOS.map((icon) => (
  */
 export function Proof() {
   return (
-    <section aria-labelledby="repair-sites-on" className="mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
+    <section aria-labelledby="repair-sites-on" className="reveal mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
       <h2 id="repair-sites-on" className="text-center text-base font-medium text-muted">
         We repair sites running on
       </h2>
@@ -52,7 +52,7 @@ export function Proof() {
         className="group mt-12 inline-flex min-h-11 items-center gap-2 font-semibold text-accent-text"
       >
         Read the case studies
-        <ArrowUpRightIcon weight="duotone" className="size-5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:translate-none!" aria-hidden />
+        <ArrowUpRightIcon weight="duotone" className="size-5 transition-[translate] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:translate-none!" aria-hidden />
       </Link>
     </section>
   );

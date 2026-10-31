@@ -255,8 +255,28 @@ tree, and every one of these lives in its own `'use client'` leaf.
 | Wordmark underline | CSS | an ember rule, `scale-x-0` to `scale-x-100` from the left over 200ms `ease-out`, on hover and on focus-visible | Feedback: the mark answers the pointer and the keyboard alike |
 | Mega menu reveal | Motion | categories 50ms apart, opacity 0 to 1 and y 24 to 0, spring stiffness 100 / damping 20. Reduced motion fades in 160ms with no stagger and no travel | Hierarchy: the eye lands on Fixes first |
 
-**Nothing else moves.** No hover scales on cards that are not links, no decorative floaters, no
-scroll cues, no `window.addEventListener('scroll')`.
+**Superseded 2026-10-31, by the owner, Task 22.** This section read "Nothing else moves", and the
+rejections log below rejected "Scroll Reveal for everything" on the grounds that the UX lookups cap
+motion at one to two key elements per view. The owner gave gotechark.com as the reference and asked
+twice for its behaviour on every page. That reference reveals per element: 67 `wow fadeInUp` nodes on
+its /wordpress-websites/, 314 on its /portfolio/, 23 on its /about-us/, measured. So a site-wide
+element-level reveal is now the house default, and the cap no longer applies to it.
+
+What did not change, and is not up for re-litigation: the reveal is a played animation and never a
+scrubbed one (two separate axe `color-contrast` failures are on record for the scrubbed version); it
+never touches a Motion or GSAP island, because a WAAPI `fill: both` sits in the animation origin and
+permanently overrides the inline transforms those libraries write; and it still answers rule 10's one
+sentence. docs/layout-ledger.md Task 22 carries the placement rules and the measurements.
+
+Still true: no hover scales on cards that are not links, no decorative floaters, no scroll cues, no
+`window.addEventListener('scroll')`.
+
+**Drift note, 2026-10-31.** Both pinned scenes this section specifies were replaced before Task 22
+and no longer exist: the sticky-stack is now `ErrorPanels` (CSS grid tracks, no pin) and the
+horizontal pan is now `FixRail` (writes `scrollLeft`, no pin). Nothing on the site pins or needs a
+skip control, and the pin budget below is currently unspent. The "Nav progress rail" row in the table
+above was never built. GSAP's only surviving use is `GuaranteeHeading`'s stroke draw, which this
+table does not list.
 
 **Pin budget: 2 per page.** GSAP's own guidance is one to two pinned sections per page, so the
 sticky-stack and the horizontal pan are the only pinned scenes. The zoom-parallax scrubs without
@@ -378,7 +398,7 @@ generic GSAP scroll-reveal snippet. Each was replaced by the V4.0 brief:
 | 8 / 12 / 16px radii | 14px everywhere | Brief shape lock. One radius is also the cheapest rule to hold across cards, captures, buttons and inputs. |
 | `rgba(0,0,0,...)` shadow depths, four levels | Two tokens, inset top highlight plus a 1px ambient | The style's AVOID list rules out complex shadows, and drop shadows are invisible on `#0C0C0E`. A lit top edge is what reads in a dark room. |
 | Generic `scrollTrigger` snippet with `end: '+=150%'` | Taste-skill skeletons 5.A and 5.B, used exactly | Contract rule 2 and the skill's own note: the common failure is a trigger that fires mid-scroll instead of pinning at the viewport top. `start: "top top"`, `pin: true`, correct scrub, `ctx.revert()` cleanup. |
-| Scroll Reveal for everything | Six mapped motions, each with a stated reason; nothing else moves | Motion must be motivated. The UX lookups rate excessive motion and scroll-jacking as high-severity: "animate 1 to 2 key elements per view maximum". |
+| Scroll Reveal for everything | ~~Six mapped motions; nothing else moves~~ **Reversed 2026-10-31 (Task 22):** a site-wide element-level reveal, plus the mapped motions | Was: motion must be motivated, and the UX lookups cap it at "1 to 2 key elements per view maximum". Now: the owner named gotechark.com as the reference and asked twice for its behaviour, and that reference reveals per element on every page (67, 314 and 23 `wow` nodes on three of its pages). The cap is overridden knowingly, for this one motion, with the contrast and island constraints in Task 22 holding. |
 | (brief implies 3 scroll scenes) | 2 pinned (sticky-stack, horizontal pan); zoom-parallax scrubs unpinned | GSAP guidance: do not pin more than 1 to 2 sections per page; excessive pinning fights native scroll and hurts mobile. |
 | Trust and Authority + Conversion pattern | Funnel (3-step conversion), mapped to break > fix > result, with no visible step labels or step colours | The brief is a story, and the funnel's section order is that story. Contract rule 6 bans numbered-step labels and the single accent replaces the red / orange / green step colouring. |
 | Logo carousel (pattern note) | One CSS marquee per page with pause, previous and next, hover and focus stop, static under reduced motion | Kept as specified by the pattern and contract rules 3 and 9. |

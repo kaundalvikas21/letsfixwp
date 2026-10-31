@@ -78,15 +78,16 @@ export default function CompareIndex() {
 
       {/* This section once had to refuse `reveal`, because its heading lands a few hundred pixels
           down, which is exactly where a reader parks it, and a scrubbed opacity ramp left whatever
-          parked there under 4.5:1. `reveal-rise` is transform only now (globals.css records why),
-          so a park cannot change a contrast ratio and the exception is retired here and on /about/,
-          which carried the same one. Written out rather than built with `Section` only because the
-          list below sets its own `mt-8`. */}
-      <section aria-labelledby="pairings" className="reveal mt-16 md:mt-24">
-        <h2 id="pairings" className={h2}>
+          parked there under 4.5:1. The reveal is played rather than scrubbed now, so there is no
+          park position for a contrast ratio to be caught at, and the exception is retired here and
+          on /about/, which carried the same one. Written out rather than built with `Section` only
+          because the list below sets its own `mt-8`. The row is already the positioned ancestor of
+          its own stretched `::after`, so animating it leaves the hit area exactly where it was. */}
+      <section aria-labelledby="pairings" className="mt-16 md:mt-24">
+        <h2 id="pairings" className={`reveal-self ${h2}`}>
           What each comparison covers
         </h2>
-        <ul className="mt-8 divide-y divide-line border-y border-line">
+        <ul className="reveal mt-8 divide-y divide-line border-y border-line">
           {compares.map((c) => (
             // The link is the heading and nothing else, stretched over the row by its own
             // `::after`. Wrapping the whole row in the anchor instead gave it an accessible name
@@ -105,7 +106,7 @@ export default function CompareIndex() {
                   beside it, so nothing moves. Mouse only, or a tap would leave it lit. */}
               <span
                 aria-hidden
-                className="pointer-events-none absolute inset-x-0 -bottom-px h-px origin-left scale-x-0 bg-accent transition-transform duration-[260ms] ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none [@media(hover:hover)]:group-hover:scale-x-100"
+                className="pointer-events-none absolute inset-x-0 -bottom-px h-px origin-left scale-x-0 bg-accent transition-[scale] duration-[260ms] ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none [@media(hover:hover)]:group-hover:scale-x-100"
               />
 
               <div className="col-start-1 row-start-1">
@@ -142,7 +143,7 @@ export default function CompareIndex() {
 
               <CaretRightIcon
                 weight="duotone"
-                className="col-start-2 row-start-1 mt-1 size-5 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none md:col-start-3"
+                className="col-start-2 row-start-1 mt-1 size-5 shrink-0 text-muted transition-[translate] group-hover:translate-x-0.5 motion-reduce:transition-none md:col-start-3"
                 aria-hidden
               />
             </li>

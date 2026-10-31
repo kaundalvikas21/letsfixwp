@@ -51,15 +51,22 @@ const groups: FaqGroup[] = REFS.map((g) => ({
  */
 export function Faq() {
   return (
-    <section aria-labelledby="faq" className="mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
+    <>
+      {/* Outside the section rather than first inside it. The original reason was the stagger: a
+          display:none script holding slot one put the heading a beat behind the only two things on
+          screen. There is no stagger any more, and the reason it stays out is now the observer: a
+          `display: none` child of a `reveal` container is watched and never intersects, so it sits
+          in the observer for the life of the page without ever animating. */}
       <JsonLd data={faqLd(groups.flatMap((g) => g.faqs))} />
-      <h2
-        id="faq"
-        className="font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_30] sm:text-5xl sm:[font-variation-settings:'opsz'_48]"
-      >
-        Questions people ask first
-      </h2>
-      <FaqTabs groups={groups} />
-    </section>
+      <section aria-labelledby="faq" className="reveal mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
+        <h2
+          id="faq"
+          className="font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_30] sm:text-5xl sm:[font-variation-settings:'opsz'_48]"
+        >
+          Questions people ask first
+        </h2>
+        <FaqTabs groups={groups} />
+      </section>
+    </>
   );
 }

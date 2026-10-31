@@ -93,11 +93,14 @@ export default function GuidesIndex() {
           error strings, HTTP codes and file paths, so printing the literal line under the title is
           the one place that reservation pays: the titles are phrased for search ("WordPress 502 bad
           gateway") and the strings are what is actually on the visitor's screen ("502 Bad Gateway"). */}
-      <section aria-labelledby="index" className="reveal mt-16 md:mt-24">
-        <h2 id="index" className={h2}>
+      {/* Heading and lead only. The index under them is a `columns-*` flow, and a transform on a
+          column-fragmented box is under-specified across engines, so it is left out of the reveal
+          rather than animated into a rendering bug. */}
+      <section aria-labelledby="index" className="mt-16 md:mt-24">
+        <h2 id="index" className={`reveal-self ${h2}`}>
           Every error, grouped by what fixes it
         </h2>
-        <p className="mt-3 max-w-[62ch] text-muted">
+        <p className="reveal-self mt-3 max-w-[62ch] text-muted">
           Where a guide quotes the line WordPress prints, it is under the title, word for word.
         </p>
         <div className="mt-8 columns-1 gap-x-10 md:columns-2 lg:columns-3 lg:gap-x-12">
