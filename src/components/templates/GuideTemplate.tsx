@@ -2,6 +2,7 @@ import { WarningIcon } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import { BookLink, ChatButton, CheckLink } from "@/components/Cta";
 import { faqLd, guideLd, JsonLd } from "@/components/JsonLd";
+import { ScrollProgress } from "@/components/motion";
 import { CLOSING_ASK } from "@/config/cta";
 import { routes } from "@/config/routes";
 import { getService, guidesFor } from "@/content";
@@ -42,7 +43,13 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
   const siblings = guidesFor(g.parentService).filter((x) => x.slug !== g.slug);
 
   return (
-    <article data-urgency={g.urgency} className={cn(page, pageY)}>
+    <article id="guide-article" data-urgency={g.urgency} className={cn(page, pageY)}>
+      {/* The one route family that carries a progress bar. Contract rule 6 bans scroll cues and
+          this is an owner-instructed, scoped exception: a guide runs to several thousand pixels of
+          troubleshooting and the reader wants to know how much of it is left. Scoped by being
+          mounted here and nowhere else, and it reports this article's length rather than the
+          document's, so the footer does not make the guide look longer than it is. */}
+      <ScrollProgress target="#guide-article" />
       <JsonLd data={[guideLd(g), faqLd(g.faqs)]} />
       <Breadcrumbs
         items={[

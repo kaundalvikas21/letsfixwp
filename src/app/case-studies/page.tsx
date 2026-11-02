@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function CaseStudies() {
   return (
-    <div className={cn(page, pageY, "max-w-3xl")}>
+    <div className={cn(page, pageY)}>
       <Breadcrumbs items={nodeCrumbs(routes.reviews)} />
       <h1 className={cn(h1, "mt-6")}>Case studies</h1>
 

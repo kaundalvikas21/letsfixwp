@@ -10,16 +10,18 @@ import { breadcrumbLd, JsonLd, type Crumb } from "@/components/JsonLd";
 import { Photo } from "@/components/Photo";
 import { nodeByPath } from "@/config/routes";
 import { getCompare, getGuide } from "@/content";
-import { promises } from "@/content/notices";
-import type { PhotoId } from "@/content/photos";
+import { deliveryIcon } from "@/content/icons";
+import { promises, remoteDelivery } from "@/content/notices";
+import { deliveryPhoto, type PhotoId } from "@/content/photos";
 import { pngSize } from "@/lib/png-size";
+import { ClosingBeams } from "./ClosingBeams";
 import { cn } from "@/lib/utils";
 
 // Template primitives for the active variation. Visual language from design-system/letsfixwp-v4/MASTER.md:
 // dark locked, one ember accent, 14px on everything, Bricolage Grotesque display over Geist body, Geist Mono
 // for error strings only. Density 3, so sections breathe further apart than they did on v3.
 
-export const page = "mx-auto w-full max-w-6xl px-4 md:px-6";
+export const page = "mx-auto w-full max-w-page px-4 md:px-6";
 /**
  * Every page's own top and bottom padding, and the header is part of it.
  *
@@ -84,12 +86,17 @@ export function Section({ id, title, children, className }: { id: string; title:
 }
 
 /**
- * The band fills the page's whole spine, so the candidate it preloads is the spine's width: 1104px
- * once the 1152px container stops growing, the viewport less the gutters below that. It lived twice,
+ * The band fills the page's whole spine, so the candidate it preloads is the spine's width: 1152px
+ * once the 1200px container stops growing, the viewport less the gutters below that. It lived twice,
  * copied byte for byte into /about/ and /pricing/, and a third, narrower copy in GuideTemplate was
  * sized for a 336px column that no longer exists on these headers.
+ *
+ * The two numbers move with `--container-page` and nothing warns when they do not: this hint feeds
+ * the LCP element on about 95 routes, and the ledger already records one 2.5x over-fetch shipped on
+ * an LCP image from a `sizes` that had drifted off its real box. Measured in the browser after the
+ * 1152 to 1200 change: the band renders 1152px at 1440 and the hint asks for 1152.
  */
-export const bannerSizes = "(min-width: 1152px) 1104px, (min-width: 768px) calc(100vw - 48px), calc(100vw - 32px)";
+export const bannerSizes = "(min-width: 1200px) 1152px, (min-width: 768px) calc(100vw - 48px), calc(100vw - 32px)";
 
 /**
  * Every inner page's header: the type sits on the photograph, which is what a masthead is, rather
@@ -165,7 +172,7 @@ export function PageMasthead({
           token table's `--text` on `--surface-2` and not the scrim's. It wraps rather than scrolls,
           so there is no scrollable region to strand a keyboard visitor in at 375, and `anywhere` is
           the only break rule that holds a 90-character file path inside the band. Sized to the
-          string, because "502 Bad Gateway" in a 1104px box read as an empty panel with a few
+          string, because "502 Bad Gateway" in a 1152px box read as an empty panel with a few
           characters in the corner. */}
       {plate && (
         <p
@@ -234,8 +241,13 @@ export function ClosingBand({
   return (
     <section
       aria-labelledby={id}
-      className="closing-band mt-20 overflow-hidden rounded-[14px] border border-line bg-surface p-8 shadow-card md:mt-28 md:p-12"
+      className="closing-band relative isolate mt-20 overflow-hidden rounded-[14px] border border-line bg-surface p-8 shadow-card md:mt-28 md:p-12"
     >
+      {/* The beams. `-z-10` inside the section's own `isolate`, so they paint above `bg-surface` and
+          below every child in flow, and `overflow-hidden` is what makes the 14px radius clip them.
+          Decoration: `aria-hidden`, no pointer events. This replaced a CSS line grid (Task 42) on
+          the owner's instruction; everything about how the artwork is built lives on the component. */}
+      <ClosingBeams />
       {/* A 7/5 grid, not a flex row with `justify-between`. The flex version let the heading set the
           gap, so a 24ch question and a 28ch one put the buttons in two different places and the
           band looked slightly different on every template. On a grid the actions sit on one column
@@ -416,7 +428,7 @@ export const urgencyIcon = {
  *
  * **Never three across** (contract rule 6). `cols` is 2 or 4 for that reason, so the ban needs no
  * special-casing at any width: one column at 375, two from 640, and four from 1280 where a 4-up is
- * asked for. A 4-up only goes on a section that has the whole 1104px spine; inside the service
+ * asked for. A 4-up only goes on a section that has the whole 1152px spine; inside the service
  * page's eight-column reading well, four cards would be 160px wide.
  *
  * The whole card is one `<Link>`, which is why it carries no second interactive element: a
@@ -479,7 +491,7 @@ export function LinkCards({ items, cols = 2 }: { items: LinkCardItem[]; cols?: 2
                   <Photo
                     id={i.banner}
                     decorative
-                    sizes="(min-width: 1280px) 264px, (min-width: 640px) 50vw, calc(100vw - 32px)"
+                    sizes="(min-width: 1280px) 276px, (min-width: 640px) 50vw, calc(100vw - 32px)"
                     className="absolute inset-0 -z-20 transition-[scale] duration-500 ease-out motion-reduce:transition-none [@media(hover:hover)]:group-hover:scale-105 motion-reduce:scale-100!"
                   />
                   <span aria-hidden className="absolute inset-0 -z-10 bg-card-scrim" />
@@ -572,8 +584,8 @@ export function LinkList({ paths }: { paths: string[] }) {
  * A real capture from scripts/capture-errors.mjs, in a device frame, rendered only once the file exists.
  *
  * `sizes` is required because this component sits in two containers of very different widths and is
- * preloaded in both: 432px in the service hero (col-span-5 of a 12-column grid on a 1104px inner
- * container with 48px gutters) and 720px in the guide (max-w-3xl less px-6). The single hardcoded
+ * preloaded in both: the service hero's col-span-5 of a 12-column grid on the 1152px inner
+ * container, and in the guide a box capped at 68ch rather than by the container. The single hardcoded
  * `(min-width: 1024px) 60vw` it used to carry declared 864px at 1440, so the service page preloaded
  * the 1080w candidate into a 432px box, a 2.5x over-fetch on its own LCP element.
  */
@@ -627,5 +639,96 @@ export function LegalPending({ title }: { title: string }) {
         }
       />
     </article>
+  );
+}
+
+/**
+ * The three `remoteDelivery` stations as a numbered track, and now the only place it is written.
+ *
+ * Built for /about/ in Tasks 30 and 31 from a reference the owner supplied, and lifted here
+ * verbatim in Task 38 because `CityTemplate` was rendering the same three entries as
+ * `sm:grid-cols-3`, which is contract rule 6's three equal cards in a row: the same violation
+ * Task 34 found in `CompareTemplate`. Two call sites, one component, so the shape cannot drift and
+ * rule 6's numeral exception is spent once rather than per template.
+ *
+ * `sizes` was a prop while the city page was capped at `max-w-4xl` and its station was 272px
+ * against 368 on /about/. Every page runs the 1200px spine now (Task 40), so both call sites are a
+ * constant (1152 - 48) / 3 = 368px from `lg` up and the prop had nothing left to vary. One hint,
+ * written once, measured at 368 on both pages.
+ *
+ * Every number on it was measured against the real crops, not assumed. `--card-scrim` at 0.78
+ * (the token the hub cards use) over the worst case of the three (Meetings, whose ember arc is the
+ * brightest pixel in the set) puts `--on-photo` at 9.9:1 and `--muted` at 4.50:1. 4.50 is the body
+ * floor exactly, with nothing in hand, so every string on these cards is `--on-photo` and none is
+ * `--muted`. The first station's numeral drops its ember for the same reason: ember measures 3.63:1
+ * here, under the 4.5 a 14px bold word needs, so an ember border marks the first station instead.
+ *
+ * `ol`, not `dl`. The numerals are the design, and an ordered list says "1 of 3" to a screen reader
+ * on its own, so every numeral on screen is `aria-hidden` decoration over real semantics rather
+ * than a label typed into the page. Rule 6's other two bans were not spent: no ember bloom behind
+ * the first card (a firm ember border over the page background carries the same "you start here"
+ * without a glow), and no arrow in the corner, because these three are not links and an arrow that
+ * goes nowhere is a promise the card cannot keep.
+ */
+export function RemoteTrack() {
+  return (
+    <ol className="reveal relative grid gap-5 lg:grid-cols-3 lg:gap-6">
+      {remoteDelivery.map((r, i) => {
+        const Mark = deliveryIcon[r.label as keyof typeof deliveryIcon];
+        const first = i === 0;
+        const n = String(i + 1).padStart(2, "0");
+        return (
+          <li key={r.label} className="relative lg:pt-14">
+            {/* The track, drawn per column so it bridges the grid gap: dashed the whole way, with
+                the run into the first station solid, which is the only thing marking where the
+                sequence starts. Hidden below lg, where the cards simply stack. */}
+            <span aria-hidden className="absolute inset-x-0 top-5 hidden border-t border-dashed border-line-strong lg:block" />
+            {first && <span aria-hidden className="absolute top-5 right-1/2 left-0 hidden h-px bg-accent lg:block" />}
+            <span
+              aria-hidden
+              className={cn(
+                "absolute top-0 left-1/2 hidden size-10 -translate-x-1/2 place-items-center rounded-full border bg-bg font-display text-sm font-bold tabular-nums lg:grid",
+                first ? "border-accent text-accent-text" : "border-line-strong text-muted",
+              )}
+            >
+              {n}
+            </span>
+
+            {/* `-z-20` for the picture and `-z-10` for the scrim, inside the card's own `isolate`,
+                so both sit above `bg-surface` and below every child in flow, and `overflow-hidden`
+                is what makes the 14px radius clip the picture. */}
+            <div className={cn(card, "relative isolate h-full overflow-hidden", first && "border-accent")}>
+              <Photo
+                id={deliveryPhoto[r.label]}
+                decorative
+                sizes="(min-width: 1024px) 368px, (min-width: 640px) 50vw, calc(100vw - 32px)"
+                className="absolute inset-0 -z-20"
+              />
+              <span aria-hidden className="absolute inset-0 -z-10 bg-card-scrim" />
+              <div className="flex items-start justify-between gap-4">
+                {/* The first card carries an ember edge over the page background rather than the
+                    shared plate: on a card already bordered in ember, a tile in `--accent-tint`
+                    is invisible, so the icon floated with no plate while the other two had one. */}
+                <span
+                  className={cn(
+                    "grid size-14 shrink-0 place-items-center rounded-[14px] border bg-bg text-accent-text",
+                    first ? "border-accent" : "border-line-strong",
+                  )}
+                >
+                  <Mark weight="duotone" aria-hidden className="size-6" />
+                </span>
+                {/* The station number for the stacked layout, where there is no track to hang it
+                    on. Same numeral, same `aria-hidden`, different place. */}
+                <span aria-hidden className="font-display text-sm font-bold tabular-nums text-on-photo lg:hidden">
+                  {n}
+                </span>
+              </div>
+              <h3 className="mt-5 font-display text-lg font-bold [font-variation-settings:'opsz'_18]">{r.label}</h3>
+              <p className="mt-2 max-w-[42ch] text-on-photo">{r.text}</p>
+            </div>
+          </li>
+        );
+      })}
+    </ol>
   );
 }

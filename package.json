@@ -4,12 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && tsx scripts/route-test.ts",
+    "build": "tsx scripts/check-confirmed.ts && next build && tsx scripts/route-test.ts",
     "start": "next start",
     "lint": "eslint",
-    "check": "tsx scripts/check-content.ts",
+    "check": "tsx scripts/check-content.ts && tsx scripts/check-motion-tokens.ts",
     "capture": "node scripts/capture-errors.mjs",
-    "test:routes": "tsx scripts/route-test.ts"
+    "test:routes": "tsx scripts/route-test.ts",
+    "check:motion": "tsx scripts/check-motion-tokens.ts",
+    "check:confirmed": "tsx scripts/check-confirmed.ts",
+    "build:prod": "tsx scripts/check-confirmed.ts --strict && next build && tsx scripts/route-test.ts"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

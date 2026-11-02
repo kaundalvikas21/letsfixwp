@@ -4,6 +4,7 @@ import {
   ArrowCounterClockwiseIcon,
   ArrowsClockwiseIcon,
   ArrowsLeftRightIcon,
+  BankIcon,
   BroomIcon,
   CalendarBlankIcon,
   ChartBarIcon,
@@ -11,12 +12,15 @@ import {
   ClipboardTextIcon,
   ClockCounterClockwiseIcon,
   CodeIcon,
+  CreditCardIcon,
+  CurrencyInrIcon,
   EqualsIcon,
   EyeIcon,
   FileTextIcon,
   GaugeIcon,
   HammerIcon,
   HardDrivesIcon,
+  KeyIcon,
   LightningIcon,
   ListBulletsIcon,
   LockIcon,
@@ -24,6 +28,7 @@ import {
   MonitorIcon,
   PackageIcon,
   PenNibIcon,
+  PercentIcon,
   PlugsConnectedIcon,
   PulseIcon,
   ReceiptIcon,
@@ -35,13 +40,16 @@ import {
   StethoscopeIcon,
   TargetIcon,
   ToolboxIcon,
+  TranslateIcon,
+  TrendUpIcon,
   UserPlusIcon,
   VideoCameraIcon,
+  WarningCircleIcon,
   WrenchIcon,
 } from "@phosphor-icons/react/ssr";
 import { hubIds } from "@/config/routes";
 import { remoteDelivery } from "./notices";
-import { services } from "./index";
+import { compares, services } from "./index";
 
 /**
  * Every icon the content layer maps, in one file.
@@ -124,6 +132,62 @@ export const verbIcon = {
   Verify: SealCheckIcon,
 } as const satisfies Record<string, Icon>;
 
+/**
+ * Every criterion a comparison is built on, 21 of them across the three files in
+ * `src/content/compares/`.
+ *
+ * Keyed to the criterion string, which is a field that already exists, for the reason this whole
+ * file exists: six of the 21 appear in two comparisons each, and a map is the only way "Cost
+ * structure" is guaranteed the same mark on /compare/wordpress-vs-wix/ and
+ * /compare/woocommerce-vs-shopify/. Chosen at the call site it would drift the first time either
+ * page was touched.
+ *
+ * **No two criteria in the same comparison share a mark**, which is the `verbIcon` rule and matters
+ * more here: these sit in one column of one table, so two identical icons would say two rows were
+ * about the same thing. Marks are reused *across* files where the pairs never meet, and the near
+ * misses are deliberately split: `Cost structure` is the receipt and `Transaction fees` the
+ * percent, `How you pay` the card and `Commitment` the calendar, `Indian payment gateways` the
+ * bank and `GST invoicing` the rupee. Each of those pairs shares a table.
+ *
+ * **Identity is not the test, legibility at 16px is**, and the build check can only see the first.
+ * Three marks were changed after looking at the rendered column rather than the map: `Ownership
+ * and hosting` was the hard drives and sat directly above `Cost structure`'s receipt, which at
+ * 16px are both a small ruled rectangle, so ownership took the key. `Backups and monitoring` was
+ * the counter-clockwise clock directly under `Routine updates`' clockwise arrows, two circular
+ * arrows in adjacent rows, so backups took the hard drives, which is also the mark `verbIcon`
+ * already gives "Back up". `GST invoicing` was the document and shared a table with the receipt,
+ * so it took the rupee, which says the thing the criterion is actually about.
+ *
+ * Nothing here characterises either side. A criterion is a question both columns answer, so the
+ * mark belongs to the question and is identical on both halves of the row.
+ */
+export const criterionIcon = {
+  // wordpress-vs-wix, and the six shared with woocommerce-vs-shopify
+  "Ownership and hosting": KeyIcon,
+  "Cost structure": ReceiptIcon,
+  "Getting started": RocketLaunchIcon,
+  "Flexibility and extensions": PlugsConnectedIcon,
+  "SEO control": MagnifyingGlassIcon,
+  "Maintenance burden": WrenchIcon,
+  Portability: ArrowsLeftRightIcon,
+  "Selling online in India": ShoppingCartIcon,
+  "Regional language sites": TranslateIcon,
+  // care-plan-vs-pay-as-you-go-support
+  "How you pay": CreditCardIcon,
+  "Routine updates": ArrowsClockwiseIcon,
+  "Backups and monitoring": HardDrivesIcon,
+  "When something breaks": WarningCircleIcon,
+  "Budget predictability": ChartBarIcon,
+  "Small changes and content edits": PenNibIcon,
+  "Security responsibility": ShieldCheckIcon,
+  Commitment: CalendarBlankIcon,
+  // woocommerce-vs-shopify
+  "Transaction fees": PercentIcon,
+  "Indian payment gateways": BankIcon,
+  "GST invoicing": CurrencyInrIcon,
+  "Traffic spikes on sale days": TrendUpIcon,
+} as const satisfies Record<string, Icon>;
+
 /** The three `remoteDelivery` entries: a call, the work in progress, and what you are left holding. */
 export const deliveryIcon = {
   Meetings: VideoCameraIcon,
@@ -138,3 +202,15 @@ for (const s of services) {
   for (const w of s.whatWeDo) if (!(w.verb in verbIcon)) throw new Error(`icons: whatWeDo verb "${w.verb}" has no icon`);
 }
 for (const r of remoteDelivery) if (!(r.label in deliveryIcon)) throw new Error(`icons: delivery "${r.label}" has no icon`);
+for (const c of compares) {
+  // Every criterion covered, and no mark used twice inside one comparison: the second check is the
+  // one that matters, because a duplicate renders happily and silently claims two rows are alike.
+  const seen = new Map<Icon, string>();
+  for (const r of c.rows) {
+    const mark = criterionIcon[r.criterion as keyof typeof criterionIcon];
+    if (!mark) throw new Error(`icons: compare criterion "${r.criterion}" has no icon`);
+    const twin = seen.get(mark);
+    if (twin) throw new Error(`icons: "${c.slug}" gives "${twin}" and "${r.criterion}" the same mark`);
+    seen.set(mark, r.criterion);
+  }
+}

@@ -34,6 +34,23 @@ const input = {
     accessRemoved: confirm("claim: our access is removed when the work is done", true),
     checkTurnaround: confirm("claim: how long a free site check takes to come back", "two working days"),
   },
+  // The figures /about/ prints as big numerals.
+  //
+  // Every one of these is a factual claim about the business made to a customer, which contract
+  // rule 6 ("invented statistics") and rule 8 ("numbers on screen come only from src/content or
+  // getSiteStatus()") both exist to stop appearing by accident. They are allowed here, and only
+  // here, because `confirm()` is the mechanism for exactly this: the numbers render in dev and in
+  // preview so the section can be designed and reviewed, and a production deploy fails until the
+  // owner replaces each one with the real figure. The defaults below are placeholders, not
+  // estimates, and nobody should read them as the business's actual record.
+  //
+  // The fourth cell on that strip is `cities.length`, counted from src/content at build time, so
+  // the strip is never entirely unverified however long these sit unconfirmed.
+  stats: {
+    sitesRecovered: confirm("stat: how many WordPress sites have been brought back online to date", 500),
+    yearsRunning: confirm("stat: how many years the business has been fixing WordPress", 6),
+    firstReplyHours: confirm("stat: typical hours to a first reply on a new ticket", 2),
+  },
   // Live chat. The runtime switch is NEXT_PUBLIC_CHAT_PROVIDER (+ NEXT_PUBLIC_CHAT_ID); this entry exists so a
   // production deploy fails until the owner has actually chosen one, or confirmed there is none.
   chatProvider: confirm("chat provider: set NEXT_PUBLIC_CHAT_PROVIDER to crisp, intercom, tawk or chatwoot, or confirm none", process.env.NEXT_PUBLIC_CHAT_PROVIDER ?? null),
@@ -98,6 +115,11 @@ export const brand = {
   accent: input.accent,
   currency: v(input.currency),
   gst: { registered: v(input.gst.registered), gstin: input.gst.gstin },
+  stats: {
+    sitesRecovered: v(input.stats.sitesRecovered),
+    yearsRunning: v(input.stats.yearsRunning),
+    firstReplyHours: v(input.stats.firstReplyHours),
+  },
   chatProvider: v(input.chatProvider),
   bookingProvider: v(input.bookingProvider),
   guarantee: v(input.guarantee),

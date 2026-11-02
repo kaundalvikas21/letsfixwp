@@ -1,16 +1,5 @@
-"use client";
-
-import { motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
-
-// The same strong ease-out the closing block uses: the eye sees movement immediately, which is what
-// makes half a second read as fast.
-const EASE = [0.23, 1, 0.32, 1] as const;
-
-// These beat Motion's inline styles, so a reduced-motion visitor gets the final state from the first
-// paint rather than five hidden rows waiting for hydration. transform-none works here because Motion
-// writes a real `transform`, unlike Tailwind's scale-* utilities, which write `scale`.
-const still = "motion-reduce:opacity-100! motion-reduce:transform-none!";
+import { Stagger } from "@/components/motion";
 
 // The row grid lives here rather than in the section, because this component owns the <li>. The
 // section owns what goes inside one.
@@ -39,26 +28,18 @@ const ROW =
  * rather than a claim. Theirs also rotates an arrow and fills a large outlined numeral: the arrow
  * belongs to links and these rows are not links, and numbered rows are a step label, which contract
  * rule 6 bans. What is left is the move itself, which is the part that is good.
+ *
+ * **This is a Server Component now.** Its only use of Motion was the stagger, and `Stagger` does
+ * that through the stylesheet rather than through hydration, so the client island this file used to
+ * be is gone: no `"use client"`, no bundle, and the five rows are in the HTML at full opacity if
+ * the script never arrives. The hover wipe, the ember rail and the hollow index were always pure
+ * CSS and are untouched. The ladder moved from its own 55ms to the token table's 70ms.
  */
 export function PracticeRows({ children }: { children: ReactNode[] }) {
-  const reduce = useReducedMotion();
   return (
-    <motion.ul
-      initial="hidden"
-      whileInView="shown"
-      viewport={{ once: true, amount: 0.2 }}
-      variants={{ shown: { transition: { staggerChildren: reduce ? 0 : 0.055 } } }}
-      className="mt-10 border-t border-line md:mt-12"
-    >
+    <Stagger as="ul" className="mt-10 border-t border-line md:mt-12">
       {children.map((child, i) => (
-        <motion.li
-          key={i}
-          className={`${ROW} ${still}`}
-          variants={{
-            hidden: { opacity: 0, y: reduce ? 0 : 14 },
-            shown: { opacity: 1, y: 0, transition: { duration: reduce ? 0 : 0.5, ease: EASE } },
-          }}
-        >
+        <li key={i} className={ROW}>
           {/* The index, ported from the reference's capability rows: a large hollow figure that
               fills with ember as the pointer crosses the row.
 
@@ -100,7 +81,7 @@ export function PracticeRows({ children }: { children: ReactNode[] }) {
               and keeps the hover, which is a state change arriving instantly rather than a movement. */}
           <span
             aria-hidden
-            className="pointer-events-none absolute -inset-x-3 inset-y-0 -z-10 origin-left scale-x-0 bg-surface transition-[scale] duration-[650ms] ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-x-100 motion-reduce:transition-none"
+            className="pointer-events-none absolute -inset-x-3 inset-y-0 -z-10 origin-left scale-x-0 bg-surface transition-[scale] duration-[650ms] ease-[var(--motion-ease)] group-hover:scale-x-100 motion-reduce:transition-none"
           />
           {/* Sits exactly on the row's own hairline rather than beside it, so the ember replaces the
               line instead of thickening the row by a pixel.
@@ -110,10 +91,10 @@ export function PracticeRows({ children }: { children: ReactNode[] }) {
               and this rail had been snapping its full width since it shipped. */}
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-x-0 -bottom-px h-px origin-left scale-x-0 bg-accent transition-[scale] duration-[260ms] ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-x-100 motion-reduce:transition-none"
+            className="pointer-events-none absolute inset-x-0 -bottom-px h-px origin-left scale-x-0 bg-accent transition-[scale] duration-[260ms] ease-[var(--motion-ease)] group-hover:scale-x-100 motion-reduce:transition-none"
           />
-        </motion.li>
+        </li>
       ))}
-    </motion.ul>
+    </Stagger>
   );
 }

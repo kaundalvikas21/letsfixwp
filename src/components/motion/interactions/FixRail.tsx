@@ -27,7 +27,7 @@ const TO = 0.78;
  * value means the browser clamps it, the scrollbar agrees with it, and a swipe simply takes over.
  *
  * And it does take over: touch the rail and the drive stops for good. Without the pin there is not
- * enough page scroll left to walk 1104px of row at a readable pace, so the drive gets you moving and
+ * enough page scroll left to walk 1152px of row at a readable pace, so the drive gets you moving and
  * your own hand gets you the rest, at whatever pace you want. The one thing a scroll-linked rail
  * must never do is carry a card away from someone in the middle of reading it.
  *

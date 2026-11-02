@@ -18,8 +18,9 @@ export type ErrorPanel = {
   cause: string;
 };
 
-// Shares the open panel takes against one each for the closed ones. Seven across a 1104px row leaves
-// the closed panels 107px, which is a sliver that still reads as a panel. Four is the stacked figure:
+// Shares the open panel takes against one each for the closed ones. Seven across the 1152px row
+// leaves the closed panels about 115px, which is a sliver that still reads as a panel. The track is
+// `fr`, so it followed the 1152 to 1200 container change without an edit. Four is the stacked figure:
 // at 375 the same seven would leave closed rows 34px tall, under the 44px target the contract asks
 // for, and squeeze the open one to 182px, which is too narrow to set an error message in.
 const OPEN = 7;

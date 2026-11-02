@@ -1,7 +1,7 @@
 import { BookLink, ChatButton } from "@/components/Cta";
 import { Photo } from "@/components/Photo";
 import { brand } from "@/config/brand";
-import { HeroRays } from "./HeroRays";
+import { HeroRays } from "@/components/motion/interactions/HeroRays";
 import { HeroWords } from "./HeroWords";
 
 // The guarantee clause renders only once the owner sets a real guarantee (contract rule 8: a null
@@ -34,7 +34,7 @@ export function Hero() {
   Logged as a deliberate deviation in docs/layout-ledger.md Task 27; one token to revert. **/
   return (
     <section aria-labelledby="hero-title" className="relative isolate flex items-center overflow-hidden lg:min-h-[100dvh]">
-      <div className="mx-auto w-full max-w-6xl px-4 pt-20 pb-16 [@media(min-height:700px)]:pt-24 md:px-6">
+      <div className="mx-auto w-full max-w-page px-4 pt-20 pb-16 [@media(min-height:700px)]:pt-24 md:px-6">
         {/* The photograph leads on a phone and a tablet, then the words; at lg it stops being a
             block in the reading order and becomes the background behind them.
 

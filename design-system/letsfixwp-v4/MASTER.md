@@ -233,6 +233,37 @@ Rendered as real selectable text, never as an image of text.
 
 ## Motion
 
+### The token table
+
+**`src/components/motion/tokens.ts` is the source for every animated value on the site.** These are
+the owner's figures, set in the site-wide scroll animation brief (Task 41) and chosen over the ones
+this file carried before it: a sampled spring at stiffness 100 / damping 20, a 70ms beat and a 14px
+travel. The numbers below are documentation of that file, not a second definition; `globals.css`
+mirrors the subset CSS needs and `npm run check:motion` fails the build if the two drift.
+
+| Token | Value |
+| --- | --- |
+| Easing | `cubic-bezier(0.22, 1, 0.36, 1)`, one curve for everything |
+| Travel | 24px desktop, 14px below 768px |
+| Duration | 0.5s standard, 0.35s small UI, 1.2s CountUp |
+| Stagger | 0.07s a step, laddering stops after the 6th child |
+| Viewport | `once: true`, `amount: 0.2`, `margin: "0px 0px -15% 0px"` |
+
+The old spring is kept under `--ease-spring` for the three places that animate a real spring rather
+than an entrance: the FAQ's `block-size`, and the closing band's tick and border.
+
+### Where motion lives
+
+**Every animation on the site is in `src/components/motion/`**, and nothing outside it may import
+`motion/react`. Eight primitives cover the scroll vocabulary (`Reveal`, `Stagger`, `Parallax`,
+`CountUp`, `ScrollProgress`, `StickyCTA`, `Marquee`, `TextReveal`); the bespoke interaction islands
+in the table below live in `motion/interactions/`. The folder's README says which to reach for.
+
+`Reveal` and `Stagger` are **Server Components that do not use Motion at all**. They emit a class
+and some data attributes, and the inline script in `app/layout.tsx` applies the hidden state. Motion's
+`whileInView` writes `opacity: 0` into the server HTML, and on 99 routes of body copy a blocked
+bundle must not mean a blank page. See their doc comments.
+
 Two libraries, strictly separated. **GSAP + ScrollTrigger** drives the pinned scenes.
 **Motion** (`motion/react`) drives micro-interactions. Contract rule 2: they never share a component
 tree, and every one of these lives in its own `'use client'` leaf.
@@ -242,13 +273,13 @@ tree, and every one of these lives in its own `'use client'` leaf.
 | Hero word reveal | Motion | second headline line only: real `<span>` per word in the DOM, opacity 0 to 1 and y 12 to 0 behind a clip mask, stagger 60ms, spring stiffness 100 / damping 20. The mask carries 0.16em of descender room, pulled back with a negative margin, so a tail is never clipped at rest | Hierarchy: the promise lands word by word |
 | Sticky-stack of error screens | GSAP, skeleton 5.A | `start: "top top"`, `pin: true`, `pinSpacing: false`, next card's trigger scrubs the previous to scale 0.92 / opacity 0.55. The whole scene is inside `gsap.matchMedia("(min-width: 768px) and (prefers-reduced-motion: no-preference)")`, and `useGSAP` reverts it | Story: recognition, "that is my screen" |
 | Horizontal pan through the fix | GSAP, skeleton 5.B | `start: "top top"`, `pin: true`, `end: () => '+=' + distance`, `scrub: 1`, `invalidateOnRefresh: true`. The heading is the first item in the track, and a 2px ember rail at the bottom is `scaleX` 0 to 1 on the same scrubbed timeline; same `gsap.matchMedia` gate and `useGSAP` cleanup as the sticky-stack | Story: progress, the fix moves forward, and the rail says how far through it you are |
-| Logo marquee (one per page) | CSS only | `@keyframes marquee` translating a duplicated track by -50%, 42s linear. Stops on hover, on focus inside it and on a visible pause button (`aria-pressed`); reduced motion renders one static wrapped row and hides both the copy and the button | Breadth: the platforms we repair |
+| Logo marquee (one per page) | CSS only, via the `Marquee` primitive | `@keyframes marquee` translating a tripled track by -33.3333%, 40s linear. Stops on hover, on focus inside it and on a visible pause button (`aria-pressed`); reduced motion renders one static wrapped row and hides both the copy and the button | Breadth: the platforms we repair |
 | Zoom on the restored site | Motion, unpinned | `useScroll` on the section with `offset: ["start end", "center center"]`, `useTransform` to scale 0.7 to 1. Scale only, on a box that never changes size, so nothing below it moves; `motion-reduce:transform-none!` gives the full-width still from the first paint | State change: broken to restored |
 | Quote reveal | Motion | `whileInView` with `once`, the quote's sentences then its attribution, 120ms apart, opacity and y 10 to 0, spring stiffness 100 / damping 20. A browser decides where a line wraps, so the reveal follows the unit the author controls | Hierarchy: the words arrive before the name |
 | FAQ accordion | Motion | the answer's height 0 to auto with the contract spring, the chevron turning 180 degrees, `reducedMotion="user"` plus a duration-0 transition so reduced motion swaps instantly. Height is the one property animated outside transform and opacity on this page: an accordion cannot reveal an answer without it | Feedback: the question opened |
 | Problem grid filter | Motion | `layout` on each tile with a spring (stiffness 100 / damping 20), enter and exit at opacity and scale 0.96, exit shortened to 150ms because one chip can remove 44 tiles at once. The grid container does not animate its own layout | State change: the grid re-forms around what was asked for |
 | Magnetic final CTA | Motion | pointer offset to x/y springs (stiffness 150 / damping 15), travel clamped to 8px, returns to centre on leave. Off entirely under reduced motion and on coarse pointers, where there is no hover to answer; the coarse check is `useSyncExternalStore` so the server never ships a magnet a touch device cannot use | Feedback: the button answers the pointer |
-| Closing block reveal | Motion | `whileInView` with `once`, headline then line then actions 60ms apart, opacity and y 14 to 0 over 500ms on `cubic-bezier(0.23, 1, 0.32, 1)`. Reduced motion renders the block static from the first paint | Hierarchy: the last thing the page says arrives in reading order |
+| Closing block reveal | `Stagger` + `TextReveal` | was `CtaReveal` and `MaskRise`, both deleted in Task 41. The headline rises out of its clip box, then the line and the actions arrive on the shared 70ms ladder at the token duration and curve | Hierarchy: the last thing the page says arrives in reading order |
 | Arrow chip on the closing CTA | CSS | the chip inside the button translates 2px on hover over 150ms `ease-out`, the label does not move | Feedback: the button is a door, not a label |
 | Nav backdrop | Motion | `useScroll` to `useTransform(scrollY, [0, 8], [0, 1])` on the backdrop layer's opacity. No scroll listener, no state, opacity only | State change: the page has left the hero |
 | Nav progress rail | Motion | a 2px ember rule along the bottom of the bar, `scaleX` bound to `scrollYProgress`, fading in with the backdrop. Scale only; reduced motion keeps it, because it tracks the visitor's own scrolling 1:1 rather than moving on its own | Orientation: the home page runs to about 18,000px and two pinned scenes make the scrollbar lie about it |

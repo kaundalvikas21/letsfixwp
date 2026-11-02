@@ -35,6 +35,16 @@
 }
 
 @theme inline {
+  /* The site spine, and the only place its width is written.
+     It was `max-w-6xl` (72rem / 1152px) typed out in seventeen places: the `page` constant in
+     parts.tsx and sixteen hardcoded copies across the nav, the footer and twelve v4 sections. One
+     token means the next change to this number is a one-line diff rather than a seventeen-file
+     sweep with a left edge quietly out of line on whichever file the sweep missed, which is the
+     failure docs/layout-ledger.md records twice under "Container widths: three, on purpose".
+     Tailwind v4's `--container-*` namespace generates `max-w-page` from this. 75rem = 1200px, less
+     the `px-4 md:px-6` gutters, so the desktop content width is 1152px. */
+  --container-page: 75rem;
+
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
@@ -94,7 +104,88 @@
 }
 
 /* Shape lock: all-soft 14px, no pills (design-system/letsfixwp-v4/MASTER.md). */
+/* The button hover, ported from Codrops' ButtonHoverStyles demo, effect 11 (`button--calypso`).
+   Read out of its own stylesheet rather than guessed at: css/base.css on
+   tympanus.net/Development/ButtonHoverStyles/.
+
+   **Two layers, and the second one is the clever part.** `::before` is a circle 120% of the button
+   wide, resting collapsed below it at `scale3d(0,0,0)`; on hover it balloons up and fills the box
+   over 400ms on the original's own `cubic-bezier(0.1, 0, 0.3, 1)`. A circle alone would leave a
+   curved edge at the top, so `::after` is a plain block waiting one button-height above, which
+   drops in over 50ms exactly as the circle finishes (`delay: 400ms`) and flattens that edge into a
+   rectangle. The motion is the circle; the block is the tidy-up.
+
+   **It is transform and opacity only**, which is the reason it ports cleanly: contract rule 10 is
+   satisfied by the original without changing a thing about how it moves.
+
+   Two things did have to change. The source paints `#000` and inverts its label with
+   `mix-blend-mode: difference`, which over ember is unpredictable and is a hardcoded hex besides.
+   So each button fills with a token and swaps its label colour on a delay synced to the block
+   landing, which is what the blend mode was doing implicitly.
+
+   Measured, both directions: `--text` on `--bg` is **16.1:1** for the primary's hovered state, and
+   `--on-accent` on `--accent` is **6.30:1** for the secondary's, the pair the token table already
+   records. Neither state is close to the 4.5:1 floor.
+
+   `z-index: -1` inside the button's own `isolation: isolate`, so both layers paint above its
+   background and below the label, which is a bare text node and needs no wrapper of its own. The
+   focus ring is a `box-shadow` on the button itself, so `overflow: hidden` does not clip it.
+
+   Everything is behind `(hover: hover)`: a tap would otherwise leave a button filled with no way to
+   clear it. Under reduced motion both layers are removed entirely and the button keeps the lift it
+   had before, which is a real hover state and not a dead one.
+
+   Not ported: the label's roll-up. That animates a `<span>` the source wraps its text in, and this
+   site's labels are bare text nodes across 86 call sites of differing shape; wrapping them all is a
+   refactor rather than a hover. */
+@utility btn-fill {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+  }
+  /* The circle: 120% wide, square by way of padding-bottom, parked below the button. */
+  &::before {
+    width: 120%;
+    height: 0;
+    padding-bottom: 120%;
+    top: -110%;
+    left: -10%;
+    border-radius: 50%;
+    transform: translate3d(0, 68%, 0) scale3d(0, 0, 0);
+  }
+  /* The block, waiting one button-height above. */
+  &::after {
+    inset: 0;
+    transform: translate3d(0, -100%, 0);
+    transition: transform 400ms cubic-bezier(0.1, 0, 0.3, 1);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover::before {
+      transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+      transition: transform 400ms cubic-bezier(0.1, 0, 0.3, 1);
+    }
+    &:hover::after {
+      transform: translate3d(0, 0, 0);
+      transition: transform 50ms linear 400ms;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::before,
+    &::after { display: none; }
+  }
+}
+
 @utility btn-primary {
+  @apply btn-fill;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -108,7 +199,18 @@
   white-space: nowrap;
   cursor: pointer;
   transition: transform 150ms ease, box-shadow 200ms ease;
-  &:hover { box-shadow: var(--shadow-lift); }
+  /* The fill is a **lighter ember**, not a dark one, and that was a correction made after looking
+     at it. Filling the primary with `--bg` was tried first and is closer to the source, which
+     drains a light button to black. On this site it drains the one ember control on the page to
+     near-black while the secondary beside it stays dark, so the hovered primary reads as switched
+     off: the main call to action looked disabled at exactly the moment the pointer was on it.
+     Lightening instead keeps both buttons moving the same way, towards the accent and towards
+     active, and nothing on the page changes rank under the pointer.
+     The label does not move at all, so there is no colour swap to time here. */
+  &::before, &::after { background: color-mix(in srgb, var(--accent) 72%, var(--text)); }
+  @media (hover: hover) and (pointer: fine) {
+    &:hover { box-shadow: var(--shadow-lift); }
+  }
   &:active { transform: scale(0.98); }
   /* The chip is flush with the inner padding, so the right inset drops to the gap. `:has` rather
      than a modifier class: the button does not need to know whether it was given an icon. */
@@ -121,6 +223,7 @@
 }
 
 @utility btn-secondary {
+  @apply btn-fill;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -139,8 +242,20 @@
   & .cta-chip { background: color-mix(in srgb, var(--text) 10%, transparent); }
   transition: transform 150ms ease, box-shadow 200ms ease;
   /* It carried no hover state at all, so CHAT sat dead under the pointer on every page of the site.
-     Lift and nothing else: an ember border here would compete with the primary standing beside it. */
-  &:hover { box-shadow: var(--shadow-lift); }
+     It lifts rather than fills with the accent, which it did briefly and which was wrong: the
+     secondary turning ember put the loudest colour on the page on the lesser of the two controls,
+     and left the pair swapping rank under the pointer. Ember stays on the primary.
+
+     The value is set by contrast, not by taste. The label stays `--text`, so the fill has to remain
+     dark enough to carry near-white at 4.5:1. A mid grey does not: `--surface-2` mixed 55% with
+     `--text` lands around rgb(124,123,125), roughly 3.6:1. At 78% it resolves to **rgb(75,75,78)**
+     and `--text` on it measures **7.63:1**, a clear step up off `--surface` (rgb(20,20,23)) with
+     the label well clear of the floor. Both figures read off the built page, not off this
+     arithmetic; the primary's lighter ember resolves to rgb(251,132,106) at 8.01:1. */
+  &::before, &::after { background: color-mix(in srgb, var(--surface-2) 78%, var(--text)); }
+  @media (hover: hover) and (pointer: fine) {
+    &:hover { box-shadow: var(--shadow-lift); }
+  }
   &:active { transform: scale(0.98); }
   @media (prefers-reduced-motion: reduce) {
     transition: none;
@@ -200,6 +315,126 @@
 @utility closing-band {
   transition: border-color 260ms var(--ease-spring);
   @media (prefers-reduced-motion: reduce) { transition: none; }
+}
+
+/* The ember trails on the closing band's beams.
+
+   A short lit segment running the length of a curve, made with `stroke-dasharray` plus an animated
+   `stroke-dashoffset`: one dash of 140 against a 1443 gap, which is exactly one dash per 1583-unit
+   path, travelling one full period per cycle.
+
+   **This is the fourth recorded exception to contract rule 10's transform-and-opacity rule**, after
+   the FAQ's `block-size` and the two grid-track animations. The justification is the same shape as
+   theirs: there is no transform that moves a point *along a curve*. Translating the path moves the
+   whole line, and a clip would need a mask animated in two axes at once to follow the sweep. The
+   cost is a repaint of a half-pixel stroke inside a 1152x193 box, which is the smallest animated
+   area on the site.
+
+   Each curve is only inside the viewBox for about 70 of its 1583 units, so a trail is visible for
+   roughly a tenth of its cycle. That is the whole reason this reads as "every so often, one of the
+   lines lights up" rather than as a loop: sixteen trails at staggered periods put one or two in
+   frame at a time, and never the same pair twice inside any reasonable sitting.
+
+   Reduced motion does not hide the trails, it stops them being trails: `stroke-dasharray: none`
+   paints each one along its full length through the ember falloff, which is the static lit beam
+   this band carried before the animation (Task 43). The reader gets the picture, not a frozen dash
+   parked wherever the clock happened to stop.
+
+   **The opacity has to drop with it, and that is not a detail.** Moving, you see one or two short
+   segments at a time, because a curve is only inside the viewBox for about a tenth of its length.
+   Still, you see all thirteen at full length at once. At the same `0.55` that is thirteen ember
+   lines across the panel: a reduced-motion reader would get a markedly louder design than everyone
+   else, which is backwards. `0.15` is the figure the static version was measured at and it puts the
+   two states at about the same weight.
+
+   Paused off screen by the `data-paused` attribute the component sets, for the reason the logo
+   marquee records: a loop that runs for the whole visit while visible for a fraction of it is work
+   nobody asked for, and this band sits at the very bottom of every page. */
+@keyframes beam-trail {
+  to { stroke-dashoffset: -1583; }
+}
+
+.beam-trail {
+  stroke-dasharray: 140 1443;
+  animation: beam-trail linear infinite;
+}
+[data-beams-paused="true"] .beam-trail {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .beam-trail {
+    animation: none;
+    stroke-dasharray: none;
+    stroke-opacity: 0.15;
+  }
+}
+
+/* The footer wordmark: the brand name at the foot of every page, running the full width of the
+   spine, clipped by its own box and fading out before the edge.
+
+   Ported from interfaces.dev's footer, read out of the live page rather than guessed at. Theirs is
+   a `420x73` SVG of ten outlined letterforms at `w-full` inside a box of `h-16 sm:h-28 lg:h-32`,
+   which is far shorter than the rendered artwork, so the bottoms of the letters are cut off; a
+   `bg-linear-to-b from-transparent to-gray-background` overlay covers the lower half and fades
+   them out before the cut. Two ideas: **a wordmark too big for its box, and a fade that hides the
+   seam.**
+
+   Three things are done differently here, each for a reason.
+
+   **Live text, not letter paths.** Theirs has to be an SVG because the mark is set in their own
+   face; MASTER locks this site to Bricolage Grotesque, so shipping somebody else's outlines would
+   break the type lock and ten `<path>` elements besides. A real string also stays crisp at any
+   zoom and costs nothing to change when the brand name does.
+
+   **A mask, not a painted gradient.** The reference fades to a literal `to-gray-background`, which
+   is correct only while the footer's background is exactly that colour. `mask-image` removes alpha
+   instead of adding a colour, so whatever is behind shows through unchanged; it is also what keeps
+   this inside MASTER's no-gradient rule, the same argument `marquee-fade` and the closing band's
+   beams already make.
+
+   **`aria-hidden`.** Theirs carries `aria-label="Interfaces"`. Here the footer's address block
+   already says LetsFixWP a few lines above, so announcing it twice would be noise. It is
+   decoration, and `select-none` keeps it from being dragged into a copied selection.
+
+   The size is set in `vw` so the mark tracks the spine, with a `clamp` ceiling because the
+   container stops growing at 1200px while the viewport does not. */
+@utility brand-wordmark {
+  display: block;
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variation-settings: "opsz" 96;
+  white-space: nowrap;
+  user-select: none;
+
+  /* **Sized from the string's own measured width, not by eye.** "LetsFixWP" set in Bricolage at
+     800 with -0.04em tracking renders **4.29 times its font size** wide, measured with a Range over
+     the text node. Dividing the available width by 4.4 leaves a little under two percent of slack,
+     so the mark reaches the spine at every width without ever overflowing it. The ceiling is the
+     container's own cap: it stops growing at 1200px while the viewport does not.
+
+     The first version used `15.2vw` picked by eye and filled **71%** of the container at 375, which
+     looked deliberate on a screenshot and was not. A `display: block` span is as wide as its parent
+     whatever its text does, so measuring the element reported a perfect fit and hid the gap; the
+     Range is what measures the letters. */
+  font-size: min(calc((100vw - 2.5rem) / 4.4), 16.6rem);
+
+  /* **Crop the leading, never the letters.** Canvas TextMetrics on this exact face and weight puts
+     the ink between 0.105em and 0.845em of a `line-height: 1` box, so a line box carries 0.105em of
+     air above the caps and 0.155em below the baseline. These two negative margins remove exactly
+     that, which makes the element's box the letters themselves. The box then needs no height of its
+     own and the mark sits tight to the foot of the page at every size, where a fixed height clipped
+     the glyphs at desktop and nothing at all at 375. */
+  margin-top: -0.105em;
+  margin-bottom: -0.155em;
+
+  /* Large text, so WCAG's 3:1 applies rather than 4.5:1, and `--text` at 36% over `--bg` measures
+     just past it. Decorative text is exempt from contrast altogether, but an exemption an auditor
+     has to be told about is worse than a number that passes on its own. The mask then takes most
+     of it away again, so what is actually on screen is far quieter than the token suggests. */
+  color: color-mix(in srgb, var(--text) 36%, transparent);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 22%, transparent 94%);
 }
 
 @utility closing-tick {
@@ -340,7 +575,7 @@
 /* The marquee's two ends, softened so logos arrive and leave instead of being cut off at the clip
    edge. A mask, not a painted gradient: it removes alpha rather than adding a colour, so the page
    background still shows through unchanged. Percentages rather than a fixed length, so the fade is
-   the same proportion of a 343px phone window as of a 1104px desktop one. Switched off under reduced
+   the same proportion of a 343px phone window as of a 1152px desktop one. Switched off under reduced
    motion, where the row is a static wrapped block and there is nothing travelling past an edge. */
 @utility marquee-fade {
   mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
@@ -352,8 +587,9 @@
 /* Logo marquee: the track holds the set three times and each copy carries its own trailing gap, so
    one third of the track is exactly one repeat unit and -33.3333% lands on the seam with no drift.
    Three copies rather than two because after the shift the remainder still has to fill the window:
-   two 768px copies left a 327px blank strip on the right of a 1104px container near the end of each
-   loop. Changing the copy count means changing this percentage to match. */
+   two 768px copies left a blank strip on the right of the container near the end of each loop; three
+   cover it with room over, re-checked against the 1152px content width the 1200px spine gives.
+   Changing the copy count means changing this percentage to match. */
 @keyframes marquee {
   to { transform: translateX(-33.3333%); }
 }
@@ -368,12 +604,32 @@
   from { opacity: 0; }
 }
 
-/* Spring stiffness 100, damping 20 (critically damped, settles in about 600ms), sampled for CSS. */
+/* Motion tokens. Mirrors src/components/motion/tokens.ts, which is the source; `npm run check:motion`
+   fails if the two drift. They exist in both places because the two primitives that wrap body copy
+   (`Reveal` and `Stagger`) are Server Components and animate through this stylesheet and the inline
+   script, never through Motion, so the numbers have to be reachable from CSS as well as from TS.
+
+   `--motion-distance` steps down below `md` rather than switching off: 24px is a much larger share
+   of a 375px window than of a desktop one and reads as a lurch at the same number. */
+:root {
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-distance: 24px;
+  --motion-duration: 0.5s;
+  --motion-duration-small: 0.35s;
+  --motion-stagger: 0.07s;
+}
+@media (max-width: 767px) {
+  :root { --motion-distance: 14px; }
+}
+
+/* Spring stiffness 100, damping 20 (critically damped, settles in about 600ms), sampled for CSS.
+   Kept for the three places that animate a real spring rather than an entrance: the FAQ's
+   `block-size`, the closing band's tick and its border. Entrances use `--motion-ease`. */
 :root {
   --ease-spring: linear(0, 0.09 8%, 0.264 17%, 0.442 25%, 0.594 33%, 0.713 42%, 0.801 50%, 0.908 67%, 0.96 83%, 1);
 }
 @keyframes rise {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(var(--motion-distance)); }
 }
 
 /* The hero headline's second line, one word at a time. CSS rather than Motion so the promise is
@@ -382,7 +638,7 @@
    stiffness 100 / damping 20 spring settles; the per-word delay is set inline, 60ms apart. */
 @utility hero-word {
   display: inline-block;
-  animation: rise 600ms var(--ease-spring) backwards;
+  animation: rise var(--motion-duration) var(--motion-ease) backwards;
   @media (prefers-reduced-motion: reduce) {
     animation: none;
   }
@@ -399,7 +655,7 @@
    opacity 0 is not painted, so fading it in would hold the page's largest paint back by the length
    of the animation. The headline is the already-visible default that everything else rises under. */
 @utility rise-in {
-  animation: rise 600ms var(--ease-spring) backwards;
+  animation: rise var(--motion-duration) var(--motion-ease) backwards;
   @media (prefers-reduced-motion: reduce) {
     animation: none;
   }
@@ -453,7 +709,11 @@
    every reveal in flight along with its 14px offset. The script checks the same query, so a section
    that has not been reached yet is never animated at all. */
 :where(.reveal-js) .reveal > *,
-:where(.reveal-js) .reveal-self {
+:where(.reveal-js) .reveal-self,
+/* A clip box is observed but never hidden: an element at opacity 0 inside overflow-hidden still
+   has a box, but one that is itself hidden cannot be measured honestly, and the line inside it is
+   what has to move. `TextReveal` is the only thing that emits this. */
+:where(.reveal-js) [data-rv-target="child"] > * {
   opacity: 0;
 
   @media (prefers-reduced-motion: reduce) {

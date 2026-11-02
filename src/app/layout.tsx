@@ -45,19 +45,47 @@ export const metadata: Metadata = {
  * only a shorthand, so a grid of twenty cards costs one class on the `ul` rather than twenty on the
  * `li`. Both collect into the same selector and animate identically.
  *
- * There is no stagger, and that is the ported behaviour rather than a simplification. The element is
- * its own trigger now, so a card no longer waits on its section's crossing: siblings in a row cross
- * the viewport edge together and rise together. The reference is the same, measured: 67 `wow` nodes
- * on its /wordpress-websites/ and exactly one `data-wow-delay` among them. The 70ms ladder stays
- * where the reference keeps its own, above the fold, in `rise-in` on the masthead.
+ * **Nothing writes these markers by hand any more.** `Reveal` and `Stagger` in
+ * `src/components/motion/` are the only things that should emit them, and they also carry the
+ * per-element API this script reads: `data-rv-dir` (up/down/left/right/none), `data-rv-dist` (px,
+ * overriding the responsive default), `data-rv-delay` (ms, which is how `Stagger` orders a group)
+ * and `data-rv-repeat` (present only when a caller opts out of `once`, which brief rule 2 says it
+ * should not). Every attribute is optional, so the 59 bare `.reveal` markers that predate the
+ * primitives keep working unchanged and simply take the defaults.
+ *
+ * The element is its own trigger, so a card does not wait on its section's crossing: siblings in a
+ * row cross the viewport edge together. Ordering within that group is opt-in through `Stagger`,
+ * which writes `data-rv-delay` per child at 70ms a step and stops laddering after the sixth, so a
+ * twelve-card grid never forms a queue. A bare `.reveal` container still has no stagger at all.
  *
  * One owner per ancestor chain: if a container carries `.reveal`, nothing inside it may carry either
  * marker. Two animated elements on one chain multiply their opacities and sum their translates, so a
  * deeper marker always means the ancestor gives its own up.
  *
- * The 14px / 1000ms spec lives here rather than in a stylesheet keyframe, because a WAAPI animation
- * cannot be started from CSS without a class or attribute to toggle, which is the thing that caused
- * the mismatch. `--ease-spring` is still read from the stylesheet, so the curve has one definition.
+ * The numbers are not written here. Duration, easing and the responsive travel are read from
+ * `--motion-duration`, `--motion-ease` and `--motion-distance` on `:root`, which mirror
+ * `src/components/motion/tokens.ts` and are checked against it by `npm run check:motion`. The
+ * travel is re-read when the 768px breakpoint changes, so a window dragged across it animates at
+ * the right distance without a reload. A WAAPI animation cannot be started from CSS without a class
+ * or attribute to toggle, which is why the playback lives here and only the values live there.
+ *
+ * **Two values bend for distance, and both are about a long travel rather than a short one.** The
+ * token duration is tuned for a 24px nudge; an element that rises its own height, which on the
+ * footer wordmark is 197px, covers that in the same 500ms and lurches. `data-rv-dur` lets one
+ * element ask for longer without moving the token out from under the other hundred.
+ *
+ * The opacity ramp bends for the same reason. It finishes at 30% of the run, which on a 24px nudge
+ * is imperceptible; on a long rise it means a fully opaque block travelling the remaining 70%,
+ * which is exactly what reads as unsmooth. A `clip` reveal finishes it at 8% instead, because the
+ * clip is already doing the revealing and a fade on top of it is a second, competing one. It is not
+ * removed outright: 8% is a safety net for a caller who forgets the `overflow-hidden` a clip needs,
+ * where the element would otherwise appear in full below its box.
+ *
+ * The viewport test is the brief's: `threshold 0.2` with `rootMargin: "0px 0px -15% 0px"`, so an
+ * element starts a beat after it clips the fold rather than at the instant it does. The height
+ * guard beside it is not decoration: an element taller than five viewports can never reach a 0.2
+ * ratio, so anything taller than 80% of the window is accepted on first intersection instead. A
+ * pinned rail would otherwise never animate at all.
  *
  * Opacity is written on all three keyframes on purpose. A property missing from the last keyframe
  * does not hold its previous value: WAAPI synthesises an implicit one from the element's underlying
@@ -87,35 +115,63 @@ export const metadata: Metadata = {
  */
 const revealScript = `(function(){
   if(!('IntersectionObserver' in window)||!Element.prototype.animate)return;
-  var d=document,root=d.documentElement;
+  var d=document,root=d.documentElement,cs=getComputedStyle(root);
   root.classList.add('reveal-js');
-  var ease=getComputedStyle(root).getPropertyValue('--ease-spring').trim()||'ease';
+  var ease=cs.getPropertyValue('--motion-ease').trim()||'ease';
+  var dur=(parseFloat(cs.getPropertyValue('--motion-duration'))||0.5)*1000;
+  var dist=24;
+  function readDist(){dist=parseFloat(getComputedStyle(root).getPropertyValue('--motion-distance'))||24;}
+  readDist();
+  var narrow=matchMedia('(max-width: 767px)');
+  narrow.addEventListener?narrow.addEventListener('change',readDist):narrow.addListener(readDist);
   var reduce=matchMedia('(prefers-reduced-motion: reduce)');
   var seen=new WeakSet();
+  function from(el){
+    var dir=el.getAttribute('data-rv-dir')||'up';
+    if(dir==='none')return 'none';
+    var px=parseFloat(el.getAttribute('data-rv-dist'));
+    if(!(px>=0))px=dist;
+    if(dir==='clip')return 'translateY(100%)';
+    if(dir==='down')return 'translateY('+(-px)+'px)';
+    if(dir==='left')return 'translateX('+px+'px)';
+    if(dir==='right')return 'translateX('+(-px)+'px)';
+    return 'translateY('+px+'px)';
+  }
   var io=new IntersectionObserver(function(es){
     for(var i=0;i<es.length;i++){
-      if(!es[i].isIntersecting)continue;
-      var el=es[i].target;
-      io.unobserve(el);
+      var e=es[i],el=e.target,repeat=el.hasAttribute('data-rv-repeat'),a,j;
+      if(!e.isIntersecting){
+        if(repeat){a=el.getAnimations();for(j=0;j<a.length;j++)a[j].cancel();}
+        continue;
+      }
+      if(e.intersectionRatio<0.2&&e.boundingClientRect.height<innerHeight*0.8)continue;
+      if(!repeat)io.unobserve(el);
       if(reduce.matches)continue;
+      var move=el.getAttribute('data-rv-target')==='child'?el.firstElementChild:el;
+      if(!move)continue;
       try{
-        el.animate(
-          [{opacity:0,transform:'translateY(14px)'},{opacity:1,offset:0.3},{opacity:1,transform:'none'}],
-          {duration:1000,easing:ease,fill:'both'}
+        var clip=el.getAttribute('data-rv-dir')==='clip';
+        move.animate(
+          [{opacity:0,transform:from(el)},{opacity:1,offset:clip?0.08:0.3},{opacity:1,transform:'none'}],
+          {duration:+el.getAttribute('data-rv-dur')||dur,delay:+el.getAttribute('data-rv-delay')||0,easing:ease,fill:'both'}
         );
       }catch(err){root.classList.remove('reveal-js');return;}
     }
-  });
+  },{threshold:[0,0.2],rootMargin:'0px 0px -15% 0px'});
   var queued=0;
   function scan(){
     queued=0;
-    var n=d.querySelectorAll('.reveal > *, .reveal-self');
+    var n=d.querySelectorAll('.reveal > *, .reveal-self, [data-rv-target]');
     for(var i=0;i<n.length;i++){if(!seen.has(n[i])){seen.add(n[i]);io.observe(n[i]);}}
   }
-  /* The set is about 130 nodes on /pricing/ where it was five, and TileGrid replaces up to 52 li on
-     every filter keystroke, so the scan coalesces onto a frame instead of running per batch. */
   function rescan(){if(!queued)queued=requestAnimationFrame(scan);}
-  function start(){scan();new MutationObserver(rescan).observe(d.getElementById('main')||d.body,{childList:true,subtree:true});}
+  function start(){
+    scan();
+    var mo=new MutationObserver(rescan);
+    mo.observe(d.getElementById('main')||d.body,{childList:true,subtree:true});
+    var f=d.querySelector('footer');
+    if(f)mo.observe(f,{childList:true,subtree:true});
+  }
   if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',start);else start();
 })();`;
 

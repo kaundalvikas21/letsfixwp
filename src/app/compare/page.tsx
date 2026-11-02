@@ -52,7 +52,7 @@ export default function CompareIndex() {
       {/* Masthead on seven columns with the index's own measurements on the remaining five, bottomed
           on the lead's last line. The page carries no photograph (the catalogue has no honest frame
           for a decision taken before any work exists), so the second column has to be real or the
-          header is two lines of type in a 1104px field. Both numbers are counted from the same
+          header is two lines of type in a 1152px field. Both numbers are counted from the same
           files the ledger below reads, so they cannot drift from what the page renders, and they
           answer the question an index is actually asked: is there anything behind these three
           links. Stacked under lg, where the numbers follow the lead rather than sit beside it. */}
@@ -63,8 +63,16 @@ export default function CompareIndex() {
             Each one sets out where the two differ and which fits a given scenario. No winner is declared, because it depends on what you are running.
           </p>
         </div>
-        <dl className="rise-in divide-y divide-line border-y border-line lg:col-span-5 lg:self-end" style={{ animationDelay: "140ms" }}>
+        {/* The measure sits in a card rather than between two hairlines, which is the shape the
+            knowledge base header took in Task 32 for the same reason: the five column well is the
+            only thing beside a headline, and a bare pair of rows in it read as a leftover. Third
+            cell added, so the first thing the measure answers is how many pairings there are. */}
+        <dl
+          className="rise-in divide-y divide-line rounded-[14px] border border-line bg-surface px-5 shadow-card lg:col-span-5 lg:self-end"
+          style={{ animationDelay: "140ms" }}
+        >
           {[
+            { label: "Pairings", value: compares.length },
             { label: "Criteria compared", value: compares.reduce((n, c) => n + c.rows.length, 0) },
             { label: "Scenarios answered", value: compares.reduce((n, c) => n + c.verdictByScenario.length, 0) },
           ].map((m) => (
@@ -106,7 +114,7 @@ export default function CompareIndex() {
                   beside it, so nothing moves. Mouse only, or a tap would leave it lit. */}
               <span
                 aria-hidden
-                className="pointer-events-none absolute inset-x-0 -bottom-px h-px origin-left scale-x-0 bg-accent transition-[scale] duration-[260ms] ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none [@media(hover:hover)]:group-hover:scale-x-100"
+                className="pointer-events-none absolute inset-x-0 -bottom-px h-px origin-left scale-x-0 bg-accent transition-[scale] duration-[260ms] ease-[var(--motion-ease)] motion-reduce:transition-none [@media(hover:hover)]:group-hover:scale-x-100"
               />
 
               <div className="col-start-1 row-start-1">
@@ -121,21 +129,40 @@ export default function CompareIndex() {
                     <span className="block">{c.a}</span>
                     <span className="my-2 flex items-center gap-3 text-sm font-normal tracking-normal text-muted">
                       vs
-                      <span aria-hidden className="h-px flex-1 bg-line" />
+                      {/* The seam is the comparison, so it is the thing that lights: the hairline
+                          between the two names goes ember with the row. Mouse only, same as the
+                          rule under the row, or a tap would leave it lit with nothing to clear it. */}
+                      <span
+                        aria-hidden
+                        className="h-px flex-1 bg-line transition-colors duration-200 motion-reduce:transition-none [@media(hover:hover)]:group-hover:bg-accent"
+                      />
                     </span>
                     <span className="block">{c.b}</span>
                   </Link>
                 </h3>
-                <p className="mt-4 text-sm text-muted">{c.verdictByScenario.length} scenarios, each with the verdict for it.</p>
+                <p className="mt-4 text-sm text-muted">
+                  <span className="font-medium tabular-nums text-text">{c.verdictByScenario.length}</span> scenarios, each with the verdict for it.
+                </p>
               </div>
 
-              {/* Every criterion, named. Eight to ten short strings per comparison, so a column
-                  flow rather than a list with a hairline under each row: the titles are what tells
-                  a visitor whether this is their question, and they pack two abreast from sm up
-                  without any of them becoming a 150px column at 375. */}
-              <ul className="col-span-2 col-start-1 row-start-2 columns-1 gap-x-8 text-sm text-muted sm:columns-2 md:col-span-1 md:col-start-2 md:row-start-1 md:border-l md:border-line md:pl-10">
+              {/* Every criterion, named. These are what tell a visitor whether this is their
+                  question, and as eight to ten 14px grey strings in a column flow they read as a
+                  paragraph rather than as a list of topics: nine lines of the same weight, the
+                  same colour and no edge between them. As chips they are countable at a glance
+                  and they wrap instead of fragmenting, which also drops the `break-inside-avoid`
+                  the column flow needed.
+
+                  14px, not a pill. MASTER's shape lock names chips explicitly and bans pills, and
+                  there is no `rounded-full` anywhere else in the repo. They are deliberately not
+                  interactive on their own: the row's stretched `::after` is the one tab stop and
+                  it sits over them, so a click on a chip opens the comparison the chip belongs to
+                  rather than filtering something that does not exist. */}
+              <ul className="col-span-2 col-start-1 row-start-2 flex flex-wrap gap-2 md:col-span-1 md:col-start-2 md:row-start-1 md:border-l md:border-line md:pl-10">
                 {c.rows.map((r) => (
-                  <li key={r.criterion} className="mb-1.5 break-inside-avoid">
+                  <li
+                    key={r.criterion}
+                    className="rounded-[14px] border border-line bg-surface-2 px-3 py-1.5 text-[13px] leading-snug text-muted transition-colors duration-200 motion-reduce:transition-none group-hover:text-text"
+                  >
                     {r.criterion}
                   </li>
                 ))}

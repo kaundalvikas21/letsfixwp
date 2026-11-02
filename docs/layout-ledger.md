@@ -3899,3 +3899,1710 @@ the grid is one column. Scrim resolves to `rgba(12, 12, 14, 0.78)`, title and su
 `rgb(241, 240, 238)` on picture cards and the summary back to `--muted` on the plain ones. CLS 0 and
 no horizontal scroll at both widths. No other route changed: `LinkCards` renders on five templates
 across 99 routes and only `/about/` passes a `banner`.
+
+## v4 / "How working with us runs" as a numbered track (Task 30)
+
+The owner supplied a reference image: three cards across under a dashed timeline, circular 01/02/03
+stations, the first card lit, an ember icon tile in each.
+
+### What it replaced, and why that matters
+
+A vertical rail, whose own comment read: *"The order is the sequence and the only thing that carries
+it: no numbers and no stage labels, which contract rule 6 bans."* That rail existed **because** of
+rule 6. So this is a reversal, not a gap being filled, and it is recorded as one.
+
+### Two of rule 6's bans are spent here, on instruction
+
+- **"Step 1 / Stage 2" labels** — the 01/02/03 stations are the spine of the requested design and
+  cannot be removed without removing the design.
+- **Three equal cards in a row** — likewise. `LinkCards` still refuses a three-up elsewhere
+  (`across = n < 4 ? (n === 3 ? 2 : n) : cols`), so this section is now the one exception on the
+  site rather than a new general rule.
+
+### Two were not, because they cost the design nothing
+
+- **No ember glow.** Rule 6 bans neon glows and MASTER's hard-bans list names "ember glows" directly.
+  The reference lights its first card with a bloom; here a firm `border-accent` over `--accent-tint`
+  carries the same "you start here" with no glow. Side by side the difference is a halo, and the
+  hierarchy survives without it.
+- **No arrow button.** The reference puts one in the lit card's corner. These three entries are not
+  links and have nowhere to go, and an arrow that goes nowhere is a promise the card cannot keep.
+
+Also not reproduced, with reasons: the reference centres its heading, and `Section` left-aligns on
+all 99 routes, so matching it here would make this one section the odd one out; and its sub-line
+("A simple, clear process from start to finish") is invented filler of exactly the kind rule 6's
+banned-verbs clause is aimed at, so there is no sub-line.
+
+### `ol`, not `dl`
+
+The numerals are the design, and an ordered list already announces "1 of 3" to a screen reader. So
+every numeral on screen is `aria-hidden` decoration sitting over real semantics, rather than a
+"Step 1" string typed into the page. That is also the narrowest reading of what rule 6 bans: a
+typed stage label, not an ordinal on a track.
+
+The track is drawn per column so it bridges the grid gap, dashed across the full row with the run
+into the first station solid. Stations are `bg-bg` discs, which is what masks the dashes behind
+them. Below lg there is no track at all: the cards stack and each carries its numeral at the top
+right, same numeral, same `aria-hidden`, different place.
+
+### A bug the screenshot caught
+
+First build gave every icon tile `bg-accent-tint`. On the first card, which is itself
+`--accent-tint`, the tile vanished: cards 2 and 3 had a plate behind the icon and card 1 had a
+floating glyph. The lit card's tile now takes `bg-bg` with an ember edge, which is also closer to
+the reference. Verified in the DOM: tile backgrounds are `rgb(12,12,14)` then the tint twice, and
+only the first has a 1px `rgb(255,90,54)` border.
+
+### Measured
+
+1440 and 375: axe clean on the section (zero violations, not just zero contrast violations), three
+cards equal at 244px, CLS 0, no horizontal scroll, numerals confirmed `aria-hidden`.
+
+### Not touched
+
+`remoteDelivery` also renders on `CityTemplates` as a three-card `dl`. That is unchanged, so the
+same content now has two presentations. Deliberate: the owner asked for the about page. If the two
+should match, the track is the thing to lift into a shared part.
+
+## v4 / pictures behind the three stations (Task 31)
+
+The owner supplied `Meetings.png`, `While_we_work.png` and `Handover.png` for the Task 30 cards.
+
+### The set
+
+One coherent set, and a much better fit than the service renders were: **1448x1086, ember
+monochrome, subject right of centre with the left of the frame near black.** No second accent
+anywhere in them, so nothing had to be parked this time. They key straight onto the content by
+label, through `deliveryPhoto` in `src/content/photos.ts`.
+
+**Resolution is finally in our favour.** The card is 352x244 at 1440, so these are *downscaled*
+about 4x rather than stretched. Every other image on this site has been fighting an upscale; this
+set has headroom to spare.
+
+### The scrim, measured three times because the geometry kept moving
+
+Type sits on these, so they need a scrim, and the number came from compositing every pixel rather
+than from taste. Worst case across the three is always `Meetings`, whose ember arc is the brightest
+thing in the set:
+
+| scrim | `--on-photo` | `--muted` | `--accent` |
+| --- | --- | --- | --- |
+| none | 1.16 | 1.00 | 1.00 |
+| 0.66 (`--photo-scrim`) | 6.63 | **3.02 fails** | 2.43 |
+| **0.78 (`--card-scrim`)** | **9.88** | 4.50 | 3.63 |
+
+`--card-scrim` at 0.78 already existed from the hub cards, so no new token: it was re-measured
+against this set rather than assumed to carry over, and it does.
+
+Two consequences, both forced by the numbers rather than chosen:
+
+- **Nothing on these cards is `--muted`.** It lands on 4.50:1, which is the body floor exactly with
+  nothing in reserve. Title and body are both `--on-photo`.
+- **The first station's numeral loses its ember.** `--accent` measures 3.63:1 here and a 14px bold
+  numeral needs 4.5. The ember border is what marks the first station now, which it already was.
+
+Measured a third time against the **whole uncropped frame**, because the mobile card is 328x244 and
+crops almost nothing where the desktop card crops 20px: 10.30:1 worst, slightly *better* than the
+desktop crop, because that crop zooms into the brightest region. The scrim holds at every width.
+
+### Other changes the pictures forced
+
+The icon tiles were `bg-accent-tint`, which disappears on a lit background the same way it
+disappeared on the tinted card in Task 30. All three now take `bg-bg` with a border, ember on the
+first and `--line-strong` on the rest, so the tile reads whatever is behind it.
+
+### Measured
+
+1440 and 375: cards 352x244 and 328x244, scrim resolves to `rgba(12,12,14,0.78)`, title and body to
+`rgb(241,240,238)`, alts empty (decorative: each card's heading already names the step), CLS 0, no
+horizontal scroll.
+
+## v4 / the knowledge base index becomes scannable (/guides/, Task 32)
+
+The owner's note was that the page is "boring and not easy to read, scannable", and wanted a proper
+hero, hover and motion, "like a SaaS page". Task 2 had already fixed this page's *structure*: 5,711px
+of seventeen repeated sections became search plus one directory. What it never fixed was the
+directory's **surface**. 54 links in one grey field, three type sizes within 4px of each other, no
+boundary around a group, and one `hover:text-accent-text` as the entire answer the pointer ever got.
+
+| Layout family | Eyebrows | Marquee | CTA intents | Client islands |
+| --- | --- | --- | --- | --- |
+| Lead, instrument and measure header (7/5), one grouped column-flow index of cards, closing band | 0 | 0 | BOOK, CHAT, CHECK | `Finder` only |
+
+### 21st.dev was searched first and nothing was taken
+
+CLAUDE.md asks for it before any new UI. The nearest hit was "Searchable Question Index", which is
+an FAQ with inline collapsible answers on shadcn tokens. These 37 guides are 37 *pages*, not answers
+to open in place, and the search is already built and already ranked against error strings. Nothing
+in the result set was closer to this page than what the repo already has.
+
+### The Task 2 border refusal is reversed, deliberately
+
+Task 2's entry reads: "The groups carry no border and no surface, because three bordered boxes in a
+row is three equal cards". That reading of rule 6 holds for a feature trio and does not hold here.
+Seventeen boxes of one to four rows each, in a masonry flow, measure 167px to 413px tall and never
+form a row of three equal anything: measured at 1440 they pack 5/6/6 into three columns with their
+bottoms 152px apart. The border is doing the one job a border exists for on a directory, which is
+saying where a group ends, and it is the thing whose absence made 54 links read as one field.
+
+### Three changes, all of them about where a group starts and stops
+
+1. **Each group is a card.** The house `rounded-[14px] border-line bg-surface shadow-card`, at `p-4`
+   under `md` and `p-5` over it. The edge firms to `--line-strong` on `has-[a:hover]` and
+   `has-[a:focus-visible]`, never on the box itself: a panel is not interactive, so the trigger is
+   the control inside it, which is the closing band's rule and the same two properties.
+2. **Each group carries its hub's mark**, `hubIcon[service.hub]`, duotone, ember, keyed to a field
+   that already exists rather than picked per string. This turned out to be the largest single win
+   and it was free: eleven of the seventeen services are under Fixes, and in a column-major flow in
+   SITEMAP order they fill columns one and two with wrenches, leaving Security, Speed and WooCommerce
+   to column three. The page groups itself by hub without a single extra heading.
+3. **Every row is a row.** The left rail was `border-l` on the `<ul>`, so the smallest thing that
+   could respond to a pointer was the whole group. It is now an inset 1px span per row, which lets
+   one row light its own segment ember while its three siblings stay quiet, with the title going
+   ember beside it and an arrow nudging in on the right.
+
+Ember on `--surface` measures **5.93:1**, so the hover title clears body contrast and the rail and
+arrow clear the 3:1 for graphics. axe does not test hover states, which is why this one is computed.
+
+### The header gains a container and a measure
+
+The `Finder` was a bare label over a bare input in an empty five-column well, which read as a
+leftover rather than as the one instrument on the page. It sits in a `--surface` card now, and the
+input moved from `bg-surface` to `bg-bg` so the field is recessed against the panel holding it
+rather than the same colour as it. The no-match card moved with it, same reason.
+
+Under both columns, /compare/'s header measure at three cells instead of two, counted from the same
+files the directory renders: 37 errors written up, 17 services that fix them, 20 messages quoted
+exactly. No border and no surface on a cell, because a bordered three-up *is* the shape rule 6
+names; a hairline above the row with the cells divided on it says the same thing without becoming
+cards. Stacked under `sm` it is label-and-number rows.
+
+### The reveal now runs on the directory, which Task 2 refused
+
+Task 2 left this flow out of the reveal because "a transform on a column-fragmented box is
+under-specified across engines". That risk is about a box that actually fragments. Every card here
+carries `break-inside-avoid` and the measurement confirms none of them splits: 17 cards, all exactly
+347px wide at 1440, one `x` per column. Verified rendering at 375, 768 and 1440 before it went in.
+`document.getAnimations()` sits at 21 after a full-page walk, not ~130, so the `fill: both` set the
+reveal leaves behind is the 17 cards plus four headings.
+
+**Tailwind v4, again.** The arrow uses `-translate-x-1`, and the compiled rule is
+`translate: var(--tw-translate-x) var(--tw-translate-y)` on the standalone `translate` property, so
+`transition-transform` would have covered nothing, exactly as `scale-105` did in Task 22. It is
+`transition-[opacity,translate]` at 150ms ease-out, which is the `cta-chip` nudge the buttons already
+use. `motion-reduce:transition-none` leaves the arrow appearing instantly rather than travelling.
+
+### Measured, production build
+
+| | Task 2 | Task 32 | Change |
+| --- | --- | --- | --- |
+| Document height, 1440 | 2,921px | 3,670px | +26% |
+| Document height, 375 | 6,992px | 8,437px | +21% |
+| Unique guide URLs in the HTML | 37 | 37 | unchanged |
+
+The page got taller and that is the trade the owner asked for: the height is card padding and the
+header measure, and it buys a boundary around every group. `p-4` under `md` rather than `p-5` was
+added after the first measurement came back at 8,832px on a phone, which took 395px back.
+
+1440 / 1024 / 768 / 375: columns 3/3/2/1, no horizontal scroll at any of them, CLS 0, LCP still the
+h1 at 76ms (it carries no reveal, for the reason `rise-in`'s comment gives), axe clean on
+`color-contrast`, `link-name`, `heading-order`, `region`, `listitem`, `dlitem`, `definition-list` and
+`nested-interactive` at 375 and 1440, every target in the index at or over 44px. Reduced motion:
+`getAnimations()` 0, nothing left at opacity below 1, `rise-in` resolves to `animation-name: none`,
+the arrow's `transition-property` resolves to `none`.
+
+## v4 / the comparison index becomes scannable (/compare/, Task 33)
+
+Same note from the owner as Task 32, on the next index along: boring, not scannable, wanted a proper
+hero, hover and motion. The structure here was already right and is untouched: a stacked split
+ledger of three full-width entries, deliberately not three tiles, deliberately not
+`CompareTemplate`'s verdict-cards-over-a-table family. What was wrong was that **the right-hand
+column of every entry was a wall of grey**.
+
+| Layout family | Eyebrows | Marquee | CTA intents | Client islands |
+| --- | --- | --- | --- | --- |
+| Lead-and-measure header (7/5), stacked split ledger, closing band | 0 | 0 | BOOK, CHAT | none |
+
+### 21st.dev was searched first and nothing was taken
+
+Every result was the wrong half of this page. "Comparison Table", "Spec Sheet" and "Two-Plan Diff
+Pricing Comparison Table" are the *child* page's job, which `CompareTemplate` already does from real
+`rows`. "Us vs Them Comparison" and "Comparison Section" are marketing panels that tick one column
+and cross the other, which is a winner declared; `src/content/compares/` declines to declare one and
+the h1's own lead says so. Nothing in the catalogue is an index *of* comparisons.
+
+### The criteria stop being a paragraph
+
+Eight to ten criterion titles per entry, 14px, `--muted`, in a two-column flow. Nine lines of the
+same weight, the same colour and no edge between any of them read as a paragraph, not as a list of
+topics, which is exactly backwards: these titles are the thing that tells a visitor whether this is
+their question.
+
+They are chips now, wrapped with `flex flex-wrap gap-2`. Countable at a glance, and wrapping instead
+of fragmenting also drops the `break-inside-avoid` the column flow needed.
+
+**14px, not a pill.** MASTER's shape lock names chips explicitly and bans pills, and there is no
+`rounded-full` anywhere in the repo: `grep` returns nothing outside `size-*` circles. `--muted` on
+`--surface-2` measures **6.78:1**, and `--text` on it (the hover state) **14.9:1**.
+
+They are deliberately not interactive on their own. The row's stretched `::after` is still the one
+tab stop and it sits over them, so a click on a chip opens the comparison that chip belongs to
+rather than filtering something that does not exist.
+
+### The seam is what lights
+
+The entry already had the hub rows' ember rule sweeping under it on hover. Two more responses join
+it, so the hover reads as the whole pairing waking rather than one underline moving:
+
+- **The hairline between the two names goes ember.** That seam *is* the comparison, which the
+  Task-era docstring says in as many words, so it is the right thing to light.
+- **The chips go from `--muted` to `--text`.**
+
+Both `[@media(hover:hover)]`-gated and `motion-reduce:transition-none`, matching the rule that was
+already there. Measured while hovered: seam `rgb(255,90,54)`, rule `rgb(255,90,54)`, chips
+`rgb(241,240,238)`, heading `rgb(255,90,54)`, which is ember on `--bg` at the token comment's 6.30:1.
+
+The scenario count also stopped being grey: the numeral is `--text` and `tabular-nums` inside the
+otherwise `--muted` sentence, so it is findable without reading the line.
+
+### The header measure moves into a card and gains a third cell
+
+Same move as /guides/ in Task 32 and for the same reason: the five-column well is the only thing
+beside the headline, the page has no photograph (the catalogue has no honest frame for a decision
+taken before any work exists), and a bare pair of rows between two hairlines reads as a leftover.
+It is the house card now, and the first thing it answers is how many pairings exist: **3** pairings,
+**27** criteria compared, **14** scenarios answered, all three reduced from the same files the
+ledger below renders.
+
+### Measured, production build
+
+Document height at 1440 goes 2,417px to 2,492px, +3%: the chips are denser than the column flow they
+replaced and very nearly pay for the taller header on their own. 375 / 768 / 1024 / 1440: 4,944 /
+3,454 / (1009 scrollWidth) / 2,492px, no horizontal scroll at any of them, CLS 0, axe clean on
+`color-contrast`, `link-name`, `heading-order`, `region`, `listitem`, `dlitem`, `definition-list`,
+`nested-interactive` and `label-content-name-mismatch` at 375 and 1440. That last rule is not
+optional here: the comment on the row records that naming the anchor off the heading broke WCAG
+2.5.3 once already, and the chips moving inside the row's hit area is exactly the kind of change
+that could do it again. It does not: the anchor's content is still its visible label.
+
+Reduced motion: `getAnimations()` 0, nothing left under opacity 1, `rise-in` resolves to
+`animation-name: none`, and all three hover transitions resolve to `transition-property: none`.
+
+## v4 / the comparison page becomes readable (/compare/[slug]/, Task 34)
+
+Third in the owner's run of index-and-detail passes, on the page the /compare/ index opens.
+`CompareTemplate` renders all three. Its family is unchanged: masthead, verdict-by-scenario cards,
+a real comparison table, closing band.
+
+| Layout family | Eyebrows | Marquee | CTA intents | Client islands |
+| --- | --- | --- | --- | --- |
+| Photo masthead, verdict cards, side-by-side table, closing band | 0 | 0 | BOOK/PLANS/QUOTE by node intent, CHAT | none |
+
+### 21st.dev was searched first and nothing was taken
+
+Two searches. The comparison-table results ("Comparison Table", "Spec Sheet", "Two-Plan Diff
+Pricing Comparison Table") are this page's component, but all three are shadcn-token builds that
+would arrive without the two accessibility fixes this table already carries and has logged: the
+focusable scroll region and the `scope`/`caption` structure. "Spec Sheet" also leads on a
+show-only-differing-rows toggle, which is meaningless where every row differs by construction.
+"Us vs Them Comparison" ticks one column and crosses the other, which is a winner declared, and
+these files decline to declare one. A search for a stacking responsive table returned five
+card-stack carousels, none of them a table.
+
+### The three equal cards in a row were real, and they were ours
+
+`Which one fits` ran `md:grid-cols-3` over four or five scenarios. On two of the three pages the
+first row was **literally the three equal cards in a row that contract rule 6 bans**, with the
+remaining one or two orphaned beside a hole. Two up now: `md:grid-cols-2` gives 2+2 on the care
+plan page and 2+2+1 on the other two, and buys each scenario about 90px more line, which is what
+stopped the headings breaking over three lines.
+
+No hover on these cards. They are panels, not links, and Hover Earns It holds. What they gained is
+a start edge: the closing band's short ember rule above each scenario, so five near-identical blocks
+of bold-line-over-grey-paragraph have something for the eye to count.
+
+### The table was the actual problem
+
+Nine rows, three columns, and two of the columns were the same 14px grey with nothing between them.
+Four changes, none of them decoration:
+
+1. **Fixed column proportions.** A `<colgroup>` at 21% for the criterion. Left to content the
+   criterion column collapsed to about 110px and broke every title over two or three lines while
+   the two value columns, holding five times the text, took the rest.
+2. **Three delimited columns.** A hairline closes the criterion column and another opens the second
+   side, so an eye crossing a 1104px row always knows which of the two it is reading.
+3. **A row tint on hover.** This is a reading aid, not an affordance: nine rows a thousand pixels
+   wide are read *across*, and marking which one the eye is on is the only thing a pointer can
+   usefully do for that. It answers rule 10's one-sentence test with "which row you are on". Set on
+   the cells rather than the row, via `hover:[&>*]:bg-surface-2`, so the criterion cell tints with
+   the rest of them rather than staying behind its own opaque background. `--muted` on `--surface-2`
+   is 6.78:1.
+4. **`py-3` to `py-4`**, because the rows were tighter than any other list on the site.
+
+### Two bugs found while verifying, both pre-existing
+
+**Every row header was centred.** `td` set no alignment and a `<th>` defaults to `text-align:
+center`, so nine row headers per page have been centred in their column since the template was
+written. Invisible at 1440 where most titles fit one line; obvious at 375, where the column is
+narrowest, every title wraps, and the second line lands somewhere the eye is not waiting for it.
+`text-left` on the criterion cell.
+
+**`scrollable-region-focusable` is still clean**, which is the fix the existing comment records.
+
+### The sticky column, and the coverage it cost before it was scoped
+
+Under 768 the table scrolls sideways, and the column it scrolls away from is the only one that says
+what the row is about. The criterion cell is `sticky left-0` with its own opaque `--surface`;
+measured at 375 it holds at 1px from the region's left edge after a 299px horizontal scroll.
+
+Shipped unscoped first, and axe caught the cost: `position: sticky` makes the cell a positioned
+element, and axe then reports **every cell in the next column** as "partially obscured" and returns
+`incomplete` instead of a contrast ratio. Ten nodes per page, at 1440, where the check is usually
+run and where nothing was scrolling in the first place. `min-w-[40rem]` fits from about 690px up,
+so the sticky is now `max-md:` only: 1440 measures clean again, and the phone, where the cell
+actually does its job, is measured by compositing instead. Between about 690 and 767 it is on and
+inactive, which is harmless and is the price of using a breakpoint rather than a container query.
+
+### The masthead carries the pairing, and it was measured
+
+The h1 was the flat string `A vs B`. It is now the two names at full weight with the word between
+them smaller and lighter, which is the shape the index gives every pairing. `vs` is real text inside
+the h1, so the accessible name is unchanged.
+
+It stays on `--text` rather than dropping to `--muted`, because this heading composites against a
+photograph under `--photo-scrim` and muted type over a picture is the measurement that has caught
+this site out before. axe cannot resolve it (three `incomplete` nodes: the h1, the new span and the
+lead, all "contains an image node"), so it was composited from the rendered pixels at 375 with the
+text layers hidden:
+
+| | worst background pixel | ratio to `--text` | needs |
+| --- | --- | --- | --- |
+| the `vs` glyph box | `rgb(80,80,81)` | **7.07:1** | 4.5 (14.96px regular at 375) |
+| the whole h1 line | `rgb(95,95,96)` | **5.60:1** | 3.0 (large text) |
+
+The `vs` needing the *higher* bar is the point of measuring it: at 1440 it renders 24.6px and counts
+as large text, at 375 it renders 14.96px and does not.
+
+### Measured, production build
+
+`/compare/wordpress-vs-wix/` at 1440: 3,114px to 3,430px, +10%, which is the row padding and the
+five verdict cards now stacking three rows deep instead of two. At 375 it measures 5,842px.
+
+All three slugs checked at 375 / 768 / 1024 / 1440: no horizontal page scroll, CLS 0, the table
+overflowing only below about 690px, verdict grids resolving 2-up, row headers left and static above
+`md`. axe clean on `color-contrast`, `link-name`, `heading-order`, `region`, `listitem`,
+`scrollable-region-focusable`, `th-has-data-cells`, `empty-table-header` and `table-duplicate-name`,
+with the only `incomplete` the three masthead-over-photograph nodes measured above. Reduced motion:
+`getAnimations()` 0, nothing under opacity 1, `rise-in` resolves to `animation-name: none`, the row
+tint's `transition-property` resolves to `none`.
+
+## v4 / a mark per criterion in the side-by-side table (Task 35)
+
+The owner asked for icons on `Side by side` that "visually relate and relevant meaning". The table
+had none: the criterion column was nine or ten bold strings with nothing to tell them apart but the
+words themselves, which is exactly the scan the icon is for.
+
+### Keyed to the criterion, never picked at the call site
+
+`src/content/icons.ts` opens with the rule this had to satisfy: *an icon is keyed to a field that
+already exists*. `criterionIcon` is a new map in that file, keyed by the `rows[].criterion` string,
+21 entries covering all 27 rows across the three comparisons. It earns the map rather than a call
+site: **six of the 21 criteria appear in two comparisons each**, so "Cost structure" is guaranteed
+the same mark on /compare/wordpress-vs-wix/ and /compare/woocommerce-vs-shopify/, which a choice
+made in `CompareTemplate` would have lost the first time either page was touched.
+
+Two build-time guards, following the file's existing pattern:
+
+1. Every criterion has a mark, or the build fails.
+2. **No two rows of one comparison share a mark.** This is the `verbIcon` rule and it bites harder
+   here: these sit in one column of one table, so a duplicate would silently claim two rows were
+   about the same thing. Verified not a no-op by feeding it a known collision, which it caught.
+
+Near misses are split deliberately, and all three pairs share a table: `Cost structure` the receipt
+against `Transaction fees` the percent, `How you pay` the card against `Commitment` the calendar,
+`Indian payment gateways` the bank against `GST invoicing` the rupee.
+
+Nothing here characterises either side. A criterion is a question both columns answer, so the mark
+belongs to the question and is identical across both halves of the row.
+
+### Identity is not the test, legibility at 16px is
+
+The guard can only see identity, and the first render showed that is not enough. Three marks were
+changed after looking at the rendered column:
+
+| Criterion | Was | Now | Why |
+| --- | --- | --- | --- |
+| Ownership and hosting | hard drives | key | Sat directly above `Cost structure`'s receipt; at 16px both are a small ruled rectangle |
+| Backups and monitoring | counter-clockwise clock | hard drives | Sat directly under `Routine updates`' clockwise arrows: two circular arrows in adjacent rows. Hard drives is also the mark `verbIcon` already gives "Back up" |
+| GST invoicing | document | rupee | Shared a table with the receipt, and the rupee says what the criterion is actually about |
+
+### Muted at rest, ember with the row
+
+A column of ten ember marks is the one accent shouting, and this page already carries ember on the
+verdict cards above. The marks are `--muted` at rest, where they work as shapes, and take the accent
+on the row the pointer is on, which folds them into the row tint Task 34 added rather than adding a
+second thing that moves. `--muted` on `--surface` is 7.35:1 and ember on `--surface-2` is 5.47:1,
+both over the 3:1 a graphic needs; measured live while hovered, the mark reads `rgb(255,90,54)` and
+its siblings stay `rgb(163,163,173)`.
+
+`aria-hidden` throughout: the criterion text beside each one already names it, so the row header's
+accessible name is unchanged.
+
+The criterion column went from 21% to 24% to pay for the mark and the gap. At 1440 it measures
+264px and every title still sits on one line; at 375 it is 154px inside the sticky column, which
+holds at 1px from the region edge after a 280px horizontal scroll with the mark and a two-line
+title both legible.
+
+### Measured, production build
+
+`/compare/wordpress-vs-wix/` at 1440: 3,430px to 3,450px, +20px, which is the wider criterion
+column changing one row's wrap. At 375, 5,842px to 5,862px. CLS 0, no horizontal page scroll, axe
+clean on `color-contrast`, `link-name`, `heading-order`, `region`, `listitem`,
+`scrollable-region-focusable`, `th-has-data-cells`, `empty-table-header`, `image-alt`,
+`svg-img-alt` and `aria-hidden-focus`, with the only `incomplete` still the three
+masthead-over-photograph nodes measured in Task 34. Reduced motion: `getAnimations()` 0, the mark's
+`transition-property` resolves to `none`, so it switches colour without travelling.
+
+## v4 / the free site check stops being four identical ticks (/free-site-check/, Task 36)
+
+Same note from the owner, on the lead-magnet page. The structure was already the right one and is
+unchanged: benefit headline and a preview of the magnet on the left six columns, the smallest form
+that can deliver it on the right six, `BookingFlow` in `check` mode.
+
+| Layout family | Eyebrows | Marquee | CTA intents | Client islands |
+| --- | --- | --- | --- | --- |
+| Lead-magnet split: benefit and magnet preview beside the form | 0 | 0 | CHAT, plus the form itself | `BookingFlow` only |
+
+### 21st.dev was searched first and nothing was taken
+
+Six lead-magnet and signup-hero results, all of them a single email field under a headline:
+"Coming Soon Hero Block", "CTA Email Subscribe Section", "Email Signup Form". This page's form is
+a three-step `BookingFlow` shared with /contact/, which already holds the site's validation, its
+live region and its handover. Two of the results lead on a social-proof avatar row, which on a
+launch with no customers is the invented testimonial CLAUDE.md forbids.
+
+### A real bug: the chat line was rendering as a 48px button mid-sentence
+
+`<ChatButton location="free-site-check" />` was called with **no `className` and no `icon` prop**,
+so it rendered a bare `<button>` carrying the CHAT chip: `cta-chip` is `display: grid` at 1.75rem,
+which forced the button to 48px inside a 14px sentence and pushed "Chat with an engineer" onto its
+own line above "Questions first?", overlapping it. Measured before the fix: paragraph 48px,
+button 48px, chip present.
+
+Fixed with the shape `FinalCta` already uses for exactly this: `icon={null}` to drop the chip, plus
+the underline treatment, because a bare `<button>` under Tailwind's preflight inherits the sentence
+completely and leaves nothing on screen to say it can be pressed. Measured after: one line, no
+chip, `text-decoration: underline`, `rgb(241,240,238)`.
+
+`py-3` then buys the 44px target contract rule 5 asks for. `ChatButton` renders `inline-block`, so
+this padding **does** grow the line box: the paragraph measures 44px, not 20px. That is 24px of
+leading traded for a hit area a thumb can find, and it is a trade rather than a free win. WCAG
+2.5.8 would have exempted it as a target inline in a sentence, which is the exemption the three
+sibling `CheckLink`s on /guides/, /pricing/ and `GuideTemplate` rely on with no hit area at all.
+**Those three are still invisible inline links**, logged here rather than changed unasked.
+
+### Four identical ticks said nothing
+
+`COVERED` was four strings, each with the same ember `CheckIcon`. A tick says "this is a list",
+which the bullet already said; it cannot say which of the four lines you are looking at, and these
+are four different subjects. Each line carries its own mark now, all four from the site's existing
+vocabulary where `verbIcon` already fixes the meaning: Update is the up-arrow, Back up the hard
+drives, Harden the shield, Measure the gauge.
+
+Declared in the page beside the strings rather than in `src/content/icons.ts`, because this copy is
+page-local and has no content-layer field to key off. The rule that file states is that a mark is
+never chosen per string at the *render* site; one declaration next to the content satisfies it, and
+there is nothing for a build check to iterate over.
+
+The marks sit in `bg-bg` tiles with a `--line` border. Not `accent-tint`: that tile vanished
+against a lit panel twice already, in Tasks 30 and 31. Ember on `--bg` is 6.30:1.
+
+### Title and detail, not four sentences
+
+The four lines were 6, 8, 10 and 6 words at one weight and one colour, so the only way to find the
+one you cared about was to read all four. They are a title over a detail now, same words:
+Versions / Backups / Security basics / Speed, with the sentence under each. Hairline between rows.
+
+The card itself became the house card. It was a bare `--surface-2` box sitting beside the form's
+bordered, lifted `--surface` card, and two panels doing the same job in one row reading as
+different materials made the left one look like a note someone had left on the page.
+
+The deliverable line gets a mark of its own, since it is what the page is asking for an address in
+exchange for, and `checkTurnaround` is now **gated** the way /pricing/ gates it: contract rule 8
+says a null value renders nothing, and ungated this sentence would read "within . No call needed."
+
+### Motion, where there was none
+
+This page carried no `rise-in` at all, on either column. Four now: lead 70ms, covers card 140ms,
+chat line 210ms, and the form column at 140ms so the two columns arrive together rather than one
+chasing the other across the page. The h1 stays unanimated for the reason `rise-in`'s own comment
+gives, since it is this route's LCP element.
+
+**No hover was added to the covers list and that is deliberate.** It is a panel, not a link, and
+Hover Earns It holds. The only interactive things on this page are the form and the chat link, and
+both answer already.
+
+### Measured, production build
+
+1440: document 1,928px, CLS 0, no horizontal scroll. 375: 4,106px, no horizontal scroll, the chat
+target 44px. axe clean on `color-contrast`, `link-name`, `button-name`, `heading-order`, `region`,
+`listitem`, `label`, `aria-hidden-focus` and `svg-img-alt` at both widths; the single `incomplete`
+at 375 is the site-wide wordmark in the fixed header, obscured by `nav-blur`, which is unrelated to
+this page. Reduced motion: `getAnimations()` 0, `rise-in` resolves to `animation-name: none`, the
+chat link's `transition-property` resolves to `none`.
+
+## v4 / the cities index puts the city first (/wordpress-development/cities/, Task 37)
+
+Next index in the owner's run. The masthead, the closing band and the `max-w-4xl` cap are unchanged;
+the directory under them is rebuilt.
+
+| Layout family | Eyebrows | Marquee | CTA intents | Client islands |
+| --- | --- | --- | --- | --- |
+| Photo masthead, header measure, 2-up city card grid, closing band | 0 | 0 | QUOTE, CHAT | none |
+
+### The one word anyone scans for arrived last
+
+Eight `LinkCards`, every title `WordPress development in <City>`. Four identical words open every
+card and the city, the only thing that differs and the only thing this page is read for, lands at
+the end of a line. The city is the heading now at 24px display, and the repeated phrase is the 14px
+kicker above it.
+
+**The anchor text is unchanged.** Kicker then city in DOM order, both inside the one `<a>`, so the
+accessible name is still "WordPress development in Bengaluru …" as the snapshot confirms, and the
+internal anchor text search engines read is the same string it was.
+
+Its own card rather than `LinkCards`, because this content is city-shaped and the generic component
+could only render it as a repeated sentence. Everything else is the house `cardLink`: border firms
+to `--line-strong`, `--shadow-lift`, and the caret nudges 2px on the 150ms ease-out the buttons use.
+Measured hovered: city `rgb(255,90,54)`, siblings `rgb(241,240,238)`, border 0.36 against 0.08,
+caret `translate: 2px`.
+
+### Chips were tried here and taken out again
+
+`servicesHighlighted` is three or four service ids per city and they genuinely differ, so a chip row
+looked like the obvious way to separate Ahmedabad from Kolkata. Built, rendered, and wrong: those
+titles run 20 to 35 characters ("Custom WordPress plugin development"), so in a 420px card they
+stacked **one per line**. Four near-full-width pills under every summary, the page from 2,605px to
+3,472px, and "WordPress website design" repeated on most cards.
+
+The summary already separates these cities, and in the words that actually matter: Tamil and English
+pages, Gujarati pages, Bengali, Marathi. The services are one click away on the page the card opens.
+Reverted to a caret. Recorded because the reasoning is not obvious from the diff, and the same idea
+will look just as attractive next time.
+
+### The header measure, where it can be measured
+
+/guides/ and /compare/ carry it in the header grid. This page's header is `PageMasthead`, which
+composites type over a photograph under `--photo-scrim`, so the measure sits on the page below the
+band instead: a 28px numeral is the last thing that should be read against a picture when it can sit
+on `--bg`. Two cells, both reduced from `src/content`: **8** cities, **10** services these cities ask
+for. The stale "fourteen cities" in the template's own comment is corrected to a form that cannot go
+stale again.
+
+### Measured, production build
+
+1440: 2,605px to 2,862px, +257px, which is the measure strip and the 24px city headings. 375:
+5,663px, cards 343px wide, one per row. No horizontal scroll at either. CLS 0 on a clean load, with
+a `PerformanceObserver` installed before navigation reporting no entries at all; the 0.007 seen in
+an earlier run was the chat widget mounting during the scroll walk, not the grid. axe clean on
+`color-contrast`, `link-name`, `heading-order`, `region`, `listitem`, `dlitem`, `definition-list`,
+`aria-hidden-focus`, `svg-img-alt` and `nested-interactive` at 375 and 1440; the two `incomplete`
+nodes are the masthead h1 and lead over the `racks` photograph, which every `PageMasthead` route
+reports. Reduced motion: `getAnimations()` 0, nothing under opacity 1, `rise-in` resolves to
+`animation-name: none`, and both the city colour and the caret nudge resolve to
+`transition-property: none`.
+
+### Not done, and worth a pass of its own
+
+`CityTemplate`, the per-city page in the same file, has two problems this task did not touch:
+
+1. **`remoteDelivery` renders `sm:grid-cols-3` over exactly three entries**, which is contract rule
+   6's three equal cards in a row, the same violation found in `CompareTemplate` in Task 34. /about/
+   already rebuilt these same three entries as a numbered track in Tasks 30 and 31, so there is a
+   shape to borrow rather than invent.
+2. **`localContext` is four paragraphs of 400 to 600 characters** set as plain `--muted` body with
+   nothing between them. It is the bulk of the page and it is the least scannable thing on it.
+
+### 21st.dev was searched first and nothing was taken
+
+Five location-card results, all of them travel-destination cards built around a photograph:
+"Location Card", "3D Card", "Expanded Map", a tilt-and-expand card with real map tiles. This page
+deliberately has no photograph per city and no map, for the reason the masthead comment already
+gives: the work is remote, there is no office in any of these cities, and a picture of a skyline
+would imply one.
+
+## Task 38 / city detail page (/wordpress-development/cities/<city>/, 8 routes)
+
+Layout family: **masthead over a card grid of doors, then ruled local-context rows and the shared
+delivery track.** Eyebrows on the page: 0. Marquees: 0. CTA intents: QUOTE and CHAT, in the header
+and on the closing band. Image-todo: nothing added; every picture here already existed.
+
+The page the owner called "boring and not scannable", written out as four problems:
+
+| Section | What was wrong |
+| --- | --- |
+| Header | `PageMasthead` with no `lead`. A bare h1 and two buttons over a photograph. |
+| `localContext` | Four paragraphs, 156 to 589 characters, flat `--muted`, no heading, no section, no entry edges. About 1,800 characters as one block. |
+| `#services` | Correct already, but third on the page, behind the wall. |
+| `#remote` | `sm:grid-cols-3` over exactly three entries: rule 6's three equal cards in a row, the same violation Task 34 found in `CompareTemplate`. |
+
+### The header now says what the page is
+
+`lead={c.seo.description}`. Not a new sentence: it is the one already written for this route and the
+one the visitor read in the result they clicked, so the band repeats the promise rather than
+inventing a second one. Rule 4 caps hero subtext at 20 words and two of the eight ran 21, so
+`delhi-ncr` lost "sites" and `mumbai` lost "businesses". Both still carry every term they were
+written around; checked at 20 words each. The header is three text elements against the cap of four,
+and `PageMasthead` counts its own beats, so the lead lands at 70ms and the buttons at 140.
+
+### Doors before prose
+
+Reordered to header, services, local context, delivery, FAQs, closing band. A reader who arrived on
+"WooCommerce developer in Kolkata" now reaches the WooCommerce page without reading 1,800 characters
+about the Hooghly first, and a reader who wants the context still has all of it, one section down.
+
+### The wall, folded into two columns
+
+Same four paragraphs, not one character edited, inside a real `Section` with a heading
+(`What <city> websites are built to do`, which is the phrasing `citiesLead` already uses for this
+content). Two columns at `lg`, one below it, each paragraph opening on the ember tick the compare
+page's scenario cards use: four entry edges where there were none, and the 1440 height drops from
+roughly 4,900px to 4,001px.
+
+`gap-x-10` against `gap-y-7` on purpose. The vertical gap is the one that reads as "new block" and
+the tick is already saying it, so the horizontal gap is the larger of the two; equal gaps made the
+2x2 read as a four-cell grid rather than as two columns of prose.
+
+**No heading per paragraph, and that is the point.** These are four topical blocks per city, and any
+label set over them would be a sentence this site invented about a place it has no office in. The
+blocks are given edges, not names.
+
+**No hover on them either.** Every card on this page that lifts is a link. A panel that answers the
+pointer and then goes nowhere is the affordance this system does not hand out, and the request for
+"proper hover effects" is met where hover is honest: the service cards (border to `--line-strong`,
+`--shadow-lift`, caret 2px, title to ember), the FAQ rows (caret 180, ember), and the closing band
+(`:has()` on the buttons, ember tick scaling out).
+
+### `RemoteTrack`, extracted rather than rebuilt
+
+/about/ had already rebuilt these same three `remoteDelivery` entries as a numbered photo track in
+Tasks 30 and 31. The city page was rendering them as the banned 3-up. Rather than design a third
+shape, the track moved into `parts.tsx` and both pages call it. One component, two call sites, so
+rule 6's numeral exception is spent once rather than per template and the two cannot drift.
+
+`sizes` is the only prop, because the two pages are not the same width: /about/ runs the 1104px
+spine and a station is 368px there; this page is capped at `max-w-4xl`, so from 1024 up the content
+is a constant 848px and a station is (848 - 48) / 3 = **267px**, measured at 1440. The hint was first
+written 288 by guess and corrected to 272, the next round number above the real slot. Every contrast
+figure the track carries was measured for /about/ and is recorded on the component itself.
+
+### 21st.dev was searched first and nothing was taken
+
+Eight results for editorial / long-form content layouts. The closest was **Editorial service list**
+(#37530: numbered rows, hover offset, expandable descriptions). Not taken for two reasons: the
+disclosure family is already spent on this page by `Faqs`, which rule 3 forbids repeating within a
+page, and an accordion needs a summary label per row that this content does not have and that this
+site may not invent. The rest were hero and split-content blocks built around a photograph, which
+this page deliberately does not have per city.
+
+### Measured, production build
+
+1440: 4,001px, container 896px, local columns 404px each, track stations 267px, no horizontal
+scroll. 375: 7,240px, every grid at one column, the track's `lg` numeral at `display: none` and the
+stacked numeral showing in its place, no horizontal scroll. `max-w-[68ch]` resolves to 766px and
+binds in exactly one band, 768 to 1023, where the single column is otherwise the full 848px; in the
+2-up grid and at 375 the column is narrower than the cap, so it is inert there. (`ch` in Geist at
+17px is 11.27px, so the cap is a container width, not a character count. The `52ch` first written
+here resolved to 586px, wider than any column it sat in, and did nothing at all.)
+
+axe at 1440 and at 375: **zero violations**, 26 rule groups passing. The two `incomplete` nodes are
+the masthead h1 and lead over the photograph, which every `PageMasthead` route reports and which the
+`--photo-scrim` entry already accounts for. Reduced motion at 375: `getAnimations()` running 0,
+zero elements under opacity 1, zero still transformed, `rise-in` resolving to `animation-name: none`.
+Reveal coverage on a clean load with a paced scroll: 21 of 21 targets animated, none left hidden.
+
+### A note for whoever measures this next
+
+Two runs of the reveal check reported elements stranded at opacity 0 (once the whole local section,
+once two FAQ rows and both closing-band columns). Both were the measuring script, not the page: a
+scroll walk that steps faster than the IntersectionObserver delivers leaves whatever it skipped
+unobserved, and `io.unobserve` runs before `animate()`, so a missed crossing is missed for good
+*within that run*. A walk stepping 50 to 60% of the viewport height with ~260ms between steps reports
+21 of 21 every time. Check the walk before filing a bug against `revealScript`.
+
+### Not done, and deliberately left
+
+Every city's fourth `localContext` paragraph is partly about remote working or language, and on
+Chennai and Bengaluru it restates what "How working with us runs" says two sections below. That is a
+content overlap, not a layout one, and editing eight city files to remove it is the owner's call.
+
+## Task 39 / the site container, 1152px to 1200px
+
+The spine is **1200px** now (`75rem`), so the desktop content width is **1152px** after the
+`px-4 md:px-6` gutters. It was `max-w-6xl` (72rem / 1152px) over a 1104px content width.
+
+### It is one token now, and that is most of the task
+
+`max-w-6xl` was typed out **seventeen times**: the `page` constant in `parts.tsx` and sixteen
+hardcoded copies in `NavBar`, `SiteFooter`, `Hero`, `FinalCta`, `FixPan`, `Faq`, `Plans`, `Proof`,
+`Practices`, `Restored`, `Guarantee`, `ErrorStack` and `ProblemTiles`. Seventeen literals is
+seventeen chances for the next change to this number to leave one section's left edge out of line,
+which is exactly the bug this file records twice under "Container widths: three, on purpose".
+
+`--container-page: 75rem` lives in the `@theme` block in globals.css and Tailwind v4 generates
+`max-w-page` from it. All seventeen call sites use it. The next change to the site width is a
+one-line diff.
+
+### The one that nearly shipped: `cn` did not know the new class
+
+`cn` is `clsx` into `twMerge`, and **tailwind-merge only knows the widths Tailwind ships**. To it
+`max-w-page` is an unrelated class, not a member of the `max-w` group, so `cn(page, pageY,
+"max-w-4xl")` returned **both** classes. Two `max-width` declarations of equal specificity, and the
+generated stylesheet's own order then picked the winner: `max-w-page`.
+
+Measured on the production build the moment the token landed: `/wordpress-development/cities/<city>/`
+reported `containerW: 1200` with `max-w-4xl` sitting right there in its class list, and its h1 on
+the spine's left edge instead of its own. Every narrowed route was silently on the spine.
+
+**Nothing in the toolchain can see this.** `tsc`, `eslint`, `scripts/check-content.ts` and
+`next build` all passed clean on the broken build, because every class string in it is valid. It is
+visible only by measuring a rendered page, which is why the container sweep below is not optional.
+
+The fix is in `src/lib/utils.ts`: `extendTailwindMerge({ extend: { classGroups: { "max-w":
+["max-w-page"] } } })`. Verified against tailwind-merge 3.7 before shipping it, in both directions:
+without the extension `twMerge("max-w-page max-w-4xl")` returns both classes; with it, `max-w-4xl`,
+and `"max-w-4xl max-w-page"` returns `max-w-page`. **Any future `--container-*` token has to be
+added to that list**, or it reintroduces this exact failure.
+
+### Container sweep, measured at 1500 on the production build
+
+| Route | Class on the container | Rendered | h1 left |
+| --- | --- | --- | --- |
+| `/` | `max-w-page` | 1200 | 167 (at 1440) |
+| `/wordpress-fix/` (hub) | `max-w-page` | 1200 | 231 |
+| `/wordpress-fix/critical-error/` (service) | `max-w-page` | 1200 | 231 |
+| `/guides/<slug>/` | `max-w-page` | 1200 | 231 |
+| `/compare/<slug>/` | `max-w-page` | 1200 | 231 |
+| `/pricing/` | `max-w-page` | 1200 | 231 |
+| `/about/` | `max-w-page` | 1200 | 201 (masthead padding) |
+| `/contact/` | `max-w-5xl` | **1024** | 255 |
+| `/wordpress-development/cities/<city>/` | `max-w-4xl` | **896** | 383 |
+| `/case-studies/` | `max-w-3xl` | **768** | 383 |
+
+The three narrower widths are **unchanged and deliberate**. They are reading-measure caps, not
+container-derived: widening them pushes body copy past a readable line, which is the opposite of
+what Task 38 just did to the city page. (This also corrects a stale line in the container table
+above: `/pricing/` left the 4xl row at some point and is on the spine.)
+
+On the home page, 13 spine-aligned boxes, nav and footer among them, all report left 113 and width
+1200 at 1440. One left edge, which is the intra-page rule this file has caught two bugs with.
+
+### Every `sizes` hint that keys off the container
+
+Content width went 1104 to 1152, so anything derived from it moved. All measured in the browser
+rather than computed and hoped for:
+
+| Hint | Was | Now | Real slot |
+| --- | --- | --- | --- |
+| `bannerSizes` (masthead, the LCP on ~95 routes) | `(min-width: 1152px) 1104px` | `(min-width: 1200px) 1152px` | 1152, picks the 1200 candidate, **1.04x** |
+| `LinkCards` 4-up banner | 264px | **276px** | `(1152 - 48) / 4` = 276, measured 276 on `/wordpress-fix/` |
+| `RemoteTrack` on `/about/` | 368px | 368px, **unchanged** | measured 368. `(1152 - 48) / 3`. It was 16px over on the old spine and the new container made it exactly right. |
+| `RemoteTrack` on the city page | 272px | 272px, unchanged | that page is `max-w-4xl` and did not move |
+
+Checked and deliberately left alone: `ErrorStack` (`48rem`), `Restored` (`72rem`), `ProblemTiles`
+and `Plans` (`vw`-based), and `RealScreen` in the guide. The guide box is capped at **68ch, not by
+the container**, so it did not move; its `680px` hint against a real 736px box is a pre-existing
+under-request that resolves to the 750 candidate at 1.02x, and the stale "720px (max-w-3xl less
+px-6)" in that component's comment is corrected to say what actually caps it.
+
+### Things that scaled themselves
+
+`ErrorPanels` is a `7fr / 1fr / 1fr / 1fr` track, so the closed slivers went 107px to about 115px
+with no edit. The logo marquee is percentage-based: three copies of 768px still cover a 1152px
+window after the `-33.3333%` shift, with room over. Both carried the old number in a comment and
+both comments are corrected.
+
+### Gates
+
+`tsc` 0, `eslint` 0, content check 52 matches over 186 files, build 99 routes. axe at **1440 on the
+home page: zero violations** across 12 sections; at **375 on the service and city pages: zero
+violations**. No horizontal scroll at 375, 1440 or 1500 on any route sampled. The `incomplete`
+nodes are `color-contrast` over photographs, which is what every `PageMasthead` route and the home
+page's composited sections already reported; a container width cannot move a contrast ratio, since
+the scrim is a flat token over the whole band, and these were not re-diffed against the old build.
+
+## Task 40 / one width, every route
+
+**The container table above is now a single row.** Every page on the site runs the 1200px spine.
+The owner asked for it directly, twice: Task 39 left three narrower widths in place and explained
+why, and the answer was "i want all pages should be 1200px". That is the decision; this entry
+records what it cost and what held.
+
+### What was narrowed, and is not any more
+
+| Route | Was | Now |
+| --- | --- | --- |
+| `/wordpress-development/cities/` and `/<city>/` | `max-w-4xl` (896) | spine, **1200** |
+| `/contact/` | `max-w-5xl` (1024) | spine, **1200** |
+| `/free-site-check/` | `max-w-5xl` (1024) | spine, **1200** |
+| `/case-studies/` | `max-w-3xl` (768) | spine, **1200** |
+
+Five call sites, all of the form `cn(page, pageY, "max-w-Nxl")`, now just `cn(page, pageY)`. The
+`max-w-5xl` left in `MegaMenu` is untouched: it is a menu overlay, not a page container.
+
+### Nothing needed a new measure cap, and that is the whole reason this was cheap
+
+The argument for the three narrow widths was that they protected reading measure. It turns out the
+protection was already one level down, in `ch`, on the elements that actually hold prose:
+
+- the city page's context paragraphs are `max-w-[68ch]`
+- `/contact/`'s lead is `max-w-[46ch]`, `/free-site-check/`'s is `max-w-[60ch]`
+- `/case-studies/`'s empty-state copy is `max-w-[48ch]`
+- `/contact/` and `/free-site-check/` are 12-column grids, so their columns are proportions and
+  simply got wider in proportion
+
+**A cap written in `ch` is a measure and does not care how wide the page under it is.** A cap
+written as a container width is a measure pretending to be a layout, and that is the one that had
+to be argued about. Nothing was added in this task; the `ch` caps absorbed the change on their own.
+
+Measured on the spine: city context columns **556px** (404 before), city cards **568px** 2-up,
+`/contact/`'s form card **649px** on its 7 of 12 tracks.
+
+### `RemoteTrack` lost its only prop
+
+`sizes` existed because the city page was `max-w-4xl` and its station was 272px against 368 on
+/about/. Both pages are the same width now, so both stations are a constant (1152 - 48) / 3 =
+**368px** from `lg` up and the prop had nothing left to vary. One hint, written once inside the
+component, measured at 368 on both pages with the image slot at 366 picking the 384 candidate,
+**1.05x**.
+
+### Gates
+
+`tsc` 0, `eslint` 0, content check 52 matches over 186 files, build 99 routes. axe: **zero
+violations** on `/wordpress-development/cities/`, `/wordpress-development/cities/chennai/`,
+`/contact/` and `/case-studies/` at 1500, and on `/contact/` at 375. No horizontal scroll at 375 or
+1500 anywhere. The city detail page got **shorter**, 4,001px to 3,802px, because the wider columns
+take fewer lines.
+
+Nothing changed below `lg`: every cap removed here was above 375, so the phone layout is the one
+Task 38 and Task 39 already measured.
+
+### The reveal-walk artifact, again, and how to tell it apart from a bug
+
+Three elements on the city page and two on the city hub reported `opacity: 0` with
+`getAnimations().length === 0` after a scroll walk, and the hub's closing band photographed as an
+empty panel. Both were the measuring script, as in Task 38. The proof is one line and worth reusing:
+call `scrollIntoView({ block: "center" })` on each stuck element with ~700ms between them, then
+re-read. All five went to opacity 1 with one animation each. A fast programmatic walk can move past
+an element between two of the observer's intersection computations, in which case **no entry is
+generated at all**, the element stays observed, and the next real crossing fires it. A human
+scrolling never hits this. Before filing a bug against `revealScript`, run that check.
+
+## Task 41 / the site-wide scroll animation system
+
+Eight primitives in `src/components/motion/`, one token table, and nothing outside that folder
+imports Motion any more. Built to the owner's brief; the four decisions that shaped it were put to
+the owner before any code was written, and the answers are recorded in each section below.
+
+### The decision that set the architecture
+
+Motion's `whileInView` writes `opacity: 0` into the server HTML and waits for hydration. The
+brief's own rule 9 asks for content readable with JS disabled, and rule 7 forbids patching a flash
+with a mounted-state boolean. **Those cannot both hold with `whileInView`**, and this file already
+recorded the consequence once: `MaskRise` and `CtaReveal` shipped hidden body copy, which is "the
+one thing a page of body copy must not do".
+
+So `Reveal` and `Stagger`, the two primitives that wrap body copy on all 99 routes, keep the
+inline-script engine and are **Server Components with no Motion in them at all**. Everything else is
+Motion inside `LazyMotion` + `domAnimation` with `m` components. The owner chose this split over
+"all eight on Motion".
+
+### The token table moved, and MASTER.md moved with it
+
+The owner chose the brief's values over the ones this variation ran: easing
+`cubic-bezier(0.22, 1, 0.36, 1)` over the sampled spring, 24px/14px travel over a flat 14, 0.07s
+stagger capped at 6 over the 70ms uncapped ladder, 0.5 / 0.35 / 1.2s durations.
+
+`src/components/motion/tokens.ts` is the source. `globals.css` mirrors the subset CSS needs, because
+`Reveal` and `Stagger` animate through the stylesheet. **`npm run check:motion` fails the build if
+the two drift**, and it also greps for Motion imports outside the folder, which is the brief's own
+acceptance check made executable. MASTER.md's Motion section now documents this table rather than a
+second one.
+
+`--ease-spring` survives for the three things that animate a real spring rather than an entrance:
+the FAQ's `block-size`, and the closing band's tick and border.
+
+### The engine learned four things
+
+The inline script in `app/layout.tsx` was a fixed 14px/1000ms rise. It now reads
+`--motion-duration`, `--motion-ease` and `--motion-distance` from `:root`, and per element:
+
+- `data-rv-dir` - up / down / left / right / none, and `clip` for a rise out from behind an edge
+- `data-rv-dist` - px, overriding the responsive default
+- `data-rv-delay` - ms, which is how `Stagger` orders a group
+- `data-rv-target="child"` - observe this box, animate the one inside it
+- `data-rv-repeat` - opt out of `once`, which rule 2 says you should not
+
+Every attribute is optional, so the 59 bare `.reveal` markers that predate the primitives still work
+and take the defaults.
+
+**Two of those exist for one bug.** A line at `translateY(100%)` inside `overflow-hidden` is fully
+clipped, and an IntersectionObserver measures what is left after an ancestor clips it: nothing. The
+box has to be the observed thing and the line the animated one, which is why `data-rv-target` and
+the `[data-rv-target="child"] > *` rule in the stylesheet both exist. `MaskRise` recorded this trap
+and `TextReveal` would have reintroduced it.
+
+**The viewport test gained a height guard.** The brief's `threshold: 0.2` can never be reached by an
+element taller than five viewports, so anything taller than 80% of the window is accepted on first
+intersection instead. Without it a pinned rail would never animate at all.
+
+### What happened to the 14 files that imported Motion
+
+| Was | Now |
+| --- | --- |
+| `CtaReveal` | **deleted**, replaced by `Stagger` |
+| `MaskRise` | **deleted**, replaced by `TextReveal` |
+| `PracticeRows` | **Server Component**: its only Motion was the stagger; the hover wipe, ember rail and hollow index were always CSS |
+| `RestoredOverlay` | **Server Component**, same reason. It had been shipping both of its lines at `opacity: 0` |
+| `LogoMarquee` | 80 lines to 3: it is a call site for the `Marquee` primitive now |
+| `CtaShader`, `FaqTabs`, `FixRail`, `HeroRays`, `Magnetic`, `MegaMenu`, `NavBar`, `TileGrid`, `ZoomImage`, `QuotePair` | moved to `motion/interactions/`, behaviour unchanged |
+
+The ten that moved do things no primitive covers: a pinned scroll rail, a WebGL shader, a pointer
+magnet, a mega menu, a filtering grid. Converting them to primitives would have deleted working,
+measured behaviour. Moving them means the folder is the only place Motion lives, which is what the
+brief's acceptance grep actually asks for.
+
+### Measured against the brief's acceptance checks
+
+| Check | Result |
+| --- | --- |
+| No `motion` imports outside the folder | **pass**, enforced by `npm run check:motion` |
+| CLS 0.00 on home, a service page, an article | **pass**: 0.0000 on all three, measured with no interaction |
+| LCP element not animated | **pass**: home's LCP is the hero headline at 232ms, 0 animations on it or any ancestor; service and guide LCP images the same |
+| Renders with JS disabled | **pass on 98 routes.** Home ships 4 hidden nodes, all of them `QuotePair` placeholder quotes |
+| No hydration warnings | **pass**: console clean on every route checked |
+| Reduced motion | **pass**: 33 reveal targets on home, 0 hidden, 0 transformed, 0 running animations, marquee `animation-name: none` |
+| Lighthouse 95+ on throttled mobile | **fail, and not because of this work.** See below |
+
+### Lighthouse: 62 on home, and what is actually causing it
+
+| Route | Score | LCP | CLS | TBT |
+| --- | --- | --- | --- | --- |
+| `/` | **62** | 3.2s | 0 | **8,890ms** |
+| `/guides/<slug>/` | 91 | 3.5s | 0 | 110ms |
+| `/wordpress-fix/critical-error/` | 89 | 3.3s | 0 | 190ms |
+
+Home's total blocking time is 8.9 seconds, and one chunk accounts for **11,868ms of script
+evaluation**. Its contents: `gsap` and `ShaderMount`. Neither is part of the animation system.
+GSAP is used by exactly one file (`GuaranteeHeading`) and the paper-design WebGL shader by one
+(`CtaShader`), both on the home page only. The pages without them run 110 to 190ms of TBT, which is
+the true cost of this system.
+
+The remaining gap on those two pages (89 and 91 against the 95 target) is LCP at 3.3 to 3.5s under
+simulated mobile throttling, which is image weight, not JavaScript.
+
+**So the target is reachable and the work it needs is not animation work**: drop GSAP for the one
+heading that uses it (contract rule 2 already bans mixing it with Motion), defer or drop the shader,
+and attack the hero image weight. Not done here, because none of it was in scope and all of it
+changes designed behaviour the owner has signed off.
+
+### Known exception: QuotePair
+
+`QuotePair` reveals each sentence of a quote and then the attribution, which is a nested stagger and
+not something `Stagger` expresses in one level. It stays on Motion, and its four nodes are the only
+hidden content left in any server HTML on the site. The content is `src/content/testimonials.ts`
+placeholders, which `next.config.ts` already blocks from a production deploy, so nothing real is
+hidden. When genuine quotes arrive, this section is rebuilt and the exception goes with it.
+
+### ScrollProgress and StickyCTA, both owner-instructed exceptions
+
+`ScrollProgress` is a scroll cue, which contract rule 6 bans. Scoped to `/guides/<slug>/`, mounted
+nowhere else, and it reports the article's own length rather than the document's: measured `scaleX`
+0 at the top and 0.79 at half the document, because the footer is not part of the article. It takes
+a **selector, not a ref**, which is what keeps `GuideTemplate` a Server Component.
+
+`StickyCTA` is desktop only, because under 768px the shell already renders the fixed action bar and
+the chat widget floats at every width. Verified: absent at 375, present past 60% depth at 1440,
+dismisses, stays dismissed across a scroll up and back, and writes `sessionStorage`. Both of its
+client reads go through `useSyncExternalStore` with server snapshots that render nothing, so there
+is no hydration mismatch and no effect-then-setState. It is hidden on `/contact/` and
+`/free-site-check/`, which already are the conversion step.
+
+## Task 42 / the closing band gets a weave
+
+> **Superseded by Task 43.** The CSS line grid described below was replaced, on the owner's
+> instruction, by the swept-beam SVG they supplied. The `closing-grid` utility is gone. The two
+> findings here still stand and are the reason Task 43 went in cleanly: the no-gradient argument
+> (hard-stop lines, masks remove alpha) and the equal-mask-radii rule.
+
+
+`ClosingBand` carries a lattice of hairlines behind its content, fading out at the edges and gone by
+the corners. One `@utility` in globals.css and one `-z-10` span in the component; **12 call sites
+pick it up**, which is every reading page's closing panel. The home page's `FinalCta` is a different
+component with a shader background and was not touched.
+
+### Two rules it had to get past, and how
+
+MASTER rules out gradients outside the hero scrim. Both halves of this clear that bar for different
+reasons, and both have precedent in the same stylesheet:
+
+- **The lattice is a `linear-gradient` with a hard stop at 1px.** There is no interpolation anywhere
+  in it: it draws a line. The alternative is an inline SVG of exactly the same thing.
+- **The fade is a `mask-image`**, which removes alpha rather than adding a colour, so what shows
+  through is the panel's own `--surface`, unchanged. This is verbatim the argument `marquee-fade`
+  already makes four rules above it.
+
+### The cell is the band's own padding
+
+32px against `p-8`, 48px from `md` against `p-12`. The first gridline then lands exactly on the
+content's left edge instead of cutting the panel at whatever offset a round number produced, so the
+heading sits inside a cell rather than across one. Measured: 1152x193 band, 48px cells at 1440;
+343x279 band, 32px cells at 375.
+
+### Equal mask radii, which is the part that is not obvious
+
+`ellipse Rx Ry` measures Rx against the box width and Ry against its height, so **equal percentages
+put the falloff in normalised space**: a point at (dx, dy) from the centre sits at
+`sqrt((dx/Rx)^2 + (dy/Ry)^2)` whatever shape the box is. At `90% 90%`, corners land at 78.6% and
+edge midpoints at 55.6% on every band on the site, so one declaration covers every aspect ratio the
+component renders at.
+
+**This was found by testing, not by reasoning.** The first version used `110% 125%`, tuned by eye on
+the 1152x193 desktop band, and it looked right there. On the 343x279 phone band the corners came out
+at about half strength and the lattice stopped reading as texture and started reading as graph
+paper. Mismatched radii do not survive the aspect ratios this component actually renders at.
+
+Solid to 25%, gone by 75%: corners past the end of the fade, edge midpoints about two thirds
+through it, middle of the panel at full strength.
+
+### Contrast, measured rather than assumed
+
+`--line` is `rgb(255 255 255 / 0.08)`, the faintest token on the site. Compositing one line over
+`--surface` gives `rgb(39 39 42)`, and `--text` on that is **13.08:1**, against 16.14:1 on the bare
+panel. The worst case is a heading sitting directly on a gridline and it is an order of magnitude
+clear of the 4.5:1 floor.
+
+axe returns `incomplete` rather than a ratio for this panel, because it cannot compute contrast
+through a background image. That is the reason for the `incomplete`, not a miss, and it is why the
+figure above was computed by hand.
+
+### Checks
+
+axe **zero violations** on the band at 1440. **CLS 0** (the layer is `absolute inset-0`, it reserves
+nothing and shifts nothing). No horizontal scroll at 375. No JavaScript: `ClosingBand` is still a
+Server Component and this adds no bundle. `pointer-events-none` and `aria-hidden`, so it is outside
+the accessibility tree and cannot take a click. Dropped entirely under `forced-colors: active`.
+`tsc` 0, `eslint` 0, content check 52/196, motion check clean, build 99 routes.
+
+## Task 43 / the closing band's beams
+
+The CSS line grid from Task 42 is gone. In its place is the swept-beam artwork the owner supplied
+as SVG: 58 raked curves across the panel, 13 of them lit in ember, fading out before they reach the
+edges. `src/components/templates/ClosingBeams.tsx`, one `-z-10` node inside `ClosingBand`, picked up
+by all 12 call sites. No JavaScript: it is a Server Component and ships no bundle.
+
+### The artwork is generative, so it is not 8KB of coordinates
+
+The pasted file is about 8,000 characters of path data. Every one of the 58 curves turns out to be
+the first curve translated by `(+7n, -8n)`, and the 13 lit ones are simply every fourth. Checked
+against three samples from the original (n = 0, 1 and 57) before relying on it, and the built page
+emits byte-identical `d` strings, verified on the production HTML down to the final `1083 419`.
+
+So the component is a seven-point array and a loop. Eight kilobytes of literal coordinates inlined
+into twelve routes is eight kilobytes in which a typo is indistinguishable from a curve.
+
+### Retoned, because the source is drawn for a light page
+
+Three reds (`#F14D4C`, `#FF5F5E`, `#E03A39`) over `#d4d4d4` hairlines. Hardcoded hex is banned here
+and the variation is accent-locked, so the hairlines take `--text` and every lit beam takes
+`--accent`. The three reds collapsing to one ember costs the artwork nothing: what makes a beam read
+as lit is the alpha ramp along its length, not the hue step between two near-identical reds.
+
+Stroke opacity moved with it. `0.04` is a visible hairline on a near-white page and nothing at all
+over `--surface`; `0.1` puts the base curves at about the weight of `--line`, which is the token the
+rest of the site uses for this job.
+
+### The pasted glow positions were one frame of an animation
+
+The source's gradient coordinates are values like `97.10166%`. Those are not hand-set numbers: this
+is a snapshot of an animated component and the decimals are a frame of it.
+
+A gradient only shows where its stop falls inside the viewBox, and `y1` equals `x1` throughout, so a
+single value has to land inside the window on **both** axes. Beam `i` is curve `4i`, so its bounding
+box starts at `(-380 + 28i, -189 - 32i)` and is 1064 square; intersecting that with the 696x316
+viewBox gives each beam a narrow band of usable values. Measured across all thirteen: **eleven fall
+outside it.** Only beams 1 and 4 would have glowed, and the other eleven would have rendered as
+plain hairlines, which is exactly what the first build looked like.
+
+Each position is now the centre of its own overlap, so all thirteen land in frame with nothing
+animating. The gradient's *shape* is the source's own and is kept exactly (`x2` 4.85 points before
+`x1`, `y2` 0.78 before it), which is what makes the lit stretch short and raked instead of a wash
+down the whole beam.
+
+### `preserveAspectRatio="none"`, deliberately
+
+The band is about 6:1 and the viewBox is 2.2:1. `slice` was tried first and crops away most of the
+artwork, including the part of the radial falloff that does the fading: the first build had beams
+running edge to edge with no visible fade and no ember at all. Stretching maps the whole viewBox
+onto the band, which rakes the curves shallower (on a band this wide that reads as light across it,
+not as distortion) and is also what makes the overlap arithmetic above exact.
+
+### The fade is the artwork's own
+
+No CSS mask is involved any more. The base curves are painted through the source's radial gradient,
+opaque through the middle and gone by 43.6%, and each lit beam through a linear gradient that is
+transparent at both ends. The edges and corners clear because the paint runs out. `closing-grid` and
+its mask were deleted; nothing else referenced them.
+
+### Checks
+
+axe **zero violations** on the band at 375. **CLS 0.** No horizontal scroll. Zero focusable nodes
+inside the SVG, which is `aria-hidden` and `pointer-events-none`, so it is outside the accessibility
+tree and cannot take a click or a tab stop. Rendered 1150x191 inside a 1152x193 band at desktop and
+341x277 inside 343x279 at 375. Inline SVG weight on the page: about 10.4KB of markup, all of it
+generated. `tsc` 0, `eslint` 0, content check 52/197, motion check clean, build 99 routes.
+
+## Task 44 / ember trails on the closing band
+
+The static lit beams from Task 43 now run. A short ember segment travels the length of a scattered
+thirteen of the 58 curves, appearing and crossing at irregular intervals, which is what the owner
+asked for: "red line trail like running these lines random over existing lines."
+
+### How a trail is made
+
+`stroke-dasharray: 140 1443` against a path 1583 units long, so there is exactly one dash per curve,
+and `stroke-dashoffset` animates one full period per cycle. Painted through a second copy of the
+artwork's radial falloff in `--accent`, so a trail dims as it runs out towards the panel's edge
+rather than stopping at it. That one gradient replaced the thirteen per-beam ones Task 43 computed.
+
+**Contract rule 10 exception, the fourth on the site**, after the FAQ's `block-size` and the two
+grid-track animations. The justification is the same shape as theirs: **there is no transform that
+moves a point along a curve.** Translating the path moves the whole line; a clip would need a mask
+animated in two axes at once to follow the sweep. The animated area is a half-pixel stroke inside a
+1152x193 box, which is the smallest on the site.
+
+### Why it reads as random rather than as a loop
+
+Measured, not assumed: each curve is inside the viewBox for only **70 of its 1583 units**, so a
+trail is visible for about a tenth of its cycle. Thirteen trails at periods of 9 to 16 seconds put
+one or two in frame at a time and take a very long while to repeat an arrangement.
+
+The thirteen curves are picked by hand, not at an interval: gaps of 3, 6, 3, 7, 4, 4, 7, 4, 7, 4, 3,
+5. The first draft ended 55, 56, 57, which put three trails on neighbouring curves half a pixel
+apart; they read as one thick line rather than three, and evenly spaced trails read as a mechanism.
+Corrected before the first build was looked at.
+
+Periods and phases are **deterministic functions of the index, never `Math.random()`**. A random
+value picked during render is a different number on the server than on the client, which is a
+hydration mismatch on twelve routes. The phases are negative so each trail starts part way through
+its own cycle; without that all thirteen set off together on the first frame and the band opened on
+a single visible pulse.
+
+### Reduced motion, and the mistake caught in it
+
+`stroke-dasharray: none` paints each trail along its full length, which is the static lit beam of
+Task 43: the reader gets the picture rather than a frozen dash parked wherever the clock stopped.
+
+**The first version of that was louder than the animation it replaced.** Moving, you see one or two
+short segments, because of the 70-in-1583 figure above. Still, you see all thirteen at full length
+at once, and at the animated `0.55` that is thirteen ember lines across the panel. A reduced-motion
+reader would have got a markedly busier design than everyone else, which is backwards. The static
+arm drops to `0.15`, the figure Task 43 was measured at, and the two states now sit at about the
+same weight. Verified in the browser under forced reduced motion: `animation-name: none`,
+`stroke-dasharray: none`, `stroke-opacity: 0.15`, zero running animations, zero dashoffset movement.
+
+### It is a client component now, for one reason
+
+The `IntersectionObserver` that sets `data-beams-paused` when the band leaves the viewport, which
+`animation-play-state: paused` keys off. The logo marquee records the argument: a loop that runs for
+the whole visit while visible for a fraction of it is work nobody asked for, and this band sits at
+the very bottom of every page. Verified: paused on load (the band is below the fold on every route),
+running once scrolled to, all thirteen dashoffsets advancing.
+
+Nothing else about the component depends on client state, so the markup is identical on both sides
+and there is nothing for hydration to disagree about.
+
+### Checks
+
+axe **zero violations** on the band. **CLS 0.** Zero focusable nodes inside the SVG, which stays
+`aria-hidden` and `pointer-events-none`. Thirteen trails, `140px, 1443px` dash, periods 9 to 16s
+confirmed in computed style. `tsc` 0, `eslint` 0, content check 52/197, motion check clean, build 99
+routes.
+
+## Task 45 / the beams thinned out
+
+The closing band's fan was crowded: stretched onto a band about 6:1, 58 curves at a 7-unit step sat
+close enough together to read as hatching rather than as light. The owner asked for more air.
+
+**39 curves at `(+10.5n, -12n)`, which is the same box at two thirds the density.** The step is 1.5x
+the source's `(7, -8)` and the count comes down to match, so the artwork's total spread is
+unchanged: 38 x 10.5 is 399, exactly 57 x 7, and 38 x 12 is 456, exactly 57 x 8. Confirmed on the
+built page rather than on paper, where the last curve still begins `M19 -645`, the same coordinate
+the 58-curve fan ended on. The fan occupies the same rectangle and is simply less dense.
+
+The inline SVG went from about 10.4KB to **6.5KB** on every one of the twelve routes, which was not
+the point but is worth having.
+
+### This is where the artwork stops matching the source
+
+Tasks 43 and 44 could say the emitted paths matched the owner's pasted file character for character.
+They no longer do, and this is the one place they deliberately differ. The generative relationship
+is intact (every curve is still the first one translated by a fixed step); only the step and the
+count changed, on the owner's instruction.
+
+### The trails moved with it
+
+Carried across by scaling each index by 38/57, which keeps the spacing identical **in the artwork's
+own units**: the gaps now run 2, 4, 2, 5, 2, 3, 5, 2, 5, 3, 2, 3, and the tightest pair is
+2 x 10.5 = 21 units, exactly the 3 x 7 the tightest pair had at the old density. So the trails are
+no closer together than they were, and the rule that no two sit on neighbouring curves still holds.
+
+Thirteen trails, and nothing else about them changed: same 140/1443 dash on the same 1583-unit path,
+same 9 to 16 second periods, same negative phases.
+
+### Checks
+
+Verified on the production build at 1440 and 375: 39 curves in the base path, 13 trail paths, all
+thirteen animations running once the band is in view and paused before it. `tsc` 0, `eslint` 0,
+content check 52/197, motion check clean, build 99 routes.
+
+## Task 46 / the About page's stats strip, and a safety gate that was not working
+
+A four-cell figures strip on `/about/`, between "What we work on" and "How working with us runs".
+
+### Three gated claims and one counted fact
+
+The owner asked for a stats section "with fake stats". Contract rule 6 bans **invented statistics**
+outright, rule 8 allows numbers only from `src/content` or `getSiteStatus()`, and this page's own
+header comment says there is no years-in-business line or client volume "because none of those
+exist in src/content as a confirmed fact". A figure like "500 sites recovered" is a factual claim
+made to a customer, not decoration.
+
+The codebase already has the mechanism for exactly this and it is not a workaround: `confirm()` in
+`src/config/brand.ts`, which renders a value in dev and preview and fails a production build until
+the owner replaces it. It is how `brand.claims` already carries "booking takes about two minutes".
+So `brand.stats` holds three gated figures and the fourth cell is `cities.length`, counted at build
+time, which means the strip is never entirely unverified however long the others sit.
+
+Cities rather than services or guides: those two are already printed as numerals in the sentence
+under "What we work on" a screen above, and one figure appearing twice on a page at two type sizes
+reads as two different facts.
+
+Four cells, never three (rule 6). Hairline dividers rather than four bordered boxes, so it reads as
+one instrument. `Stagger` and `CountUp` from Task 41, doing the job the motion table mapped them to.
+
+### It was in the first viewport, which rule 4 forbids
+
+Built first directly under the masthead, where a trust strip usually goes. Measured at 1440: top
+edge at **592px against a 900px viewport**, inside the first screen, where brief rule 4 allows
+nothing that animates on scroll, and `CountUp` runs 1.2s. Moved below "What we work on", where it
+sits at 2550px, comfortably past the fold, and the page also reads in a better order. Verified
+counting after the move: 232, 378, 449, 480, 493, 498, 500, with the token easing visible in the
+spacing of the samples.
+
+### "1 hrs"
+
+The reply-time cell counted up through every integer below its target, so it put **"1 hrs"** on
+screen for a frame. Suffix changed from `" hrs"` to `"h"`, which is correct at every value the count
+passes through. One character, and the sort of thing only a frame-by-frame look finds.
+
+### The gate did not work, and that is the important part of this entry
+
+Everything above rests on "a production deploy fails until the owner confirms". **It did not.**
+
+`next.config.ts` collects the unconfirmed values and throws when `VERCEL_ENV === "production"` or
+`BRAND_STRICT === "1"`. Probed by logging `process.env` from inside the config during `next build`
+with both set on the command line: **both read `undefined`**. Next loads the compiled config in a
+context that does not carry the shell environment. `BRAND_STRICT=1 next build` exited **0** with
+three unconfirmed stats, placeholder testimonials and an unconfirmed support email. The warning
+printed; nothing stopped.
+
+This is pre-existing and predates this task. It is recorded here because this task is what exposed
+it, and because a gate that reports a problem and then lets the deploy through is worse than no
+gate: it is the thing everyone points at when asking whether something can ship.
+
+**`scripts/check-confirmed.ts`** runs the same rule as the first step of `npm run build`. A second
+measurement shaped it: **`tsx` does not pass the shell environment to the script it runs** either.
+`BRAND_STRICT=1 npx tsx -e "console.log(process.env.BRAND_STRICT)"` prints `undefined`, with or
+without `export`, where plain `node` prints `1`. So the trigger is a **flag**, `--strict`, passed by
+a new `npm run build:prod`, which cannot be lost; the two environment arms are kept for CI that sets
+them and does reach the process. `next.config.ts` keeps its warning, which is useful in dev.
+
+Verified both arms: `npm run build` reports 18 unconfirmed values and exits 0; the strict run exits
+**1** and names the three stats first.
+
+### Checks
+
+Server HTML carries the final figures (`500+`, `6`, `2h`, `8`) in a `.sr-only` span, so the strip
+reads correctly with JS off and a screen reader never hears the intermediate numbers. axe **zero
+violations** at 1440 and 375. **CLS 0**, helped by `tabular-nums` from `CountUp`, so a digit
+changing cannot change a cell's width. Four equal 288px cells at 1440, one column at 375, no
+horizontal scroll. Reduced motion: final values immediately, zero running animations.
+
+### 21st.dev
+
+Searched. Closest was **Stats Grid** (#29195), bordered metric cells. The pattern was taken, the
+component was not: it ships shadcn token names that do not exist here and a three-column grid that
+rule 6 bans.
+
+## Task 47 / effect 11 on every button, and a wipe on the stats cells
+
+Two hover changes the owner asked for, from two references.
+
+### The buttons: Codrops effect 11, read out of its own stylesheet
+
+`button--calypso` from `tympanus.net/Development/ButtonHoverStyles/`, taken from `css/base.css`
+rather than guessed at. Two layers:
+
+- `::before` is a circle 120% of the button wide, resting collapsed below it at `scale3d(0,0,0)`.
+  On hover it balloons up and fills the box over **400ms on the source's own
+  `cubic-bezier(0.1, 0, 0.3, 1)`**.
+- `::after` is a plain block waiting one button-height above, dropping in over **50ms, delayed
+  400ms**, exactly as the circle finishes. A circle alone leaves a curved top edge; the block
+  flattens it into a rectangle. **The motion is the circle, the block is the tidy-up.**
+
+**It ports without touching how it moves**, because it is transform-only: contract rule 10 is
+satisfied by the original.
+
+Two things had to change. The source paints `#000` and inverts its label with
+`mix-blend-mode: difference`, which over ember is unpredictable and is a hardcoded hex besides. So
+each button fills with a token. `--on-accent` on `--accent` is the secondary's hovered pair at
+**6.30:1**; the primary's label never moves. Both well clear of the 4.5:1 floor.
+
+**Not ported: the label's roll-up.** It animates a `<span>` the source wraps its text in, and this
+site's labels are bare text nodes across 86 call sites of differing shape. Wrapping them all is a
+refactor, not a hover, and it was left for the owner to ask for.
+
+### The primary filled dark first, and looked switched off
+
+The faithful translation fills the primary with `--bg`, draining a light button to black the way
+the source does. Built that way, measured at **17.16:1**, and then looked at: the one ember control
+on the page goes near-black while the secondary beside it stays dark, so **the main call to action
+reads as disabled at exactly the moment the pointer is on it.** Hovering something should not
+demote it.
+
+The fill is `color-mix(in srgb, var(--accent) 72%, var(--text))` now, a lighter ember. Both buttons
+move the same way under the pointer, towards the accent and towards active, and nothing on the page
+changes rank. The primary's label does not move at all, so there is no colour swap to time.
+
+### The stats cells: the wipe that already existed
+
+"Sliding background colour" is what `PracticeRows` has done since Task 30: a panel one step up from
+the page, scaled from `origin-left` so a solid edge crosses left to right, which is the reading
+direction. Ported rather than invented, so there is one dialect for this gesture and not two.
+`tasteskill.dev`'s own styles are CORS-blocked from script and were not readable; the description
+was unambiguous enough and the house move matches it.
+
+**These cells are not links**, and the Hover Earns It rule normally reserves a pointer response for
+things that go somewhere. Spent on the owner's instruction, recorded here so it reads as a decision
+rather than drift.
+
+### A false alarm worth recording
+
+The built CSS was checked to confirm `[@media(hover:hover)]:group-hover:scale-x-100` is really
+gated, since a tap would otherwise leave a cell filled with no way to clear it. A first look at the
+200 characters before the rule showed no `@media` wrapper and the conclusion drafted was that the
+gate had never worked anywhere on the site, which would have made a liar of a dozen entries in this
+file.
+
+It was wrong. Tailwind groups every rule sharing a variant into **one** media block, so the window
+had simply landed in the middle of it. A brace-balance walk backwards from the rule reports
+`ENCLOSED BY: @media (hover:hover){`. The gate works. **Check the enclosing block, not the
+preceding bytes**, before concluding a variant did not compile.
+
+### Checks
+
+Hovered with a real pointer, not a dispatched event: circle at `scale3d(1,1,1)`, block at 0, label
+swapped. axe **zero violations**. **CLS 0.** `overflow: hidden` does not clip the focus ring, which
+is a `box-shadow` on the button itself rather than on a child. Reduced motion removes both pseudo
+layers entirely (`display: none`) and the button keeps the lift it had before, which is a real
+hover state and not a dead one; the stats wipe keeps its state change with `transition-property:
+none`. `tsc` 0, `eslint` 0, content check 52/197, motion check clean, build 99 routes.
+
+## Task 48 / the fill follows the cursor, and the secondary stops going red
+
+Two corrections to Task 47, both from the owner looking at it.
+
+### The stats fill grows from the pointer now
+
+Task 47 reused `PracticeRows`' wipe, which scales from `origin-left` and therefore sweeps the same
+way whichever edge the pointer came in at. Entering a cell from the right meant watching the fill
+travel away from the cursor and then back under it.
+
+`src/components/HoverFill.tsx` is a client leaf: a stylesheet cannot know where a pointer is, so the
+two coordinates are written to custom properties on `pointerenter` and again on `pointerleave`, and
+everything after that is CSS. A circle sits at those properties and only `scale` animates, so
+contract rule 10 holds and the work stays off the main thread. The same expanding circle the buttons
+make, so there is one vocabulary for "something filled under the pointer" rather than two.
+
+The properties **default to 50%**, so a touch device that fires no pointerenter, a keyboard user or
+a blocked bundle gets a centred fill rather than a broken one.
+
+**Sizing is the part that is easy to get wrong.** The circle has to cover the box from any point on
+it, corners included, so its radius must beat the box's diagonal. `w-[250%] aspect-square` gives
+720px against a measured 308px diagonal on a 288x110 cell, clearing it more than twice over.
+
+Verified by calling the component's own handlers with known coordinates: entering the left edge sets
+`6px, 55px`; the right edge `282px, 55px`; the top right `285px, 3px`; the bottom middle
+`144px, 107px`; and leaving at the top left moves the origin to `10px, 10px`, so it collapses
+towards the exit. Photographed with four cells frozen mid-fill from four different origins.
+
+**A note on testing this.** Synthetic `pointerenter` and `pointerover` events do not reach a React
+`onPointerEnter`, so the first two attempts read empty and looked like a broken component. The
+handlers were there the whole time: `__reactProps$…` on the node lists both. Call the handler off
+that object, or drive a real pointer; do not conclude from a dispatched event that the wiring is
+missing.
+
+### The secondary no longer fills with the accent
+
+Task 47 had it filling `--accent`, which put the loudest colour on the page on the lesser of the two
+controls and made the pair swap rank under the pointer. Ember stays on the primary.
+
+The replacement value was set by contrast, not by taste. The label stays `--text`, so the fill has
+to stay dark enough to carry near-white. `--surface-2` mixed 55% with `--text` is about
+rgb(124,123,125) and roughly **3.6:1**, which fails. At 78% it resolves to **rgb(75,75,78)** and the
+label measures **7.63:1** against a resting surface of rgb(20,20,23), so the lift is obvious and the
+text is far clear of the floor. The primary's lighter ember measures rgb(251,132,106) at **8.01:1**.
+
+Both figures were read off the built page. An earlier pass recorded them from arithmetic and was
+wrong by a different route: `getComputedStyle` returns a `color-mix` result as `color(srgb 0.29 …)`
+with 0-to-1 floats, and a parser expecting `rgb(0-255)` read 0.29 as 0.29 and reported 18.41:1 for
+a pair that is actually 7.63:1. **Parse the `color()` form before trusting a ratio.**
+
+### Checks
+
+axe zero violations, CLS 0, reduced motion drops the transition and keeps the state change, the
+`(hover: hover)` gate intact on both. `tsc` 0, `eslint` 0, content check 52/198, motion check clean,
+build 99 routes.
+
+## Task 49 / the footer wordmark
+
+The brand name at the foot of every page, running the spine's full width and fading out before the
+bottom. Ported from interfaces.dev's footer on the owner's instruction, read out of the live page.
+
+### What the reference actually does
+
+Not what its visible footer section suggested. The brand mark there is a hand-drawn signature SVG,
+which is somebody's actual signature and not something to copy. The treatment the owner meant is the
+block after it:
+
+```html
+<div class="relative overflow-hidden h-16 sm:h-28 lg:h-32">
+  <svg aria-label="Interfaces" viewBox="0 0 420 73" class="h-auto w-full stroke-gray-400 text-gray-300">…10 letter paths…</svg>
+  <div class="absolute inset-x-0 bottom-0 bg-linear-to-b from-transparent to-gray-background h-1/2"></div>
+</div>
+```
+
+**And it does not clip.** The box heights are set just above the artwork's rendered height at each
+breakpoint (720px wide at `lg` gives 125px against a 128px box), so nothing is cut; the gradient over
+the lower half is doing all of the work. Worth knowing, because the first build here clipped 104px
+off the letters at desktop on the assumption that it did.
+
+### Three deliberate departures
+
+**Live text, not letter paths.** Theirs has to be an SVG because the mark is set in their own face.
+MASTER locks this site to Bricolage Grotesque, so shipping someone else's outlines would break the
+type lock and cost ten `<path>` elements. A real string stays crisp at any zoom and changes when
+`brand.name` does.
+
+**A mask, not a painted gradient.** The reference fades to a literal `to-gray-background`, correct
+only while the footer is exactly that colour. `mask-image` removes alpha instead of adding colour,
+so whatever is behind shows through, and it is what keeps this inside MASTER's no-gradient rule:
+the same argument `marquee-fade` and the closing band's beams already make.
+
+**`aria-hidden`, where theirs is labelled.** The footer's address block says LetsFixWP a few lines
+above, so announcing it twice is noise. It is decoration, and `select-none` keeps it out of a copied
+selection.
+
+### Two measurements that changed the build
+
+**The mark was filling 71% of the container, not the 96% first reported.** A `display: block` span is
+as wide as its parent whatever its text does, so measuring the element returned the container width
+and hid the gap entirely; a screenshot at that size looked close enough to pass. A `Range` over the
+text node measures the letters: "LetsFixWP" in Bricolage at 800 with -0.04em tracking renders
+**4.29x its font size** wide. Dividing the available width by 4.4 leaves just under two percent of
+slack, which fills the spine without ever overflowing it: **95% at 375, 99% at 1440**, no horizontal
+scroll at either.
+
+**Crop the leading, never the letters.** Canvas TextMetrics on this exact face and weight puts the
+ink between **0.105em and 0.845em** of a `line-height: 1` box. Negative margins of `-0.105em` and
+`-0.155em` remove exactly that air, so the element's box becomes the letters: 56px at 375 against a
+76px font, 197px at 1440 against 266px. The box needs no height of its own, which is what fixed a
+fixed-height version that cut 104px of glyph at desktop and nothing at all at 375.
+
+### Contrast, and why it is 36% rather than a whisper
+
+At 11% the mark measured **1.32:1** and axe reported a serious `color-contrast` violation. Decorative
+text is exempt from contrast under WCAG 1.4.3, so it could have stayed and been argued, but an
+exemption an auditor has to be told about is worse than a number that passes on its own. The mark is
+large text, so the threshold is 3:1 rather than 4.5:1, and `--text` at **36%** over `--bg` clears it.
+The mask then removes most of it again, so what is on screen is far quieter than the token suggests.
+
+### Checks
+
+axe **zero violations** at 375 and 1440, where the first version had one serious. **CLS 0.** No
+horizontal scroll at either width despite `white-space: nowrap`, because the box clips. `tsc` 0,
+`eslint` 0, content check 52/198, motion check clean, build 99 routes.
+
+## Task 50 / the wordmark rises, and the page ends on it
+
+Two changes to Task 49's footer mark, both asked for against a screenshot.
+
+### It rises out from behind its own edge
+
+`Reveal` gained a `direction="clip"`, which the engine has supported since Task 41 through
+`data-rv-dir="clip"` and `data-rv-target="child"` but which nothing exposed: `TextReveal` wrote
+those attributes by hand, and `app/layout.tsx` says the primitives should be the only things that
+emit them. Now they are.
+
+**A clip reveal does not carry `reveal-self`, and that is the whole subtlety.** The box is the thing
+watched and the child is the thing moved, so hiding the box would hide the element the observer
+needs to see and the engine would animate the child of something that never becomes visible. A
+child at `translateY(100%)` inside an `overflow-hidden` parent is entirely clipped, and an
+`IntersectionObserver` measures what is left after an ancestor clips it, which is nothing. `MaskRise`
+recorded this trap, `TextReveal` nearly reintroduced it, and it is now written on `Reveal`'s own
+prop so the next caller cannot miss it.
+
+The footer stays a Server Component: this ships no JavaScript of its own.
+
+Verified on the built page: before scrolling, the span is `opacity: 0`; after a paced walk to the
+bottom it is `opacity: 1` with an identity transform and one animation recorded. Under reduced
+motion it is `opacity: 1` with no transform **without ever scrolling to it**, and zero animations
+run.
+
+### The page ends on the mark
+
+The footer wrapper's `pb-14 md:pb-28` is gone. Measured at 1440: the gap below the wordmark is
+**0px** and the document's scroll height ends exactly at the mark's bottom edge, so the letters run
+to the foot of the document with nothing under them. The mask fades them out before they get there,
+so the page ends on the mark dissolving rather than on a cut.
+
+**At 375 there is still 76px below it, and that is correct.** It is not leftover padding:
+`body:has(header[data-action-bar])` reserves `4.75rem + env(safe-area-inset-bottom)` under 48rem so
+the fixed mobile action bar does not sit on top of the content. Removing it would put the bar over
+the wordmark. Checked rather than assumed, because a 76px gap after deleting padding looks exactly
+like padding that was missed.
+
+### Checks
+
+axe **zero violations** at 375 under reduced motion. **CLS 0.** No horizontal scroll. `tsc` 0,
+`eslint` 0, content check 52/198, motion check clean, build 99 routes.
+
+## Task 51 / polishing the wordmark's entrance
+
+The footer mark rose correctly and felt wrong. Two values were doing it, both of them tuned for a
+different size of movement, and both now measured rather than guessed.
+
+### One duration for a 24px nudge and a 197px rise
+
+The engine read `--motion-duration` for everything. The wordmark is **197px tall at 1440** and rises
+its own height, so it covered that ground in the token's 500ms: about **400px a second**, which is
+the lurch. `data-rv-dur` lets one element ask for longer without moving the token out from under the
+other hundred that are still nudging 24px. The footer passes **900ms**, near 220px a second, which
+is the weight something that size should move with. Exposed on `Reveal` as a `duration` prop, since
+`app/layout.tsx` says the primitives are the only things that may write these attributes.
+
+### An opacity ramp competing with the clip
+
+The keyframes finish opacity at **30%** of the run. On a 24px nudge that is imperceptible. On a long
+rise it means a **fully opaque block travelling the remaining 70%**, and that is what actually read
+as unsmooth: the reveal was over while the movement carried on.
+
+A `clip` reveal finishes it at **8%** instead. The clip is already doing the revealing, so a fade on
+top of it is a second, competing one. It is not removed outright: 8% is a safety net for a caller
+who forgets the `overflow-hidden` that `clip` requires, where the element would otherwise appear in
+full below its box.
+
+### Sampled frame by frame rather than eyeballed
+
+Per-frame `requestAnimationFrame` samples of the live animation at 1440:
+
+| t | opacity | y |
+| --- | --- | --- |
+| 110ms | 1.00 | 184 |
+| 217ms | 1.00 | 95 |
+| 343ms | 1.00 | 35 |
+| 444ms | 1.00 | 16 |
+| 644ms | 1.00 | 2 |
+| 843ms | 1.00 | 0 |
+
+Opacity is full at **60ms**, 6.7% of the run, so the fade is effectively instant and the clip does
+the work. The travel covers half its distance in the first 200ms and spends the rest settling, which
+is what `cubic-bezier(0.22, 1, 0.36, 1)` is for and what makes the end read as arriving rather than
+stopping. Duration confirmed at 900ms on the running animation, easing confirmed as the house curve.
+
+### Both clip callers checked
+
+`FinalCta`'s "Let's fix it." is the other one and still resolves to opacity 1 and an identity
+transform on the token duration; only the footer passes 900. Reduced motion renders the wordmark at
+opacity 1 with no transform **without ever scrolling to it**, and zero animations run.
+
+### One oddity found and deliberately not fixed
+
+A `<p class="sr-only">` sitting as a direct child of a `.reveal` container takes the hidden start
+state and never animates: it is 1px and clipped, so the observer has nothing to see. It stays at
+`opacity: 0`, which costs nothing, because `opacity` does not remove an element from the
+accessibility tree and the paragraph is visually hidden by design. Recorded so the next sweep that
+counts hidden reveal targets knows why one never resolves.
+
+### Checks
+
+axe **zero violations**. **CLS 0.** No horizontal scroll. `tsc` 0, `eslint` 0, content check
+52/198, motion check clean, build 99 routes.
+
+## Task 52 / the wordmark animates on every route, not just the landing one
+
+The footer mark played on whichever page the visitor arrived on and never again, however many routes
+they clicked through. Two causes, both structural, and both had to be fixed for it to work.
+
+### Why it only ever ran once
+
+`<SiteFooter />` is a **sibling of `<main>`** in the root layout, so Next keeps the same DOM node
+across a soft navigation. Nothing remounts, and the engine had already called `io.unobserve` on it
+after the first run. A node it has finished with is a node it never looks at again.
+
+And even a replacement would not have helped on its own: the engine's `MutationObserver` watched
+**`#main` only**, so anything appearing in the footer was invisible to it.
+
+### Both halves
+
+**`FooterWordmark` is a client leaf keyed on the pathname.** A changed `key` makes React discard the
+element and build a new one, which is a node the engine has never seen, so it is scanned, observed
+and animated again. The `seen` WeakSet keys off the node itself, so a fresh node is fresh to it with
+no bookkeeping to reset. This is the only client code in the footer and it costs close to nothing:
+`usePathname` is already in the bundle on every route because `StickyCTA` uses it.
+
+**The engine watches the footer as a second target**, rather than widening to `body`. Widening would
+have worked and would also have put every mutation from the chat vendor's widget and the Radix
+dialog portals through a rescan, which is the cost the `#main` scope was chosen to avoid. Two
+explicit targets keep both properties.
+
+### It still does not replay within a page
+
+Brief rule 2, checked rather than assumed. On `/guides/`, after the mark had animated: scrolling to
+the top and all the way back down leaves the animation count at **1** and the mark visible
+throughout. A route change is the only thing that re-arms it. `once={false}` would have satisfied
+"every page" too and would also have replayed the mark every time the footer re-entered the viewport
+on a single page, which is the behaviour the rule exists to prevent.
+
+### Measured across real soft navigations
+
+Driven by clicking in-page links, with `performance.getEntriesByType("navigation").length === 1`
+confirming no full page loads happened:
+
+| Page | Node instance | Before scroll | After scroll | Animations |
+| --- | --- | --- | --- | --- |
+| `/about/` | 1 | 0 | 1 | 1 |
+| `/pricing/` (soft nav) | 2 | 0 | 1 | 1 |
+| `/guides/` (soft nav) | 3 | 0 | 1 | 1 |
+
+A new node instance per route, each starting hidden and arriving on its own.
+
+Reduced motion holds across navigation too: the mark is `opacity: 1` with no transform on load
+**and** after a soft navigation, in both cases without ever scrolling to it, with zero animations
+running.
+
+### Checks
+
+axe **zero violations**. **CLS 0.** `tsc` 0, `eslint` 0, content check 52/199, motion check clean,
+build 99 routes.

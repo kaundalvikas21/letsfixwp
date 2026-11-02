@@ -2,7 +2,7 @@
 
 import { useReducedMotion } from "motion/react";
 import { useSyncExternalStore } from "react";
-import { SideRays } from "./SideRays";
+import { SideRays } from "@/components/sections/v4/SideRays";
 
 /**
  * Light raking across the home hero from the top-right corner, down toward the headline.

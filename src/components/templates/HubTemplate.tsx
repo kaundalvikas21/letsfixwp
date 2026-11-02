@@ -36,7 +36,7 @@ export function HubTemplate({ node }: { node: FlatNode }) {
     .sort((a, b) => urgencyRank[a.urgency] - urgencyRank[b.urgency])
     .slice(0, 6);
   // The full width goes to the hub's worst problem only when that problem is also the richest thing on
-  // the page: critical, and carrying the literal string WordPress prints. A 1104px box holding one 18px
+  // the page: critical, and carrying the literal string WordPress prints. A 1152px box holding one 18px
   // line reads as a broken state rather than as weighting, which is what gating on urgency alone gave
   // the fix hub. Today only the security hub qualifies, and its remainder is even, so no hub is left
   // with a tile stranded beside a hole.

@@ -59,7 +59,7 @@ export function FaqTabs({ groups }: { groups: FaqGroup[] }) {
           <span
             aria-hidden
             style={{ transform: `translateY(${active * ROW}px)` }}
-            className="absolute inset-x-0 top-0 -z-10 h-12 rounded-[14px] bg-surface-2 transition-transform duration-[240ms] ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none"
+            className="absolute inset-x-0 top-0 -z-10 h-12 rounded-[14px] bg-surface-2 transition-transform duration-[240ms] ease-[var(--motion-ease)] motion-reduce:transition-none"
           />
           {groups.map((g) => (
             <Tabs.Trigger

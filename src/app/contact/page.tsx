@@ -34,7 +34,7 @@ export default async function Contact({ searchParams }: PageProps<"/contact">) {
   const initial = { service, guide, url };
 
   return (
-    <div className={cn(page, pageY, "max-w-5xl")}>
+    <div className={cn(page, pageY)}>
       <Breadcrumbs items={nodeCrumbs(routes.contact)} />
 
       {/*

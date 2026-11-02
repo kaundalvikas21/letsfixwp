@@ -73,7 +73,7 @@ const panels: ErrorPanel[] = CARDS.map(({ slug, name, quote, Icon }) => {
  */
 export function ErrorStack() {
   return (
-    <section aria-labelledby="sound-familiar" className="reveal mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
+    <section aria-labelledby="sound-familiar" className="reveal mx-auto max-w-page px-4 py-16 md:px-6 md:py-24">
       {/* The ask sits on the heading's line, at the far end of the spine, rather than under the row.
           The heading ran the full width with nothing beside it, and the question only makes sense
           once you have seen the screens, so below md it stays in reading order: heading, ask,

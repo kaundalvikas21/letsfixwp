@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FooterWordmark } from "@/components/FooterWordmark";
 import { brand } from "@/config/brand";
 import { nodes, routes } from "@/config/routes";
 
@@ -32,7 +33,7 @@ export function SiteFooter() {
       {/* The chat button floats bottom-right over whatever is under it, and on every page that is
           this last line. The extra bottom padding is the room it needs, so the footer ends in air
           rather than with a button sitting on its final sentence. */}
-      <div className="mx-auto max-w-6xl px-4 pt-14 pb-14 md:px-6 md:pb-28">
+      <div className="mx-auto max-w-page px-4 pt-14 pb-0 md:px-6">
         {/* CSS columns, not a grid. As a four-up grid the eight blocks were dealt into two rows of
             four, and the first hub has eleven children against its row-mates' four, four and three:
             that row was as tall as its longest column and the other three carried about 250px of
@@ -129,6 +130,17 @@ export function SiteFooter() {
             This website is not affiliated with or sponsored by Automattic or the WordPress Open Source project
           </p>
         </div>
+
+        {/* The wordmark, and the last thing on every page in the literal sense: the wrapper's
+            bottom padding is gone, so the letters run to the foot of the document with nothing
+            under them. The mask fades them out before they get there, so the page ends on the mark
+            dissolving rather than on a cut.
+
+            `FooterWordmark` is a client leaf for one reason, and it is not the animation: this
+            footer is a sibling of `<main>` in the root layout and survives a soft navigation, so
+            the mark has to be re-keyed per route or it animates once on the landing page and never
+            again. Its own doc comment has the rest. `brand.name`, never a typed string. */}
+        <FooterWordmark name={brand.name} />
       </div>
     </footer>
   );

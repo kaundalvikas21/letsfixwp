@@ -63,6 +63,22 @@ export const photos = {
      a masthead. The other four glow blue, which is a second accent this site does not have, and
      are logged in docs/image-todo.md for regeneration rather than used. Measured warm/cool split
      of the lit pixels is in docs/layout-ledger.md Task 28. */
+  /* The three stations on /about/, supplied by the owner. One ember-monochrome set, 1448x1086,
+     subject right of centre with the left of the frame near black, which is what lets type sit on
+     them. Used at ~352x244 on a desktop card, so they are downscaled about 4x and never stretched.
+     Decorative on the page: each card's own heading already names the step. */
+  "step-meetings": {
+    src: "/site_images/Meetings.png", width: 1448, height: 1086, tone: "dark",
+    alt: "A laptop on a video call with four people, a calendar and a chat panel floating beside it",
+  },
+  "step-while-we-work": {
+    src: "/site_images/While_we_work.png", width: 1448, height: 1086, tone: "dark",
+    alt: "A laptop showing code, with a checklist, a preview and progress markers floating above it",
+  },
+  "step-handover": {
+    src: "/site_images/Handover.png", width: 1448, height: 1086, tone: "dark",
+    alt: "A stack of documents with a tick, a padlock, a user card and a completed checklist around it",
+  },
   "hub-fix": {
     src: "/site_images/services/emergency-fixes.png", width: 359, height: 149, tone: "dark",
     alt: "A glowing life ring on a desk beside a laptop showing the WordPress logo",
@@ -167,6 +183,13 @@ export const hubPhotos: Record<string, PhotoId> = {
   "wordpress-maintenance": "workspace",
   "wordpress-development": "final-cta",
   woocommerce: "store",
+};
+
+/** The station backgrounds on /about/'s "How working with us runs", keyed by the content's label. */
+export const deliveryPhoto: Record<string, PhotoId> = {
+  Meetings: "step-meetings",
+  "While we work": "step-while-we-work",
+  Handover: "step-handover",
 };
 
 /**

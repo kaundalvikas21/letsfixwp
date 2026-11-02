@@ -56,7 +56,12 @@ export function Finder({ index, labels, location }: { index: MatchCandidate[]; l
         // 16px, not the 17px body: the iOS zoom threshold, which is why the system's input spec
         // names a size of its own. The border is the only thing that says "type here", so it is
         // `--line-strong` rather than the decorative `--line` every card edge uses.
-        className="mt-3 min-h-12 w-full rounded-[14px] border border-line-strong bg-surface px-4 text-base text-text transition-colors duration-200 placeholder:text-muted hover:border-text/50"
+        //
+        // `--bg`, not `--surface`: this control now sits in a `--surface` card on /guides/, and a
+        // field the same colour as the panel holding it has no edge but its border. Recessed
+        // against the panel is also the direction a field is expected to go, and `--line-strong`
+        // reads higher here than it did on `--surface`.
+        className="mt-3 min-h-12 w-full rounded-[14px] border border-line-strong bg-bg px-4 text-base text-text transition-colors duration-200 placeholder:text-muted hover:border-text/50"
       />
 
       {/* The region is mounted from first render and only its contents are conditional. A live
@@ -98,7 +103,7 @@ export function Finder({ index, labels, location }: { index: MatchCandidate[]; l
               })}
             </ul>
           ) : (
-            <div className="rounded-[14px] border border-line bg-surface p-5 shadow-card">
+            <div className="rounded-[14px] border border-line bg-bg p-5 shadow-card">
               <p className="text-[0.9375rem]">No guide matches that wording yet.</p>
               <p className="mt-4 flex flex-wrap items-center gap-2">
                 <ChatButton location={`${location}:no-match`} className="btn-primary" />

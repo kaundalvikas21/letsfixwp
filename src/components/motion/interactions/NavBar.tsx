@@ -11,7 +11,7 @@ import { brand } from "@/config/brand";
 import { CTA } from "@/config/cta";
 import { routes } from "@/config/routes";
 import { useChat } from "@/components/chat/ChatProvider";
-import { CommandPalette } from "./CommandPalette";
+import { CommandPalette } from "@/components/sections/v4/CommandPalette";
 import { MegaMenu, type MenuCategory, type MenuLink } from "./MegaMenu";
 
 /**
@@ -82,7 +82,7 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
     <Dialog open={open} onOpenChange={setOpen}>
       <header data-action-bar={actionBar ? "" : undefined} className="fixed inset-x-0 top-0 z-40 h-16">
         <motion.div aria-hidden style={{ opacity: backdrop, y: reduce ? 0 : slide }} className="nav-blur absolute inset-0 border-b border-line" />
-        <div className="relative mx-auto flex h-16 w-full max-w-6xl items-center gap-2 px-4 md:px-6">
+        <div className="relative mx-auto flex h-16 w-full max-w-page items-center gap-2 px-4 md:px-6">
           <Wordmark />
           <div className="ml-auto flex items-center gap-2">
             <CommandPalette />
@@ -102,7 +102,7 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
       >
         <DialogTitle className="sr-only">Menu</DialogTitle>
         <DialogDescription className="sr-only">Everything on the site, by what has gone wrong</DialogDescription>
-        <div className="mx-auto flex h-16 w-full max-w-6xl shrink-0 items-center gap-2 px-4 md:px-6">
+        <div className="mx-auto flex h-16 w-full max-w-page shrink-0 items-center gap-2 px-4 md:px-6">
           <Wordmark onClick={close} />
           <button type="button" onClick={close} className="btn-secondary ml-auto gap-2.5">
             <Rules crossed />

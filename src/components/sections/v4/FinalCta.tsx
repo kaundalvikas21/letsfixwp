@@ -1,10 +1,9 @@
 import { ArrowRightIcon } from "@phosphor-icons/react/ssr";
 import { BookLink, ChatButton } from "@/components/Cta";
 import { brand } from "@/config/brand";
-import { CtaReveal } from "./CtaReveal";
-import { CtaShader } from "./CtaShader";
-import { MaskRise } from "./MaskRise";
-import { Magnetic } from "./Magnetic";
+import { CtaShader } from "@/components/motion/interactions/CtaShader";
+import { Stagger, TextReveal } from "@/components/motion";
+import { Magnetic } from "@/components/motion/interactions/Magnetic";
 
 // brand.claims.bookingMinutes: gated like every other claim, so a production deploy fails until the
 // owner confirms it.
@@ -41,22 +40,25 @@ export function FinalCta() {
           guarantee is unchanged and both lines here stay --text rather than --muted (2.55:1). */}
       <span aria-hidden className="absolute inset-0 -z-10 bg-photo-scrim" />
 
-      <div className="mx-auto w-full max-w-6xl px-4 md:px-6">
+      <div className="mx-auto w-full max-w-page px-4 md:px-6">
         {/* The last thing the page says, and the only line on it, so it is set at the scale that
             earns: 128px at 1440 against the 112px it ran at, filling the spine rather than a third
             of it. It stays one line at every width, which is what the ch cap is holding. It is also
-            the one place on this section with an authored moment, so it is outside CtaReveal and
-            rises out of a clip box of its own rather than taking the block's 14px nudge. */}
+            the one place on this section with an authored moment, so it is outside the Stagger block and
+            rises out of a clip box of its own rather than taking the block's nudge.
+
+            `TextReveal` is the primitive `MaskRise` became. It keeps the descender room inside
+            itself, so the comma and the dot are no longer shaved off the bottom of the clip. Safe
+            on this h2 because it is below the fold and is not the LCP element; the hero's h1 is. */}
         <h2
           id="final-cta"
           className="max-w-[11ch] font-display text-[clamp(3rem,9vw,8rem)] leading-[0.9] font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_96]"
         >
-          {/* The clip box needs the descender room the line-height does not give it, or the comma
-              and the dot are shaved off the bottom of the mask. */}
-          <MaskRise className="pb-[0.08em]">Let&rsquo;s fix it.</MaskRise>
+          <TextReveal>Let&rsquo;s fix it.</TextReveal>
         </h2>
 
-        <CtaReveal>
+        {/* Was `CtaReveal`, a one-off 60ms ladder. Now the shared 70ms one. */}
+        <Stagger>
           <p className="mt-6 max-w-[34ch] text-lg text-text">
             Describe what your site is doing. Booking takes about {minutes} minutes.
           </p>
@@ -89,7 +91,7 @@ export function FinalCta() {
               className="min-h-11 cursor-pointer text-lg font-semibold text-text underline underline-offset-4 hover:no-underline"
             />
           </div>
-        </CtaReveal>
+        </Stagger>
       </div>
     </section>
   );

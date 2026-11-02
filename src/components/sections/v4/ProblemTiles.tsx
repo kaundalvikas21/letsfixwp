@@ -4,7 +4,7 @@ import { hasScreen, Photo } from "@/components/Photo";
 import { getGuide, getService, matchIndex } from "@/content";
 import { servicePhotos } from "@/content/photos";
 import { HUB_LABELS, nodeByPath, routes } from "@/config/routes";
-import { TileGrid, type Tile } from "./TileGrid";
+import { TileGrid, type Tile } from "@/components/motion/interactions/TileGrid";
 
 const keyOf = (r: { serviceSlug: string; guideSlug?: string }) => `${r.serviceSlug}:${r.guideSlug ?? ""}`;
 
@@ -76,7 +76,7 @@ const categories = [...new Set(ordered.map((t) => t.category))];
  */
 export function ProblemTiles() {
   return (
-    <section aria-labelledby="pick-your-problem" className="reveal mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
+    <section aria-labelledby="pick-your-problem" className="reveal mx-auto max-w-page px-4 py-16 md:px-6 md:py-24">
       <h2
         id="pick-your-problem"
         className="max-w-[18ch] font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_30] sm:text-5xl sm:[font-variation-settings:'opsz'_48]"

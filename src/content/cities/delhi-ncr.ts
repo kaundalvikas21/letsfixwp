@@ -31,6 +31,6 @@ export default citySchema.parse({
   ],
   seo: {
     title: "WordPress Development in Delhi NCR",
-    description: "WordPress sites for Delhi NCR real estate, coaching institutes, export houses and professional firms, with Hindi pages and SEO. Built remotely.",
+    description: "WordPress for Delhi NCR real estate, coaching institutes, export houses and professional firms, with Hindi pages and SEO. Built remotely.",
   },
 });

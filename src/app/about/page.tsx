@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import { BookLink, ChatButton } from "@/components/Cta";
 import { aboutLd, JsonLd, nodeCrumbs } from "@/components/JsonLd";
-import { Breadcrumbs, ClosingBand, LinkCards, PageMasthead, Section, h2, page, pageY } from "@/components/templates/parts";
+import { HoverFill } from "@/components/HoverFill";
+import { CountUp, Stagger } from "@/components/motion";
+import { Breadcrumbs, ClosingBand, LinkCards, PageMasthead, RemoteTrack, Section, h2, page, pageY } from "@/components/templates/parts";
 import { brand } from "@/config/brand";
 import { hubIdOf, hubNodes, routes } from "@/config/routes";
-import { guides, services } from "@/content";
+import { cities, guides, services } from "@/content";
 import { hubLead } from "@/content/hubs";
 import { hubIcon } from "@/content/icons";
 import { hubBanners } from "@/content/photos";
-import { remoteDelivery } from "@/content/notices";
 import { servicePhotos } from "@/content/photos";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
  *
  * Deliberately not any of the site's four split headers (the hub's 6/5 lead block, the guide's 8/4
  * error-and-capture, the knowledge base's 7/5 lead-and-instrument, the guarantee's 7/5 column and
- * card). Nothing sits beside this photograph: the words run the full 1104px spine and the picture
+ * card). Nothing sits beside this photograph: the words run the full 1152px spine and the picture
  * runs under them at the same width, because the photograph here is not an illustration of a
  * product or an error, it is the only evidence on the page of who does the work. A band wider than
  * the frame it crops is the shape that reads as a masthead rather than as a hero asset parked in a
@@ -110,27 +111,73 @@ export default function About() {
         </div>
       </section>
 
+      {/* The three stations live in `parts.tsx` now, because the city template was rendering these
+          same three entries as `sm:grid-cols-3`, which is rule 6's three equal cards in a row. Two
+          call sites, one component; every measurement and every ban this shape spends is recorded
+          on `RemoteTrack` itself. */}
+      {/* The trust strip. Deliberately no heading: the city hub does the same with its two-cell
+          measure, and a third h2 on this page would be ordering nothing. Every cell names itself.
+
+          **It sits here, below "What we work on", and not under the masthead where a trust strip
+          usually goes.** Measured at 1440, directly under the masthead put its top edge at 592px
+          against a 900px viewport, which is inside the first screen, and brief rule 4 keeps the
+          first viewport free of anything that animates on scroll. `CountUp` runs for 1.2s, the
+          longest value in the motion table. Moved down it is comfortably past the fold at every
+          width the site is checked at, the count plays as a reader arrives at it rather than
+          before they have looked, and the page reads in a better order anyway: what we work on,
+          then how much of it there has been, then how working with us runs.
+
+          **Three of these four are gated claims and the fourth is counted.** `brand.stats` holds
+          figures the owner has not confirmed yet, which render here in dev and preview and fail a
+          production deploy until they are real (src/config/brand.ts says why that is allowed at
+          all, given contract rules 6 and 8). `cities.length` is counted from src/content at build
+          time, so the strip is never entirely unverified however long the other three sit.
+
+          Cities rather than services or guides on purpose: those two are already stated as numerals
+          in the sentence under "What we work on" a screen below, and a figure that appears twice on
+          one page in two different type sizes reads as two different facts.
+
+          Four cells, never three: contract rule 6 bans three equal cards in a row, and the one
+          exception the site spends is the delivery track's numerals. Two across at `sm`, four at
+          `lg`, one at 375. The divider is a hairline between cells rather than a border around
+          each, so the strip reads as one instrument and not as four cards.
+
+          `Stagger` and `CountUp` are the Task 41 primitives doing exactly the job the motion table
+          mapped them to. The numerals carry `tabular-nums` from `CountUp` itself, so a digit
+          changing mid-count cannot change the cell's width.
+
+          Each cell is a `HoverFill`, whose fill grows out of the cursor rather than sweeping from
+          one edge; its own doc comment carries the reasoning, including the part that matters here,
+          which is that **these cells are not links** and the Hover Earns It rule normally reserves
+          a pointer response for things that go somewhere. Spent on the owner's instruction. */}
+      <Stagger
+        as="dl"
+        className="mt-10 grid border-t border-line sm:grid-cols-2 lg:grid-cols-4 lg:divide-x lg:divide-line"
+      >
+        {[
+          { value: brand.stats.sitesRecovered, suffix: "+", label: "Sites brought back online" },
+          { value: brand.stats.yearsRunning, suffix: "", label: "Years fixing WordPress" },
+          // "h", not " hrs": the numeral counts up from zero, and on the way it renders every
+          // integer below the target. " hrs" puts "1 hrs" on screen for a frame, which is a
+          // grammar error however briefly it is up. "1h" is correct at every value it passes.
+          { value: brand.stats.firstReplyHours, suffix: "h", label: "Typical first reply" },
+          { value: cities.length, suffix: "", label: "Cities we work with" },
+        ].map((s) => (
+          <HoverFill
+            key={s.label}
+            className="flex flex-col border-b border-line py-5 lg:border-b-0 lg:px-6 lg:first:pl-0 lg:last:pr-0"
+          >
+            <dt className="order-2 mt-1.5 text-sm text-muted">{s.label}</dt>
+            <dd className="order-1 font-display text-[2.25rem] leading-none font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_36] md:text-[2.75rem] md:[font-variation-settings:'opsz'_44]">
+              <CountUp value={s.value} suffix={s.suffix} />
+            </dd>
+          </HoverFill>
+        ))}
+      </Stagger>
+
+
       <Section id="how" title="How working with us runs">
-        {/* The three entries are one engagement in order, not three peers, so they are read down a
-            rail instead of across a row of cards. The order is the sequence and the only thing that
-            carries it: no numbers and no stage labels, which contract rule 6 bans. Each entry meets
-            the rail on a short ember tick, so the group reads as stations on a line rather than as
-            one indented block of text. */}
-        <dl className="reveal max-w-[70ch] space-y-8 border-l border-line pl-6 md:space-y-10 md:pl-8">
-          {remoteDelivery.map((r) => (
-            <div key={r.label} className="relative">
-              {/* Inside the dt, not beside it: a div inside a dl may hold only dt and dd, so a span
-                  as a direct child of this wrapper is invalid even though nothing renders it wrong.
-                  Its containing block is unchanged either way, because the nearest positioned
-                  ancestor is still the wrapper. */}
-              <dt className="font-display text-lg font-bold [font-variation-settings:'opsz'_18]">
-                <span aria-hidden className="absolute -left-6 top-[0.7rem] h-px w-4 bg-accent md:-left-8 md:w-6" />
-                {r.label}
-              </dt>
-              <dd className="mt-1.5 max-w-[60ch] text-muted">{r.text}</dd>
-            </div>
-          ))}
-        </dl>
+        <RemoteTrack />
       </Section>
 
       {/* The hub template's closing band. That is a repeat across the site and a deliberate one:

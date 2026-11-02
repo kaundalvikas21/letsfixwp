@@ -4,7 +4,7 @@ import { siCloudflare, siCpanel, siElementor, siGutenberg, siMysql, siPhp, siWoo
 import { routes } from "@/config/routes";
 import { testimonials } from "@/content/testimonials";
 import { LogoMarquee } from "./LogoMarquee";
-import { QuotePair } from "./QuotePair";
+import { QuotePair } from "@/components/motion/interactions/QuotePair";
 
 // Named imports from simple-icons: a slug that does not exist fails the build instead of 404ing.
 // Divi, WPBakery and Beaver Builder are not in Simple Icons (16.35.0), so the stack underneath fills those places.
@@ -39,7 +39,7 @@ const logos = LOGOS.map((icon) => (
  */
 export function Proof() {
   return (
-    <section aria-labelledby="repair-sites-on" className="reveal mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
+    <section aria-labelledby="repair-sites-on" className="reveal mx-auto max-w-page px-4 py-16 md:px-6 md:py-24">
       <h2 id="repair-sites-on" className="text-center text-base font-medium text-muted">
         We repair sites running on
       </h2>
