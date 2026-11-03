@@ -5,7 +5,7 @@ import { nodeByPath, routes } from "@/config/routes";
 import { criterionIcon } from "@/content/icons";
 import type { Compare } from "@/content/schema";
 import { cn } from "@/lib/utils";
-import { Breadcrumbs, ClosingBand, PageMasthead, Section, page, pageY } from "./parts";
+import { ClosingBand, PageMasthead, Section, page, pageYMasthead } from "./parts";
 
 /**
  * /compare/<slug>/. Layout family: verdict-by-scenario cards over a real comparison table. Factual and neutral:
@@ -38,15 +38,8 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
   const tdB = cn(td, "border-l border-line text-muted");
 
   return (
-    <article className={cn(page, pageY)}>
+    <article className={cn(page, pageYMasthead)}>
       <JsonLd data={compareLd(c)} />
-      <Breadcrumbs
-        items={[
-          { name: "Home", path: routes.home },
-          { name: "Comparisons", path: routes.compares },
-          { name: title, path: routes.compare(c.slug) },
-        ]}
-      />
 
       {/* This page had no picture at all, because the catalogue holds no honest frame of two
           technologies being weighed against each other and inventing one was never an option. A
@@ -55,6 +48,11 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
           a verdict. Logged in docs/image-todo.md as a stand-in with the direction its real
           photograph has to satisfy. */}
       <PageMasthead
+        crumbs={[
+          { name: "Home", path: routes.home },
+          { name: "Comparisons", path: routes.compares },
+          { name: title, path: routes.compare(c.slug) },
+        ]}
         photo="cables"
         // The two names at full weight with the word between them quieter and smaller, which is the
         // shape /compare/ gives every pairing in its index. The accessible name is unchanged, since

@@ -80,9 +80,9 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <header data-action-bar={actionBar ? "" : undefined} className="fixed inset-x-0 top-0 z-40 h-16">
+      <header data-action-bar={actionBar ? "" : undefined} className="fixed inset-x-0 top-0 z-40 h-[var(--header-h)]">
         <motion.div aria-hidden style={{ opacity: backdrop, y: reduce ? 0 : slide }} className="nav-blur absolute inset-0 border-b border-line" />
-        <div className="relative mx-auto flex h-16 w-full max-w-page items-center gap-2 px-4 md:px-6">
+        <div className="relative mx-auto flex h-[var(--header-h)] w-full max-w-page items-center gap-2 px-4 md:px-6">
           <Wordmark />
           <div className="ml-auto flex items-center gap-2">
             <CommandPalette />
@@ -102,7 +102,7 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
       >
         <DialogTitle className="sr-only">Menu</DialogTitle>
         <DialogDescription className="sr-only">Everything on the site, by what has gone wrong</DialogDescription>
-        <div className="mx-auto flex h-16 w-full max-w-page shrink-0 items-center gap-2 px-4 md:px-6">
+        <div className="mx-auto flex h-[var(--header-h)] w-full max-w-page shrink-0 items-center gap-2 px-4 md:px-6">
           <Wordmark onClick={close} />
           <button type="button" onClick={close} className="btn-secondary ml-auto gap-2.5">
             <Rules crossed />

@@ -41,7 +41,7 @@ off the main thread. Each exception is argued in its own file's doc comment.
 import { Reveal, Stagger, Parallax, CountUp, ScrollProgress, StickyCTA, Marquee, TextReveal } from "@/components/motion";
 ```
 
-**Reveal** — one element, fade and rise.
+**Reveal**: one element, fade and rise.
 
 ```tsx
 <Reveal as="section" delay={70} direction="up">
@@ -49,7 +49,7 @@ import { Reveal, Stagger, Parallax, CountUp, ScrollProgress, StickyCTA, Marquee,
 </Reveal>
 ```
 
-**Stagger** — a group, index-ordered. Put it on the list, not on each item.
+**Stagger**: a group, index-ordered. Put it on the list, not on each item.
 
 ```tsx
 <Stagger as="ul" className="grid gap-4 sm:grid-cols-2">
@@ -59,7 +59,7 @@ import { Reveal, Stagger, Parallax, CountUp, ScrollProgress, StickyCTA, Marquee,
 </Stagger>
 ```
 
-**Parallax** — the outer element is measured and static, the inner one moves.
+**Parallax**: the outer element is measured and static, the inner one moves.
 
 ```tsx
 <Parallax className="absolute inset-0 -z-10" distance={60} direction="up">
@@ -67,20 +67,20 @@ import { Reveal, Stagger, Parallax, CountUp, ScrollProgress, StickyCTA, Marquee,
 </Parallax>
 ```
 
-**CountUp** — the real number is in the server HTML; the count replaces it on the client.
+**CountUp**: the real number is in the server HTML; the count replaces it on the client.
 
 ```tsx
 <CountUp value={cities.length} className="font-display text-[1.75rem] font-extrabold" suffix=" cities" />
 ```
 
-**ScrollProgress** — pass the article so the bar reports the article's length, not the document's.
+**ScrollProgress**: pass the article so the bar reports the article's length, not the document's.
 
 ```tsx
 const article = useRef<HTMLElement>(null);
 <ScrollProgress target={article} />
 ```
 
-**StickyCTA** — desktop only, dismissed into `sessionStorage`.
+**StickyCTA**: desktop only, dismissed into `sessionStorage`.
 
 ```tsx
 <StickyCTA hiddenOn={[routes.contact, routes.check]} label="Quick quote">
@@ -88,7 +88,7 @@ const article = useRef<HTMLElement>(null);
 </StickyCTA>
 ```
 
-**Marquee** — one copy of the children; the primitive makes the rest.
+**Marquee**: one copy of the children; the primitive makes the rest.
 
 ```tsx
 <Marquee label="Platforms we repair" seconds={40}>
@@ -98,7 +98,7 @@ const article = useRef<HTMLElement>(null);
 </Marquee>
 ```
 
-**TextReveal** — a plain string, never markup, and never above the fold.
+**TextReveal**: a plain string, never markup, and never above the fold.
 
 ```tsx
 <TextReveal as="h2" split="word" className={h2}>

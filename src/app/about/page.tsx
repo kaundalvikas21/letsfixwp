@@ -3,7 +3,7 @@ import { BookLink, ChatButton } from "@/components/Cta";
 import { aboutLd, JsonLd, nodeCrumbs } from "@/components/JsonLd";
 import { HoverFill } from "@/components/HoverFill";
 import { CountUp, Stagger } from "@/components/motion";
-import { Breadcrumbs, ClosingBand, LinkCards, PageMasthead, RemoteTrack, Section, h2, page, pageY } from "@/components/templates/parts";
+import { ClosingBand, LinkCards, PageMasthead, RemoteTrack, Section, h2, page, pageYMasthead } from "@/components/templates/parts";
 import { VideoFrame } from "@/components/VideoFrame";
 import { brand } from "@/config/brand";
 import { hubIdOf, hubNodes, routes } from "@/config/routes";
@@ -46,10 +46,8 @@ export const metadata: Metadata = {
  */
 export default function About() {
   return (
-    <div className={cn(page, pageY)}>
+    <div className={cn(page, pageYMasthead)}>
       <JsonLd data={aboutLd({ name: `About ${brand.name}`, description, path: routes.about })} />
-      <Breadcrumbs items={nodeCrumbs(routes.about)} />
-
       {/* The words sit ON the photograph rather than above it, which is what makes this a masthead
           and not a lead block with a picture parked under it. Every reason this shape holds, and
           every number measured for it, now lives on `PageMasthead` in parts.tsx, because the other
@@ -59,6 +57,7 @@ export default function About() {
           The fix hub's `emergency` frame was tried first and is cold, mostly a dark mass at this
           crop, which on a dark page reads as a hole. */}
       <PageMasthead
+        crumbs={nodeCrumbs(routes.about)}
         photo={servicePhotos["hire-developer"]}
         decorative={false}
         title={`About ${brand.name}`}

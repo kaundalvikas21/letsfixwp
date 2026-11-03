@@ -8,7 +8,7 @@ import { guidesFor } from "@/content";
 import { hubLead } from "@/content/hubs";
 import { hubPhotos } from "@/content/photos";
 import { cn } from "@/lib/utils";
-import { Breadcrumbs, ClosingBand, PageMasthead, Section, ServiceCards, page, pageY, urgencyIcon } from "./parts";
+import { ClosingBand, PageMasthead, Section, ServiceCards, page, pageYMasthead, urgencyIcon } from "./parts";
 
 const urgencyRank = { critical: 0, high: 1, standard: 2 } as const;
 
@@ -41,15 +41,14 @@ export function HubTemplate({ node }: { node: FlatNode }) {
   const Primary = intent === "PLANS" ? PlansLink : intent === "QUOTE" ? QuoteLink : BookLink;
 
   return (
-    <div className={cn(page, pageY)}>
-      <Breadcrumbs items={nodeCrumbs(node.path)} />
-
+    <div className={cn(page, pageYMasthead)}>
       {/* The hub's photograph used to sit in a 5-column box beside the lead. It is the band itself
           now, which is what the owner asked for across every inner page and the shape /about/ had
           already proved: the type on the picture rather than next to it. The 6 / empty / 5 split
           goes with it, and so does the hand-written `sizes` for a 432px box that no longer exists.
           The beat is unchanged, headline then lead then buttons, and `PageMasthead` holds it. */}
       <PageMasthead
+        crumbs={nodeCrumbs(node.path)}
         photo={hubPhotos[id]}
         title={node.title}
         lead={hubLead[id]}

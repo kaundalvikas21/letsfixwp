@@ -18,7 +18,16 @@ const walk = (dir: string): string[] =>
 const files = walk("src");
 const is = (f: string, ...parts: string[]) => f.endsWith(join(...parts));
 const fail: string[] = [];
-const banned = /\b(elevate|seamless|unleash|revolutionize|robust|leverage|cutting-edge|delve|empower|streamline|unlock|supercharge|game-changer)\b/i;
+// Words a model reaches for and this business does not. The first thirteen were the original list;
+// the rest came from auditing all 70,879 visible words the site renders against Wikipedia's "Signs
+// of AI writing" (docs/layout-ledger.md, Task 71). None of them appeared anywhere in src when they
+// were added, so this is a guard against drift rather than a cleanup.
+//
+// Deliberately absent: "key", "gate" and "critical" have real technical senses here (an API key, a
+// gated claim, a critical error), and "not just" is left to judgement, because the five places the
+// site uses it are ordinary English, including two questions a customer actually asks.
+const banned =
+  /\b(elevate|seamless(ly)?|unleash|revolutionize|robust|leverage|cutting-edge|delve|empower(s|ed)?|streamline[sd]?|unlock[sd]?|supercharge|game-changer|showcase[sd]?|testament|underscore[sd]?|tapestry|vibrant|nestled|boasts|breathtaking|groundbreaking|meticulous(ly)?|pivotal|crucial|bolster(s|ed)?|garner(s|ed)?|foster(s|ed|ing)?|enhance[sd]?|enhancing|interplay|deep dive)\b/i;
 const legacyClaim = /day or less|30[- ]day|\$150|Garrity|Kwak|Eugene|fixmywp\.com/i;
 // "/something/..." string literal. Page links must come from routes.ts; public asset folders are not page links.
 const hardcodedPath = /["'`]\/(?!screens\/|previews\/)[a-z][a-z0-9-]*\//;
@@ -30,7 +39,9 @@ for (const f of files) {
       const at = `${f}:${i + 1}`;
       const code = !/^\s*(\/\/|\*|\/\*)/.test(line) && !/(Page|Layout)Props<"/.test(line); // skip comments and route-type args
       if (/[\u2013\u2014]/.test(line)) fail.push(`${at} em/en dash`);
-      if (f.includes(`${sep}content${sep}`) && banned.test(line)) fail.push(`${at} banned word: ${line.match(banned)![0]}`);
+      // Every file, not just src/content: headings, leads, empty states and button copy are written
+      // straight into the components and the page files, and those are read by visitors too.
+      if (banned.test(line)) fail.push(`${at} banned word: ${line.match(banned)![0]}`);
       if (!is(f, "config", "cta.ts"))
         for (const label of Object.values(CTA))
           if (line.includes(`"${label}"`) || line.includes(`>${label}<`)) fail.push(`${at} CTA label outside cta.ts`);
@@ -42,7 +53,24 @@ for (const f of files) {
         fail.push(`${at} hardcoded internal path, use routes.ts`);
     });
 }
-assert.deepEqual(fail, [], fail.join("\n"));
+// Markdown under src, which the walker above skips because it only collects .ts and .tsx. Only the
+// dash and word rules apply: the others are about page links and CTA wording, and a README quoting
+// a path or a label is documenting it rather than shipping it.
+const mdFail: string[] = [];
+const walkMd = (dir: string): string[] =>
+  readdirSync(dir).flatMap((f) => {
+    const p = join(dir, f);
+    return statSync(p).isDirectory() ? walkMd(p) : /\.md$/.test(f) ? [p] : [];
+  });
+for (const f of walkMd("src")) {
+  readFileSync(f, "utf8")
+    .split("\n")
+    .forEach((line, i) => {
+      if (/[–—]/.test(line)) mdFail.push(`${f}:${i + 1} em/en dash`);
+      if (banned.test(line)) mdFail.push(`${f}:${i + 1} banned word: ${line.match(banned)![0]}`);
+    });
+}
+assert.deepEqual([...fail, ...mdFail], [], [...fail, ...mdFail].join("\n"));
 
 const top = (q: string) => matchProblem(q, matchIndex)[0];
 assert.equal(top("white screen blank page")?.serviceSlug, "white-screen");

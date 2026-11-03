@@ -3,6 +3,13 @@
 /* v4 tokens: design-system/letsfixwp-v4/MASTER.md. Dark is the only theme (locked), so there is no
    prefers-color-scheme block. Every contrast pair is measured in that file. */
 :root {
+  /* The fixed bar's height, and the one number six other values are derived from: the bar itself and
+     its two inner rows, this file's `scroll-padding-top`, `pageY` and `pageYMasthead` in parts.tsx,
+     and the sticky reading rails on the service and guide pages. Every one of those was a literal
+     keyed to 64px, so raising the bar meant finding all six and getting the arithmetic right in each.
+     They all read this now; change it here and the rest follows. */
+  --header-h: 5rem;
+
   --bg: #0c0c0e;
   --surface: #141417;
   --surface-2: #1c1c21;
@@ -73,7 +80,7 @@
   html {
     /* Focus and anchor targets scroll clear of the floating nav and the fixed mobile action bar, so a
        keyboard tab stop is never parked underneath either of them. */
-    scroll-padding-top: 6rem;
+    scroll-padding-top: calc(var(--header-h) + 2rem);
     scroll-padding-bottom: 2rem;
     /* Lets block-size: auto take part in a transition, which is what opens an FAQ answer without
        measuring it in JS. Inherited, and nothing else on the site transitions a size to a keyword. */
@@ -92,6 +99,10 @@
     }
   }
   body {
+    /* So a `full-bleed` band, which is 100vw wide, cannot raise a horizontal scrollbar of its own
+       on a page whose vertical scrollbar already eats into the viewport. `clip` and never `hidden`:
+       hidden would turn the body into a scroll container and kill every `position: sticky`. */
+    overflow-x: clip;
     background: var(--bg);
     color: var(--text);
     font-size: 17px;
@@ -646,6 +657,20 @@
   }
 }
 
+/* Escapes the 1200px spine and runs to both window edges, from inside a centred container.
+   `calc(50% - 50vw)` is half the container's own width minus half the viewport's, applied as a
+   negative margin on each side, which lands the element exactly on the window.
+
+   `50vw` counts the scrollbar, so on a page that scrolls this overshoots by the scrollbar's width
+   and would raise a horizontal scrollbar of its own. `body` carries `overflow-x: clip` for that.
+   Clip rather than hidden, deliberately: `hidden` would make the body a scroll container and break
+   every `position: sticky` on the site, the service and guide reading rails among them. */
+@utility full-bleed {
+  width: 100vw;
+  max-width: 100vw;
+  margin-inline: calc(50% - 50vw);
+}
+
 @utility card-plate {
   position: relative;
   isolation: isolate;
@@ -786,6 +811,29 @@
    Never put this on an h1. The h1 is the LCP element on every inner route, and an element at
    opacity 0 is not painted, so fading it in would hold the page's largest paint back by the length
    of the animation. The headline is the already-visible default that everything else rises under. */
+/* The hero photograph settles. It paints at 1.06 and eases down to its own box over 1.2s, so the
+   band is alive as you arrive at the headline and then holds still.
+
+   On load rather than on hover, for two reasons. The band is not a link, and DESIGN.md reserves a
+   pointer response for things that go somewhere. And hover reaches nobody on a phone, which is where
+   most of this audience arrives mid-emergency; an entrance plays for everyone.
+
+   `scale` only, so nothing reflows, and the header's `overflow-hidden` crops the 6% while it lasts.
+   Slower than the site's 0.5s standard on purpose: this is the largest paint on the page and a
+   half-second zoom on a 1440px band reads as a lurch rather than a settle. */
+@keyframes hero-zoom {
+  from {
+    scale: 1.06;
+  }
+}
+
+@utility hero-settle {
+  animation: hero-zoom 1200ms var(--motion-ease) both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
 @utility rise-in {
   animation: rise var(--motion-duration) var(--motion-ease) backwards;
   @media (prefers-reduced-motion: reduce) {

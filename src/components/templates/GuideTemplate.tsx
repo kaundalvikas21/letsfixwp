@@ -10,7 +10,7 @@ import { coreFileWarning } from "@/content/notices";
 import { servicePhotos } from "@/content/photos";
 import type { Guide } from "@/content/schema";
 import { cn } from "@/lib/utils";
-import { Breadcrumbs, card, ClosingBand, ErrorCards, Faqs, PageMasthead, RealScreen, Section, page, pageY } from "./parts";
+import { card, ClosingBand, ErrorCards, Faqs, PageMasthead, RealScreen, Section, page, pageYMasthead } from "./parts";
 import { ReadingRail } from "./ReadingRail";
 
 /**
@@ -43,7 +43,7 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
   const siblings = guidesFor(g.parentService).filter((x) => x.slug !== g.slug);
 
   return (
-    <article id="guide-article" data-urgency={g.urgency} className={cn(page, pageY)}>
+    <article id="guide-article" data-urgency={g.urgency} className={cn(page, pageYMasthead)}>
       {/* The one route family that carries a progress bar. Contract rule 6 bans scroll cues and
           this is an owner-instructed, scoped exception: a guide runs to several thousand pixels of
           troubleshooting and the reader wants to know how much of it is left. Scoped by being
@@ -51,13 +51,6 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
           document's, so the footer does not make the guide look longer than it is. */}
       <ScrollProgress target="#guide-article" />
       <JsonLd data={[guideLd(g), faqLd(g.faqs)]} />
-      <Breadcrumbs
-        items={[
-          { name: "Home", path: routes.home },
-          { name: "Knowledge Base", path: routes.guides },
-          { name: g.title, path: routes.guide(g.slug) },
-        ]}
-      />
 
       {/* The 8/4 split is gone. The parent service's night frame was a 336px panel in the right-hand
           four columns and is the band itself now, which is the shape every inner page here runs. The
@@ -74,6 +67,11 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
           fix, and the low-friction one for the reader who is not ready to book. Neither is a third
           choice, because a third is what makes a visitor choose nothing. */}
       <PageMasthead
+        crumbs={[
+          { name: "Home", path: routes.home },
+          { name: "Knowledge Base", path: routes.guides },
+          { name: g.title, path: routes.guide(g.slug) },
+        ]}
         photo={servicePhotos[g.parentService]}
         title={g.h1}
         plate={g.errorText}
@@ -204,9 +202,9 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
             48px is the gutter both grids already run between their columns, so the gap under the
             banner is the same rule as the gap beside it rather than a new number, and it is on the
             aside alone so the lead column's rhythm is untouched. Margin on the sticky element's
-            containing block, not on the sticky element, so the card still pins at `top-28`. */}
+            containing block, not on the sticky element, so the card still pins below the bar. */}
         <aside className="hidden lg:col-span-4 lg:mt-12 lg:block">
-          <div className="sticky top-28 rounded-[14px] border border-line bg-surface p-6 shadow-card">
+          <div className="sticky top-[calc(var(--header-h)+3rem)] rounded-[14px] border border-line bg-surface p-6 shadow-card">
             {/* The service that fixes this error, named and linked: the card's own heading, and the
                 third route out of the rail. Deliberately not the service rail's facts list
                 (turnaround, price from): typicalTurnaround and priceFrom are null on all 32

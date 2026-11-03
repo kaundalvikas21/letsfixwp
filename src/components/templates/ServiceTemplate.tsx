@@ -9,7 +9,7 @@ import { servicePhotos } from "@/content/photos";
 import type { Service } from "@/content/schema";
 import { cn } from "@/lib/utils";
 import { ReadingRail } from "./ReadingRail";
-import { Breadcrumbs, ClosingBand, ErrorCards, Faqs, LinkList, PageMasthead, Section, TickList, page, pageY } from "./parts";
+import { ClosingBand, ErrorCards, Faqs, LinkList, PageMasthead, Section, TickList, page, pageYMasthead } from "./parts";
 
 const Primary = ({ intent, ...rest }: { intent: ReturnType<typeof primaryCtaFor>; location: string; service: string; className?: string }) =>
   intent === "PLANS" ? <PlansLink {...rest} /> : intent === "QUOTE" ? <QuoteLink {...rest} /> : <BookLink {...rest} />;
@@ -32,15 +32,14 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
   ].filter((x): x is { k: string; v: string } => !!x);
 
   return (
-    <div data-intent={s.intent} className={cn(page, pageY)}>
+    <div data-intent={s.intent} className={cn(page, pageYMasthead)}>
       <JsonLd data={[serviceLd(s), faqLd(s.faqs)]} />
-      <Breadcrumbs items={nodeCrumbs(s.path)} />
-
       {/* The 7/5 split is gone: the service's night frame is the band now, not a picture in the
           right-hand five columns. No lead inside it, which is the same reason the old header had no
           subtext, the shortest line in the content is 25+ words and the hero cap is 20, so
           service.summary still renders as the lead paragraph below. */}
       <PageMasthead
+        crumbs={nodeCrumbs(s.path)}
         photo={servicePhotos[s.id]}
         title={s.h1}
         actions={
@@ -135,7 +134,7 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
 
         {/* Conversion rail: sticky from lg. Under 768px the global bottom bar is the only persistent CTA. */}
         <aside className="hidden lg:col-span-4 lg:block">
-          <div className="sticky top-28 rounded-[14px] border border-line bg-surface p-6 shadow-card">
+          <div className="sticky top-[calc(var(--header-h)+3rem)] rounded-[14px] border border-line bg-surface p-6 shadow-card">
             <p className="font-display text-lg font-bold">{s.title}</p>
             {facts.length > 0 && (
               <dl className="mt-4 space-y-2 border-t border-line pt-4 text-sm">

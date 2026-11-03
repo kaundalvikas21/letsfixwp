@@ -7164,3 +7164,487 @@ stylesheet moved.
 
 **Not run, and not claimed:** axe, and any judgement about how eleven ember slivers actually look on
 a hub page at 1440. That one needs eyes on a browser and is the thing most likely to want tuning.
+
+## v4 / the inner-page banner goes full bleed (Task 67)
+
+`PageMasthead` was a rounded card inside the 1200px spine: `rounded-[14px]`, `shadow-card`, the
+photograph constrained to 1152px with a gutter either side. It is now a band that runs to both window
+edges, with the words still on the spine. One change in the shared component reaches **90 pages**, the
+8 template families that render a masthead.
+
+| | Before | After |
+| --- | --- | --- |
+| Photograph and scrim | 1152px, inside the gutters | **window width** |
+| h1, plate, lead, actions | the band's own padding | the same 1152px spine as the rest of the page |
+| Shape | `rounded-[14px]`, `shadow-card` | neither |
+| `sizes` | `bannerSizes`, the spine hint | `100vw` |
+
+Text stays on the spine deliberately. A headline running to the window edge at 1440 abandons the
+measure and the one left edge every other section on the page shares; the band bleeds, the words do
+not. The inner wrapper is the `page` class string, so it cannot drift from the spine it is matching.
+
+The radius and the card shadow went with the card shape. A band that meets the window has no corners
+to round and no edge for a card shadow to sit against, which is why the home hero has been unrounded
+since Task 25. This is not a break of the 14px shape lock: there is no visible corner left to be
+sharp.
+
+### The breakout, and the scrollbar trap under it
+
+```css
+@utility full-bleed { width: 100vw; max-width: 100vw; margin-inline: calc(50% - 50vw) }
+```
+
+Half the container's width minus half the viewport's, as a negative margin on each side, lands the
+element exactly on the window from inside a centred parent.
+
+**`50vw` counts the scrollbar.** On any page that scrolls vertically, which is all of them, the
+viewport's *content* box is narrower than `100vw` by the scrollbar's width, so this overshoots by
+about 15px on Windows and raises a horizontal scrollbar, which contract rule 12 forbids outright.
+`body` now carries `overflow-x: clip` for it.
+
+**Clip and never hidden.** `overflow: hidden` would make the body a scroll container, and every
+`position: sticky` on the site resolves against the nearest scrollport: the service and guide reading
+rails both stick at `top-28` and would have silently stopped. `clip` establishes no scroll container,
+and `overflow-x: clip` with `overflow-y: visible` is a legal pair that leaves the y axis alone, since
+the substitution rule only fires when one axis is `visible` and the other is neither visible nor clip.
+
+### `bannerSizes` is deleted
+
+It described the spine, which the banner no longer occupies, so it was dead the moment the photograph
+went to `100vw`. Left in place it would have been a loaded gun: a `sizes` hint that reads correct,
+names the right token, and is wrong about the box by a factor that grows with the window. Its own doc
+comment recorded a 2.5x over-fetch shipped once from exactly that drift. The example in
+`src/components/motion/README.md` moved to `sizes="100vw"` with it.
+
+### Measurements
+
+| Assertion | Result |
+| --- | --- |
+| Mastheads carrying `full-bleed` | **90** |
+| Each with `sizes="100vw"` and an inner `mx-auto w-full max-w-page px-4 md:px-6` | yes, on service, guide and about samples |
+| Pages with a scoped `<header>` but no full bleed | **2**, and both correct: `/guides/` and `/compare/` render their own text-only split headers and were never `PageMasthead` consumers |
+| `bannerSizes` references left | 0 |
+
+Compiled output:
+
+```
+.full-bleed { width:100vw; max-width:100vw; margin-inline:calc(50% - 50vw) }
+body { ...; overflow-x:clip }
+```
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off**, motion
+check clean, build green at **99 routes**.
+
+**Not run, and not claimed:** axe, and the 375/768/1024/1440 pass, which is the one this change most
+needs. Three things want eyes on a browser: that no horizontal scrollbar appears at any width despite
+the `100vw` band, that the sticky reading rails on the service and guide pages still stick now that
+`body` is `overflow-x: clip`, and whether a 1440-wide photograph still reads at `100vw` when the
+library was shot for a 1152px box. The last one is a likely follow-up: a band twice as wide crops the
+same frame harder.
+
+## v4 / the breadcrumbs move onto the hero, and the photograph settles (Task 68)
+
+Two changes to `PageMasthead`, reaching the same **90 pages** Task 67 did.
+
+### Breadcrumbs inside the band
+
+They sat above the band on the page background, which left a strip of empty page between the header
+bar and the hero and gave the band no top edge of its own to hold. They are now the band's first row,
+on the photograph, with the headline block pushed to the foot by `mt-auto`.
+
+Nine call sites stopped rendering `<Breadcrumbs>` and pass `crumbs` to the masthead instead, so the
+page files no longer decide where the trail goes. Five keep rendering it themselves, correctly:
+`/compare/`, `/contact/`, `/free-site-check/`, `/guides/` and `/legal/guarantee/` have no masthead to
+put it in.
+
+**Moving it onto an image was not a relocation, it was a recolour, and the reason is measured.**
+Breadcrumbs were `--muted`, and `--muted` over `--photo-scrim` is **2.55:1**, the exact pairing
+`PageMasthead`'s own comment already records as failing. Two more pairings were ruled out on the way:
+
+| Candidate | Over the scrim | Verdict |
+| --- | --- | --- |
+| `--muted`, the page tone | 2.55:1 | fails body text |
+| `--accent-text` for the hovered crumb | 2.76:1 | fails, same trap as Task 60's tile |
+| `--on-photo` | **6.58:1** | used |
+
+The page tone lifts the current crumb from `--muted` to `--text`. That trick has no equivalent here,
+because **`--on-photo` and `--text` are the same value**: both ends would be the same white. So on a
+photograph every crumb is `--on-photo` and the current page is marked by **weight**, with links
+**underlining** on hover rather than changing colour. Nothing in the trail now depends on a colour
+difference that the scrim cannot carry.
+
+`tone` is a union, `"page" | "photo"`, and not a boolean. That is the rule this file already carries
+on the plate: two named states rather than a flag that invites a third.
+
+### The photograph settles
+
+`hero-settle` eases the band's image from `scale: 1.06` to its own box over **1.2s** on load, then
+holds. Scale only, cropped by the header's `overflow-hidden` while it runs, and `animation: none`
+under reduced motion.
+
+**On load rather than on hover, and that was the one real decision here.** The band is not a link,
+and DESIGN.md reserves a pointer response for things that go somewhere; a hero that reacts to the
+cursor claims to be clickable and is not. Hover also reaches nobody on a phone, which is where this
+audience arrives mid-emergency, so an entrance plays for everyone and a hover would have played for
+roughly half.
+
+1.2s rather than the site's 0.5s standard, deliberately. This is the largest paint on the page and a
+half-second zoom across a 1440px band reads as a lurch; the slower curve reads as the image settling
+while you take in the headline. The `--motion-ease` curve is the site's one easing, unchanged.
+
+### Measurements
+
+| Assertion | Result |
+| --- | --- |
+| Pages with breadcrumbs inside the hero `<header>` | **90** |
+| Pages with breadcrumbs still on the page body | 4 prerendered, plus `/contact/`, which is dynamic and so not in the static output |
+| Pages with both | **0** |
+| Hero images carrying `hero-settle` | **90** |
+| Rendered nav tone | `text-sm text-on-photo` |
+| Rendered crumb link | `hover:underline hover:underline-offset-4`, no colour change |
+
+Compiled output:
+
+```
+@keyframes hero-zoom { 0% { scale: 1.06 } }
+.hero-settle { animation: hero-zoom 1.2s var(--motion-ease) both }
+@media (prefers-reduced-motion: reduce) { .hero-settle { animation: none } }
+```
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off**, motion
+check clean, build green at **99 routes**. The eight files that stopped rendering `<Breadcrumbs>` had
+their now-unused imports pruned, which `eslint` passing is what proves.
+
+**Not run, and not claimed:** axe, and the 375/768/1024/1440 pass. Three things want a browser. That
+the settle does not hurt LCP, since the image it animates is the LCP element on about 90 routes and
+paints at 1.06 on the first frame. That the breadcrumbs stay legible against the brightest frames in
+the library rather than only against the measured average. And whether the band's minimum height
+still holds now that a breadcrumb row sits above the headline inside it.
+
+## v4 / the hero meets the header (Task 69)
+
+Reported from a screenshot: a strip of page background between the fixed bar and the top of the hero
+band. Measured, it was **32px at base and 48px from md**, on all 90 masthead pages.
+
+### Why it was there, and why it only became wrong now
+
+`pageY` is `pt-24 pb-8 md:pt-28 md:pb-12`. Its own comment records the arithmetic: the bar is `fixed`
+and 64px, pages wanted 32 and 48 of their own breathing room, so the constant is those numbers with
+the 64 they have to clear added on. 96 and 112. That is correct **when the first thing under the bar
+is text**, which it was for every page when the constant was written.
+
+A full-bleed band is not text. Breathing room above a picture that runs to both window edges is not
+spacing, it is a seam. And it was invisible until Task 67: inside the 1200px spine the gap read as
+the page gutter continuing upward, so nothing looked wrong until the band went to the window edges
+and the strip became a band of its own.
+
+### The fix
+
+`pageYMasthead`, the bar's height and nothing else:
+
+```
+pageY          = pt-24 pb-8 md:pt-28 md:pb-12     unchanged, for pages that open on text
+pageYMasthead  = pt-16 pb-8 md:pb-12              64px, so the band's top edge meets the bar's
+```
+
+The band keeps its own `py-6 sm:py-10 md:py-14 lg:py-16`, which is what holds the breadcrumbs clear
+of the bar now that they sit inside it (Task 68).
+
+A second constant rather than a negative margin on `PageMasthead` cancelling the difference. The
+negative margin would have been one edit instead of eight and is the worse answer: it encodes
+`96 - 64` and `112 - 64` as literals in a second file, so changing `pageY` would move every masthead
+by a silent amount with nothing failing. Two named constants say which kind of page each is for.
+
+### Measurements
+
+| Group | Pages | Top padding |
+| --- | --- | --- |
+| With a full-bleed band | **90** | `pt-16 pb-8 md:pb-12`, every one |
+| Without | 6 | `pt-24 pb-8 md:pt-28 md:pb-12`, unchanged |
+| No `page` wrapper at all | 2 | the home page, whose sections carry their own container, and `/preview/`, which has its own width |
+
+The six that keep the original padding are the right six: `/compare/`, `/free-site-check/`,
+`/guides/` and the three legal routes all open on text under the bar, where 32 and 48 of clearance is
+what they were always asking for.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off**, motion
+check clean, build green at **99 routes**.
+
+### The option not taken
+
+The bar's backdrop is a `motion.div` whose **opacity is driven by scroll** (`NavBar.tsx:84`), so at
+the top of a page it is transparent and only frosts once you move. That means the band could run
+underneath it to `y: 0` rather than stopping at 64, and the photograph would show through the bar
+until the first scroll, which is the shape most SaaS heroes take and which this nav is already built
+for. Not done, because the report asked for the hero to start immediately after the header and that
+is what "after" means. It is a one-line change to `pageYMasthead` if the fuller version is wanted,
+plus a check that the logo and the menu button hold their contrast against a photograph instead of
+against `--bg`.
+
+**Not run, and not claimed:** axe and the 375/768/1024/1440 pass. The width to check first is 375,
+where the band now starts 64px from the top of the document and the breadcrumb row inside it sits
+directly under the bar.
+
+## v4 / the header height becomes one number (Task 70)
+
+Asked to make the bar taller. It is **64px to 80px**, and the work was not the 16px: it was that
+**seven values were keyed to 64 and none of them said so.**
+
+### What was derived from a literal
+
+| Where | Was | Now |
+| --- | --- | --- |
+| `NavBar.tsx` the bar, its row, the menu dialog's row | `h-16` x3 | `h-[var(--header-h)]` |
+| `globals.css` anchor and focus clearance | `scroll-padding-top: 6rem` | `calc(var(--header-h) + 2rem)` |
+| `parts.tsx` `pageY`, pages that open on text | `pt-24 md:pt-28` | `calc(--header-h + 2rem)` / `+ 3rem` |
+| `parts.tsx` `pageYMasthead`, pages that open on a band | `pt-16` | `var(--header-h)` |
+| `ServiceTemplate` and `GuideTemplate` reading rails | `sticky top-28` | `calc(--header-h + 3rem)` |
+| `Hero.tsx` the home hero's own clearance | `pt-20`, `pt-24` tall | `calc(--header-h + 1rem)` / `+ 2rem` |
+| `preview/page.tsx` | `pt-24 md:pt-28` | the same calc as `pageY` |
+
+Every one encoded the same 64 plus its own offset: 32 for a text page, 48 for a rail, 16 for the
+hero, 0 for a band. Raising the bar by hand meant finding all seven and redoing each sum, and the
+failure mode is silent: the page still renders, the headline just sits under the bar, or a sticky
+card pins 16px too high. `--header-h` is in `:root` and they all read it, so the height is one line.
+
+### Two of these were not obvious
+
+**`pageYMasthead` is the bar's height exactly** and nothing else, because a full-bleed band's top
+edge meets the bar's bottom edge (Task 69). It is the only one of the seven with a zero offset, so it
+is also the only one where a stale literal would have been invisible: at 64 it looked deliberate.
+
+**The home hero was carrying its own copy.** `Hero.tsx` is not a `PageMasthead` page and never read
+`pageY`, so its `pt-20` was an eighth literal hiding behind a different name. Left alone it would
+have become exactly the bar's height, quietly costing the hero the 16px of clearance it was designed
+with.
+
+One contract note. Rule 4 caps a hero's top padding at `pt-24`, which is 96px, and the tall variant
+now computes to 112. The cap was written against a 64px bar and means "no more than 32px beyond the
+header"; the derivation preserves that relationship rather than the number it produced. Recorded here
+rather than silently exceeded.
+
+### Why 80px
+
+The bar holds a 44px minimum-height button. At 64 that leaves 10px above and below; at 80 it leaves
+18, which is the difference between a control wedged into a bar and one sitting in it. 80 is also
+where the search field, the primary button and the menu button stop competing for vertical space.
+
+It is not a value from MASTER's spacing table, which runs 4 / 8 / 24 / 32 / 48 / 64 / 96. That table
+governs the gaps between things, not the height of a component, the same way 44px targets and the
+14px radius are their own numbers. 96 would have been the next table value and is a 50% jump.
+
+### Measurements
+
+Compiled, with the token resolving once:
+
+```
+--header-h: 5rem
+.h-[var(--header-h)]                  { height: var(--header-h) }
+.pt-[var(--header-h)]                 { padding-top: var(--header-h) }
+.pt-[calc(var(--header-h)+1rem)]      { padding-top: calc(var(--header-h) + 1rem) }
+.pt-[calc(var(--header-h)+2rem)]      { padding-top: calc(var(--header-h) + 2rem) }
+.md:pt-[calc(var(--header-h)+3rem)]   { padding-top: calc(var(--header-h) + 3rem) }
+.top-[calc(var(--header-h)+3rem)]     { top: calc(var(--header-h) + 3rem) }
+scroll-padding-top: calc(var(--header-h) + 2rem)
+```
+
+Rendered on a service page: bar `h-[var(--header-h)]`, page `pt-[var(--header-h)]`, rail
+`sticky top-[calc(var(--header-h)+3rem)]`. No literal left anywhere in the chain.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off`**, motion
+check clean, build green at **99 routes**.
+
+**Not run, and not claimed:** axe and the 375/768/1024/1440 pass. Three to look at. The bar at 375,
+where 80px of fixed chrome is a larger share of a short viewport. The home hero, which is
+`min-h-[100dvh]` and now gives 16px more to the header. And the reading rails on the service and
+guide pages, which should still clear the bar by 48px rather than tucking under it.
+
+## v4 / AI writing tells, audited and guarded (Task 71)
+
+Asked to strip AI signatures from the site's text. Audited first, because the answer turned out to be
+that there were almost none, and the useful work was making that durable.
+
+### What was measured
+
+Every rendered page was parsed, script and style stripped, and the remaining text nodes matched
+against the patterns in Wikipedia's "Signs of AI writing": **98 pages, 70,879 visible words.** The
+same pass ran over the authored strings in `src/content` (2,030 prose strings), `src/components` and
+`src/app`.
+
+| Pattern | Hits in 70,879 rendered words |
+| --- | --- |
+| em or en dash | **0** |
+| AI vocabulary (delve, showcase, testament, underscore, vibrant, tapestry, pivotal, crucial, foster, enhance, deep dive, additionally) | **0** |
+| sales language (boasts, nestled, renowned, breathtaking, stunning, groundbreaking, commitment to) | **0** |
+| inflated significance (stands as a testament, plays a key role, evolving landscape) | **0** |
+| shallow -ing riders (highlighting, underscoring, showcasing) | **0** |
+| deep sayings (at its core, the real question, what really matters) | **0** |
+| staged run-ups (let's dive in, here's what you need to know) | **0** |
+| chatbot residue, cutoff disclaimers, emoji | **0** |
+| not-X-but-Y | 5, all kept |
+
+Zero dashes is not luck: `check-content.ts` has banned them in every `.ts` and `.tsx` under `src`
+since before this session, comments included.
+
+### The five "not just" phrases stay
+
+> "the whole page stops, not just that feature"
+> "do not just delete it and move on"
+> "Why not just buy a premium theme?"
+> "Why not just find and replace the domain in the SQL file?"
+
+The pattern is a tell when the negative half names something nobody claimed, so the positive half
+sounds bigger. None of these do that. Two are questions a customer actually asks, and the site answers
+them. One is an imperative. The other two correct exactly the belief a reader arrives with, which is
+why one plugin can take down a whole site, and both halves carry information. Rewriting them to dodge
+a regex would make the copy worse, so they were left and the reason recorded.
+
+### What changed
+
+Only two things, both guards rather than rewrites.
+
+**The banned-word list grew from 13 to 30** and now runs over **all of `src`**, not only
+`src/content`. Headings, leads, empty states and button copy are written straight into the components
+and page files, and a visitor reads those too. Every added word was checked first: none appeared
+anywhere in `src`, so this guards against drift rather than cleaning anything up.
+
+Three words were deliberately left out. `key`, `gate` and `critical` have real technical senses here,
+an API key, a gated claim, a critical error, and banning them would force worse words.
+
+**Markdown under `src` is now checked** for dashes and banned words. The walker only collected `.ts`
+and `.tsx`, so `src/components/motion/README.md` had sat at **8 em dashes**, the only such file in
+the tree. They are colons now, which is how the rest of this repo joins a label to its clause.
+
+### Both new rules were proved to fire
+
+A guard that does not fail on a violation is worth nothing, so each was tested by introducing one and
+confirming the failure:
+
+```
+src/components/HoverFill.tsx:66      banned word: seamless     (would not have been checked before)
+src/components/motion/README.md:139  em/en dash                (file would not have been read before)
+```
+
+Both reverted after. Worth recording that the revert of the second used `git checkout`, which also
+threw away the dash fix in the same file; the fix was reapplied and re-verified at 0.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off**, motion
+check clean, build green at **99 routes**.
+
+**Not claimed:** that the copy is free of every AI habit. The patterns a regex can catch are the
+vocabulary and punctuation ones. Structural tells, a paragraph built as a triad, a one-line closer
+that restates the paragraph above it, a heading restated in its first sentence, need reading rather
+than matching. The audit looked for them and found the copy plain, but that is a judgement, not a
+measurement.
+
+## v4 / the card caret moves to the top right (Task 72)
+
+Reported from a screenshot of the city directory. The "go there" caret sat at the card's foot; it is
+now on the card's top line, right-aligned.
+
+### Scope: two card types, and five carets that are not cards
+
+The report said "all these kind of cards", so the first job was deciding what counts. Seven carets
+render across the site; only two sit on a card:
+
+| Where | Moved? |
+| --- | --- |
+| `LinkCards` (`parts.tsx`), the site-wide link card | **yes** |
+| the hand-rolled city card (`CityTemplates.tsx`) | **yes** |
+| the hub's ranked problem rows | no, a row: the caret is centred at the row's right |
+| `/compare/` and `/pricing/` ruled rows | no, rows |
+| the carousel's next button | no, a control |
+| the breadcrumb separator | no, punctuation between crumbs |
+
+### What the old position was for, and why the new one needs less
+
+The caret was pinned with `mt-auto` and `self-end`, and the comment explained why: on a row of cards
+with titles of different lengths, pinning to the floor is what made every caret sit on one line.
+
+At the top that agreement is free. **The top edge is the line a row of cards already shares**,
+whatever the titles below do, so the pin comes out and nothing replaces it. The card also loses the
+`pt-5` the foot needed, and a card with no icon used to start its title at the very top; the caret row
+gives it a top line it did not have.
+
+Two shapes, because `LinkCards` cards may or may not carry an icon:
+
+- **With an icon** (the error grids, the about hub grid, case studies): the top line is the icon on
+  the left and the caret on the right. Height is unchanged, because the icon was already that row.
+- **Without one** (the hub directory, the city service lists): the caret sits alone on the right.
+  `ml-auto` rather than `justify-between`, so it holds the far edge instead of collapsing left when
+  there is nothing beside it.
+
+The city card keeps its eyebrow, "WordPress development in", on that line, with the caret opposite.
+
+### Measurements
+
+Rendered, first card of each kind:
+
+```
+city card     <span class="flex items-start justify-between gap-3">
+                <span>WordPress development in</span>[CARET]</span>
+              <span>Chennai</span> ...
+
+LinkCards     <span class="flex items-start gap-3">[CARET]</span>
+  no icon     <span>Emergency WordPress Fix (site down)</span> ...
+
+LinkCards     <span class="flex items-start gap-3">[ICON][CARET]</span>
+  with icon   <span>WordPress critical error on this website</span> ...
+```
+
+The caret precedes the title in document order in all three, which is the point: it is read as part
+of the card's top line rather than as a mark hanging off the bottom. **Old bottom-caret wrappers left
+anywhere in the build: 0.**
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off**, motion
+check clean, build green at **99 routes**.
+
+**Not run, and not claimed:** axe and the 375/768/1024/1440 pass. Two to look at. Cards without an
+icon now carry a caret row they did not have, which adds about 36px above the title and takes about
+40px off the foot, so the hub's eleven-card grid should end up slightly shorter rather than taller,
+but that is arithmetic and not a measurement. And on the city card the caret now sits beside a line of
+text rather than alone, so the 24px gap between the eyebrow and the glyph wants checking at 375 where
+the eyebrow is closest to wrapping.
+
+### Correction to Task 72: the caret row left a hole
+
+Reported from a screenshot of the hub directory: dead space between the top of the card and its
+title. Measured, **36px** of it, and the cause was the fix in Task 72.
+
+That task gave the caret a flex row of its own. On a card with an icon that was free, because the
+icon was already that row. On a card **without** one, which is the hub directory and the city service
+lists, the row held nothing but the caret: 20px of row, plus the title's own 16px margin, above a
+title that used to sit hard against the top of the card.
+
+The caret is now `absolute top-5 right-5` and costs no layout at all. Same corner on both kinds of
+card, and the title keeps its original rhythm: against the top on a plain card, 16px under the icon
+on a card that has one. `cardLink` already carries the `relative` it positions against, from Task 62.
+The title gained `pr-7` so its first line clears the glyph instead of running under it.
+
+Rendered, the two shapes:
+
+```
+no icon     [CARET-absolute]<span class="block max-w-[40ch] pr-7 …">Emergency WordPress Fix…
+with icon   [CARET-absolute][ICON]<span class="… pr-7 … mt-4">WordPress critical error…
+```
+
+Empty caret rows left in the build: **0**.
+
+The city card is unchanged and did not have the problem: its caret shares a line with the
+"WordPress development in" eyebrow, so that row was never empty.
+
+`tsc` 0, `eslint` 0, content and motion checks clean, build green at 99 routes. The 375 check noted at
+the end of Task 72 still applies, and now also covers whether `pr-7` is enough clearance for the
+longest title at the narrowest card.

@@ -4,7 +4,7 @@ import { BookLink, ChatButton } from "@/components/Cta";
 import { HoverFill } from "@/components/HoverFill";
 import { nodeCrumbs } from "@/components/JsonLd";
 import { Stagger } from "@/components/motion";
-import { Breadcrumbs, ClosingBand, LinkCards, PageMasthead, Section, card, page, pageY } from "@/components/templates/parts";
+import { ClosingBand, LinkCards, PageMasthead, Section, card, page, pageYMasthead } from "@/components/templates/parts";
 import { VideoFrame } from "@/components/VideoFrame";
 import { routes } from "@/config/routes";
 import { guides, services } from "@/content";
@@ -54,10 +54,9 @@ const ANATOMY = [
  */
 export default function CaseStudies() {
   return (
-    <div className={cn(page, pageY)}>
-      <Breadcrumbs items={nodeCrumbs(routes.reviews)} />
-
+    <div className={cn(page, pageYMasthead)}>
       <PageMasthead
+        crumbs={nodeCrumbs(routes.reviews)}
         photo="emergency"
         title="Case studies"
         lead="Write-ups of real rescues: what the site was doing, what we found, what we changed, and what it took."

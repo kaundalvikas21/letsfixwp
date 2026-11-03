@@ -34,7 +34,23 @@ export const page = "mx-auto w-full max-w-page px-4 md:px-6";
  * pages were always asking for, with the 64 they have to clear added on. One constant rather than
  * thirteen literals, so the next page cannot quietly reintroduce it.
  */
-export const pageY = "pt-24 pb-8 md:pt-28 md:pb-12";
+export const pageY = "pt-[calc(var(--header-h)+2rem)] pb-8 md:pt-[calc(var(--header-h)+3rem)] md:pb-12";
+
+/**
+ * For a page whose first element is a full-bleed masthead, which is the eight template families that
+ * render one.
+ *
+ * `pageY` clears the 64px bar and then adds the page's own 32 and 48 of breathing room on top of it,
+ * which is right when the first thing under the header is text. A band is not text. That breathing
+ * room rendered as a 32px strip of `--bg` at base and 48px at desktop between the bar and the
+ * picture, which reads as a seam rather than as spacing, and it only became visible once the band
+ * went full bleed in Task 67: inside the spine it looked like the gutter continuing.
+ *
+ * This is the bar's height exactly and nothing else, so the band's top edge meets the bar's bottom
+ * edge. The band carries its own `py-6 sm:py-10 md:py-14 lg:py-16`, which is what keeps the
+ * breadcrumbs off the bar now that they sit inside it.
+ */
+export const pageYMasthead = "pt-[var(--header-h)] pb-8 md:pb-12";
 export const prose = "max-w-[68ch] text-muted";
 export const h1 =
   "font-display text-[2.125rem] leading-[1.05] font-extrabold tracking-[-0.04em] text-balance [font-variation-settings:'opsz'_34] sm:text-5xl sm:[font-variation-settings:'opsz'_48] lg:text-[3.5rem] lg:[font-variation-settings:'opsz'_56]";
@@ -99,18 +115,6 @@ export function Section({ id, title, children, className }: { id: string; title:
   );
 }
 
-/**
- * The band fills the page's whole spine, so the candidate it preloads is the spine's width: 1152px
- * once the 1200px container stops growing, the viewport less the gutters below that. It lived twice,
- * copied byte for byte into /about/ and /pricing/, and a third, narrower copy in GuideTemplate was
- * sized for a 336px column that no longer exists on these headers.
- *
- * The two numbers move with `--container-page` and nothing warns when they do not: this hint feeds
- * the LCP element on about 95 routes, and the ledger already records one 2.5x over-fetch shipped on
- * an LCP image from a `sizes` that had drifted off its real box. Measured in the browser after the
- * 1152 to 1200 change: the band renders 1152px at 1440 and the hint asks for 1152.
- */
-export const bannerSizes = "(min-width: 1200px) 1152px, (min-width: 768px) calc(100vw - 48px), calc(100vw - 32px)";
 
 /**
  * Every inner page's header: the type sits on the photograph, which is what a masthead is, rather
@@ -138,6 +142,7 @@ export function PageMasthead({
   title,
   lead,
   photo,
+  crumbs,
   decorative = true,
   plate,
   actions,
@@ -147,6 +152,8 @@ export function PageMasthead({
   title: React.ReactNode;
   lead?: React.ReactNode;
   photo: PhotoId;
+  /** Rendered on the photograph at the band's top edge. Omit on a page that has no breadcrumbs. */
+  crumbs?: Crumb[];
   /**
    * Decorative by default: on these pages the h1 and the lead already say what the page is, so the
    * frame beside them only sets mood. Pass `false` where the picture is content in its own right
@@ -171,16 +178,34 @@ export function PageMasthead({
   return (
     <header
       className={cn(
-        "relative isolate mt-6 flex flex-col justify-end overflow-hidden rounded-[14px] p-6 shadow-card sm:p-10 md:p-14 lg:p-16",
+        // Full bleed: the photograph and its scrim run to both window edges while the words stay on
+        // the spine, in the inner `page` wrapper below. The radius and `shadow-card` went with the
+        // card shape, because a band that meets the window has no corners to round and no edge for
+        // a card shadow to sit on; the home hero has been unrounded for the same reason since
+        // Task 25. Vertical padding stays on this element and the horizontal padding is the spine's.
+        "full-bleed relative isolate flex flex-col overflow-hidden py-6 sm:py-10 md:py-14 lg:py-16",
         minH,
         className,
       )}
     >
-      {/* No animation on it at all: it is the largest paint on the page. */}
-      <Photo id={photo} decorative={decorative} preload sizes={bannerSizes} className="absolute inset-0 -z-10" />
+      {/* `100vw` now that the band is the window's width, not the spine's. `hero-settle` eases it
+          from 1.06 to its own box over 1.2s on load: scale only, cropped by this header's
+          overflow, and gone entirely under reduced motion. */}
+      <Photo id={photo} decorative={decorative} preload sizes="100vw" className="hero-settle absolute inset-0 -z-10" />
       <span aria-hidden className="absolute inset-0 -z-10 bg-photo-scrim" />
 
-      <h1 className={h1}>{title}</h1>
+      {/* The breadcrumbs sit on the photograph, at the band's top edge, and the headline block is
+          pushed to the foot by `mt-auto`. They used to sit above the band on the page background,
+          which left a strip of empty page between the header bar and the hero and gave the band no
+          top edge of its own to hold. On the image they need the photo tone: see `Breadcrumbs`. */}
+      {crumbs && (
+        <div className={page}>
+          <Breadcrumbs items={crumbs} tone="photo" />
+        </div>
+      )}
+
+      <div className={cn(page, "mt-auto", crumbs && "pt-10")}>
+        <h1 className={h1}>{title}</h1>
       {/* The machine's own words, and the anchor of the page: this string is what the visitor pasted
           into a search box. Mono on the inset surface, which is opaque, so its contrast is the
           token table's `--text` on `--surface-2` and not the scrim's. It wraps rather than scrolls,
@@ -188,24 +213,25 @@ export function PageMasthead({
           the only break rule that holds a 90-character file path inside the band. Sized to the
           string, because "502 Bad Gateway" in a 1152px box read as an empty panel with a few
           characters in the corner. */}
-      {plate && (
-        <p
-          className="rise-in mt-6 w-fit max-w-full rounded-[14px] border border-line-strong bg-surface-2 px-5 py-4 font-mono text-[15px] leading-relaxed [overflow-wrap:anywhere] md:text-base"
-          style={{ animationDelay: `${plateDelay}ms` }}
-        >
-          <code>{plate}</code>
-        </p>
-      )}
-      {lead && (
-        <p className="rise-in mt-5 max-w-[60ch] text-lg text-on-photo" style={{ animationDelay: `${leadDelay}ms` }}>
-          {lead}
-        </p>
-      )}
-      {actions && (
-        <div className="rise-in mt-7 flex flex-wrap gap-3" style={{ animationDelay: `${actionsDelay}ms` }}>
-          {actions}
-        </div>
-      )}
+        {plate && (
+          <p
+            className="rise-in mt-6 w-fit max-w-full rounded-[14px] border border-line-strong bg-surface-2 px-5 py-4 font-mono text-[15px] leading-relaxed [overflow-wrap:anywhere] md:text-base"
+            style={{ animationDelay: `${plateDelay}ms` }}
+          >
+            <code>{plate}</code>
+          </p>
+        )}
+        {lead && (
+          <p className="rise-in mt-5 max-w-[60ch] text-lg text-on-photo" style={{ animationDelay: `${leadDelay}ms` }}>
+            {lead}
+          </p>
+        )}
+        {actions && (
+          <div className="rise-in mt-7 flex flex-wrap gap-3" style={{ animationDelay: `${actionsDelay}ms` }}>
+            {actions}
+          </div>
+        )}
+      </div>
     </header>
   );
 }
@@ -285,17 +311,30 @@ export function ClosingBand({
   );
 }
 
-export function Breadcrumbs({ items }: { items: Crumb[] }) {
+/**
+ * `tone` is a union and not a boolean, which is the rule this file already carries on `plate`: two
+ * named states rather than a flag that invites a third.
+ *
+ * **Why the photo tone cannot just dim the base colour.** `--on-photo` and `--text` are the same
+ * value, so the page tone's trick of lifting the current crumb from `--muted` to `--text` has no
+ * equivalent on an image: both ends would be the same white. And `--muted` over `--photo-scrim`
+ * measures 2.55:1, the pairing `PageMasthead` already records as failing. So on a photograph every
+ * crumb is `--on-photo` at 6.58:1 and the current page is marked by weight, with links underlining
+ * on hover rather than changing colour. Ember was not an option either: `--accent-text` over this
+ * scrim is 2.76:1.
+ */
+export function Breadcrumbs({ items, tone = "page" }: { items: Crumb[]; tone?: "page" | "photo" }) {
+  const onPhoto = tone === "photo";
   return (
     <>
       <JsonLd data={breadcrumbLd(items)} />
-      <nav aria-label="Breadcrumb" className="text-sm text-muted">
+      <nav aria-label="Breadcrumb" className={cn("text-sm", onPhoto ? "text-on-photo" : "text-muted")}>
         <ol className="flex flex-wrap items-center gap-x-1 gap-y-1">
           {items.map((c, i) => (
             <li key={c.path} aria-current={i === items.length - 1 ? "page" : undefined} className="flex items-center gap-1">
               {i > 0 && <CaretRightIcon weight="duotone" className="size-3.5 shrink-0" aria-hidden />}
               {i === items.length - 1 ? (
-                <span className="text-text">{c.name}</span>
+                <span className={onPhoto ? "font-semibold" : "text-text"}>{c.name}</span>
               ) : (
                 // py-1.5 takes the crumb from a 20px tap target to 32px, which clears WCAG 2.5.8's
                 // 24px floor; it was the smallest target on the site and the one axe does not flag.
@@ -304,7 +343,13 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
                 // Vertical padding only, so the first crumb's left edge stays on the page spine.
                 // Nothing more than a colour fade: orientation furniture that performs is furniture
                 // competing with the page.
-                <Link href={c.path} className="inline-flex items-center py-1.5 transition-colors duration-150 hover:text-text">
+                <Link
+                  href={c.path}
+                  className={cn(
+                    "inline-flex items-center py-1.5 transition-colors duration-150",
+                    onPhoto ? "hover:underline hover:underline-offset-4" : "hover:text-text",
+                  )}
+                >
                   {c.name}
                 </Link>
               )}
@@ -565,10 +610,30 @@ export function LinkCards({ items, cols = 2 }: { items: LinkCardItem[]; cols?: 2
                 </>
               )}
               <span className="flex h-full flex-col">
+              {/* The caret is absolutely placed at the card's top right and costs no layout at all.
+                  It was a flex row of its own, which worked on a card with an icon, because the icon
+                  was already that row, and left 36px of dead space above the title on a card without
+                  one: a 20px row holding nothing but the caret, plus the title's 16px margin. That
+                  is the gap this fixes.
+
+                  Out of flow it sits in the same corner on both kinds and the title keeps its
+                  original rhythm: hard against the top of a plain card, 16px under the icon on a card
+                  that has one. `cardLink` supplies the `relative` this positions against. The title
+                  carries `pr-7` so its first line clears the glyph rather than running under it. */}
+              <CaretRightIcon
+                weight="duotone"
+                aria-hidden
+                // `translate`, not `transform`, in the transition list. Tailwind v4 emits
+                // `translate-x-0.5` as the `translate` property, so a transition naming `transform`
+                // does not cover it and the caret jumps its 2px instead of travelling them.
+                // `motion-reduce:translate-none!` for the same reason, and the `!` because the hover
+                // utility is the more specific of the two.
+                className="absolute top-5 right-5 size-5 shrink-0 text-muted transition-[color,translate] duration-200 ease-out group-hover:translate-x-0.5 group-hover:text-accent-text motion-reduce:transition-none motion-reduce:translate-none!"
+              />
               {Icon && <Icon weight="duotone" aria-hidden className="size-7 shrink-0 text-accent-text" />}
               <span
                 className={cn(
-                  "block max-w-[40ch] font-display text-lg leading-snug font-bold transition-colors duration-200 [font-variation-settings:'opsz'_18] group-hover:text-accent-text motion-reduce:transition-none",
+                  "block max-w-[40ch] pr-7 font-display text-lg leading-snug font-bold transition-colors duration-200 [font-variation-settings:'opsz'_18] group-hover:text-accent-text motion-reduce:transition-none",
                   Icon && "mt-4",
                   i.banner && "text-on-photo",
                 )}
@@ -586,26 +651,6 @@ export function LinkCards({ items, cols = 2 }: { items: LinkCardItem[]; cols?: 2
               {/* --on-photo on a card with a picture behind it: --muted measures 4.28:1 over this
                   scrim and body copy needs 4.5. Same swap the hero lead makes for the same reason. */}
               {i.summary && <span className={cn("mt-2 line-clamp-3 text-sm", i.banner ? "text-on-photo" : "text-muted")}>{i.summary}</span>}
-              {/* Bottom right, which is where a card's "go there" mark belongs and where the row it
-                  replaced kept it. `mt-auto` pushes it to the floor so every caret in a row sits on
-                  one line however long the titles above them run, and `self-end` puts it on the far
-                  edge rather than under the first word of the summary, where it read as a stray
-                  glyph. The padding is on the wrapper, not on the icon: `size-5` sets the svg's own
-                  box and under border-box any padding would eat the glyph. Same mark as the FAQ's
-                  CaretDown is not: down means "open this", right means "go there". */}
-              <span className="mt-auto self-end pt-5">
-                <CaretRightIcon
-                  weight="duotone"
-                  aria-hidden
-                  // `translate`, not `transform`, in the transition list. Tailwind v4 emits
-                  // `translate-x-0.5` as the `translate` property, so a transition naming
-                  // `transform` does not cover it and the caret jumps its 2px instead of travelling
-                  // them. Measured in the browser: `getComputedStyle(svg).transform` is `none` and
-                  // `.translate` is `2px`. `motion-reduce:translate-none!` for the same reason, and
-                  // the `!` because the hover utility is the more specific of the two.
-                  className="size-5 shrink-0 text-muted transition-[color,translate] duration-200 ease-out group-hover:translate-x-0.5 group-hover:text-accent-text motion-reduce:transition-none motion-reduce:translate-none!"
-                />
-              </span>
               </span>
             </Link>
           </li>

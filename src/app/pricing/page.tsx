@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BookLink, ChatButton, CheckLink, PlansLink } from "@/components/Cta";
 import { collectionLd, faqLd, JsonLd, nodeCrumbs } from "@/components/JsonLd";
-import { Breadcrumbs, ClosingBand, Faqs, PageMasthead, Promises, Section, TickList, page, pageY } from "@/components/templates/parts";
+import { ClosingBand, Faqs, PageMasthead, Promises, Section, TickList, page, pageYMasthead } from "@/components/templates/parts";
 import { brand } from "@/config/brand";
 import { HUB_LABELS, hubIdOf, hubNodes, routes } from "@/config/routes";
 import { getService, services } from "@/content";
@@ -130,7 +130,7 @@ const priceFaqs = PRICE_FAQS.map(([id, q]) => {
  */
 export default function Pricing() {
   return (
-    <div className={cn(page, pageY)}>
+    <div className={cn(page, pageYMasthead)}>
       {/* The only truthful structured data for this page. `CollectionPage` with its `ItemList` says
           what the page is: an index of the 32 services, every name and url read from src/content so
           the list cannot claim something the page does not render. Deliberately **no** `OfferCatalog`
@@ -152,8 +152,6 @@ export default function Pricing() {
           faqLd(priceFaqs),
         ]}
       />
-      <Breadcrumbs items={nodeCrumbs(routes.pricing)} />
-
       {/* The /about/ masthead, which is this site's one measured pattern for type over photography
           (commit 4557bb4). It is `PageMasthead` now, shared with the five templates, so the box,
           the flat scrim, the no-aspect-ratio rule and the 70/140ms beat all live in parts.tsx and
@@ -180,6 +178,7 @@ export default function Pricing() {
           is an **unconfirmed** claim whose approved wording is "fixes are fixed price, agreed before
           work starts", and `MASTHEAD` above carries both arms and the reason for the gate. */}
       <PageMasthead
+        crumbs={nodeCrumbs(routes.pricing)}
         photo="workspace"
         title={MASTHEAD.h1}
         lead={MASTHEAD.lead}

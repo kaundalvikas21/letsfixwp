@@ -8,7 +8,7 @@ import { servicePhotos } from "@/content/photos";
 import { citiesLead } from "@/content/notices";
 import type { City } from "@/content/schema";
 import { cn } from "@/lib/utils";
-import { Breadcrumbs, ClosingBand, Faqs, LinkCards, PageMasthead, RemoteTrack, Section, cardLink, page, pageY } from "./parts";
+import { ClosingBand, Faqs, LinkCards, PageMasthead, RemoteTrack, Section, cardLink, page, pageYMasthead } from "./parts";
 
 /** /wordpress-development/cities/: every city, in build priority order. */
 export function CityHubTemplate({ node }: { node: FlatNode }) {
@@ -19,12 +19,12 @@ export function CityHubTemplate({ node }: { node: FlatNode }) {
   ];
 
   return (
-    <div className={cn(page, pageY)}>
-      <Breadcrumbs items={nodeCrumbs(node.path)} />
+    <div className={cn(page, pageYMasthead)}>
       {/* A bare h1 with a sentence under it before this, the one inner page with no header box at
           all. `racks` is a mono frame, which is what a page that names every city and favours none
           of them can carry: the work is remote, so no city gets a photograph of itself. */}
       <PageMasthead
+        crumbs={nodeCrumbs(node.path)}
         photo="racks"
         title="WordPress development by city"
         lead={citiesLead}
@@ -71,21 +71,22 @@ export function CityHubTemplate({ node }: { node: FlatNode }) {
           // globals.css. This grid was the only one the Task 61 sweep missed.
           <li key={c.slug} className="card-plate">
             <Link href={routes.city(c.slug)} className={cn(cardLink, "flex h-full flex-col")}>
-              <span className="text-sm text-muted">WordPress development in</span>
-              <span className="mt-1 font-display text-[1.5rem] leading-[1.15] font-extrabold tracking-[-0.03em] transition-colors duration-200 [font-variation-settings:'opsz'_24] motion-reduce:transition-none [@media(hover:hover)]:group-hover:text-accent-text">
-                {c.city}
-              </span>
-              <span className="mt-3 text-sm text-muted">{c.seo.description}</span>
-              {/* The caret `LinkCards` gives every other card on the site, on the same 150ms
-                  ease-out nudge the buttons use. `mt-auto` parks it on the card's bottom edge, so a
-                  row of cards of different heights still agrees on where the affordance is. */}
-              <span className="mt-auto flex justify-end pt-4">
+              {/* The eyebrow and the caret share the card's top line, which is where `LinkCards`
+                  puts its own mark. It was at the foot, pinned by `mt-auto` so a row of uneven
+                  cards agreed on one line for it; at the top that agreement is free, because the
+                  top edge is the line every card in a row already shares. */}
+              <span className="flex items-start justify-between gap-3">
+                <span className="text-sm text-muted">WordPress development in</span>
                 <CaretRightIcon
                   weight="duotone"
                   aria-hidden
                   className="size-5 shrink-0 text-muted transition-[translate] duration-150 ease-out motion-reduce:transition-none [@media(hover:hover)]:group-hover:translate-x-0.5"
                 />
               </span>
+              <span className="mt-1 font-display text-[1.5rem] leading-[1.15] font-extrabold tracking-[-0.03em] transition-colors duration-200 [font-variation-settings:'opsz'_24] motion-reduce:transition-none [@media(hover:hover)]:group-hover:text-accent-text">
+                {c.city}
+              </span>
+              <span className="mt-3 text-sm text-muted">{c.seo.description}</span>
             </Link>
           </li>
         ))}
@@ -142,7 +143,7 @@ export function CityTemplate({ city: c, node }: { city: City; node: FlatNode }) 
   const loc = `city:${c.slug}`;
 
   return (
-    <div className={cn(page, pageY)}>
+    <div className={cn(page, pageYMasthead)}>
       <JsonLd
         data={[
           serviceLd(dev, {
@@ -153,12 +154,11 @@ export function CityTemplate({ city: c, node }: { city: City; node: FlatNode }) 
           faqLd(c.faqs),
         ]}
       />
-      <Breadcrumbs items={nodeCrumbs(node.path)} />
-
       {/* The frame comes from the first service this city asks for, which is the nearest honest
           mapping the catalogue offers: there is no office in the city and no photograph of it, so
           the band shows the work rather than the place. */}
       <PageMasthead
+        crumbs={nodeCrumbs(node.path)}
         photo={servicePhotos[highlighted[0].id]}
         title={`WordPress development in ${c.city}`}
         lead={c.seo.description}

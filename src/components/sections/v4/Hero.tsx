@@ -34,7 +34,7 @@ export function Hero() {
   Logged as a deliberate deviation in docs/layout-ledger.md Task 27; one token to revert. **/
   return (
     <section aria-labelledby="hero-title" className="relative isolate flex items-center overflow-hidden lg:min-h-[100dvh]">
-      <div className="mx-auto w-full max-w-page px-4 pt-20 pb-16 [@media(min-height:700px)]:pt-24 md:px-6">
+      <div className="mx-auto w-full max-w-page px-4 pt-[calc(var(--header-h)+1rem)] pb-16 [@media(min-height:700px)]:pt-[calc(var(--header-h)+2rem)] md:px-6">
         {/* The photograph leads on a phone and a tablet, then the words; at lg it stops being a
             block in the reading order and becomes the background behind them.
 
