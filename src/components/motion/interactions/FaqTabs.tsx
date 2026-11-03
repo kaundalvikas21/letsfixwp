@@ -92,7 +92,11 @@ export function FaqTabs({ groups }: { groups: FaqGroup[] }) {
                       type="button"
                       id={labelId}
                       aria-expanded={isOpen}
-                      aria-controls={panelId}
+                      // Only while the panel exists. `AnimatePresence` unmounts a closed answer, so
+                      // a permanent `aria-controls` points at an element that is not in the document
+                      // for every collapsed question, which is what `aria-valid-attr-value` fails on.
+                      // `aria-expanded` carries the state either way; `aria-controls` is optional.
+                      aria-controls={isOpen ? panelId : undefined}
                       onClick={() => toggle(f.q)}
                       className="group flex w-full cursor-pointer items-center justify-between gap-4 py-5 text-left font-display text-lg font-bold"
                     >

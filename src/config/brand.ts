@@ -135,3 +135,15 @@ export const brand = {
   },
   legacy: { enabled: legacyEnabled, facts: legacyEnabled ? legacyFacts : null },
 } as const;
+
+/**
+ * The Open Graph fields every route shares.
+ *
+ * **Spread this into any page-level `openGraph`.** Next merges metadata shallowly from the root
+ * layout down, so a page that exports its own `openGraph` object **replaces** the root's rather than
+ * merging into it, and every key the page does not restate is simply lost. That is documented
+ * behaviour, not a bug, and it had quietly dropped `og:site_name` and `og:locale` from 80 of the 98
+ * prerendered pages: everything that goes through `pageMetadata`, which is every service, guide,
+ * city and comparison page.
+ */
+export const sharedOpenGraph = { siteName: brand.name, type: "website", locale: "en_IN" } as const;

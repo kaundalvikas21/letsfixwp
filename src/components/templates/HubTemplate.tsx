@@ -1,13 +1,14 @@
+import { CaretRightIcon } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import { BookLink, ChatButton, PlansLink, QuoteLink } from "@/components/Cta";
 import { nodeCrumbs } from "@/components/JsonLd";
 import { primaryCtaFor } from "@/config/cta";
 import { hubIdOf, nodes, routes, serviceIdOf, type FlatNode } from "@/config/routes";
-import { getService, guidesFor } from "@/content";
+import { guidesFor } from "@/content";
 import { hubLead } from "@/content/hubs";
 import { hubPhotos } from "@/content/photos";
 import { cn } from "@/lib/utils";
-import { Breadcrumbs, ClosingBand, LinkCards, PageMasthead, Section, cardLink, page, pageY } from "./parts";
+import { Breadcrumbs, ClosingBand, PageMasthead, Section, ServiceCards, page, pageY, urgencyIcon } from "./parts";
 
 const urgencyRank = { critical: 0, high: 1, standard: 2 } as const;
 
@@ -35,18 +36,12 @@ export function HubTemplate({ node }: { node: FlatNode }) {
     .flatMap((n) => guidesFor(serviceIdOf(n.path)))
     .sort((a, b) => urgencyRank[a.urgency] - urgencyRank[b.urgency])
     .slice(0, 6);
-  // The full width goes to the hub's worst problem only when that problem is also the richest thing on
-  // the page: critical, and carrying the literal string WordPress prints. A 1152px box holding one 18px
-  // line reads as a broken state rather than as weighting, which is what gating on urgency alone gave
-  // the fix hub. Today only the security hub qualifies, and its remainder is even, so no hub is left
-  // with a tile stranded beside a hole.
-  const leadWide = topGuides.length > 2 && topGuides[0].urgency === "critical" && !!topGuides[0].errorText;
   const loc = `hub:${id}`;
   const intent = primaryCtaFor(node.intent);
   const Primary = intent === "PLANS" ? PlansLink : intent === "QUOTE" ? QuoteLink : BookLink;
 
   return (
-    <article className={cn(page, pageY)}>
+    <div className={cn(page, pageY)}>
       <Breadcrumbs items={nodeCrumbs(node.path)} />
 
       {/* The hub's photograph used to sit in a 5-column box beside the lead. It is the band itself
@@ -71,14 +66,7 @@ export function HubTemplate({ node }: { node: FlatNode }) {
             directory is the page's whole job, and every row is a different service page, so it reads
             as a set of doors rather than a list to work down. Four across on the spine, which is the
             widest the ban on three equal cards in a row allows. */}
-        <LinkCards
-          cols={4}
-          items={serviceChildren.map((n) => ({
-            href: n.path,
-            title: n.title,
-            summary: getService(serviceIdOf(n.path))?.summary,
-          }))}
-        />
+        <ServiceCards nodes={serviceChildren} />
         {otherChildren.map((n) => (
           <p key={n.path} className="mt-6">
             <Link href={n.path} className="font-semibold text-accent-text underline underline-offset-4 hover:no-underline">
@@ -92,30 +80,62 @@ export function HubTemplate({ node }: { node: FlatNode }) {
         // Sits close under the directory at desktop: these are the errors the services above fix, not
         // a third subject. Four of the six hubs have guides and render the grid (fix 6 panels, security 5, performance-migration 4,
         // woocommerce 2); maintenance and development have none and render nothing here.
+        /* Ruled rows, not a second card grid. "What we do here" above became `LinkCards` in Task 9
+            and this section stayed a 2-up grid, so from that point the page ran two card grids back to
+            back that differed only in column count, which is what made this one read as a weaker copy
+            of the one above it. Rows restore the alternation the page was designed with.
+
+            An `ol` because the order is the information: the list is sorted by `urgencyRank` and
+            first place is the hub's worst problem. That is also what replaced `leadWide`, which used
+            to give the full spine to that problem because a grid has no way to rank except by area.
+
+            No numerals. Rule 6 bans step labels, and the urgency mark plus the position already say
+            the rank twice; a numeral would say it a third time. */
         <Section id="guides" title="Most urgent problems" className="mt-16 md:mt-16">
-          <ul className="reveal grid items-start gap-4 sm:grid-cols-2">
-            {topGuides.map((g, i) => (
-              <li key={g.slug} className={cn(leadWide && i === 0 && "sm:col-span-2")}>
-                <Link
-                  href={routes.guide(g.slug)}
-                  className={cardLink}
-                >
-                  <span className="block font-display text-lg font-bold transition-colors duration-200 [font-variation-settings:'opsz'_18] group-hover:text-accent-text">
-                    {g.title}
-                  </span>
-                  {/* The literal string the owner is staring at, in the one typeface this variation
-                      allows for it. Two lines: it is here to be recognised, not read. */}
-                  {/* No `block` beside `line-clamp-2`: both set `display`, and the plain utility wins over
-                      the clamp's -webkit-box, which silently turns the clamp off. */}
-                  {/* The urgency is not printed on the row. It sorts the list and it decides which panel
-                      takes the full width; a ranked list under a heading that reads "Most urgent
-                      problems" does not also need every row to restate its rank, and on three of the
-                      four hubs that render this the word either repeated or contradicted the heading. */}
-                  {g.errorText && <span className="mt-3 line-clamp-2 font-mono text-[15px] leading-snug text-muted">{g.errorText}</span>}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <ol className="reveal border-t border-line">
+            {topGuides.map((g) => {
+              // Three shapes, one accent: the octagon, the triangle and the wrench differ in form and
+              // not in hue, which is what keeps the rank off a colour-only indicator. It sorts the
+              // list and now it also shows on the row, which the grid never did.
+              const Mark = urgencyIcon[g.urgency];
+              return (
+                <li key={g.slug}>
+                  <Link
+                    href={routes.guide(g.slug)}
+                    className="group flex items-center gap-4 border-b border-line py-5 transition-[border-color] duration-200 motion-reduce:transition-none [@media(hover:hover)]:hover:border-line-strong"
+                  >
+                    <Mark weight="duotone" aria-hidden className="size-6 shrink-0 text-accent-text" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-display text-lg font-bold transition-colors duration-200 [font-variation-settings:'opsz'_18] motion-reduce:transition-none group-hover:text-accent-text">
+                        {g.title}
+                      </span>
+                      {/* The literal string the owner is staring at, in the one typeface this
+                          variation allows for it. One line here rather than the grid's two: a row is
+                          scanned, and the guide page prints it in full. No `block` beside
+                          `line-clamp-1`, because both set `display` and the plain utility wins over
+                          the clamp's -webkit-box, which silently turns the clamp off.
+
+                          Only 20 of the 37 guides carry a literal string, so on most hubs four of
+                          six rows had nothing under the title and the list read thin. The first
+                          symptom is the fallback: it is the same sentence the error cards already
+                          print as their summary, so no new content is invented, and it is set in the
+                          body face rather than the mono, because mono on this site means a string
+                          the site actually prints and a symptom is our words, not WordPress's. */}
+                      {g.errorText ? (
+                        <span className="mt-1 line-clamp-1 font-mono text-[15px] leading-snug text-muted">{g.errorText}</span>
+                      ) : (
+                        g.symptoms[0] && <span className="mt-1 line-clamp-1 text-[15px] leading-snug text-muted">{g.symptoms[0]}</span>
+                      )}
+                    </span>
+                    <CaretRightIcon
+                      aria-hidden
+                      className="size-5 shrink-0 text-accent-text transition-[translate] duration-200 motion-reduce:transition-none [@media(hover:hover)]:group-hover:translate-x-1 motion-reduce:translate-none!"
+                    />
+                  </Link>
+                </li>
+              );
+            })}
+          </ol>
           <p className="mt-6">
             <Link href={routes.guides} className="font-semibold text-accent-text underline underline-offset-4 hover:no-underline">
               Every error we have written up
@@ -137,6 +157,6 @@ export function HubTemplate({ node }: { node: FlatNode }) {
           </>
         }
       />
-    </article>
+    </div>
   );
 }

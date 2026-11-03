@@ -4,6 +4,7 @@ import { aboutLd, JsonLd, nodeCrumbs } from "@/components/JsonLd";
 import { HoverFill } from "@/components/HoverFill";
 import { CountUp, Stagger } from "@/components/motion";
 import { Breadcrumbs, ClosingBand, LinkCards, PageMasthead, RemoteTrack, Section, h2, page, pageY } from "@/components/templates/parts";
+import { VideoFrame } from "@/components/VideoFrame";
 import { brand } from "@/config/brand";
 import { hubIdOf, hubNodes, routes } from "@/config/routes";
 import { cities, guides, services } from "@/content";
@@ -45,7 +46,7 @@ export const metadata: Metadata = {
  */
 export default function About() {
   return (
-    <article className={cn(page, pageY)}>
+    <div className={cn(page, pageY)}>
       <JsonLd data={aboutLd({ name: `About ${brand.name}`, description, path: routes.about })} />
       <Breadcrumbs items={nodeCrumbs(routes.about)} />
 
@@ -180,6 +181,24 @@ export default function About() {
         <RemoteTrack />
       </Section>
 
+      {/* A reserved video slot, and the only new section on this page. It sits directly after the
+          three stations rather than under the masthead: the reader has just been told how a job runs,
+          and the question that follows is show me. Under the masthead it would instead land inside the
+          first viewport at 1440 and compete with the trust strip's count, which is the measurement
+          that moved that strip down in the first place.
+
+          Nothing beside it and no text column, so it does not become a third image-plus-text split on
+          a page whose masthead is already photographic. The frame holds its own 16/10 box, so filling
+          the slot later shifts nothing on the page.
+
+          This page is the right host because its photograph is the one image on the site that is
+          evidence rather than decoration (`decorative={false}` above, the only such masthead). A clip
+          of the work being done is the next increment of the same evidence, and /about/ carries no
+          LCP risk: it is below the fold on a page nobody arrives at mid-emergency. */}
+      <Section id="watch" title="Watch a rescue">
+        <VideoFrame id="how-a-rescue-runs" className="reveal-self" />
+      </Section>
+
       {/* The hub template's closing band. That is a repeat across the site and a deliberate one:
           contract rule 3 forbids a family repeating within one page, and the last thing every
           reading page says is the same offer in the same shape. The heading gives the two buttons a
@@ -193,6 +212,6 @@ export default function About() {
           </>
         }
       />
-    </article>
+    </div>
   );
 }

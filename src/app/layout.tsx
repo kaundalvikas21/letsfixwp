@@ -3,7 +3,7 @@ import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import { JsonLd, organizationLd } from "@/components/JsonLd";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteShell } from "@/components/sections/v4/SiteShell";
-import { brand } from "@/config/brand";
+import { brand, sharedOpenGraph } from "@/config/brand";
 import { SITE_URL } from "@/config/sitemap";
 import "./globals.css";
 
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: `${brand.name}: WordPress fixes, care plans and development`, template: `%s | ${brand.name}` },
   description: "Broken WordPress site? Pick your problem and book a fix, or chat with an engineer.",
-  openGraph: { siteName: brand.name, type: "website", locale: "en_IN" },
+  openGraph: { ...sharedOpenGraph },
   twitter: { card: "summary_large_image" },
 };
 

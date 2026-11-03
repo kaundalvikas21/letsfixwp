@@ -36,13 +36,10 @@ import { cn } from "@/lib/utils";
 export function HoverFill({
   children,
   className,
-  fill = "bg-surface-2",
   ...rest
 }: {
   children: ReactNode;
   className?: string;
-  /** The fill's colour, as a token utility. Must keep the box's own text at 4.5:1 over it. */
-  fill?: string;
 } & Record<string, unknown>) {
   const box = useRef<HTMLDivElement>(null);
 
@@ -57,23 +54,10 @@ export function HoverFill({
   };
 
   return (
-    <div
-      ref={box}
-      onPointerEnter={mark}
-      onPointerLeave={mark}
-      className={cn("group relative isolate overflow-hidden", className)}
-      {...rest}
-    >
-      <span
-        aria-hidden
-        style={{ left: "var(--fill-x, 50%)", top: "var(--fill-y, 50%)" }}
-        className={cn(
-          "pointer-events-none absolute -z-10 aspect-square w-[250%] -translate-x-1/2 -translate-y-1/2 scale-0 rounded-full",
-          "transition-[scale] duration-[650ms] ease-[var(--motion-ease)] motion-reduce:transition-none",
-          "[@media(hover:hover)]:group-hover:scale-100",
-          fill,
-        )}
-      />
+    // One element, not two. The fill is `hover-fill`'s `::before` in globals.css, which is what lets
+    // this sit inside a `dl` as the `div` wrapping a `dt`/`dd` pair: that content model admits no
+    // decorative child element, and the span this used to render made the About stats strip invalid.
+    <div ref={box} onPointerEnter={mark} onPointerLeave={mark} className={cn("hover-fill group", className)} {...rest}>
       {children}
     </div>
   );

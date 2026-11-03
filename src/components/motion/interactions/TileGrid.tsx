@@ -60,6 +60,14 @@ export function TileGrid({ tiles, categories }: { tiles: Tile[]; categories: str
     return byCategory.filter((t) => rank.has(t.key)).sort((a, b) => rank.get(a.key)! - rank.get(b.key)!);
   }, [tiles, category, query, ranked]);
 
+  // How many problems sit behind each chip. Counted from the tiles themselves rather than typed out,
+  // so a new guide changes the number without anyone remembering to.
+  const counts = useMemo(() => {
+    const m = new Map<string, number>([[ALL, tiles.length]]);
+    for (const t of tiles) m.set(t.category, (m.get(t.category) ?? 0) + 1);
+    return m;
+  }, [tiles]);
+
   const capped = !expanded && category === ALL && !query.trim() && shown.length > CAP;
   const visible = capped ? shown.slice(0, CAP) : shown;
   const showToggle = category === ALL && !query.trim() && shown.length > CAP;
@@ -97,15 +105,24 @@ export function TileGrid({ tiles, categories }: { tiles: Tile[]; categories: str
                 )}
               >
                 {c}
+                {/* The count rides the chip's own colour rather than a dimmed version of it: an
+                    opacity step here would drop a 13px numeral under the contrast floor on the ember
+                    chip, and the size difference already separates it from the label. */}
+                <span className={cn("ml-1.5 text-[13px] tabular-nums", category === c ? "text-on-accent" : "text-muted")}>
+                  {counts.get(c)}
+                </span>
               </button>
             </li>
           ))}
         </ul>
       </div>
 
-      {/* The grid changing from 57 tiles to 9 is feedback a sighted visitor gets for free and a screen
-          reader gets not at all. Same polite-region convention as src/components/Finder.tsx. */}
-      <p aria-live="polite" className="sr-only">
+      {/* This was `sr-only`, which meant a screen reader was told how many problems the grid holds and
+          nobody else was. Visible now, so the one element serves both: the polite region still
+          announces the change, and a sighted visitor gets the number that says this is 52 problems
+          deep rather than the nine on screen. It also makes typing feel responsive, because the count
+          moves on every keystroke. */}
+      <p aria-live="polite" className="mt-6 text-[15px] text-muted tabular-nums">
         {visible.length} of {tiles.length} problems shown
       </p>
 
@@ -124,7 +141,11 @@ export function TileGrid({ tiles, categories }: { tiles: Tile[]; categories: str
           // layout animation leaves the tiles projected against a box that is still collapsing.
           // dense flow plus a taller span for the critical tiles: a masonry that keeps whole boxes,
           // so a layout animation has something stable to move between.
-          className="mt-10 grid auto-rows-[9rem] grid-flow-row-dense grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+          // `tile-focus` dims every tile but the one under the pointer. It is a utility rather than
+          // classes on the tile because the selector needs `:has()` across siblings, and it targets
+          // the anchors rather than these list items because Motion writes `opacity: 1` on them
+          // inline, which no class can beat. See globals.css.
+          className="tile-focus mt-10 grid auto-rows-[9rem] grid-flow-row-dense grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
         >
           <AnimatePresence initial={false}>
             {visible.map((t) => (

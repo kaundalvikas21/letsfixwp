@@ -43,7 +43,7 @@ export default function Guarantee() {
   if (!g) notFound();
 
   return (
-    <article className={cn(page, pageY)}>
+    <div className={cn(page, pageY)}>
       {/* /legal/ sits outside SITEMAP on purpose (routes.utilityPaths), so the trail is built rather
           than walked: nodeCrumbs on a path the tree does not hold returns an empty list. */}
       <Breadcrumbs items={[...nodeCrumbs(routes.home), { name: "Guarantee", path: routes.legal.guarantee }]} />
@@ -124,6 +124,6 @@ export default function Guarantee() {
           </>
         }
       />
-    </article>
+    </div>
   );
 }

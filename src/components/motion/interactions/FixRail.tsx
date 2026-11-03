@@ -78,7 +78,11 @@ export function FixRail({ children, label }: { children: ReactNode; label: strin
       // snapping would fight it for the last few pixels of every one.
       className="mt-10 overflow-x-auto px-4 pb-1 md:mt-12 md:px-[max(1.5rem,calc((100%-72rem)/2+1.5rem))] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
-      <div className="flex w-max gap-6 md:gap-8">{children}</div>
+      {/* An `ol`, because what travels along this rail is a sequence and the order is the
+          information. Its children are `li`. It was a `div` of `article` elements, which told
+          assistive tech the opposite: five self-contained compositions that happened to sit in a
+          row, rather than one process with five steps in a fixed order. */}
+      <ol className="flex w-max gap-6 md:gap-8">{children}</ol>
     </div>
   );
 }

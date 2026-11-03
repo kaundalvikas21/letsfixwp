@@ -8,8 +8,10 @@ import Link from "next/link";
 import { BookLink, ChatButton } from "@/components/Cta";
 import { breadcrumbLd, JsonLd, type Crumb } from "@/components/JsonLd";
 import { Photo } from "@/components/Photo";
-import { nodeByPath } from "@/config/routes";
-import { getCompare, getGuide } from "@/content";
+import { sharedOpenGraph } from "@/config/brand";
+import { nodeByPath, routes, serviceIdOf, type FlatNode } from "@/config/routes";
+import { getCompare, getGuide, getService } from "@/content";
+import type { Guide } from "@/content/schema";
 import { deliveryIcon } from "@/content/icons";
 import { promises, remoteDelivery } from "@/content/notices";
 import { deliveryPhoto, type PhotoId } from "@/content/photos";
@@ -59,16 +61,28 @@ export const card = "rounded-[14px] border border-line bg-surface p-6 shadow-car
  * interactive card. The hub now imports it, so there is one string instead of two.
  */
 export const cardLink = cn(
-  "group block rounded-[14px] border border-line bg-surface p-5 shadow-card",
-  "transition-[border-color,box-shadow] duration-200 motion-reduce:transition-none",
+  "group relative block rounded-[14px] border border-line bg-surface p-5 shadow-card",
+  // `translate` is in the list because a `card-plate` wrapper slides this card off its plate on
+  // hover, and Tailwind v4 writes that movement to the standalone `translate` property rather than
+  // to `transform`. Naming it here costs nothing on a card that is never wrapped.
+  "transition-[border-color,box-shadow,translate] duration-200 motion-reduce:transition-none",
   "[@media(hover:hover)]:hover:border-line-strong [@media(hover:hover)]:hover:shadow-lift",
 );
 
+/**
+ * Metadata for a content page: the service, guide, city and comparison routes, which is most of the
+ * site.
+ *
+ * `sharedOpenGraph` is spread rather than assumed. Next merges metadata shallowly from the root
+ * layout down, so this object **replaces** the root layout's `openGraph` instead of merging into it,
+ * and any key not restated here is dropped. Before the spread, `og:site_name` and `og:locale` were
+ * missing from 80 of the 98 prerendered pages, which is every page that calls this.
+ */
 export const pageMetadata = (seo: { title: string; description: string }, path: string): Metadata => ({
   title: { absolute: seo.title },
   description: seo.description,
   alternates: { canonical: path },
-  openGraph: { title: seo.title, description: seo.description, url: path, type: "website" },
+  openGraph: { ...sharedOpenGraph, title: seo.title, description: seo.description, url: path },
 });
 
 export function Section({ id, title, children, className }: { id: string; title: string; children: React.ReactNode; className?: string }) {
@@ -419,6 +433,56 @@ export const urgencyIcon = {
 } as const satisfies Record<"critical" | "high" | "standard", Icon>;
 
 /**
+ * The error grid, under "Errors we fix here" on a service page and "Other errors we fix" on a guide.
+ *
+ * It exists for the mapping. Turning a guide into a card is five lines, and they were typed out
+ * identically in both templates: the route, the title, the first symptom, the literal error string
+ * and the urgency mark. One component holds them now.
+ *
+ * It used to carry a second job, opting this grid into the backing plate while four other sections
+ * went without. That job is gone: the plate is what every link card does (Task 61), so there is no
+ * flag here and nothing to opt into.
+ */
+export function ErrorCards({ guides }: { guides: Guide[] }) {
+  return (
+    <LinkCards
+      cols={4}
+      items={guides.map((g) => ({
+        href: routes.guide(g.slug),
+        title: g.title,
+        summary: g.symptoms[0],
+        code: g.errorText,
+        icon: urgencyIcon[g.urgency],
+      }))}
+    />
+  );
+}
+
+/**
+ * The hub's service directory, under "What we do here".
+ *
+ * Like `ErrorCards`, this is here for the mapping and nothing else. A node rather than a `Service` is
+ * the input, because a hub's child nodes carry their own `title` and `path` and those are what the
+ * directory links; the service is looked up only for its summary.
+ *
+ * The city page lists services too, but from `Service` objects rather than hub nodes, so it keeps its
+ * own `LinkCards` call. That costs it nothing now that the plate is universal (Task 61); it was the
+ * difference between a treated grid and a plain one only while the flag existed.
+ */
+export function ServiceCards({ nodes }: { nodes: FlatNode[] }) {
+  return (
+    <LinkCards
+      cols={4}
+      items={nodes.map((n) => ({
+        href: n.path,
+        title: n.title,
+        summary: getService(serviceIdOf(n.path))?.summary,
+      }))}
+    />
+  );
+}
+
+/**
  * A directory of links as a grid of cards, each one a door to its own page.
  *
  * It replaces the ruled rows these sections used to render. A row works for a list that is read in
@@ -468,8 +532,11 @@ export function LinkCards({ items, cols = 2 }: { items: LinkCardItem[]; cols?: 2
       {items.map((i, index) => {
         const Icon = i.icon;
         return (
-          <li key={i.href} className={cn(wideLast && index === n - 1 && "sm:col-span-2")}>
-            <Link href={i.href} className={cn(cardLink, "flex h-full flex-col", i.banner && "relative isolate overflow-hidden")}>
+          // `card-plate` draws the plate this card slides off, as a `::before` on this wrapper
+          // rather than as an element in the card. See globals.css for why it cannot live on the
+          // anchor, and Task 62 for why it is a utility rather than markup.
+          <li key={i.href} className={cn("card-plate", wideLast && index === n - 1 && "sm:col-span-2")}>
+            <Link href={i.href} className={cn(cardLink, "flex h-full flex-col", i.banner && "isolate overflow-hidden")}>
               {/* The render is the card's background, not a strip across its top.
 
                   `-z-20` for the picture and `-z-10` for the scrim, both inside the card's own
@@ -622,7 +689,7 @@ export function RealScreen({
 /** Shown instead of the fixmywp.com legal text while brand.legacy.enabled is false. */
 export function LegalPending({ title }: { title: string }) {
   return (
-    <article className={cn(page, pageY)}>
+    <div className={cn(page, pageY)}>
       <h1 className={h1}>{title}</h1>
       <p className={cn(prose, "mt-4")}>This page is being prepared. Until it is published, write to us with any question about it.</p>
       {/* The sentence above invites the reader to write to us and, until now, gave them nothing to
@@ -638,7 +705,7 @@ export function LegalPending({ title }: { title: string }) {
           </>
         }
       />
-    </article>
+    </div>
   );
 }
 

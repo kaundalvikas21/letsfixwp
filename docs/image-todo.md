@@ -224,3 +224,41 @@ for the direction. Dropping a regenerated file in at the same path and adding on
   these are soft renders with one lit subject, but a 720x299 source would need no upscaling at all.
 - They are PNG at 8-bit palette. Fine for flat-ish renders, but these have long gradient falloffs,
   so a higher bit depth or a WebP would band less and weigh less.
+
+---
+
+## v4 video slots (Task 53)
+
+The first moving assets the site has asked for. **Six slots exist in `src/content/videos.ts` and all
+six are placed** (Task 54 took the home carousel from two client slots to four); every `clip` is null,
+so each renders a composed empty state naming what will play there and saying it is not filmed yet.
+Filling one is a data change: write the paths into that slot and the player appears, the same way a
+capture appears when its PNG lands in `public/screens/`.
+
+Files go in `public/videos/`, posters and captions beside them. Do not reference those paths from a
+component: `scripts/check-content.ts` fails any hardcoded internal path outside `src/content` and
+`src/config`, so the paths belong in `src/content/videos.ts` only.
+
+| Where | Placeholder | Size | Aspect | Art direction |
+| --- | --- | --- | --- | --- |
+| `/about/`, "Watch a rescue" (`src/app/about/page.tsx`) | dashed empty state, caption "How a rescue runs, from the first message to the site loading again. Not filmed yet." | 1600x1000 source, poster at the same size | 16:10, fixed, matching the capture ratio | **60 to 90 seconds.** One real job, start to finish, on the v4 night direction: the message arriving, an engineer's hands at a keyboard under one warm light, the error on screen, then the site loading. Real screens only, shot, never composited. No face needed and no voiceover required; if there is narration it is the engineer's own. The one light source has to be inside frame: the library's measured failure is that a dark room without a lamp renders as a black panel (mean luminance table above). |
+| `/case-studies/` (`src/app/case-studies/page.tsx`) | dashed empty state, caption "A WordPress site going from a fatal error back to loading normally. Not filmed yet." | 1600x1000 source, poster at the same size | 16:10, fixed | **10 to 20 seconds, no audio needed.** A screen recording, not a shoot: the same WordPress site showing a fatal error, the fix applied, the page loading normally. This is the cheapest asset on the whole list and the one with no permission problem, which is why it is on the page that has no published case study yet. It is also the clip `Restored.tsx` would want if that section could host a player; see the Task 53 ledger entry for why it cannot. |
+| `/` home, the four carousel slides (`src/components/sections/v4/Proof.tsx` through `QuoteCarousel`) | dashed empty state in each card's left column, captions "A client on what broke and how it was handled.", "A second client, on work that was not an emergency.", "A third client, on a hacked site and what the cleanup involved.", "A fourth client, on moving a store without losing orders." | 1280x800 is enough at the card's `md:col-span-5` width; poster to match | 16:10, fixed | **30 to 45 seconds each.** The client on camera, in their own words, filmed with written consent. **Four different jobs, not four versions of one:** an emergency, a planned piece of work, a hacked site, a store move. That is the split `src/content/testimonials.ts` asks of the written quotes, and it is what stops four slides making the same point. **A client slot may not be filled with an actor, a voiceover over stock footage, or a reconstruction.** `PRODUCT.md` lists client testimonials under what must not be fabricated by any future work. Lit however the client's own room is lit: a real person's kitchen or shop beats the night direction here. Shoot landscape; a portrait phone clip will letterbox inside a 16:10 box. |
+
+All six slots are placed, so nothing is defined and waiting for a host. The service template's
+`<Section id="quote">` renders only non-placeholder quotes, so it stays empty until a real client
+exists either way, and it needs no slot of its own until then.
+
+**Four client clips is the largest single ask on this page.** If only one client ever agrees to be
+filmed, do not pad the carousel: delete the unused entries from `src/content/testimonials.ts` and the
+carousel renders what is left, controls and counter adjusting themselves.
+
+### The gate that is deliberately not satisfied
+
+**A clip cannot ship without captions.** `Clip` in `src/components/VideoFrame.tsx` always writes a
+`<track kind="captions">`, and `src/content/videos.ts` types `captions` as a required string rather
+than an optional one, so the day someone adds a clip TypeScript asks for the `.vtt` path instead of
+letting an uncaptioned video onto the page. Budget transcription time with the shoot, not after it.
+
+The empty state needs no track: its text alternative is the `figcaption` under the frame, and its icon
+is `aria-hidden`.

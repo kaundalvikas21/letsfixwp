@@ -113,14 +113,16 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
             {/* Fixed proportions rather than content-driven ones. Left to itself the criterion
                 column collapsed to about 110px and broke every title over two or three lines
                 while the two value columns, which hold five times the text, took the rest. */}
+            {/* `caption` must be the table's first child; `colgroup` follows it. The two were the
+                other way round, which is invalid even though no parser repairs it. */}
+            <caption className="sr-only">
+              {c.a} compared with {c.b}
+            </caption>
             <colgroup>
               <col className="w-[24%]" />
               <col />
               <col />
             </colgroup>
-            <caption className="sr-only">
-              {c.a} compared with {c.b}
-            </caption>
             <thead>
               <tr>
                 <th scope="col" className={thCriterion}>

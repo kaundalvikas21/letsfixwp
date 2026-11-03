@@ -19,7 +19,7 @@ export function CityHubTemplate({ node }: { node: FlatNode }) {
   ];
 
   return (
-    <article className={cn(page, pageY)}>
+    <div className={cn(page, pageY)}>
       <Breadcrumbs items={nodeCrumbs(node.path)} />
       {/* A bare h1 with a sentence under it before this, the one inner page with no header box at
           all. `racks` is a mono frame, which is what a page that names every city and favours none
@@ -66,7 +66,10 @@ export function CityHubTemplate({ node }: { node: FlatNode }) {
           page this card opens. */}
       <ul className="reveal mt-10 grid items-stretch gap-4 sm:grid-cols-2">
         {cities.map((c) => (
-          <li key={c.slug}>
+          // The card is hand-rolled because its body is city-shaped, but the hover is not its own:
+          // `card-plate` is the same plate every other card grid slides off, from one definition in
+          // globals.css. This grid was the only one the Task 61 sweep missed.
+          <li key={c.slug} className="card-plate">
             <Link href={routes.city(c.slug)} className={cn(cardLink, "flex h-full flex-col")}>
               <span className="text-sm text-muted">WordPress development in</span>
               <span className="mt-1 font-display text-[1.5rem] leading-[1.15] font-extrabold tracking-[-0.03em] transition-colors duration-200 [font-variation-settings:'opsz'_24] motion-reduce:transition-none [@media(hover:hover)]:group-hover:text-accent-text">
@@ -99,7 +102,7 @@ export function CityHubTemplate({ node }: { node: FlatNode }) {
           </>
         }
       />
-    </article>
+    </div>
   );
 }
 
@@ -139,7 +142,7 @@ export function CityTemplate({ city: c, node }: { city: City; node: FlatNode }) 
   const loc = `city:${c.slug}`;
 
   return (
-    <article className={cn(page, pageY)}>
+    <div className={cn(page, pageY)}>
       <JsonLd
         data={[
           serviceLd(dev, {
@@ -226,6 +229,6 @@ export function CityTemplate({ city: c, node }: { city: City; node: FlatNode }) 
           Other cities we work with
         </Link>
       </p>
-    </article>
+    </div>
   );
 }

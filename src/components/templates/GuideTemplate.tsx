@@ -10,7 +10,7 @@ import { coreFileWarning } from "@/content/notices";
 import { servicePhotos } from "@/content/photos";
 import type { Guide } from "@/content/schema";
 import { cn } from "@/lib/utils";
-import { Breadcrumbs, card, ClosingBand, Faqs, LinkCards, PageMasthead, RealScreen, Section, page, pageY, urgencyIcon } from "./parts";
+import { Breadcrumbs, card, ClosingBand, ErrorCards, Faqs, PageMasthead, RealScreen, Section, page, pageY } from "./parts";
 import { ReadingRail } from "./ReadingRail";
 
 /**
@@ -239,16 +239,7 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
           either way rather than a new one. */}
       {siblings.length > 0 && (
         <Section id="related-guides" title="Other errors we fix">
-          <LinkCards
-            cols={4}
-            items={siblings.map((x) => ({
-              href: routes.guide(x.slug),
-              title: x.title,
-              summary: x.symptoms[0],
-              code: x.errorText,
-              icon: urgencyIcon[x.urgency],
-            }))}
-          />
+          <ErrorCards guides={siblings} />
         </Section>
       )}
 

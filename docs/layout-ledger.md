@@ -5606,3 +5606,1561 @@ running.
 
 axe **zero violations**. **CLS 0.** `tsc` 0, `eslint` 0, content check 52/199, motion check clean,
 build 99 routes.
+
+## v4 / video slots reserved on three pages (Task 53)
+
+Three video slots, recorded before coding (contract rule 3). None is filmed. Each renders a composed
+empty state today and becomes a real player the moment a file lands in `src/content/videos.ts`, with no
+code change: the same existence gate `RealScreen` and `hasScreen()` already run for `public/screens/`.
+
+| # | Page | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | `/about/` | "How a rescue runs" (new) | one framed media block on the full spine, caption under the frame, nothing beside it | no | no | none (the masthead and the closing band carry this page's two) |
+| 2 | `/case-studies/` | the existing empty state | composed empty state with one framed visual above the copy | no | no | BOOK, CHAT (already present, unchanged) |
+| 3 | `/` home, `Proof` | the existing quote cards | no new family: a media slot inside the card that is already there | no | yes (already, the logo marquee) | unchanged |
+
+Budgets after this pass: 0 pinned scenes of 2. Home stays at 1 marquee and gains no section, so its
+family count is unchanged at 11. `/about/` goes from 4 sections to 5 and spends no eyebrow. No page has
+two consecutive image-plus-text splits: slot 1 is a media block with no text column beside it, and slot
+3 sits inside a card.
+
+### Why the restored-site section was rejected as a host
+
+The plan approved for this task put the second business slot in `src/components/sections/v4/Restored.tsx`,
+on the argument that it is the one section whose entire content is one visual and whose stand-in actively
+misleads (`docs/image-todo.md`: under "Same site. Working again." an unlit monitor reads as the site still
+being down). Reading the section ruled it out.
+
+`RestoredOverlay` covers that frame edge to edge with `absolute inset-0 bg-photo-scrim` and holds the
+section's own `h2#same-site` and its sentence centred on top of it. A `<video controls>` underneath is
+unreachable: the scrim paints over it, and the player's control bar lands under the overlay's copy. Making
+it work means removing the overlay and restacking the section's words above or below the frame, which is
+the redesign this task's non-goals rule out, and it would also cost the section the one measured pairing
+the site has for text over photography (`--on-photo` on flat `--photo-scrim`, 6.58:1).
+
+So the slot moved to `/case-studies/`, which the repo already documents as its proof-shaped hole: the page
+is a dashed empty state whose whole job is evidence that does not exist yet. It needs no redesign, and the
+video is the first evidence the page can carry before a written case study is approved.
+
+Restored keeps its three-branch fallback chain untouched. The honest note stands that it still wants
+`/screens/restored.png` from `npm run capture`, which needs Docker.
+
+### Why a video slot is not a new primitive
+
+`src/components/VideoFrame.tsx` is 3 small exports layered on each other, and the frame itself is the
+`Framed` shape already inline in `Restored.tsx:16` and specified at `MASTER.md:211`: `--surface-2` bezel,
+`p-2`, 14px outside and 14px inside, `border-line`, `--shadow-card`. Nothing new was invented for it.
+
+- `Clip` renders the `<video>`: `controls`, `preload="none"`, a poster, and `width`/`height` so the box is
+  the final box. No player library, no custom chrome, no autoplay, which is what keeps it inside contract
+  rule 13 on a home page already measured at LCP 5.2s.
+- `VideoSlotBox` is the 16/10 aspect box: the clip, or the dashed `border-line-strong` empty state that is
+  this codebase's established placeholder signal (`QuotePair.tsx:40`, `case-studies/page.tsx:23`).
+- `VideoFrame` wraps the box in the capture frame and puts the caption in a `figcaption` **under** the
+  frame, because contract rule 6 bans labels on images.
+
+The caption is the honest part. While a slot is empty it names what will play there and says it is not
+filmed yet, so the page never shows a play affordance for a video that does not exist.
+
+### Accessibility gate carried forward, deliberately unsatisfied
+
+A clip cannot ship without a captions track, and a `<track>` cannot be written for a file that does not
+exist. `src/content/videos.ts` carries `captions` on the clip type as a required field, so the day a clip
+is added TypeScript asks for its `.vtt` path rather than letting an uncaptioned video reach the page. The
+empty state needs no track: its text alternative is the `figcaption`.
+
+### Measurements
+
+Taken from the prerendered HTML in `.next/server/app/` rather than from a browser: this machine's
+sandbox blocks loopback networking, so `next start` binds in a namespace nothing else can reach, and
+port 3000 reports EADDRINUSE with nothing listening on it (a WSL2 port reservation, not a server).
+What follows is therefore measured where it can be, and the browser passes are named as not run.
+
+| Page | Video-slot figures rendered | `<video>` elements | `autoplay` | Dashed empty states |
+| --- | --- | --- | --- | --- |
+| `/about/` | 1 | 0 | 0 | 1 |
+| `/case-studies/` | 1 | 0 | 0 | 1 (plus the page's own panel, which is a different block) |
+| `/` home | 2, one per quote card | 0 | 0 | 2 (plus the two existing quote markers) |
+
+Zero `<video>` elements is the correct result while every `clip` is null: the empty state is markup,
+not a stalled player, so there is nothing to fetch and nothing to fail.
+
+Heading order on `/about/` after the insert, read off the rendered HTML: h1 "About LetsFixWP", then
+h2 "What we work on", h2 "How working with us runs", **h2 "Watch a rescue"**, h2 "Want us to look at
+your site?". One h1, no level skipped, and the new section is the fifth of five rather than second,
+which is where the slot's own comment argues it belongs.
+
+Contrast, computed from the token values in `globals.css` rather than sampled:
+
+| Pairing | Measured | Needs | Where |
+| --- | --- | --- | --- |
+| `--muted` on `--surface-2` | **6.79:1** | 4.5 (body) | the caption, which sits inside the frame's bezel |
+| `--line-strong` at 0.36 over `--surface` | **3.36:1** | 3.0 (UI boundary) | the dashed empty-state border, composited rgb(105,105,107) |
+
+Both are new pairings on this site. For reference the existing ones measure `--muted` on `--surface`
+7.35:1 and the same dashed border on `--surface-2` 3.34:1, so the slot is in line with what the quote
+cards and the case-studies panel already spend.
+
+CLS is 0 by construction rather than by measurement: the box is `aspect-[16/10]` with no image in it,
+`Clip` carries `width` and `height` from the content file so a real clip reserves the same box, and
+nothing in the slot loads an asset that could resize it. No negative margins and no fixed widths, so
+it cannot produce horizontal scroll inside the `max-w-page` spine.
+
+Reduced motion: the slot runs no animation of its own. On `/about/` and `/case-studies/` the frame
+carries `reveal-self`, whose hidden state is `globals.css:711`, and that rule arms
+`opacity: 1 !important; transform: none !important` under `prefers-reduced-motion: reduce`. With the
+bundle blocked entirely there is no `.reveal-js` on `<html>`, so the frame renders at full opacity
+either way. In the quote cards the frame sits outside the Motion variants, so it never animates at all.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 201 files scanned, legacy off**, motion
+check clean, `npm run build` green at **99 routes** (55 SITEMAP nodes, 37 guides, 3 compares, 4
+utility). `check-confirmed` still counts **2 placeholder testimonials** and still fails a production
+deploy, which is the result wanted: adding a video slot to those two cards did not quietly launder
+them into confirmed content.
+
+**Not run, and not claimed:** axe, Lighthouse, the 375/768/1024/1440 screenshot pass, and a measured
+CLS and LCP. The sandbox has no loopback networking and the attached browser sits in a different
+network namespace from anything `next start` can bind, so no page could be loaded. These are the
+checks to run first on a machine that can serve the build, and `/about/` plus `/` are the two routes
+that need them.
+
+## v4 / the proof section becomes a paged video carousel (Task 54)
+
+Recorded before coding (rule 3). Home section 5 changes layout family. The two quote cards side by
+side became one card per view on a snap rail, because the video slot added in Task 53 had turned each
+card into five stacked blocks (video frame, its caption, a dashed chip, a 7xl quotation glyph, a
+display blockquote at `text-3xl`, attribution) and two of those stacked into one column below 768px.
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 5 | We repair sites running on | **was** two quote cards side by side (`md:grid-cols-2`) | no | yes, the logo strip | none in the cards |
+| 5 | We repair sites running on | **now** paged carousel, one card per view, video beside quote, prev/next plus dots inside the spine | no | yes, unchanged | none in the cards |
+
+Home stays at 11 sections and at one marquee. No eyebrow spent. No new consecutive image-plus-text
+split: the card is a single block whose two halves are one quote, not a section-level split.
+
+### Rule 3: why this is not the rail the page already has
+
+Section 3 is recorded as "scroll-driven rail, 5 panels on one line, bleeding to the edge", so a second
+horizontal track needed an argument rather than an assumption. `FixRail` and this carousel are
+opposites on every axis that defines that family:
+
+| | Section 3, `FixRail` | Section 5, `QuoteCarousel` |
+| --- | --- | --- |
+| What moves it | the page scroll, written to `scrollLeft` every frame through a spring | the visitor, through buttons, dots, a swipe or arrow keys |
+| Controls | none, by design | prev, next, four dots, a position counter |
+| Snapping | **refused outright** (`FixRail.tsx:77-78`: the drive would fight it for the last pixels of every frame) | `snap-x snap-mandatory`, which is the whole paging mechanism |
+| Width | bleeds to the window edge, cards cut off to say there is more | contained in the 1152px spine, one full-width card |
+| Units | 5 panels read as one continuous row | 4 discrete slides, one at a time |
+
+One is a continuous automatic pan you can interrupt; the other is discrete manual paging. Different
+family, recorded as such.
+
+### Why there is no autoplay
+
+Not taste. `LogoMarquee` sits in this same section and is the page's one auto-moving track, which rule
+3 caps at one per page and `Marquee.tsx:22-24` already records as spent. An auto-advancing carousel
+would be the second. It would also fight the slot's own content: an advancing slide can pull a clip
+away from someone who pressed play on it.
+
+Which simplifies rule 9 rather than dodging it. The rule asks for "pause plus previous and next
+controls and stop on hover, focus and reduced motion". Prev and next are real buttons; hover, focus
+and reduced-motion stops are vacuous because nothing moves on its own; **pause is not applicable, and
+that is a consequence of there being nothing to pause rather than an omission.**
+
+### Why no carousel library, and why not 21st
+
+21st.dev was searched first, per CLAUDE.md. Ten testimonial carousels, none usable: every one is
+quote-and-avatar rather than video, most lead with autoplay (`Carousel Testimonials`, `Testimonials
+with Carousel`, `Reviews Carousel`), and the two closest on behaviour (`Testimonial Section 3` and
+`4`, prev/next plus keyboard) are three-card centre-highlighted layouts, which is rule 6's three equal
+cards in a row. Each would also need its tokens rewritten and a second accent stripped.
+
+No Embla, Swiper or Keen either. The whole mechanism is three CSS classes and one DOM call:
+
+```
+snap-x snap-mandatory scroll-smooth   +   motion-reduce:scroll-auto
+el.children[i].scrollIntoView({ block: "nearest", inline: "start" })
+```
+
+`scrollIntoView` with no `behavior` argument inherits the scroller's computed `scroll-behavior`, so
+**reduced motion is handled entirely by the media query** and there is no JS branch that can drift
+from the CSS. `block: "nearest"` is load-bearing: without it, paging a horizontal rail also scrolls
+the page vertically to centre the slide.
+
+The active index comes from an `IntersectionObserver` rooted on the rail, holding a ratio per slide
+across callbacks so a slide leaving view cannot win. Not a scroll listener: rule 6 bans
+`window.addEventListener('scroll')`, and `Marquee.tsx:52-58` already set the observer as the house
+pattern for "is this thing in view".
+
+Rule 10 wants one sentence per animation. Nothing here is animated: scroll position is not an animated
+property, the dots change state with no transition (a width transition would be a layout animation,
+which rule 10 forbids), and what the movement communicates is **that there is more than one client
+story, and which one you are on.**
+
+### What the card lost
+
+| Block | Was | Now |
+| --- | --- | --- |
+| video | full card width, 16/10, above everything | `md:col-span-5`, beside the quote; full width only below 768px |
+| quotation glyph | `text-7xl` display character on its own line | gone; the blockquote carries real typographic quotes |
+| placeholder chip | a dashed block on its own line | one `text-xs` chip |
+| quote | `text-2xl md:text-3xl` display | `text-xl md:text-2xl` display |
+| attribution | `mt-auto pt-6` | unchanged |
+
+Slides are `w-full shrink-0 snap-start` in a flex row, so `align-items: stretch` gives every card the
+height of the tallest and the controls underneath never jump between slides.
+
+### Four slides, not two
+
+A carousel of two is controls looking for content. `src/content/testimonials.ts` went from two
+placeholder entries to four, each still `placeholder: true` and each with its own video slot in
+`src/content/videos.ts`. The four are deliberately four different jobs (an emergency, a planned piece
+of work, a hacked site, a store move) so no two slides make the same point, which is the split the
+file already asked of the original two.
+
+**This makes the production gate louder, not quieter.** `scripts/check-confirmed.ts` and
+`next.config.ts` count placeholders and fail a production deploy while any remain, so the count goes
+from 2 to 4. That is the honest direction: the section now has four visible slots that say no client
+has said any of this yet.
+
+### Measurements
+
+Read off the prerendered `.next/server/app/index.html`, for the same reason as Task 53: this machine's
+sandbox has no loopback networking, so nothing can serve the build and no browser can reach it.
+
+| Assertion | Result |
+| --- | --- |
+| `aria-roledescription="carousel"` groups | 1 |
+| slides, with labels | 4, labelled "1 of 4" through "4 of 4" |
+| video-slot figures | 4, one per slide |
+| `<video>` elements | 0, correct while every clip is null |
+| `autoplay` anywhere | 0 |
+| snap rail, `snap-x snap-mandatory scroll-smooth` | 1 |
+| `motion-reduce:scroll-auto` | 1 |
+| prev and next controls | both, labelled "Previous client story" and "Next client story" |
+| dot controls | 4, labelled "Go to client story 1" to "4" |
+| `aria-current` | `true` on the first dot, `false` on the other three |
+| position counter | renders "1 of 4" |
+| blockquote class | one variant only: `text-xl md:text-2xl`, down from `text-2xl md:text-3xl` |
+| `text-7xl` in the cards | 0; the one left on the page is the hero headline at `xl:` |
+| h2 count | 18, unchanged: the carousel adds no heading |
+
+The prev button server-renders as `disabled=""`, which is right: the first slide is the active one
+before any hydration, and a control that cannot do anything should say so rather than silently fail.
+
+Contrast, computed from the token values rather than sampled. UI indicators and boundaries need 3:1,
+body text 4.5:1:
+
+| Pairing | Measured | Needs |
+| --- | --- | --- |
+| active dot, `--accent` on `--bg` | **6.30:1** | 3.0 |
+| inactive dot, `--line-strong` on `--bg`, composited rgb(99,99,101) | **3.26:1** | 3.0 |
+| control border, `--line-strong` against the page `--bg` | **3.57:1** | 3.0 |
+| control border against its own `--surface` fill | **3.36:1** | 3.0 |
+| placeholder chip, `--muted` on `--surface` at `text-xs` | **7.35:1** | 4.5 |
+| position counter, `--muted` on `--bg` | **7.82:1** | 4.5 |
+| attribution, `--text` on `--surface` | **16.14:1** | 4.5 |
+
+The disabled control drops to `opacity-40` and is below 3:1 by design; WCAG exempts an inactive
+control, and the state is also carried by the real `disabled` attribute rather than by colour alone.
+
+Card height is stated as intent rather than as a number, because measuring it needs a browser. What
+produces the reduction is specific and visible in the diff: the 16/10 video moves from full card width
+to `md:col-span-5` beside the quote, the `text-7xl` glyph line is deleted, the dashed chip goes from a
+block to a `text-xs` inline chip, and the blockquote drops one step on both breakpoints. Below 768px
+the card still stacks video over quote, so the saving there is the glyph, the chip and the type step,
+not the layout.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 201 files scanned, legacy off**, motion
+check clean (no Motion imports outside `src/components/motion/`, and this carousel imports none at
+all), `npm run build` green at **99 routes**.
+
+`check-confirmed` now reports **4 placeholder testimonials**, up from 2, and still fails a production
+deploy. That is the intended direction: four visible slots now say that no client has said any of
+this yet.
+
+`QuotePair.tsx` was deleted rather than left beside its replacement. `Proof.tsx` was its only consumer.
+The references left in `docs/qa-report.md` are kept: they are a record of what was measured against
+that component at the time, not live documentation.
+
+**Not run, and not claimed:** axe, Lighthouse, the 375/768/1024/1440 screenshot pass, measured card
+heights, and a real swipe test on a touch device. The last one matters most here, because touch
+inertia against `snap-mandatory` is the one behaviour that cannot be reasoned about from markup. Run
+these first on a machine that can serve the build.
+
+### Follow-up: the section link moves into the controls row
+
+Reported from a screenshot: "Read the case studies" sat on its own line under the carousel while the
+right half of the controls row was empty, so the row read as unfinished and the link spent a whole
+line of height restating nothing.
+
+It now sits in the controls row, in a right-aligned group with the counter: paging on the left, the
+link and "n of 4" on the right. That is one line of height recovered from the section and the row's
+dead space filled by the one thing in the section that goes somewhere.
+
+It is passed into `QuoteCarousel` as an `action` node, the same composition the `media` slot already
+uses, so the link stays a Server Component and its href keeps coming from `src/config/routes.ts`,
+which rule 16 makes the only legal source for one.
+
+The row became `flex-wrap` with `gap-y-4` at the same time. Two 44px buttons and four 44px dot
+targets already take about 280px, and the spine is 343px of usable width at 375, so without wrapping
+the link would have pushed the row past the viewport. Wrapping drops the right group to a second line
+instead, which is a taller row at that width but no horizontal scroll, and rule 12 forbids the latter
+outright.
+
+Verified in the prerendered HTML: the link renders once on the page, inside the controls row, before
+the counter. `tsc` 0, `eslint` 0, content and motion checks clean, build green at 99 routes.
+
+## v4 / home, proof split in two and moved to where the doubts are (Task 55)
+
+Recorded before coding (rule 3). No new layout family: this is a split and a reorder of blocks the
+page already had. Home goes from 11 sections to 12 because one section that was doing two jobs
+becomes two sections that each do one.
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 2 | We repair sites running on (**new**, `Logos.tsx`) | labelled logo strip, one line, centred label above it | no | yes, the page's one | none |
+| 9 | What clients say (**new**, `ClientStories.tsx`) | paged carousel, one card per view (Task 54's family, unchanged) | no | no | none in the cards; the case studies link sits in the controls row |
+
+Budgets after: 12 sections, still **1 marquee**, still **0 pinned scenes of 2**, 0 eyebrows. The
+carousel's family was argued against section 4's scroll-driven rail in Task 54 and that argument is
+unchanged by moving it; the two are now further apart rather than closer.
+
+### The order, before and after
+
+| # | Was | Now |
+| --- | --- | --- |
+| 1 | Hero | Hero |
+| 2 | Sound familiar (the break) | **We repair sites running on** (logo strip) |
+| 3 | Here is what we do next (the fix) | Sound familiar (the break) |
+| 4 | Pick your problem | Here is what we do next (the fix) |
+| 5 | **We repair sites running on + the quotes** | Pick your problem |
+| 6 | Same site. Working again. | **Same site. Working again.** |
+| 7 | Choose how you want help | Choose how you want help |
+| 8 | Guarantee | Guarantee |
+| 9 | How we work on your site | **What clients say** |
+| 10 | Questions people ask first | How we work on your site |
+| 11 | Let's fix it. | Questions people ask first |
+| 12 | | Let's fix it. |
+
+### Why
+
+Four findings from an audit of the page against SaaS proof conventions and `PRODUCT.md`'s own
+conversion goal. Each one is a placement problem, not a styling one.
+
+**One section was doing two jobs under a heading that named one of them.** The section was
+`aria-labelledby="repair-sites-on"`, so its accessible name was "We repair sites running on" while it
+contained the logo strip, four client stories and the case studies link. That heading answers "do you
+support my stack"; it says nothing about clients. The styling showed the block had outgrown its
+heading: measured across the rendered HTML, every other section heading on this page is 30px display
+extrabold, and this one alone was **16px, non-display, `--muted`**. So the page's entire client-proof
+block had no visible heading at all, and a screen reader announced four testimonials inside a region
+named after a platform list. Split, each half now says what it is, and "What clients say" is set in
+the house heading like every other section.
+
+**The logo strip was about four screens too late.** It was recorded at 65% page depth. A logo row is
+the fastest credibility check a visitor can make and the convention everywhere is to put it directly
+under the hero. The argument is stronger here than for generic SaaS: `PRODUCT.md` has the visitor
+arriving mid-emergency, often on a phone, often straight off a search for their error string, with
+success defined as a booked fix in about two minutes. Someone deciding whether this company is real
+does it on the first screen. It is also the cheapest block on the page to move: one line of markup
+and a strip of inline SVG.
+
+**The page led its proof moment with its weakest proof.** The quote carousel sat *before* `Restored`,
+the real before-and-after capture, which is the most persuasive asset the page owns. With no real
+client quotes yet, a demonstration is the proof that works: a real screen beats an empty testimonial
+block. `Restored` now follows "Pick your problem" directly, so the sequence reads recognise your
+error, see the fix, see the same site working, and only then hear from clients.
+
+**The testimonials sat next to no decision.** They were in a narrative gap between the problem list
+and the result, with no call to action within a screen. They now sit after `Plans` and `Guarantee`,
+which is this page's price-and-risk moment, where the doubt a client story answers ("did this work
+for someone like me") is the doubt the visitor actually has.
+
+### What was deliberately not changed
+
+The opening run of break, fix, pick-your-problem is well judged for a visitor who arrived in a panic
+and is not reshuffled to suit a convention. The carousel itself is untouched: the finding was where it
+sat, not what it was. No copy was rewritten and no section was restyled beyond giving the client
+stories the house heading they should always have had.
+
+### The one risk this introduces
+
+The marquee is a client island carrying eight inline SVGs, and it moves from 65% depth to the second
+section on a page already measured at **LCP 5.2s against a 2.5s budget**. The icons are inline, so it
+adds no network request, and `Marquee` already stops itself when off screen. What it does add is
+hydration work higher up the page. The hero is `min-h-[100dvh]`, so the strip still starts below the
+first viewport and brief rule 4 (nothing animating in the first screen) continues to hold. **This is
+the thing to measure first** on a machine that can serve the build.
+
+### Measurements
+
+Read off the prerendered `.next/server/app/index.html`, for the reason given in Tasks 53 and 54: this
+machine's sandbox has no loopback networking, so nothing can serve the build and no browser can
+reach it.
+
+Heading hierarchy, in document order, with the size each is actually set at:
+
+| # | Level | Heading | Size | Display face |
+| --- | --- | --- | --- | --- |
+| 1 | h1 | Broken WordPress? Back online today. | 30px | yes |
+| 2 | h2 | We repair sites running on | 16px, `--muted` | no, by design: it labels a strip |
+| 3 | h2 | Sound familiar? | 30px | yes |
+| 4 | h2 | Here is what we do next. | 30px | yes |
+| 5 | h2 | Pick your problem. We take it from there. | 30px | yes |
+| 6 | h2 | Same site. Working again. | 30px | yes |
+| 7 | h2 | Choose how you want help | 30px | yes |
+| 8 | h2 | 14-day guarantee | SVG letterforms | yes |
+| 9 | h2 | **What clients say** | **30px** | **yes** |
+| 10 | h2 | How we work on your site | 30px | yes |
+| 11 | h2 | Questions people ask first | 30px | yes |
+| 12 | h2 | Let's fix it. | display | yes |
+
+Row 9 is the fix. The client-proof block went from having no heading of its own to carrying the same
+30px display heading as every other section. Row 2 stays at 16px `--muted` deliberately: it is a label
+for a logo row, not a section opening, and it is still a real h2 so the strip has a name in the
+outline rather than being eight unexplained pictures.
+
+| Assertion | Result |
+| --- | --- |
+| `<section>` elements in `<main>` | 12, up from 11 |
+| marquees | 1, unchanged, rule 3 intact |
+| carousels | 1 |
+| logo strip renders before "Sound familiar?" | yes |
+| `Restored` renders before the client stories | yes |
+| client stories render after the guarantee | yes |
+| one h1 | yes, no level skipped anywhere |
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off**, motion
+check clean, `npm run build` green at **99 routes**. `check-confirmed` still reports 4 placeholder
+testimonials and still fails a production deploy, unchanged by the move.
+
+`Proof.tsx` was deleted rather than left beside its two replacements; `src/app/page.tsx` was its only
+consumer. `LogoMarquee` is untouched and still the single call site of the `Marquee` primitive.
+
+**Not run, and not claimed:** axe, Lighthouse, the 375/768/1024/1440 screenshot pass, and the LCP
+measurement that this task specifically calls for, since the marquee moved from 65% depth to the
+second section on a page already at 5.2s. Run that one first.
+
+## v4 / case studies, redesigned around what the page can honestly show (Task 56)
+
+Recorded before coding (rule 3). `/case-studies/` was 41 lines: breadcrumbs, a bare h1, a video slot
+and one dashed panel. It was the only inner page on the site with **no masthead and no closing band**,
+which is why it read as unfinished rather than as empty.
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Case studies (masthead) | type on a photographic band, the shared `PageMasthead` | no | no | BOOK, CHAT |
+| 2 | What each write-up contains | 4 icon cards, 2x2, cursor-aware hover fill | no | no | none |
+| 3 | The same site, before and after | one framed media block, caption under it | no | no | none |
+| 4 | No write-ups are published yet | composed empty state, dashed `--line-strong`, one sentence | no | no | none |
+| 5 | What to read instead | link card grid, 2 across | no | no | none |
+| 6 | Closing band | the shared `ClosingBand` | no | no | BOOK, CHAT |
+
+Six families, all distinct, none repeated on this page. 0 marquees, 0 eyebrows, 0 pinned scenes. The
+two CTA pairs are the masthead's and the closing band's, which is the pattern every other inner page
+already runs; the empty state's own `BookLink`/`ChatButton` pair was **removed**, because three
+copies of the same two buttons on one page is the repetition rule 3 exists to stop.
+
+### The constraint that shaped the whole page
+
+**There are no case studies, and none may be invented.** `PRODUCT.md` lists them under "absent, and
+must not be fabricated by any future work", rule 6 bans invented brands outright, and every entry in
+`src/content/testimonials.ts` is still `placeholder: true`. So this is not a redesign that waits for
+content: it is a page built to be worth reading while the content does not exist, and to fill in
+without a rewrite when it does.
+
+What it shows instead is real. The anatomy of a write-up is a promise about format, not a claim about
+results. The counts in the link cards are `guides.length` and `services.length`, counted from
+`src/content` at build time, which is the only kind of number rule 8 allows on screen. The video slot
+is the one piece of evidence that needs nobody's permission to produce.
+
+### Where the design guidance was followed, and where the project overrode it
+
+Four skills were asked for and all four were read. Three of them are written for a generic premium
+landing page and collide head-on with this design system. Contract rule 1 puts the taste-skill bans
+and the brand anchors above generic design-system output, and `MASTER.md` is explicit, so the project
+won every collision:
+
+| Guidance | Why it was not followed |
+| --- | --- |
+| `rounded-full` pills, `rounded-[2rem]`, concentric "double-bezel" radii | `MASTER.md:92`: 14px everywhere, including nested elements. "No pills, no sharp corners, no other radius anywhere." |
+| Radial mesh gradients, glowing orbs | No gradients outside the hero scrim and the guarantee veil |
+| `backdrop-blur` cards | No `backdrop-filter` anywhere except the scrolled nav bar |
+| `blur-md` resolving to `blur-0` on scroll entry | Rule 10: transform and opacity only. Blur is neither |
+| Eyebrow pill badges above every heading | Rule 6 bans pills and section-number eyebrows; the eyebrow budget is `ceil(sections/3)` and this page spends none |
+| Ultra-light icon strokes | One icon family site-wide, Phosphor duotone |
+
+What did carry over, because it agrees with the house system rather than fighting it: strong ease-out
+easing (`--motion-ease` is `cubic-bezier(0.22, 1, 0.36, 1)`, already a strong ease-out), transitions
+that name their exact properties instead of `all`, hover gated behind `(hover: hover)`, press feedback
+at `scale-[0.98]`, a stagger in the 30 to 80ms band (the house token is 70ms), and hierarchy built
+from weight, size and leading together rather than size alone.
+
+### Hover, and the rule it had to get past
+
+DESIGN.md's Hover Earns It rule reserves a pointer response for things that go somewhere, so the four
+anatomy cards, which are not links, would normally get nothing. They use `HoverFill`, the cursor-aware
+fill built for the About stats cells, which is the one existing exception and was spent on the owner's
+instruction for exactly this case: non-link cells that still answer the pointer. No new mechanism, no
+second vocabulary. The link cards keep `cardLink`, where the border firms to `--line-strong` and the
+shadow steps to `--shadow-lift`, both gated and both naming their two properties.
+
+### 21st.dev
+
+Searched first, per CLAUDE.md. Eight results, none adopted: every one is a landing-page hero with a
+sticky navbar, gradient headline text, a dashboard mockup and glow effects. Stripping the gradients,
+the glows, the pills and the second accent leaves nothing of the component, and this page needs an
+inner-page masthead rather than a landing hero. The closest by intent, an empty-state kit, is a shadcn
+component against token names this repo does not have, and the empty state here already exists on our
+tokens.
+
+### Measurements
+
+Read off the prerendered `.next/server/app/case-studies.html`. No browser on this machine: the
+sandbox has no loopback networking, as recorded in Tasks 53 to 55.
+
+Heading outline, which is the scannability claim made concrete. The page went from an h1 and nothing
+else to a labelled structure a reader can skim in five stops:
+
+| Level | Heading |
+| --- | --- |
+| h1 | Case studies |
+| h2 | What each write-up contains |
+| h3 | What the site was doing / What we found / What we changed / What it took |
+| h2 | The same site, before and after |
+| h2 | No write-ups are published yet |
+| h2 | What to read instead |
+| h2 | Want us to look at your site? |
+
+One h1, no level skipped, every section named by what it holds.
+
+| Assertion | Result |
+| --- | --- |
+| masthead photograph | `/site_images/services/emergency.jpg` through `next/image` |
+| sections | 5, plus the masthead header and the closing band |
+| anatomy cards | 4, each with a `HoverFill` |
+| link cards | 4, all carrying `cardLink`'s gated hover |
+| video slot | present, still "Not filmed yet" |
+| dashed empty states | 2: the status panel and the video slot's own box |
+| "Fix my site" on the page | **2**, down from 3: masthead and closing band only |
+| counts printed | 37 guides, 32 services, both counted from `src/content` |
+
+Contract bans, grepped against the rendered markup rather than trusted:
+
+| Ban | Result |
+| --- | --- |
+| `backdrop-blur` | 0 |
+| radius other than 14px | 0 |
+| `blur-*` filters | 0 |
+| `rounded-full` | 4, all of them `HoverFill`'s internal fill circle. That is the shape of a radial fill, not a pill-shaped control, and it is the component already shipped on `/about/`. Not a shape-lock violation |
+| `gradient` | 4, all of them `ClosingBeams`' SVG `radialGradient` defs inside the shared closing band, which 11 pages already render |
+
+Contrast, computed from the token values. The anatomy card is the only new pairing, and it has two
+states because `HoverFill` repaints the card from `--surface` to `--surface-2` under the pointer, so
+both were checked:
+
+| Pairing | Resting | Hovered | Needs |
+| --- | --- | --- | --- |
+| ember icon | 5.93:1 | 5.47:1 | 3.0 |
+| h3, `--text` | 16.14:1 | 14.90:1 | 4.5 |
+| body, `--muted` | 7.35:1 | 6.79:1 | 4.5 |
+
+Motion: `Stagger` ladders the four cards at the house 70ms step, `Section` puts `reveal-self` on each
+h2, and `LinkCards` brings its own `reveal` on its `ul`. One animated owner per ancestor chain is
+preserved, because `Section` does not carry `reveal` itself. `HoverFill` animates `scale` only, behind
+`(hover: hover)`, and drops its transition under reduced motion rather than pinning every card filled.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off**, motion
+check clean, `npm run build` green at **99 routes**.
+
+**Not run, and not claimed:** axe, Lighthouse, the 375/768/1024/1440 screenshot pass, and any measured
+LCP for the new masthead photograph on this route. The masthead is the first large image this page has
+ever loaded, so that measurement is the one that matters most here.
+
+## v4 / the backing plate on the error grids (Task 57)
+
+Recorded before coding (rule 3). No new section and no new layout family: this is a hover treatment on
+the card grid that two existing sections already render.
+
+| Where | Section | Change |
+| --- | --- | --- |
+| `ServiceTemplate.tsx` (32 pages) | "Errors we fix here" | the grid gains the backing plate |
+| `GuideTemplate.tsx` (37 pages) | "Other errors we fix" | the same |
+
+The other four `LinkCards` call sites (the hub's "What we do here", the city page's service list, the
+about hub grid, the case-studies "What to read instead") are **unchanged** and keep the plain
+`cardLink` hover.
+
+### The effect
+
+An ember-tinted plate sits behind each card at the same size and radius. On hover the card slides 7px
+up and to the left off it, so the plate shows along the bottom and right edges, like a sheet of paper
+lifted off a coloured one underneath. `translate` only, so no layout moves and nothing reflows.
+
+Chosen from a set of four shown to the owner as an artifact, after an earlier set of five
+cursor-tracking effects was rejected outright. What separated this set: all four were pure CSS, where
+three of the five cursor variants needed a new client component and one needed artwork for 32 services.
+
+The plate is `bg-accent-tint`, which is the existing `color-mix(in srgb, var(--accent) 10%, var(--surface))`
+token, with a `border-accent-text/35` edge so it reads against `--bg` without a second hue. One accent
+throughout. It is `aria-hidden` and carries no text, so it has no contrast requirement of its own.
+
+Motion: `transition-[translate]` named explicitly rather than `transition-all`, at the card's existing
+200ms, behind `(hover: hover)` so a tap cannot leave a card parked off its plate. Under reduced motion
+`motion-reduce:translate-none!` pins the card on the plate and the hover becomes the border and shadow
+step alone, which is the state the grid has today.
+
+**Tailwind v4 note that decides the implementation:** `-translate-x-*` writes to the standalone
+`translate` property, not to `transform`. A `transition-transform` here would never animate, which is
+the bug recorded against the hover work in commit `87999e8`. The transition names `translate`.
+
+### Why a variant component rather than a prop on the grid
+
+`LinkCards` is shared by six sections, and only two of them want this. The composition rule is to
+avoid teaching a shared component a second visual mode through its public API, so the two call sites
+now render `ErrorCards`, an explicit variant that owns both the plate and the mapping.
+
+That mapping is the other half of the reason. Both templates had the same five lines typed out, turning
+a guide into a card: `routes.guide(slug)`, the title, the first symptom, the error string and the
+urgency mark. One component now holds it, and both templates drop their `LinkCards` and `urgencyIcon`
+imports; the service template drops `routes` as well, since that grid was its only use of it.
+
+`plate` survives as a boolean inside `LinkCards`, which is the mechanism, while `ErrorCards` is the
+API. One internal flag consumed by one named variant is the thing the rule is protecting against
+becoming a pile of them.
+
+### The risk, and why it is smaller here than on the artifact
+
+Ember behind every card is a lot of accent on a page full of them. These two grids are the right place
+for it: a service page lists at most four guides and a guide page at most three siblings, so the plate
+appears a handful of times rather than twelve. The hub's "What we do here" grid, which can run eleven
+services wide, is deliberately not included.
+
+### Measurements
+
+Read off the prerendered HTML and the compiled stylesheet in `.next/`. No browser on this machine, for
+the reason recorded in Tasks 53 to 56.
+
+Scope, which is the thing most worth proving here, since `LinkCards` is shared by six sections:
+
+| Page | Plates | Sliding cards | Expected |
+| --- | --- | --- | --- |
+| `/wordpress-fix/critical-error/` (service) | 4 | 4 | yes |
+| `/guides/500-internal-server-error/` | 3 | 3 | yes |
+| `/guides/critical-error-on-this-website/` | 3 | 3 | yes |
+| `/wordpress-fix/` (hub, control) | **0** | 0 | no |
+| `/about/` (control) | **0** | 0 | no |
+| `/case-studies/` (control) | **0** | 0 | no |
+
+**101 plates across 48 prerendered pages**, and the plate count equals the sliding-card count on every
+one of them, so no card ever has a plate it cannot slide off or a slide with nothing behind it. 31 of
+the 37 guides render "Other errors we fix"; the other 6 are the only guide their parent service has, so
+`siblings` is empty and the section does not render at all.
+
+One false positive worth recording so the next person does not chase it: grepping for `bg-accent-tint`
+alone finds the numbered step chips in "Safe things to try first", which have used that token since
+Task 12. The plate is only the pairing `border-accent-text/35 bg-accent-tint`.
+
+The compiled CSS confirms the Tailwind v4 behaviour this was built around:
+
+```
+-translate-x-\[7px\]:hover { --tw-translate-x: calc(7px * -1); translate: var(--tw-translate-x) var(--tw-translate-y) }
+border-accent-text\/35    { border-color: color-mix(in oklab, var(--accent-text) 35%, transparent) }
+```
+
+The utility writes to the standalone `translate` property, never to `transform`, which is why the
+transition names `translate`. The border emits a flat `var(--accent-text)` rule first and the
+`color-mix` second, so a browser without `color-mix` gets a solid ember edge rather than no edge.
+
+`tailwind-merge` resolved the two transitions as intended: the card's class list carries only
+`transition-[border-color,box-shadow,translate]`, with `cardLink`'s original
+`transition-[border-color,box-shadow]` replaced rather than duplicated.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off**, motion
+check clean, `npm run build` green at **99 routes**. `eslint` passing is load-bearing here: it is what
+proves the three imports the refactor orphaned (`LinkCards` and `urgencyIcon` in both templates, plus
+`routes` in the service template) were actually removed.
+
+**Not run, and not claimed:** axe, Lighthouse, the 375/768/1024/1440 screenshot pass, and the one check
+that matters most for this change, which is whether a card sliding 7px left at the grid's left edge
+reads correctly against the 16px page gutter at 375. Transform overflow does not create a scrollbar, so
+this should be safe, but it is reasoned rather than measured.
+
+## v4 / "Most urgent problems" becomes a ranked list (Task 58)
+
+Recorded before coding (rule 3). The hub's third section changes layout family.
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 3 | Most urgent problems | **was** a 2-up card grid with an optional full-width lead panel | no | no | none |
+| 3 | Most urgent problems | **now** ruled rows, ranked, each carrying its urgency mark, title, error string and caret | no | no | none |
+
+### Why: the family had quietly collided
+
+Reported as "looks boring, un-designed". It is, and the cause is structural rather than cosmetic.
+
+The P5 entry above records this page as a photographic masthead, then a **row directory**, then a card
+grid, then the closing band. Four families, no repeat. **Task 9 turned the directory into
+`LinkCards`**, and nobody re-checked rule 3 against the section underneath it. From that point the hub
+has run two card grids back to back, differing only in column count: four across for "What we do here"
+at `HubTemplate.tsx:74`, two across for "Most urgent problems" at `:96`. The second one reads as a
+weaker copy of the first because structurally that is what it had become.
+
+Moving it to rows restores the alternation the page was designed with and gives rule 3 its clean
+answer again. It also costs nothing elsewhere: ruled rows are not otherwise on a hub page.
+
+### Why it also looked unfinished up close
+
+It was never `LinkCards`. It was a hand-rolled `<Link className={cardLink}>` carrying a title and a
+mono line, which is a bordered box with two text nodes in it. Against the cards in "Errors we fix
+here" it was missing the urgency mark, the summary, the caret and, since Task 57, the backing plate.
+
+Three further defects, all now fixed by the change rather than patched:
+
+- **`items-start` on the grid** (`:96`), not `items-stretch`. Every card was its own content height, so
+  with one-line titles and zero to two mono lines the bottoms came out ragged. In a ruled list variable
+  row height is the normal reading, so the defect stops being one.
+- **No caret.** Every other link card on the site ends with the "go there" mark; this one had none, so
+  the only hover signal was the title changing colour.
+- **The ranking was invisible.** The section is named "Most urgent problems" and is genuinely sorted by
+  `urgencyRank`, but nothing on screen expressed it. The old comment argued the rank should not be
+  printed, which is right about the *word* "critical" (it restates the heading) and wrong about the
+  *shape*: `urgencyIcon` exists for this, three marks in one accent, and both sibling grids use it. A
+  critical error and a standard one rendered identically.
+
+### What the change drops, and why that is a gain
+
+`leadWide` is gone. It gave the full spine to the hub's worst problem when that problem was both
+critical and carried a literal error string, which was weighting done with area because a grid has no
+other way to rank. **A ranked list ranks by position**, so first place does the job the wide panel was
+doing, and the hub stops needing a rule about when a panel is allowed to be wide. Only the security hub
+ever qualified.
+
+No numerals on the rows. Rule 6 bans "Step 1 / Stage 2" labels, and the urgency mark plus the ordering
+already carry the rank; a numeral beside them would be a third statement of the same fact.
+
+The list is an `<ol>`, because it is genuinely ordered and the order is the information.
+
+### Hover
+
+The row is the link. The title goes ember, the caret slides 4px, and the row's own rule firms from
+`--line` to `--line-strong`: three cues, no background change, so nothing shifts and no row needs a
+negative margin to bleed a fill into the page gutter. Gated behind `(hover: hover)`, and the caret
+carries `motion-reduce:translate-none!`. The backing plate is deliberately **not** carried over: it is
+the card grids' hover language and a row is not a card.
+
+### Measurements
+
+Read off the prerendered HTML in `.next/server/app/`. No browser on this machine, as recorded in
+Tasks 53 to 57.
+
+| Hub | Rows | Urgency marks | Carets | Rows with a second line |
+| --- | --- | --- | --- | --- |
+| `/wordpress-fix/` | 6 | 6 | 6 | 6 of 6 |
+| `/wordpress-security/` | 5 | 5 | 5 | 5 of 5 |
+| `/wordpress-performance-migration/` | 4 | 4 | 4 | 4 of 4 |
+| `/woocommerce/` | 2 | 2 | 2 | 2 of 2 |
+
+Marks and carets equal the row count on every hub, so no row is missing either. `maintenance` and
+`development` have no guides and render nothing here, unchanged. The section is an `<ol class="reveal
+border-t border-line">`, and the old grid is gone from it: no `sm:grid-cols-2`, no `items-start`, no
+`cardLink`.
+
+### The thin-row problem, found by measuring rather than by looking
+
+The first build of this list was correct and still read sparse: **only 20 of the 37 guides carry an
+`errorText`**, and on the fix hub that meant four of six rows were a title and nothing else, which in
+a ruled list is a lot of empty rule. The grid had the same gap and hid it better, because a card with
+one line still looks like a card.
+
+The fallback is the guide's first symptom, which is the same sentence the error cards already print as
+their `summary`, so nothing is invented. It is set in the body face, not the mono: on this site mono
+means a string the software actually prints, and a symptom is our sentence about the error rather than
+the error's own words. That distinction is the reason the two lines are not interchangeable.
+
+After it, every rendered row on all four hubs carries a second line: 8 error strings and 9 symptom
+lines across 17 rows.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off**, motion
+check clean, `npm run build` green at **99 routes**.
+
+One mistake worth recording, because it will recur. The first edit put the new section comment in
+`{/* ... */}` form directly inside `{topGuides.length > 0 && ( ... )}`. That is an **expression**
+position, not JSX children, so the brace opened a block and the parse failed with `')' expected`. The
+original code used a plain `//` comment there for exactly this reason. Inside `&& (`, comments are
+`/* */` or `//`, never `{/* */}`.
+
+**Not run, and not claimed:** axe, Lighthouse, and the 375/768/1024/1440 screenshot pass. The width
+worth checking first is 375, where a long error string meets `line-clamp-1` beside a 24px mark and a
+20px caret.
+
+### Addendum to Task 57: the guardrail on `plate`
+
+`LinkCards` serves six sections and two of them wanted the backing plate, so `plate` exists as an
+internal boolean with `ErrorCards` as the named variant that consumes it. That is the right shape for
+one variant and the wrong shape for three, so the rule is now written on the prop itself where an
+editor shows it on hover rather than only here:
+
+- **No template passes `plate`.** A section that wants it goes through a named variant: `ErrorCards`
+  when it is showing errors, a new one when it is not. The decision about which sections get a
+  treatment belongs with the thing being shown. The first template that writes `<LinkCards plate />`
+  has put the component back to being a pile of visual flags.
+- **A second visual variant replaces the boolean with a `variant` union** (`"plain" | "plate"`).
+  Booleans do not compose: two is four states, three is eight, and most of them mean nothing, while a
+  union keeps the illegal ones unrepresentable.
+- **Three variants, or a card whose body differs rather than its dressing,** is where service cards
+  and error cards stop being one component.
+
+This is the same failure mode the hub page hit: Task 9 changed the directory to card grids and nothing
+recorded that against the rule in P5, so the page ran two of the same family for several passes before
+anyone noticed. A note costs nothing and is what stops the drift.
+
+**One real defect fixed while adding it.** Inserting `ErrorCards` in Task 57 placed it between
+`LinkCards`' long doc comment and `LinkCards` itself, so that comment, thirty lines covering the
+no-three-across rule, the single-anchor decision and the reveal reasoning, was silently documenting
+`ErrorCards` instead. Both blocks are back beside the function they describe. Nothing rendered
+differently; it would have misled the next reader, which on a file this heavily commented is the
+expensive kind of wrong.
+
+`tsc` 0, `eslint` 0, content and motion checks clean, build green at 99 routes.
+
+## v4 / the plate reaches the hub directory, and a correction (Task 59)
+
+Recorded before coding (rule 3). No new section and no new layout family: the hub's "What we do here"
+grid gains the backing plate the error grids got in Task 57.
+
+| Where | Section | Change |
+| --- | --- | --- |
+| `HubTemplate.tsx` (6 pages) | "What we do here" | the service directory gains the plate, through a new `ServiceCards` variant |
+
+### The correction, which is why this is allowed at all
+
+Task 57 excluded this grid, in writing, with this reason: *"Ember behind every card is a lot of accent
+on a page full of them... The hub's 'What we do here' grid, which can run eleven services wide, is
+deliberately not included."*
+
+**That was wrong, and the markup says so.** The plate is `absolute inset-0` with `rounded-[14px]`,
+sitting behind a card that is `bg-surface`, opaque, at the identical box and the identical radius. It
+is completely covered at rest. A plate becomes visible only when its own card slides 7px off it, so
+**at most one is ever on screen, and only while the pointer is on it.** The fix hub now renders eleven
+plates and a reader sees zero of them until they hover one.
+
+The concern was reasoned from the token rather than from the geometry, and it cost this grid two
+tasks' worth of being the odd one out. Worth remembering as a failure mode: "that colour is strong" is
+not an argument until you have checked whether the colour is ever visible.
+
+### Why a second variant component and not a flag at the call site
+
+The rule written on `plate` in Task 57's addendum says a section that wants the plate goes through a
+named variant: `ErrorCards` when it is showing errors, **a new one when it is not**. This section shows
+services, so it is the second case, and the hub now renders `ServiceCards`.
+
+It also takes the mapping with it. `HubTemplate` was turning a node into a card inline
+(`href: n.path`, `n.title`, and the summary looked up through `getService(serviceIdOf(n.path))`), and
+that knowledge now sits beside the treatment it goes with. The template drops its `LinkCards` and
+`getService` imports; `serviceIdOf` stays, because the problem list still uses it.
+
+**This does not trigger the union conversion**, and the distinction matters for whoever reads that rule
+next. The rule converts the boolean when a **second visual variant** appears. This is a **second
+consumer of the same variant**. There is still exactly one treatment, defined in exactly one place, and
+two named components opting into it. Nothing about the plate is written twice, which is the whole point
+of the single source of truth: adding a third consumer is one more small component, not one more flag.
+
+The city page lists services too, but from `Service` objects rather than hub nodes, so it keeps its own
+call and is the obvious third consumer if that section ever wants the same treatment.
+
+### Measurements
+
+Read off the prerendered HTML. Cards, plates and sliding cards in the directory section of every hub:
+
+| Hub | Service cards | Plates | Sliding | Wide-last |
+| --- | --- | --- | --- | --- |
+| `/wordpress-fix/` | 11 | 11 | 11 | 0 |
+| `/wordpress-development/` | 6 | 6 | 6 | 0 |
+| `/woocommerce/` | 4 | 4 | 4 | 0 |
+| `/wordpress-maintenance/` | 4 | 4 | 4 | 0 |
+| `/wordpress-security/` | 4 | 4 | 4 | 0 |
+| `/wordpress-performance-migration/` | 3 | 3 | 3 | 1 |
+
+Every section consistent. **133 plates across the build**, up from 101. `/about/` and `/case-studies/`
+still render **0**, so the four remaining plain `LinkCards` call sites are untouched.
+
+One measuring trap, recorded because it cost a second pass: counting cards with an exact match on
+`<li class="relative isolate"` under-reports by one wherever `wideLast` is true, because that li
+carries `sm:col-span-2` as well. The performance-migration hub looked like a 2-cards-3-plates mismatch
+until the regex matched on the prefix. The grid was correct the whole time.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off**, motion
+check clean, `npm run build` green at **99 routes**.
+
+**Not run, and not claimed:** axe, Lighthouse, and the 375/768/1024/1440 pass. The width to check first
+is the fix hub at 1440, which is now eleven cards each able to slide 7px, and 375, where the leftmost
+card slides into a 16px gutter.
+
+## v4 / the problem grid stops being two-thirds dead (Task 60)
+
+Recorded before coding (rule 3). No new section and no new layout family: home section 5 keeps its
+searchable tile grid. What changes is what a tile shows at rest, plus one hover behaviour on the grid.
+
+### The diagnosis, which is not what the report said
+
+Reported as the tiles needing something interesting on hover. The hover was already doing three things
+(the lift, the photograph scaling, the arrow travelling), all mirrored on `focus-visible`. The problem
+is the resting state, and it is an asymmetry:
+
+- **20 tiles are `critical`**: `row-span-2`, a photograph, a scrim.
+- **32 are not**: flat `bg-surface`, two lines of text, no image, no mark.
+- `urgency` has three values and only `critical` is visible. **`high` (13 guides) and `standard` (4)
+  render identically to each other**, and the 15 service tiles carry no mark at all.
+- **`errorText` is never shown**, on 23 of the 37 guides, despite already being indexed for search in
+  `matchIndex.head` (`src/content/index.ts:68`). The literal string a visitor is staring at is the
+  most recognisable thing this site owns and the tile was hiding it.
+- The result count is `sr-only` (`TileGrid.tsx:108`) and the chips carry none, so nothing on screen
+  says the grid holds 52 problems.
+
+Two thirds of the grid was text on a flat panel. No hover fixes that, because a third of the audience
+arrives on a phone and never triggers one.
+
+### What changes
+
+**At rest, visible to everyone:**
+
+1. **The urgency mark appears on every guide tile**, all three levels, using the existing
+   `urgencyIcon` (octagon / triangle / wrench): shape, never hue, so it stays off a colour-only
+   indicator. It goes in the tile's existing top row beside the arrow, in flow, so no tile changes
+   height.
+2. **Service tiles carry a count instead.** A service tile is a family of errors rather than an error,
+   so an urgency mark would be inventing data it does not have. `service.guideSlugs.length` is real
+   and already in hand, so those 15 tiles read "6 errors in this family", which is more specific than
+   the generic family symptom they showed before.
+3. **The second line becomes the literal error string**, in `font-mono` like every other error string
+   on the site, wherever a guide has one. Guarded against the case where it restates the title: the
+   schema documents `title` as "the exact error phrase", so for several guides the two are the same
+   sentence and printing both would be a duplicate line. Where there is no `errorText`, or it
+   duplicates the title, `symptoms[0]` stays exactly as it was.
+4. **The counts become visible.** The `sr-only` live region becomes a visible one, so it serves both,
+   and each category chip shows how many problems it holds.
+
+**On hover and focus, for pointer users:**
+
+5. **The grid focuses on what you point at.** Every tile except the one under the pointer drops to
+   50% opacity. One new `@utility tile-focus` in `globals.css`, which is the house pattern for a
+   selector Tailwind cannot express (`btn-fill`, `marquee-fade` and `guarantee-mask` are already
+   there).
+6. **The error string goes ember** on the hovered or focused tile. Colour only. It is the recognition
+   payoff: the literal string lights up as you reach for it.
+
+### Three constraints that shaped the implementation
+
+- **No tile may change height.** `auto-rows-[9rem]` plus `row-span-2` is what the Motion `layout`
+  spring interpolates between (`TileGrid.tsx:133-139`); a hover that grows a tile fights the spring
+  and reflows the grid. Everything added is in flow inside the existing box.
+- **The dim applies to the `<a>`, never the `<li>`.** `motion.li` writes `opacity: 1` as an **inline
+  style**, which beats any class, so dimming the list item cannot work. The anchor carries no inline
+  opacity. This is the kind of thing that looks like a CSS specificity bug for an hour.
+- **Tiles are pre-serialized ReactNodes.** `ProblemTiles` builds `node` at module scope and
+  `TileGrid` renders it opaquely, so the client island cannot inspect or wrap a tile. That rules out
+  JS-driven per-tile hover and rules in CSS, which is what this uses. No JS was added.
+
+### 21st.dev
+
+Searched first, per CLAUDE.md. Eight results, none installed. One mechanic was worth taking:
+`Hover Reveal Cards` dims **and blurs** every card but the hovered one. The dim is right for a 52-tile
+grid and the blur is dropped, because rule 10 is transform and opacity only. The rest were cursor-glow
+and pixel-reveal variants, or `Expanding Cards`, which animates width and therefore layout.
+
+### What this deliberately does not fix
+
+32 tiles still have no image, and 16 of the 20 that do share 8 stock photographs, because only 4 real
+captures exist in `public/screens/`. That is the content gap in `docs/image-todo.md` and it needs
+`npm run capture`, which needs Docker. Giving the imageless tiles real information is the honest
+mitigation; dressing them in more stock photography would not be.
+
+### Measurements
+
+Read off the prerendered `index.html` and its RSC payload. No browser on this machine, as recorded in
+Tasks 53 to 59. Only 9 tiles are in the HTML body (the cap); all 52 tile nodes are serialized into the
+payload, so the full set is countable there.
+
+| Assertion | Result |
+| --- | --- |
+| tiles in the default view | 9, the cap |
+| of those, carrying an urgency mark | 9 of 9 |
+| second line is an error string / family count / symptom | 4 / 0 / 5, and exactly one per tile |
+| mono error lines across all 52 | 23, matching the 23 guides that have an `errorText` |
+| family-count lines across all 52 | 15, matching the 15 service tiles exactly |
+| tiles printing their title twice | **0** |
+| `tile-focus` on the grid | yes |
+| `transition-[box-shadow,opacity]` per tile | 9 of 9 |
+| visible count | "9 of 52 problems shown" |
+| chip counts | Everything 52, Fixes 37, Security 8, Speed and migration 4, WooCommerce 3; the four categories sum to 52 |
+
+The `@utility` compiled as intended:
+
+```
+@media (hover:hover) and (pointer:fine) {
+  :is(.tile-focus:has(a:hover) a:not(:hover),
+      .tile-focus:has(a:focus-visible) a:not(:focus-visible)) { opacity: .5 }
+}
+```
+
+Two counting traps, both recorded because both wasted a pass:
+
+- **The mark's class string is not unique to this tile.** `mt-0.5 size-5 shrink-0 text-accent-text` is
+  also `Plans.tsx:71`'s check icon, which is on the same page, so grepping the document for it returns
+  60 rather than 37. The sound counts are the scoped one (9 of 9 rendered tiles) plus construction:
+  the mark is `guide ? <Mark/> : null` and the 15 family-count lines prove exactly 15 service tiles,
+  which leaves the mark on the other 37.
+- The tile anchor renders `href` before `class`, so a regex anchored on `<a class=` finds nothing.
+
+### The contrast check caught a real failure before it shipped
+
+The error string was going ember on hover on every tile. Measured, that is fine on a flat tile and
+**fails on an image tile**:
+
+| Pairing | Measured | Needs |
+| --- | --- | --- |
+| mono line `--muted` on `--surface` (flat tile) | 7.35:1 | 4.5 |
+| mono line `--text` on `--surface-2` | 14.90:1 | 4.5 |
+| mono line `--text` over `--photo-scrim`, brightest photo | 7.53:1 | 4.5 |
+| ember `--accent-text` on `--surface` | 5.93:1 | 4.5 |
+| ember `--accent-text` on `--surface-2` | 5.47:1 | 4.5 |
+| **ember `--accent-text` over `--photo-scrim`** | **2.76:1** | **4.5** |
+| chip count `--muted` on `--surface` | 7.35:1 | 4.5 |
+| chip count `--on-accent` on `--accent` | 6.30:1 | 4.5 |
+| visible result count `--muted` on `--bg` | 7.82:1 | 4.5 |
+
+This is the same trap the scrim comment in `ProblemTiles.tsx` already records for `--muted` (2.55:1
+there). The ember reward is now scoped to the flat tiles, verified: **0 image tiles carry it**. An
+image tile keeps `--text` and already has its own reward, the photograph scaling behind the words.
+
+The dimmed tiles land around 2.7:1 at 50% opacity. That is not a WCAG failure and not treated as one:
+they are the tiles the visitor is explicitly not pointing at, the state is transient, pointer-only, and
+reverts on leave. The hovered tile is always at full opacity.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off**, motion
+check clean, `npm run build` green at **99 routes**. No JavaScript was added: the dim is a stylesheet
+rule and everything else is server-rendered markup.
+
+**Not run, and not claimed:** axe, Lighthouse, and the 375/768/1024/1440 pass. Two things need a real
+browser. Whether the dim reads as focus rather than as the page greying out, which is a judgement no
+contrast number settles. And whether the mark plus the arrow leave enough width for a two-line title
+at 375, where the tile is a fixed 9rem that clips from the top.
+
+## v4 / the plate becomes the card hover, and the flag goes (Task 61)
+
+Recorded before coding (rule 3). No new section and no new layout family. Every link-card grid on the
+site now shares one hover.
+
+| Section | Before | After |
+| --- | --- | --- |
+| "Errors we fix here" (32 service pages) | plate | unchanged |
+| "Other errors we fix" (31 guide pages) | plate | unchanged |
+| "What we do here" (6 hubs) | plate | unchanged |
+| **"What to read instead"** (`/case-studies/`) | plain | **plate** |
+| **"What we work on"** (`/about/` hub grid) | plain | **plate** |
+| **City service list** (8 city pages) | plain | **plate** |
+
+### Why the rule written in Task 57 is being retired rather than followed
+
+That addendum said a section wanting the plate must go through a named variant: `ErrorCards` for
+errors, `ServiceCards` for services, a new one otherwise. Asked for the plate on a fourth section,
+following it literally would have produced a third component whose **entire body is passing a flag**.
+"What to read instead" is four hand-authored links to the guides, the free check, the pricing page and
+the about page: no domain type, nothing to map, nothing to encapsulate. A named variant there is
+ceremony, not composition.
+
+The count is what actually settled it. Four of six sections wanted the treatment, which stops being a
+variant and starts being the default. So the plate is now what a link card does, the `plate` boolean
+is **deleted**, and with it the rule, because there is no longer anything to opt into. The two
+remaining holdouts were about to be the only inconsistent grids on the site rather than deliberate
+exceptions.
+
+This is the cheaper direction in code as well: the change removes a prop, a conditional in three
+places and roughly fifteen lines of documentation about when to pass it, and adds nothing.
+
+**`ErrorCards` and `ServiceCards` stay**, and their reason for existing gets simpler rather than
+weaker. They were carrying two jobs, a data mapping and a visual flag; they now carry only the
+mapping, which is the half that always earned them. `ErrorCards` turns a guide into a card, five lines
+that were typed out identically in two templates. `ServiceCards` turns a hub's child node into a card.
+Neither mentions the plate any more.
+
+### A name collision this also clears up
+
+`parts.tsx` had **two unrelated things called `plate`**: `PageMasthead`'s `plate?: string`, which is
+the mono box holding the literal error string on a guide's masthead, and `LinkCards`' `plate?:
+boolean`, the backing plate. Same file, same word, different concepts. Deleting the boolean leaves one
+`plate` in the file and the ambiguity goes with it.
+
+### What does not change
+
+The effect itself is untouched: an ember-tinted plate at the card's own box and radius, revealed when
+the card slides 7px up and left, `translate` only, behind `(hover: hover)`, pinned by
+`motion-reduce:translate-none!`. It remains invisible at rest, because the card is opaque at the same
+box, so a grid of eleven shows no ember until a pointer lands on one. That geometry is why the
+Task 57 worry about "a lot of accent on a page full of them" was wrong, as Task 59 recorded.
+
+### Measurements
+
+Read off the prerendered HTML. No browser on this machine, as recorded in Tasks 53 to 60.
+
+| Page | Section | Plates | Sliding cards |
+| --- | --- | --- | --- |
+| `/case-studies/` | What to read instead | 4 | 4 |
+| `/about/` | What we work on | 6 | 6 |
+| `/wordpress-development/cities/bengaluru/` | city service list | 4 | 4 |
+| `/wordpress-fix/` | What we do here | 11 | 11 |
+| `/wordpress-fix/critical-error/` | Errors we fix here | 4 | 4 |
+| `/guides/500-internal-server-error/` | Other errors we fix | 3 | 3 |
+
+Plates equal sliding cards on every section, so no card has a plate it cannot slide off and none
+slides off nothing. **174 plates across the build, up from 133**, the difference being the three
+sections that were still plain.
+
+The one layering question this raised is `/about/`, the only grid whose cards carry a photograph of
+their own. Verified there: 6 list items, 6 plates, 4 banner photos at `-z-20` with their 4 scrims. No
+collision, and the reason is structural rather than lucky. The plate is `-z-10` inside the **list
+item's** `isolate`; the photograph and its scrim are `-z-20` and `-z-10` inside the **anchor's** own
+`isolate`. Two separate stacking contexts, so the two `-z-10` layers never meet. The card stays opaque
+either way, through `bg-surface` or through the photograph, which is what keeps the plate invisible
+until the card moves.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off**, motion
+check clean, `npm run build` green at **99 routes**.
+
+The diff removes more than it adds: a prop, its fifteen-line contract, three conditionals, and the
+`plate` mention in both variant components. `ErrorCards` and `ServiceCards` each lost a line and kept
+their reason for existing.
+
+**Not run, and not claimed:** axe, Lighthouse, and the 375/768/1024/1440 pass. The width worth checking
+first is 375 on `/about/`, now the only place where a card that slides 7px also carries a photograph
+cropped into it.
+
+## v4 / the one card grid the plate missed (Task 62)
+
+Recorded before coding (rule 3). No new section and no new layout family.
+
+Task 61 made the plate universal "for every link card on the site". It was not. The city directory at
+`/wordpress-development/cities/` renders its eight city cards **by hand**
+(`CityTemplates.tsx:67-70`), using the `cardLink` class string directly rather than going through
+`LinkCards`, so the sweep missed it and it became the only card grid on the site without the
+treatment. Measured before the fix: `/cities/` had **0 plates against 10 cards**.
+
+The hand-rolled card is deliberate and stays that way. Its own comment records why: the body is
+city-shaped, an eyebrow over a large city name over the city's own description, rather than the
+icon-title-summary `LinkCards` renders. The card is different; the hover should not be.
+
+### The fix is to stop expressing the plate as markup
+
+Copying the plate `<span>` and the four hover classes into the city card would have worked and would
+have been the wrong answer: two copies of one treatment, free to drift, which is the thing the last
+two tasks were spent removing.
+
+Instead the plate moves out of `LinkCards`'s JSX and into a `@utility card-plate` in `globals.css`,
+drawn as a `::before` on the **wrapper** rather than as an element in the card:
+
+```css
+@utility card-plate {
+  position: relative; isolation: isolate;
+  &::before { content: ""; position: absolute; inset: 0; z-index: -10; ... }
+  @media (hover: hover) and (pointer: fine) { &:hover > a { translate: -7px -7px } }
+  @media (prefers-reduced-motion: reduce)   { &:hover > a { translate: none } }
+}
+```
+
+**It has to be the wrapper, not the card.** A `::before` on the anchor would slide away with the
+anchor, leaving nothing behind to reveal. The plate must stay put while the card moves, so it belongs
+to the element that does not move, which is the list item.
+
+`cardLink` gains `relative` and `translate` in its transition list, so the anchor is ready to be slid
+by whatever wraps it. Both consumers then opt in with one class on their `<li>`:
+
+| Consumer | Change |
+| --- | --- |
+| `LinkCards` | `card-plate` on the `li`; **the plate `<span>` and the four hover classes are deleted** |
+| the city card | `card-plate` on the `li`; nothing else |
+
+Net effect: one definition, two consumers, zero duplicated markup, and the next hand-rolled card grid
+gets the plate by adding one class rather than by copying anything.
+
+### Why this did not surface in Task 61
+
+Task 61 counted plates per page and found six sections consistent. Every page it checked went through
+`LinkCards`. The city **hub** was never in the sample, only a city **page**, which does use
+`LinkCards` for its service list and did have four plates. A verification that samples only the paths
+the change touches cannot find the path it missed, which is the general lesson: the sweep should have
+counted `cardLink` consumers, not `LinkCards` consumers.
+
+### Measurements
+
+Read off the prerendered HTML and the compiled stylesheet. Counted by the **wrapper** class this time
+rather than by the plate's colour pair, which is the counting method that would have caught the gap in
+Task 61.
+
+| Page | `card-plate` wrappers | Old plate `<span>`s |
+| --- | --- | --- |
+| **`/wordpress-development/cities/` (the gap)** | **8** | 0 |
+| city page, bengaluru | 4 | 0 |
+| `/case-studies/` | 4 | 0 |
+| `/about/` | 6 | 0 |
+| `/wordpress-fix/` hub | 11 | 0 |
+| service page | 4 | 0 |
+| guide page | 3 | 0 |
+
+The city hub went from 0 to 8. Zero old plate spans anywhere confirms the markup implementation is
+fully retired rather than running alongside the utility. **182 wrappers across the build**, against
+174 plate spans before, the difference being the eight city cards.
+
+The utility compiled as written, including a fallback Lightning CSS added on its own:
+
+```
+.card-plate { isolation: isolate; position: relative }
+.card-plate:before { content:""; z-index:-10; background:var(--accent-tint);
+                     border:1px solid var(--accent-text); border-radius:14px; position:absolute; inset:0 }
+@supports (color: color-mix(in lab, red, red)) {
+  .card-plate:before { border-color: color-mix(in oklab, var(--accent-text) 35%, transparent) }
+}
+@media (hover:hover) and (pointer:fine) { .card-plate:hover>a { translate:-7px -7px } }
+@media (prefers-reduced-motion:reduce)  { .card-plate:hover>a { translate:none } }
+```
+
+The solid `border: 1px solid var(--accent-text)` is the no-`color-mix` fallback and the `@supports`
+block refines it, so an old browser gets a solid ember edge rather than no edge. The reduced-motion
+rule is last, so it wins against the hover rule on a machine that matches both.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off**, motion
+check clean, `npm run build` green at **99 routes**.
+
+### The same syntax error, three times
+
+Both edits in this task first shipped the section comment as `{/* ... */}` placed directly after
+`return (` and after `(c) => (`. Both are **expression** positions, not JSX children, so the brace
+opens a block and the parse dies with `')' expected`. This is the third time in this session, after
+Task 58 in `HubTemplate`.
+
+The rule, written here so it stops recurring: **a comment on the line after `return (`, `=> (` or
+`&& (` is `//` or `/* */`, never `{/* */}`.** The braces are only for comments **between JSX
+elements**, once a tag is already open. Every one of these three was caught by `tsc` before anything
+ran, which is the system working, but it is three builds spent on one habit.
+
+## v4 / semantic structure audit across all 98 prerendered pages (Task 63)
+
+Prompted by a report of "two header divs" in the inspector. Every prerendered page was parsed with a
+real tag stack, because the question each check answers depends on nesting rather than on counting.
+
+### The two headers are correct, and here is why
+
+There genuinely are two `<header>` elements on most pages. Only one is a landmark.
+
+| Element | Where | Role |
+| --- | --- | --- |
+| `<header class="fixed inset-x-0 top-0 z-40 h-16" data-action-bar>` | direct child of `body` | **banner** |
+| `<header>` from `PageMasthead` | inside `main`, and usually inside `article` | **none** |
+
+ARIA in HTML gives `header` the banner role **only when it is not a descendant of `article`, `aside`,
+`main`, `nav` or `section`**. The masthead is inside `main` on every page that renders one, so it is a
+generic element that groups the page's introductory content, which is exactly what `header` is for.
+Two header *elements*, one banner *landmark*. Nothing to fix.
+
+Measured across all 98 pages with that rule applied:
+
+| banner | contentinfo | main | scoped `<header>` | pages |
+| --- | --- | --- | --- | --- |
+| 1 | 1 | 1 | 1 | 92 |
+| 1 | 1 | 1 | 0 | 6 |
+
+**Zero pages with a wrong landmark count.** The six without a scoped header are the pages that render
+no masthead: `/contact/`, `/free-site-check/`, `/preview/` and the three legal routes.
+
+**A note on the audit script itself, because it produced a false positive worth not repeating.** The
+first pass treated a `header` whose nearest sectioning ancestor was `main` as a banner, and reported
+duplicate banners on `/guides/`, `/compare/` and `/case-studies/`. Those three put the masthead in a
+plain `div` under `main` rather than inside an `article`, which changed the nearest *sectioning*
+ancestor but not the answer: `main` is itself in the exclusion list. The rule is the exclusion list,
+not the nearest sectioning element.
+
+### What was clean
+
+Across 98 pages: exactly one `h1` each, no skipped heading levels, no empty headings, no duplicate
+`id` attributes, no `li` outside a list, no `dt`/`dd` outside a `dl`, no nested anchors, no anchor
+inside a button or button inside an anchor, and every `section` carries an accessible name. Each page
+has three `nav` landmarks (the mobile action bar, the breadcrumbs, the footer directory) and **all of
+them are named**, which is what keeps three navigation landmarks navigable rather than ambiguous.
+
+### Two real defects, both fixed
+
+**1. `aria-controls` pointing at nothing, on the home FAQ.** `FaqTabs` set `aria-controls={panelId}`
+permanently, but the answer panel lives inside `AnimatePresence` and is unmounted while collapsed, so
+every closed question referenced an element not in the document. That is what axe's
+`aria-valid-attr-value` fails on. Now `aria-controls={isOpen ? panelId : undefined}`: the attribute
+exists only while its panel does, and `aria-expanded` carries the state either way.
+
+**2. Nested `figure` on the home page, four of them.** A quote card in `QuoteCarousel` is a `figure`
+whose `figcaption` is the attribution, and `VideoFrame` put its own `figure` and `figcaption` inside
+it. One card, two figure roles, two captions.
+
+Nested figures are **valid** HTML, which is why this is a judgement rather than a violation: a figure
+may contain sub-figures. It is wrong here on meaning rather than on syntax. The video is part of the
+testimonial, not a figure in its own right, so the card now renders `VideoSlotBox` in a `div` with the
+caption as a `p`. The caption sentence moved to an exported `videoCaption(id)` so the frame and the
+card still read from one definition rather than two copies of the same two branches.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off**, motion
+check clean, build green at **99 routes**. Re-running the audit after the fixes: **nested figures 0,
+dangling aria references 0, duplicate ids 0.**
+
+**Not run, and not claimed:** axe itself. This audit is a static parse of the server-rendered HTML and
+checks structure, not contrast, focus order or anything that only exists after hydration. The client
+islands in particular (the tile grid, the carousel, the FAQ) render differently once opened, and only
+a browser sees that.
+
+## v4 / semantic audit against the Next 16 docs, and the metadata bug it found (Task 64)
+
+Prompted by "is the structure semantic, and is the inspector showing wrong structure?". Read the
+local docs at `node_modules/next/dist/docs/`, which `AGENTS.md` makes authoritative over nextjs.org
+for 16.3.8, then audited the built output and the JSX independently.
+
+### The inspector question, answered
+
+**The inspection was of `npm run dev`, and that is most of the explanation.** Next injects elements in
+development that do not exist in the production HTML:
+
+| Element | What it is | In production? |
+| --- | --- | --- |
+| `nextjs-portal` | the dev error overlay and devtools indicator | **no** |
+| `next-route-announcer` | the `aria-live` region announcing route changes, added at runtime | not in any prerendered file |
+| HMR scripts, unminified module graph | development plumbing | no |
+
+Both greps return **0 of 98** prerendered pages. `devIndicators.md:22` also records that the overlay
+cannot be configured away: `devIndicators: false` hides the indicator, "Next.js will still surface any
+compile or runtime errors".
+
+Two further framework artifacts that look wrong and are not ours: `<div hidden><!--$--><!--/$--></div>`
+as the first child of `body` is React's Suspense placeholder, and the `self.__next_f.push` script
+blobs are the RSC payload. Worth knowing from `generate-metadata.md:1244`: on a **dynamic** route with
+streaming metadata, "the resulting metadata tags are appended to the `<body>` tag" rather than the
+head. Our pages are prerendered, so metadata is in `<head>`; metadata appearing at the foot of `body`
+would be a signal that a route had gone dynamic.
+
+### Structure: clean, verified twice
+
+Zero content-model violations across all 98 pages and, independently, across all 88 `.tsx` files:
+no `p` wrapping block content, no `button` holding non-phrasing content, no `span` wrapping a block,
+no `ul`/`ol` with a non-`li` child, no nested anchors, no anchor inside a button, no `label` with two
+controls, no heading inside a `p`/`span`/`button`. This is the decisive check for the question asked:
+React renders JSX verbatim, so a `p` wrapping a `div` would reach the browser and be **repaired** on
+parse, which is exactly how an inspector's DOM comes to differ from its source. There are none.
+
+Landmarks hold at exactly 1 banner, 1 main, 1 contentinfo per page, with 1 `h1`, no skipped heading
+levels, no duplicate ids, no dangling aria references and all three `nav` landmarks named.
+
+### The real defect: 80 of 98 pages had no `og:site_name` or `og:locale`
+
+`generate-metadata.md:1344-1348`: metadata objects from different segments are merged **shallowly**,
+and "metadata with nested fields such as `openGraph` ... defined in an earlier segment are
+**overwritten** by the last segment to define them."
+
+The root layout set `openGraph: { siteName, type, locale }`. `pageMetadata` in `parts.tsx` set its own
+`openGraph` with title, description, url and type, which **replaced** the root's object wholesale and
+dropped `siteName` and `locale` with it. Every service, guide, city and comparison page goes through
+that helper, so social cards on most of the site carried no site name and no locale.
+
+Measured before: **og:site_name on 18 of 98 pages.** After: **98 of 98.**
+
+The fix is the one the docs themselves recommend: a shared object, spread rather than restated.
+`sharedOpenGraph` now lives in `src/config/brand.ts` beside the name it reads, and both the root
+layout and `pageMetadata` spread it. The hub branch of `nodeMetadata` sets no `openGraph` at all and
+therefore always inherited correctly; it is unchanged.
+
+### Two validity errors that caused no DOM divergence, both fixed
+
+Neither would have shown in the inspector, because no parser repairs them. Both are real invalid HTML.
+
+- **`colgroup` before `caption`** in the comparison table (`CompareTemplate.tsx`). `caption` must be a
+  table's first child. The two are swapped.
+- **A decorative `span` inside a `dl`'s `div`** on `/about/`. A `div` child of a `dl` may contain only
+  `dt` and `dd` groups, and `HoverFill` was rendering a span as its first child. Fixed the way the
+  backing plate was in Task 62: the fill is now a `::before` in a `@utility hover-fill`, so the
+  component emits one element instead of two. Verified: 4 wrappers, **0 decorative spans left**. The
+  `fill` prop went with it, since both call sites used the default.
+
+### Two things read from the docs that needed no change
+
+- **`data-scroll-behavior`**: Next 16 stopped overriding `scroll-behavior` during client transitions
+  (`version-16.md:961-983`). Only relevant if `html { scroll-behavior: smooth }` is set, and it is
+  not; `globals.css` sets `scroll-padding-top` only, which is separately what `link.md:964-972` asks
+  for under a sticky header. Nothing to do.
+- **`priority` deprecated for `preload`** on `next/image` (`image.md:293`). `Photo.tsx` already uses
+  `loading="eager"` with `fetchPriority="high"` and its comment already records the rename.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off**, motion
+check clean, build green at **99 routes**. Re-ran both audit scripts: 0 content-model violations, 0
+landmark errors, 0 dangling references.
+
+One correction to the tooling: the landmark audit script was itself wrong in Task 63, reporting
+duplicate banners on three pages. It tested the nearest *sectioning* ancestor; the actual rule is an
+exclusion list of `article`, `aside`, `main`, `nav`, `section`, and `main` is in it. Script corrected,
+and it now reports clean.
+
+**Not run, and not claimed:** axe, Lighthouse, and loading either server in a browser to diff the dev
+and production DOMs directly. The sandbox has no loopback networking. Everything above about the dev
+DOM is read from Next's own source rather than observed.
+
+## v4 / `<article>` stops being the page wrapper (Task 65)
+
+Asked why every page's main content is wrapped in `<article>`, and whether that is sound. It was not.
+`<article>` had become the generic layout box carrying `page` and `pageY`, on **94 of 98 pages**.
+
+### What the element means
+
+The HTML spec: "a complete, or self-contained composition ... **in principle independently
+distributable or reusable**, e.g. in syndication." It maps to ARIA `role="article"`, which screen
+readers announce and some, JAWS among them, give a dedicated key to jump between.
+
+Measured against that definition:
+
+| Template | Pages | An article? |
+| --- | --- | --- |
+| `GuideTemplate` | 37 | **yes**, a written guide to one error is exactly this |
+| `CompareTemplate` | 3 | **yes**, defensibly: a neutral comparison document stands alone |
+| `ServiceTemplate` | 32 | no, a landing page for a service |
+| `HubTemplate` | 6 | no, a directory of services |
+| `CityTemplates` (hub + cities) | 9 | no, listing and landing pages |
+| about, case-studies, 3 legal routes, preview, `LegalPending` | 7 | no |
+| `FixPan` panels | home | no, and worse: five of them |
+
+So about fifty pages announced "article" for something that is not one, and the home page announced
+five separate articles for what is a single five-step process.
+
+It was also inconsistent with itself. `/compare/`, `/contact/`, `/free-site-check/`, `/guides/` and
+`/pricing/` already used a plain `div` for the identical job, so the five correct pages read as the
+exceptions.
+
+Nothing about it was broken, and there is no SEO cost either way: structured data does that job and
+every route already emits its own JSON-LD. The cost is that a hub directory is announced as a
+self-contained composition, which is simply untrue.
+
+### What changed
+
+`<article>` stays where the content really is one: **37 guides and 3 comparisons**. Everywhere else
+the wrapper only ever carried layout classes, so it is a `div`; `main` already supplies the landmark
+and nothing else was relying on the element.
+
+**The fix rail became an ordered list.** Diagnose, Back up, Repair, Verify, Harden is a sequence and
+the order is the information. `FixRail`'s track is now an `ol` and `FixPan`'s panels are `li`, where
+before they were five sibling `article` elements telling assistive tech the opposite: five unrelated
+compositions that happened to sit in a row. `FixPan` is `FixRail`'s only consumer, so the track could
+change without touching anything else, and no motion changed: the rail still drives `scrollLeft` on
+the same scroller.
+
+### Measurements
+
+| | Before | After |
+| --- | --- | --- |
+| Pages containing an `<article>` | 94 of 98 | **40 of 98** |
+| Breakdown | every template but five pages | 37 guides, 3 compares, **0 unexpected** |
+| Home fix rail | 5 `<article>` in a `div` | 1 `<ol>`, 5 `<li>`, 0 `<article>` |
+
+Both semantic audits re-run and still clean: 0 content-model violations, 0 landmark errors, 0 heading
+problems. In particular the new `ol` passes the `ul`/`ol`-with-a-non-`li`-child check, and the `li`
+elements pass the `li`-outside-a-list check.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off**, motion
+check clean, build green at **99 routes**.
+
+One note on how this was done, since it was a blanket textual replace of `<article`/`</article>`
+across ten files: the only risk was rewriting the word inside a prose comment, and `GuideTemplate`'s
+`id="guide-article"` and its doc comment both sit in a file that was deliberately not in the list.
+Grepped after, nothing mangled.
+
+**Not run, and not claimed:** axe, or a screen-reader pass to hear the difference. The change is
+reasoned from the spec and verified in the markup.
+
+## v4 / the backing plate inverts: lifted at rest, settles under the pointer (Task 66)
+
+One change, in the `card-plate` utility. All **182 wrappers** across the build follow it with no call
+site touched, which is the whole point of having moved the plate into CSS in Task 62.
+
+| | Before | After |
+| --- | --- | --- |
+| At rest | card flush on its plate, plate completely hidden | card 7px up and left, **plate showing along the bottom and right edges** |
+| Pointer / focus | card slides off, plate revealed | card settles back down flush, plate hidden |
+| Touch | **nothing at all**, the effect needed a pointer | the resting offset, same as everyone else |
+
+### Why the inversion is the better way round
+
+**Reach.** The effect previously existed only under a fine pointer, so a phone saw a plain card and
+nothing else. The resting offset now sits outside the hover query, so every visitor sees the design
+and the hover is the reward rather than the whole idea.
+
+**Direction of travel.** A card that drops *under* your finger answers the press. A card that jumps
+*away* from it does not. Inverted, the motion agrees with the gesture.
+
+### The cost, stated plainly
+
+**Ember is now visible on every card at rest**, as a 7px L along two edges, where before it appeared
+one card at a time and only under the cursor. On the fix hub that is eleven ember slivers at once.
+This is the thing Task 57 worried about and Task 59 dismissed, and the dismissal was correct **only
+while the plate was hidden at rest**. That premise is now gone, so the worry is live again: this is
+the largest amount of accent the site has ever shown at once, against a one-accent lock that reserves
+ember for display words and single marks.
+
+It is still one accent and still the existing `--accent-tint` token, so no rule is broken outright.
+But if the hub pages read as busy, the dial to turn is this one: either a smaller offset, or a plate
+closer to `--surface-2` with the ember kept only in its border.
+
+### The cascade, verified in the compiled stylesheet
+
+```
+.card-plate>a                       { translate: -7px -7px }   /* resting, every device */
+.card-plate:has(a:focus-visible)>a  { translate: none }        /* keyboard, no media gate */
+@media (hover:hover) and (pointer:fine) { .card-plate:hover>a { translate: none } }
+@media (prefers-reduced-motion:reduce)  { ...both selectors   { translate: -7px -7px } }
+```
+
+Three things that had to be in that order and are:
+
+- **The resting offset carries no media query**, so touch gets it.
+- **Focus sits outside the hover query.** Focus arrives from a keyboard, which a device without a
+  fine pointer still has; gating it behind `(hover: hover)` would have denied the response to anyone
+  tabbing on a tablet. This was wrong in the first version of this change and corrected before it
+  shipped.
+- **Reduced motion comes last and wins**, pinning the card at its resting offset so the pointer
+  changes nothing and no movement happens at all. The composition survives; only the motion goes.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off**, motion
+check clean, build green at **99 routes**. Wrapper count unchanged at 182, since nothing but the
+stylesheet moved.
+
+**Not run, and not claimed:** axe, and any judgement about how eleven ember slivers actually look on
+a hub page at 1440. That one needs eyes on a browser and is the thing most likely to want tuning.

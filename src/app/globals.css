@@ -577,6 +577,138 @@
    background still shows through unchanged. Percentages rather than a fixed length, so the fade is
    the same proportion of a 343px phone window as of a 1152px desktop one. Switched off under reduced
    motion, where the row is a static wrapped block and there is nothing travelling past an edge. */
+/* The problem grid narrows to what you are pointing at: every tile but the hovered or focused one
+   drops to half opacity. On a grid of 52 that is the difference between a wall and a thing you are
+   reading, and it is the one mechanic worth keeping from the 21st.dev card sets, which pair the dim
+   with a blur this system cannot spend (rule 10 is transform and opacity only).
+
+   The selector targets the anchors, never the list items, and that is load-bearing: the tiles are
+   `motion.li` and Motion writes `opacity: 1` on them as an inline style, which beats any class.
+
+   Behind `(hover: hover)` so a tap cannot leave 51 tiles dimmed with no way to clear them, and the
+   `:has()` support test fails closed: a browser without it simply gets no dimming. */
+/* The backing plate every link card slides off, drawn on the card's wrapper rather than inside the
+   card. That placement is the whole trick: a `::before` on the anchor would travel with the anchor
+   and leave nothing behind to reveal, so the plate belongs to the one element that stays put.
+
+   Markup rather than CSS was the first implementation, a `<span>` inside LinkCards. It moved here
+   when the city directory turned out to render its cards by hand and needed the same treatment
+   without a second copy of it (docs/layout-ledger.md, Task 62). A wrapper adds one class now.
+
+   Invisible at rest: the card above it is opaque at the same box and the same radius, so a grid of
+   eleven shows no ember at all until a pointer lands on one of them. Only `translate` animates, the
+   property Tailwind v4 writes for `-translate-x-*`, and the card never changes size, so a row of
+   cards cannot reflow under the cursor. */
+/* A box whose hover fill grows out of the cursor and collapses back towards wherever it leaves. The
+   two coordinates are written to custom properties by `HoverFill`, because a stylesheet cannot know
+   where a pointer is; everything after that is CSS, and only `scale` animates.
+
+   A `::before` rather than a child element, so the box emits one node instead of two. That is not
+   only tidiness: the About stats strip is a `dl`, whose `div` children may contain nothing but `dt`
+   and `dd` groups, and a decorative `span` in there was invalid (docs/layout-ledger.md, Task 64).
+
+   The properties default to 50%, so the fill grows from the middle when nothing has set them: a
+   touch device that fires no pointerenter, a keyboard user, or a blocked bundle. 250% of the box
+   clears its diagonal from any corner, and the overflow clip hides the rest.
+
+   Hover only, behind `(hover: hover)`: a tap would leave a box filled with no way to clear it. Under
+   reduced motion the transition goes and the state change arrives instantly, deliberately not
+   `scale: 1`, which would pin every box permanently filled. */
+@utility hover-fill {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    z-index: -10;
+    left: var(--fill-x, 50%);
+    top: var(--fill-y, 50%);
+    width: 250%;
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    scale: 0;
+    border-radius: 50%;
+    background: var(--surface-2);
+    transition: scale 650ms var(--motion-ease);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover::before {
+      scale: 1;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    &::before {
+      transition: none;
+    }
+  }
+}
+
+@utility card-plate {
+  position: relative;
+  isolation: isolate;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -10;
+    border-radius: 14px;
+    background: var(--accent-tint);
+    /* Flat first, so a browser without color-mix gets a solid ember edge rather than none. */
+    border: 1px solid var(--accent-text);
+    border-color: color-mix(in oklab, var(--accent-text) 35%, transparent);
+  }
+
+  /* The resting state is the lifted one: the card sits 7px up and left of its box, so the plate
+     shows along the bottom and right edges and the pair reads as two stacked sheets. Pointing at a
+     card settles it back down flush, which hides the plate again.
+
+     This is the inversion of how it started, and the reason is reach. The effect used to exist only
+     under a pointer, which meant a phone saw a plain card and nothing else; every visitor now sees
+     the design, and the hover is the reward rather than the whole idea. It also puts the movement
+     the right way round: a card that drops under your finger answers the press, where a card that
+     jumps away from it does not.
+
+     The resting offset deliberately sits outside the hover query so it applies on touch as well. */
+  & > a {
+    translate: -7px -7px;
+  }
+
+  /* Focus settles the card too, and sits outside the hover query on purpose: focus arrives from a
+     keyboard, which a device without a fine pointer still has. Gating it behind `(hover: hover)`
+     would have denied the response to anyone tabbing on a tablet. */
+  &:has(a:focus-visible) > a {
+    translate: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover > a {
+      translate: none;
+    }
+  }
+
+  /* Static under reduced motion: the card keeps its resting offset and the pointer changes nothing,
+     so the composition survives and no movement happens at all. */
+  @media (prefers-reduced-motion: reduce) {
+    &:hover > a,
+    &:has(a:focus-visible) > a {
+      translate: -7px -7px;
+    }
+  }
+}
+
+@utility tile-focus {
+  @media (hover: hover) and (pointer: fine) {
+    &:has(a:hover) a:not(:hover),
+    &:has(a:focus-visible) a:not(:focus-visible) {
+      opacity: 0.5;
+    }
+  }
+}
+
 @utility marquee-fade {
   mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
   @media (prefers-reduced-motion: reduce) {

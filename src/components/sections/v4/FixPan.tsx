@@ -86,7 +86,7 @@ export function FixPan() {
 
       <FixRail label="The five moves of a fix">
         {PANELS.map((p) => (
-          <article key={p.verb} className={panel}>
+          <li key={p.verb} className={panel}>
             {p.capture && hasScreen(p.capture) ? (
               // The capture carries its own frame, so it is not boxed into an aspect ratio twice.
               <Screen src={p.capture} alt={p.alt!} sizes={sizes} />
@@ -101,7 +101,7 @@ export function FixPan() {
               <span className="text-muted">You get </span>
               {p.gets}
             </p>
-          </article>
+          </li>
         ))}
       </FixRail>
     </section>

@@ -2,7 +2,6 @@ import { BookLink, ChatButton, PlansLink, QuoteLink } from "@/components/Cta";
 import { faqLd, JsonLd, nodeCrumbs, serviceLd } from "@/components/JsonLd";
 import { SiteStatus } from "@/components/SiteStatus";
 import { CLOSING_ASK, primaryCtaFor } from "@/config/cta";
-import { routes } from "@/config/routes";
 import { getGuide } from "@/content";
 import { testimonials } from "@/content/testimonials";
 import { verbIcon } from "@/content/icons";
@@ -10,7 +9,7 @@ import { servicePhotos } from "@/content/photos";
 import type { Service } from "@/content/schema";
 import { cn } from "@/lib/utils";
 import { ReadingRail } from "./ReadingRail";
-import { Breadcrumbs, ClosingBand, Faqs, LinkCards, LinkList, PageMasthead, Section, TickList, page, pageY, urgencyIcon } from "./parts";
+import { Breadcrumbs, ClosingBand, ErrorCards, Faqs, LinkList, PageMasthead, Section, TickList, page, pageY } from "./parts";
 
 const Primary = ({ intent, ...rest }: { intent: ReturnType<typeof primaryCtaFor>; location: string; service: string; className?: string }) =>
   intent === "PLANS" ? <PlansLink {...rest} /> : intent === "QUOTE" ? <QuoteLink {...rest} /> : <BookLink {...rest} />;
@@ -33,7 +32,7 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
   ].filter((x): x is { k: string; v: string } => !!x);
 
   return (
-    <article data-intent={s.intent} className={cn(page, pageY)}>
+    <div data-intent={s.intent} className={cn(page, pageY)}>
       <JsonLd data={[serviceLd(s), faqLd(s.faqs)]} />
       <Breadcrumbs items={nodeCrumbs(s.path)} />
 
@@ -171,16 +170,7 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
           string, not a picture of a desk. */}
       {guides.length > 0 && (
         <Section id="guides" title="Errors we fix here">
-          <LinkCards
-            cols={4}
-            items={guides.map((g) => ({
-              href: routes.guide(g.slug),
-              title: g.title,
-              summary: g.symptoms[0],
-              code: g.errorText,
-              icon: urgencyIcon[g.urgency],
-            }))}
-          />
+          <ErrorCards guides={guides} />
         </Section>
       )}
 
@@ -198,6 +188,6 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
           </>
         }
       />
-    </article>
+    </div>
   );
 }
