@@ -31,6 +31,6 @@ export default citySchema.parse({
   ],
   seo: {
     title: "WordPress Development in Mumbai",
-    description: "WordPress and WooCommerce for Mumbai finance firms, media businesses and D2C brands: disclosure pages, Indian gateways, GST invoices and speed work.",
+    description: "WordPress and WooCommerce for Mumbai finance firms, media and D2C brands: disclosure pages, Indian gateways, GST invoices and speed work.",
   },
 });

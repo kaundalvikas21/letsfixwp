@@ -51,3 +51,8 @@ __pycache__/
 .agents/
 .codex/
 .superpowers/
+
+# tool residue (per-machine): Lighthouse's Chrome profiles land here when its
+# Windows temp path is taken literally under WSL; brag-output is the /brag skill's
+brag-output*/
+C:\\Users\\*

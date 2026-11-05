@@ -59,7 +59,7 @@ export function FaqTabs({ groups }: { groups: FaqGroup[] }) {
           <span
             aria-hidden
             style={{ transform: `translateY(${active * ROW}px)` }}
-            className="absolute inset-x-0 top-0 -z-10 h-12 rounded-[14px] bg-surface-2 transition-transform duration-[240ms] ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none"
+            className="absolute inset-x-0 top-0 -z-10 h-12 rounded-[14px] bg-surface-2 transition-transform duration-[240ms] ease-[var(--motion-ease)] motion-reduce:transition-none"
           />
           {groups.map((g) => (
             <Tabs.Trigger
@@ -92,7 +92,11 @@ export function FaqTabs({ groups }: { groups: FaqGroup[] }) {
                       type="button"
                       id={labelId}
                       aria-expanded={isOpen}
-                      aria-controls={panelId}
+                      // Only while the panel exists. `AnimatePresence` unmounts a closed answer, so
+                      // a permanent `aria-controls` points at an element that is not in the document
+                      // for every collapsed question, which is what `aria-valid-attr-value` fails on.
+                      // `aria-expanded` carries the state either way; `aria-controls` is optional.
+                      aria-controls={isOpen ? panelId : undefined}
                       onClick={() => toggle(f.q)}
                       className="group flex w-full cursor-pointer items-center justify-between gap-4 py-5 text-left font-display text-lg font-bold"
                     >

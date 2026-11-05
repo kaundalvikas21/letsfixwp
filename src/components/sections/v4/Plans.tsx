@@ -2,6 +2,7 @@ import { CheckIcon } from "@phosphor-icons/react/ssr";
 import { BookLink, PlansLink } from "@/components/Cta";
 import { Photo } from "@/components/Photo";
 import { brand } from "@/config/brand";
+import { wayOf } from "@/config/ways";
 import { getService } from "@/content";
 import type { PhotoId } from "@/content/photos";
 import { formatPrice, prices, type Price } from "@/content/pricing";
@@ -31,24 +32,24 @@ const freeFix = brand.legacy.facts && `A fix included each month, worth ${brand.
 
 const ROWS: Row[] = [
   {
-    name: "One-time fix",
-    who: "One problem on your site, found and fixed.",
+    name: wayOf("emergency").name,
+    who: wayOf("emergency").who,
     price: from(prices.fix, "per fix"),
     items: getService("emergency")!.deliverables.slice(0, 5),
     image: shot("emergency"),
     cta: <BookLink location="home:plans" className="btn-primary" />,
   },
   {
-    name: "Hacked site cleanup",
-    who: "Malware out, the way in closed.",
+    name: wayOf("malware-removal").name,
+    who: wayOf("malware-removal").who,
     price: from(prices.cleanup, "per site"),
     items: getService("malware-removal")!.deliverables.slice(0, 5),
     image: shot("cables"),
     cta: <BookLink location="home:plans" service="malware-removal" className="btn-primary" />,
   },
   {
-    name: "Care plan",
-    who: "Updates, backups and monitoring, every month.",
+    name: wayOf("care-plans").name,
+    who: wayOf("care-plans").who,
     price: from(prices.planMonthly, "a month"),
     items: [...getService("care-plans")!.deliverables.slice(0, 4), ...(freeFix ? [freeFix] : [])],
     image: shot("racks"),
@@ -59,7 +60,7 @@ const ROWS: Row[] = [
 /** Three ways to work with us, one row open at a time. */
 export function Plans() {
   return (
-    <section aria-labelledby="plans" className="mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
+    <section aria-labelledby="plans" className="reveal mx-auto max-w-page px-4 py-16 md:px-6 md:py-24">
       <h2
         id="plans"
         className="font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_30] sm:text-5xl sm:[font-variation-settings:'opsz'_48]"

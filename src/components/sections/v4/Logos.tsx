@@ -1,10 +1,5 @@
-import { ArrowUpRightIcon } from "@phosphor-icons/react/ssr";
-import Link from "next/link";
 import { siCloudflare, siCpanel, siElementor, siGutenberg, siMysql, siPhp, siWoocommerce, siWordpress } from "simple-icons";
-import { routes } from "@/config/routes";
-import { testimonials } from "@/content/testimonials";
 import { LogoMarquee } from "./LogoMarquee";
-import { QuotePair } from "./QuotePair";
 
 // Named imports from simple-icons: a slug that does not exist fails the build instead of 404ing.
 // Divi, WPBakery and Beaver Builder are not in Simple Icons (16.35.0), so the stack underneath fills those places.
@@ -32,28 +27,33 @@ const logos = LOGOS.map((icon) => (
 ));
 
 /**
- * Proof: the platforms we repair, then what clients say. The quotes come from
- * src/content/testimonials.ts, which holds placeholders marked as such on the page; a production
- * deploy fails while any remain. The two quotes this brief named belong to a different, still trading
- * company and were removed from the content on 2026-10-07, so they are not on this page.
+ * The platforms we repair, directly under the hero.
+ *
+ * This strip and the client stories used to be one section called "We repair sites running on", which
+ * meant the page's whole client-proof block sat inside a region named after a platform list. They are
+ * two sections now, each saying what it is. Task 55 in docs/layout-ledger.md has the reasoning.
+ *
+ * **It sits second on purpose.** A logo row is the fastest credibility check a visitor can make, and
+ * it was at 65% page depth, which is four screens after the moment anyone decides whether this
+ * company is real. PRODUCT.md has the visitor arriving mid-emergency, often on a phone, straight off
+ * a search for the error their site is printing; the question "do you even work on what I run" is the
+ * first one they have, so the answer goes where they ask it.
+ *
+ * **The heading is a label and stays one.** 16px, --muted, centred, deliberately not the 30px display
+ * heading every other section carries: it names the row rather than introducing a section, which is
+ * what a trust strip's heading is for. It is still a real h2, so the row has a name in the outline
+ * rather than being eight unexplained pictures.
+ *
+ * Shorter vertical rhythm than a full section (py-10/14 rather than py-16/24), because this reads as
+ * attached to the hero above it rather than as the page's second idea.
  */
-export function Proof() {
+export function Logos() {
   return (
-    <section aria-labelledby="repair-sites-on" className="mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
+    <section aria-labelledby="repair-sites-on" className="reveal mx-auto max-w-page px-4 py-10 md:px-6 md:py-14">
       <h2 id="repair-sites-on" className="text-center text-base font-medium text-muted">
         We repair sites running on
       </h2>
       <LogoMarquee logos={logos} />
-
-      <QuotePair quotes={testimonials.map((t) => ({ ...t }))} />
-
-      <Link
-        href={routes.reviews}
-        className="group mt-12 inline-flex min-h-11 items-center gap-2 font-semibold text-accent-text"
-      >
-        Read the case studies
-        <ArrowUpRightIcon weight="duotone" className="size-5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:translate-none!" aria-hidden />
-      </Link>
     </section>
   );
 }

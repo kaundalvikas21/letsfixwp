@@ -1,12 +1,16 @@
+import { CaretRightIcon } from "@phosphor-icons/react/ssr";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookLink, ChatButton, CheckLink, PlansLink } from "@/components/Cta";
+import { BookLink, ChatButton, CheckLink, QuoteLink } from "@/components/Cta";
 import { collectionLd, faqLd, JsonLd, nodeCrumbs } from "@/components/JsonLd";
 import { Photo } from "@/components/Photo";
-import { Breadcrumbs, Faqs, Promises, Section, TickList, h1, h2, page, pageY } from "@/components/templates/parts";
+import { ClosingBand, Faqs, PageMasthead, Promises, Section, TickList, page, pageYMasthead } from "@/components/templates/parts";
 import { brand } from "@/config/brand";
-import { HUB_LABELS, hubNodes, routes } from "@/config/routes";
+import { HUB_LABELS, hubIdOf, hubNodes, routes } from "@/config/routes";
+import { wayOf } from "@/config/ways";
 import { getService, services } from "@/content";
+import { hubIcon } from "@/content/icons";
+import type { PhotoId } from "@/content/photos";
 import { formatPrice, prices, type Price } from "@/content/pricing";
 import { cn } from "@/lib/utils";
 
@@ -52,15 +56,6 @@ export const metadata: Metadata = {
 };
 
 /**
- * The masthead's box is the inner container and nothing else: 1104px from 1152 up (max-w-6xl, 1152,
- * less the 24px md gutters on both sides), `100vw - 48px` while the container is still narrower than
- * its max at md, and `100vw - 32px` below md where the gutter is 16px. The same arithmetic and the
- * same string as /about/, because it is the same box. Declared rather than left to `100vw`, which
- * over-fetches by a whole candidate step at every width on the page's LCP image.
- */
-const bannerSizes = "(min-width: 1152px) 1104px, (min-width: 768px) calc(100vw - 48px), calc(100vw - 32px)";
-
-/**
  * A price renders only once the owner publishes it. `src/content/pricing.ts` holds four nulls today
  * and all 32 `priceFrom` values are null, and contract rule 8 says a null renders nothing rather
  * than a placeholder number. `Plans.tsx`'s `from()` is the same helper at the home page's scale;
@@ -77,24 +72,43 @@ const from = (p: Price | null, unit: string) =>
   );
 
 /**
- * The three ways to work, the same three the home page's `Plans` names from the same three services.
+ * The three ways to work, one column each.
  *
- * The three labels are `Plans.tsx`'s own words, reused unchanged: they name a mode of engagement
- * rather than a service, so they cannot be read off a content file, and a second wording for the
- * same three choices is the drift Task 8 removed from the promises. Everything else on each row is
- * read from the service file: `whoItsFor` for the sentence (rather than a second copy of `Plans`'
- * hardcoded `who` lines) and `deliverables` for the inclusions, so no row states anything the
- * service pages do not.
+ * `name` and `who` come from `src/config/ways.ts`, which the home page's `Plans` reads too, so the
+ * two pages cannot drift on either. `who` is the column's description line: five to eight words,
+ * parallel in shape, and the thing that tells the three apart without reading a paragraph. It
+ * replaced the service files' `whoItsFor`, which ran 97, 143 and 152 characters here and made the
+ * three read as one block of grey (ledger Task 75).
+ *
+ * `photo` is not new art direction. `Plans.tsx` has shown exactly these three pictures for exactly
+ * these three choices since it was built, so the same option carries the same image on the home
+ * page and here, both read from `src/content/photos.ts`.
+ *
+ * Everything factual is still read off the service file through `getService(w.id)`: the inclusions,
+ * and the path behind the name. Nothing in this array states a fact a service page does not.
  *
  * `slice(0, 4)` on the care plan is not cosmetic: its fifth deliverable is "A clear list of what
  * each tier includes, published on the pricing page", which is a promise about this page that this
- * page cannot keep while every price is null. Taking four on all three keeps the rows level.
+ * page cannot keep while every price is null. Taking four on all three keeps the columns level.
+ *
+ * **The care plan asks for a quote rather than offering plans to see.** `routes.plans()` goes to
+ * the care plan service page, which has no tiers and no prices, so the PLANS label named something
+ * the destination does not show: the clearest over-promise on the page, reported by the owner. The
+ * label itself is not repeated here, because `scripts/check-content.ts` fails the build on a CTA
+ * label quoted anywhere but `src/config/cta.ts`, and a comment is not an exemption. For an
+ * option with no published price, asking is the true next step. This is a deliberate departure from
+ * `primaryCtaFor`, which resolves `plan` intent to PLANS; that rule is about a page's own node
+ * intent, and this is one column chosen against the destination it actually has (ledger Task 76).
+ *
+ * `unit` is null on the two one-off columns on purpose. "per fix" and "per site" are price units
+ * written in this file rather than read from content, and a billing unit stated with no price is a
+ * pricing claim the owner has not confirmed. The care plan's "monthly" is already in `care-plans.ts`.
  */
 const WAYS = [
-  { name: "One-time fix", id: "emergency", price: from(prices.fix, "per fix"), cta: <BookLink location="pricing:ways" service="emergency" className="btn-primary" /> },
-  { name: "Hacked site cleanup", id: "malware-removal", price: from(prices.cleanup, "per site"), cta: <BookLink location="pricing:ways" service="malware-removal" className="btn-primary" /> },
-  { name: "Care plan", id: "care-plans", price: from(prices.planMonthly, "a month"), cta: <PlansLink location="pricing:ways" className="btn-primary" /> },
-] as const;
+  { ...wayOf("emergency"), photo: "emergency", price: from(prices.fix, "per fix"), unit: null, cta: <BookLink location="pricing:ways" service="emergency" className="btn-primary w-full" /> },
+  { ...wayOf("malware-removal"), photo: "cables", price: from(prices.cleanup, "per site"), unit: null, cta: <BookLink location="pricing:ways" service="malware-removal" className="btn-primary w-full" /> },
+  { ...wayOf("care-plans"), photo: "racks", price: from(prices.planMonthly, "a month"), unit: "monthly", cta: <QuoteLink location="pricing:ways" service="care-plans" className="btn-primary w-full" /> },
+] as const satisfies readonly { photo: PhotoId; [k: string]: unknown }[];
 
 /**
  * The four questions in `src/content/services/` that are actually about what something costs,
@@ -132,13 +146,23 @@ const priceFaqs = PRICE_FAQS.map(([id, q]) => {
  * page invents a price, a range, a turnaround, a discount or a saving.
  *
  * Six sections, six layout families, none repeated (contract rule 3): a masthead over a photographic
- * band, the ruled ledger of three ways to work, a two-column tick grid of the promises, the grouped
- * service directory, the FAQ disclosure list, and the closing band. No eyebrow, no marquee, no
- * numbered steps, and one image on the page so no two image-plus-text splits can be consecutive.
+ * band, the three columns of ways to work, a two-column tick grid of the promises, the grouped
+ * service directory, the FAQ disclosure list, and the closing band. No marquee, no numbered steps,
+ * no eyebrow, and the page's whole budget of `ceil(6/3)` = 2 eyebrows is unspent.
+ *
+ * **The three columns are a rule 6 exception, granted for this section** (ledger Task 76). Three
+ * equal cards in a row were banned outright until the owner asked for them here; the rule now
+ * allows the shape only where every column carries its own image, its own list and its own CTA,
+ * which is what a comparable offer needs and what a three-up of a title and a sentence never had.
+ *
+ * Four images now: the masthead, and one per column. None of them sits beside a block of text as a
+ * half-and-half split, so the limit of two consecutive image-plus-text splits is still untouched,
+ * and the three in the columns are the same pictures the home page's `Plans` gives the same three
+ * choices.
  */
 export default function Pricing() {
   return (
-    <div className={cn(page, pageY)}>
+    <div className={cn(page, pageYMasthead)}>
       {/* The only truthful structured data for this page. `CollectionPage` with its `ItemList` says
           what the page is: an index of the 32 services, every name and url read from src/content so
           the list cannot claim something the page does not render. Deliberately **no** `OfferCatalog`
@@ -160,102 +184,123 @@ export default function Pricing() {
           faqLd(priceFaqs),
         ]}
       />
-      <Breadcrumbs items={nodeCrumbs(routes.pricing)} />
-
       {/* The /about/ masthead, which is this site's one measured pattern for type over photography
-          (commit 4557bb4) and the pattern the brief routes here rather than inventing a second one:
-          one `relative isolate` box, photograph and flat `bg-photo-scrim` both at -z-10, type in
-          normal flow above them. Height comes from content plus padding and never from an aspect
-          ratio: at 375 a 16/9 band is 211px and an h1, a sentence and two buttons need more than
-          300px, so an aspect-driven box would have type overflowing the frame it sits in.
-          `md:min-h-[22rem]` is the opposite guard, holding enough frame open at desktop that the
-          photograph still reads as a photograph.
+          (commit 4557bb4). It is `PageMasthead` now, shared with the five templates, so the box,
+          the flat scrim, the no-aspect-ratio rule and the 70/140ms beat all live in parts.tsx and
+          this page states only what is true of it alone.
 
-          The lead is `text-on-photo` and never `text-muted`: muted over this scrim measures 2.55:1.
-          `--on-photo` is `--text`, and the scrim's own floor is tone-independent, because the scrim
-          composites a blown-out white pixel to rgb(95 95 95) against which `--text` is 5.6:1. */}
-      <header className="relative isolate mt-6 flex flex-col justify-end overflow-hidden rounded-[14px] p-6 shadow-card sm:p-10 md:min-h-[22rem] md:p-14 lg:p-16">
-        {/* A tidy desk under one warm floor lamp against a dark wall, which is the Imagery section's
-            own art direction: night-time photography, a single warm source, against the dark page.
-            `drafting` was tried first, because a hand drawing a wireframe is the only frame in the
-            catalogue whose *subject* is this page's subject, a scope agreed before work starts. It
-            was rejected on tone: it is a `daylight` frame, and even under the scrim it was the
-            brightest thing on a dark-locked page and read as a stock photograph pasted into the
-            system. The variation's lock is binding spec and subject relevance is a preference.
+          `workspace`: a tidy desk under one warm floor lamp against a dark wall, which is the
+          Imagery section's own art direction. `drafting` was tried first, because a hand drawing a
+          wireframe is the only frame in the catalogue whose *subject* is this page's subject, a
+          scope agreed before work starts. It was rejected on tone: it is a `daylight` frame, and
+          even under the scrim it was the brightest thing on a dark-locked page and read as a stock
+          photograph pasted into the system. The variation's lock is binding spec and subject
+          relevance is a preference.
 
-            `decorative` therefore, with an empty alt. The frame is here for register, not for
-            evidence, and nothing on this page is about desks: announcing "a tidy desk with a curved
-            monitor" to a screen reader in the middle of a pricing headline would be noise. That is
-            the opposite call from /about/'s masthead and it is the opposite situation; there, the
-            photograph was the page's only evidence of who does the work. No animation on it at all,
-            because it is the largest paint on the page. */}
-        <Photo id="workspace" decorative preload sizes={bannerSizes} className="absolute inset-0 -z-10" />
-        <span aria-hidden className="absolute inset-0 -z-10 bg-photo-scrim" />
+          Decorative therefore, with an empty alt. The frame is here for register, not for evidence,
+          and nothing on this page is about desks: announcing "a tidy desk with a curved monitor" to
+          a screen reader in the middle of a pricing headline would be noise. That is the opposite
+          call from /about/'s masthead and it is the opposite situation; there, the photograph was
+          the page's only evidence of who does the work.
 
-        {/* The pricing model is the headline while the claim behind it holds. `brand.claims.fixedPrice`
-            is an **unconfirmed** claim whose own approved wording is "fixes are fixed price, agreed
-            before work starts", and this is that clause rather than a new claim; `MASTHEAD` above
-            carries both arms and the reason for the gate. Never faded: the h1 is the LCP candidate.
-            The sentence under it is the one this page already carried, less the half that apologised
-            for the missing prices. 70ms and 140ms behind the h1, the same beat as the hub, the
-            knowledge base and /about/. */}
-        <h1 className={h1}>{MASTHEAD.h1}</h1>
-        <p className="rise-in mt-5 max-w-[58ch] text-lg text-on-photo" style={{ animationDelay: "70ms" }}>
-          {MASTHEAD.lead}
-        </p>
-        <div className="rise-in mt-7 flex flex-wrap gap-3" style={{ animationDelay: "140ms" }}>
-          <BookLink location="pricing:hero" className="btn-primary" />
-          <ChatButton location="pricing:hero" className="btn-secondary" />
-        </div>
-      </header>
+          `22rem` rather than the shared `24rem`: the lead here is one line shorter, and the band was
+          measured at this height.
 
-      {/* Three full-width ruled rows, not the home page's `ExpandingRows` and not three cards.
-          `ExpandingRows` is a client island that shows one row at a time, which is right for a
-          teaser and wrong here: this is the page where the three are compared, and it would leave
-          two thirds of the inclusions behind `hidden` and out of reach of a reader who is scanning.
-          It would also need a second copy of its rows, which is the drift this file avoids by
-          reading `whoItsFor` and `deliverables` instead. Three equal cards in a row is banned
-          outright (contract rule 6), so the unit is a row of one list: the choice reads down the
-          page, the way the catalogue below it does, and the whole section ships with no JS.
+          The headline is the pricing model while the claim behind it holds. `brand.claims.fixedPrice`
+          is an **unconfirmed** claim whose approved wording is "fixes are fixed price, agreed before
+          work starts", and `MASTHEAD` above carries both arms and the reason for the gate. */}
+      <PageMasthead
+        crumbs={nodeCrumbs(routes.pricing)}
+        photo="workspace"
+        title={MASTHEAD.h1}
+        lead={MASTHEAD.lead}
+        minH="md:min-h-[22rem]"
+        actions={
+          <>
+            <BookLink location="pricing:hero" className="btn-primary" />
+            <ChatButton location="pricing:hero" className="btn-secondary" />
+          </>
+        }
+      />
 
-          The price sits on the name's own baseline at the right edge of the left column, which is
-          space the row already allocates. When `prices.fix` stops being null the number appears
-          there and nothing under it moves. */}
+      {/* Three columns, which contract rule 6 banned until this section (ledger Task 76). The ban
+          is on a three-up of a title and a sentence, which is filler in a grid; the amended rule
+          allows it only where every column carries its own image, its own list and its own CTA,
+          which is three parallel offers with enough in each to be worth comparing. All three are
+          present here, and the exception names them so it cannot be stretched back.
+
+          Not the home page's `ExpandingRows`: that is a client island showing one row at a time,
+          right for a teaser and wrong on the page where the three are compared, because it would
+          leave two thirds of the inclusions behind `hidden` and out of reach of a reader scanning.
+          This ships with no JS.
+
+          Column order is the order a reader needs it: what it is, what you end up with, what it
+          looks like, what is included, what to do. The photograph sits between the promise and the
+          proof rather than on top, so the column leads with words and not with mood.
+
+          The price sits under the name. While it is null the care plan shows "monthly" there
+          instead, and when `prices.planMonthly` is published the number takes the slot and the word
+          steps aside, so the two never both appear. */}
       <Section id="ways" title="Three ways to work with us">
-        <ul className="divide-y divide-line border-y border-line">
+        {/* Four shared rows and `grid-rows-subgrid` on each card, so the heading block, the
+            photograph, the inclusions and the button each sit on one line across all three columns.
+            Without it every band starts wherever the text above it happened to stop: the three
+            descriptions wrap to one or two lines depending on the width, which put the three
+            photographs about 60px apart and read as untidy in a grid whose whole job is comparison.
+            `1fr` on the inclusions row is what absorbs the slack, so a short column pads in the
+            middle and the buttons still share a line. */}
+        <ul className="reveal grid gap-5 md:grid-cols-3 md:grid-rows-[auto_auto_1fr_auto]">
           {WAYS.map((w) => {
             const s = getService(w.id)!;
             return (
-              <li key={w.name} className="grid gap-x-10 gap-y-6 py-8 md:grid-cols-12 md:py-10">
-                <div className="md:col-span-5">
-                  <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+              // Not `cardLink`: that is for a card which *is* a link, and this one holds two of
+              // them. The hover is therefore triggered by the controls inside it, with
+              // `has-[a:hover]` and `has-[a:focus-visible]`, which is the pattern /guides/ uses and
+              // the one the Hover Earns It rule allows for a panel that is not itself interactive.
+              // The edge firms from `--line` to `--line-strong`; nothing lifts, nothing scales, so
+              // a three-column grid cannot reflow under the pointer.
+              <li
+                key={w.name}
+                className="group flex flex-col gap-5 rounded-[14px] border border-line bg-surface p-5 shadow-card transition-colors duration-200 has-[a:focus-visible]:border-line-strong motion-reduce:transition-none md:row-span-4 md:grid md:grid-rows-subgrid md:p-6 [@media(hover:hover)]:has-[a:hover]:border-line-strong"
+              >
+                {/* Title and description are one band, not two, so the tight 4px between them is
+                    set here rather than becoming a shared row that would space all three cards by
+                    the same amount. */}
+                <div>
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                    {/* `inline-flex min-h-11 items-center` because a bare inline anchor around 24px
+                        display type is a 28px target, under contract rule 5's 44px floor. */}
                     <h3 className="font-display text-[1.5rem] leading-[1.15] font-extrabold tracking-[-0.03em] [font-variation-settings:'opsz'_24]">
-                      {/* The label is the link text, so the accessible name is the visible name and
-                          one click gets from the choice to the scope behind it.
-
-                          `inline-flex min-h-11 items-center` because a bare inline anchor around
-                          24px display type is a 28px target, under contract rule 5's 44px floor.
-                          axe's default ruleset carries no target-size rule, so a clean sweep says
-                          nothing about this; it is the same repair `docs/layout-ledger.md` records
-                          for the knowledge base's result rows and the same three classes
-                          `src/app/guides/page.tsx` carries on the identical heading link. `inline-flex` keeps the
-                          anchor inline inside the h3, so the heading's own baseline and the price
-                          sitting on it do not move. */}
-                      <Link href={s.path} className="inline-flex min-h-11 items-center transition-colors duration-200 hover:text-accent-text">
+                      <Link
+                        href={s.path}
+                        className="inline-flex min-h-11 items-center transition-colors duration-200 hover:text-accent-text motion-reduce:transition-none [@media(hover:hover)]:group-hover:text-accent-text"
+                      >
                         {w.name}
                       </Link>
                     </h3>
-                    {w.price}
+                    {w.price || (w.unit && <span className="shrink-0 text-sm text-muted">{w.unit}</span>)}
                   </div>
-                  <p className="mt-3 max-w-[46ch] text-muted">{s.whoItsFor}</p>
-                  <div className="mt-6">{w.cta}</div>
+                  <p className="mt-1 text-[17px]">{w.who}</p>
                 </div>
-                {/* The inclusions answer the name across a hairline from md up, and stack under it
-                    below md. The rule is the only thing dividing the two columns, so the row needs
-                    no card around it. */}
-                <div className="md:col-span-7 md:border-l md:border-line md:pl-10">
-                  <TickList items={s.deliverables.slice(0, 4)} />
+
+                {/* `decorative`, so the empty alt keeps it out of the accessible name: the column
+                    already says what it is in words, and the photograph sets the mood beside them.
+                    One third of the spine at md and up, full width stacked, which is what `sizes`
+                    has to say or Next fetches a 1200px file for a 360px box. */}
+                <div className="aspect-[16/10] overflow-hidden rounded-[14px]">
+                  <Photo id={w.photo} decorative sizes="(min-width: 768px) 31vw, 92vw" />
                 </div>
+
+                {/* `animate={false}`: this list carries its own `reveal`, and the grid above already
+                    has one. Two levels is a `reveal` inside a `reveal`, and the rule is one per
+                    section so nothing animates twice. */}
+                <div>
+                  <TickList items={s.deliverables.slice(0, 4)} animate={false} />
+                </div>
+
+                {/* `mt-auto` is the mobile arm, where the cards are not a subgrid and nothing
+                    aligns them; from md the shared fourth row does the same job. */}
+                <div className="mt-auto md:mt-0">{w.cta}</div>
               </li>
             );
           })}
@@ -296,50 +341,74 @@ export default function Pricing() {
         <p className="max-w-[60ch] text-muted">
           {services.length} services across {hubNodes.length} areas. Each page sets out its own scope, what you get and the questions people ask about it.
         </p>
-        {/* `columns`, not `grid-cols-2`. A two-column grid aligns its tracks by row, and these six
-            groups hold 11, 4, 4, 3, 6 and 4 services, so the eleven-row Fixes group set the height
-            of the row beside it and left roughly 360px of hole under Security at 1440, measured off
-            the screenshot of that version. A column flow balances the two columns by height instead and packs the groups against each other.
-            `break-inside-avoid` keeps a group whole; the tallest group is well under half the
-            section, so none of them has to be split. Reading order is unchanged, because a column
-            flow runs in DOM order down one column and then down the next. */}
+        {/* `columns`, not `grid-cols-2`, and the reason is measured rather than stylistic: the six
+            groups hold 11, 4, 4, 3, 6 and 4 services, so in a two-column grid the eleven-row Fixes
+            group sets the height of the row beside it and leaves roughly 360px of hole under
+            Security at 1440. A column flow balances the two columns by height and packs the groups
+            against each other. `break-inside-avoid` keeps a group whole, and the tallest is well
+            under half the section so none has to split. Reading order is unchanged: a column flow
+            runs in DOM order down one column, then down the next.
+
+            That reasoning survives the groups becoming cards, which is what changed here. It was 32
+            identical text rows under six bare headings, which reads as a sitemap rather than as a
+            catalogue of work. Each group is a panel on the site's own card tokens now, carrying the
+            hub's own mark from `content/icons.ts` and a count of what is in it, and each row answers
+            the pointer. */}
         <div className="mt-8 md:columns-2 md:gap-x-10 lg:gap-x-16">
-          {hubNodes.map((hub) => (
-            <div key={hub.path} className="mb-10 break-inside-avoid last:mb-0">
-              {/* Same 44px repair as the three way names above, and the same three classes
-                  `src/app/guides/page.tsx` already carries on this grouped-directory heading link:
-                  the six
-                  hub labels were 22px inline targets sitting directly above 51px service rows,
-                  which is the one inconsistency a thumb would actually feel. No compensating
-                  margin, exactly as the knowledge base index does it: the 44px box centres the
-                  label and so grows the
-                  heading by roughly 8px above and 8px below, which is separation between two
-                  adjacent targets rather than a gap to claw back. The list below drops from `mt-3`
-                  to `mt-2` for the same reason. */}
-              <h3 className="font-display text-lg font-bold [font-variation-settings:'opsz'_18]">
-                <Link href={hub.path} className="inline-flex min-h-11 items-center transition-colors duration-200 hover:text-accent-text">
-                  {HUB_LABELS[hub.path]}
-                </Link>
-              </h3>
-              <ul className="mt-2 divide-y divide-line border-t border-line">
-                {services
-                  .filter((s) => s.path.startsWith(hub.path))
-                  .map((s) => (
+          {hubNodes.map((hub) => {
+            const inHub = services.filter((s) => s.path.startsWith(hub.path));
+            const Mark = hubIcon[hubIdOf(hub.path) as keyof typeof hubIcon];
+            return (
+              <div key={hub.path} className="mb-8 break-inside-avoid rounded-[14px] border border-line bg-surface p-5 shadow-card last:mb-0 md:p-6">
+                {/* The 44px box is the same repair the knowledge base index carries on this heading:
+                    these six were 22px inline targets sitting directly above 51px service rows,
+                    which is the one inconsistency a thumb would actually feel. The count is read off
+                    the list below it, so it cannot drift from what is there. */}
+                <h3 className="flex items-center justify-between gap-3 font-display text-lg font-bold [font-variation-settings:'opsz'_18]">
+                  <Link href={hub.path} className="inline-flex min-h-11 items-center gap-2.5 transition-colors duration-200 hover:text-accent-text">
+                    <Mark weight="duotone" aria-hidden className="size-5 shrink-0 text-accent-text" />
+                    {HUB_LABELS[hub.path]}
+                  </Link>
+                  <span className="shrink-0 text-sm font-semibold tabular-nums text-muted">{inHub.length}</span>
+                </h3>
+                {/* The marker goes here rather than on the `columns-2` container above: a transform on a
+                    column-fragmented box is under-specified across engines, and this card is
+                    `break-inside-avoid`, so nothing inside it is fragmented. */}
+                <ul className="reveal mt-2 divide-y divide-line border-t border-line">
+                  {inHub.map((s) => (
                     <li key={s.id}>
-                      {/* py-3 against a 27px line makes a 51px row, over the contract's 44px
-                          floor, so a 32-link directory needs no exception for its targets. */}
+                      {/* py-3 against a 27px line makes a 51px row, over the contract's 44px floor,
+                          so a 32-link directory needs no exception for its targets.
+
+                          The hover is the site's row idiom, the one the practice rows use: the row's
+                          own hairline is replaced by an ember one growing from the left, so nothing
+                          thickens and nothing moves. `transition-[scale]`, never `transition-transform`,
+                          because Tailwind v4 writes `scale-x-*` to the standalone `scale` property.
+                          Mouse only, or a tap would leave a row lit with no way to clear it. */}
                       <Link
                         href={s.path}
-                        className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 py-3 transition-colors duration-200 hover:text-accent-text"
+                        className="group relative flex items-center justify-between gap-x-4 py-3 transition-colors duration-200 hover:text-accent-text"
                       >
                         <span>{s.title}</span>
-                        {s.priceFrom && <span className="font-display text-sm font-bold tabular-nums">From {s.priceFrom}</span>}
+                        <span className="flex shrink-0 items-center gap-3">
+                          {s.priceFrom && <span className="font-display text-sm font-bold tabular-nums">From {s.priceFrom}</span>}
+                          <CaretRightIcon
+                            weight="duotone"
+                            aria-hidden
+                            className="size-4 text-muted transition-[translate,color] duration-200 ease-out group-hover:translate-x-0.5 group-hover:text-accent-text motion-reduce:transition-none"
+                          />
+                        </span>
+                        <span
+                          aria-hidden
+                          className="pointer-events-none absolute inset-x-0 -bottom-px h-px origin-left scale-x-0 bg-accent transition-[scale] duration-[260ms] ease-[var(--ease-spring)] motion-reduce:transition-none [@media(hover:hover)]:group-hover:scale-x-100"
+                        />
                       </Link>
                     </li>
                   ))}
-              </ul>
-            </div>
-          ))}
+                </ul>
+              </div>
+            );
+          })}
         </div>
       </Section>
 
@@ -351,24 +420,21 @@ export default function Pricing() {
       {/* The closing band every reading page on this site ends on, which is a repeat across routes
           and a deliberate one: the last thing each page says is the same offer in the same shape.
           The heading gives the buttons a question to answer instead of restating the page title. */}
-      <section
-        aria-labelledby="pricing-closing"
-        className="reveal mt-20 flex flex-col gap-5 border-t border-line pt-10 md:mt-28 md:flex-row md:items-center md:justify-between md:pt-12"
-      >
-        <h2 id="pricing-closing" className={cn(h2, "max-w-[24ch]")}>
-          Want a price for your site?
-        </h2>
-        <div className="flex shrink-0 flex-wrap gap-3">
-          <BookLink location="pricing:closing" className="btn-primary" />
-          <ChatButton location="pricing:closing" className="btn-secondary" />
-        </div>
-      </section>
+      <ClosingBand
+        title="Want a price for your site?"
+        actions={
+          <>
+            <BookLink location="pricing:closing" className="btn-primary" />
+            <ChatButton location="pricing:closing" className="btn-secondary" />
+          </>
+        }
+      />
       {/* `checkTurnaround` is a confirmed claim ("two working days") and the only turnaround figure
           on the site that is not null, so it is the one number this page may print. Gated, because
           an unconfirmed claim renders nothing. */}
       {brand.claims.checkTurnaround && (
         <p className="mt-6 text-sm text-muted">
-          Not urgent? <CheckLink location="pricing" />, back in {brand.claims.checkTurnaround}.
+          Not urgent? <CheckLink location="pricing" icon={null} />, back in {brand.claims.checkTurnaround}.
         </p>
       )}
     </div>

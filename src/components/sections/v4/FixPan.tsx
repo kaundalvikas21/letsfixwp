@@ -1,7 +1,7 @@
 import { BookLink } from "@/components/Cta";
 import { hasScreen, Photo } from "@/components/Photo";
 import type { PhotoId } from "@/content/photos";
-import { FixRail } from "./FixRail";
+import { FixRail } from "@/components/motion/interactions/FixRail";
 import { Screen } from "./Screen";
 
 // Every "you get" line is a claim gated in brand.claims (src/config/brand.ts), or the note of what
@@ -71,8 +71,8 @@ export function FixPan() {
   return (
     // Full width, so the rail can run off the right edge of the window rather than stopping at the
     // 72rem container. Only the heading block is held to the spine.
-    <section aria-labelledby="the-fix" className="py-16 md:py-24">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 md:flex-row md:items-end md:justify-between md:gap-10 md:px-6">
+    <section aria-labelledby="the-fix" className="reveal py-16 md:py-24">
+      <div className="mx-auto flex max-w-page flex-col gap-6 px-4 md:flex-row md:items-end md:justify-between md:gap-10 md:px-6">
         <h2
           id="the-fix"
           className="font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_30] sm:text-5xl sm:[font-variation-settings:'opsz'_48]"
@@ -86,7 +86,7 @@ export function FixPan() {
 
       <FixRail label="The five moves of a fix">
         {PANELS.map((p) => (
-          <article key={p.verb} className={panel}>
+          <li key={p.verb} className={panel}>
             {p.capture && hasScreen(p.capture) ? (
               // The capture carries its own frame, so it is not boxed into an aspect ratio twice.
               <Screen src={p.capture} alt={p.alt!} sizes={sizes} />
@@ -101,7 +101,7 @@ export function FixPan() {
               <span className="text-muted">You get </span>
               {p.gets}
             </p>
-          </article>
+          </li>
         ))}
       </FixRail>
     </section>

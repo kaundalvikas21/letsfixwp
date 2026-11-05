@@ -2,7 +2,7 @@ import Image from "next/image";
 import { hasScreen, Photo } from "@/components/Photo";
 import { BeforeAfter } from "./BeforeAfter";
 import { RestoredOverlay } from "./RestoredOverlay";
-import { ZoomImage } from "./ZoomImage";
+import { ZoomImage } from "@/components/motion/interactions/ZoomImage";
 
 const CAPTURE = "/screens/restored.png";
 // The same error the fix panel opens with, so the page tells one story about one screen.
@@ -29,7 +29,7 @@ const Framed = ({ children }: { children: React.ReactNode }) => (
  */
 export function Restored() {
   return (
-    <section aria-labelledby="same-site" className="mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
+    <section aria-labelledby="same-site" className="reveal mx-auto max-w-page px-4 py-16 md:px-6 md:py-24">
       <ZoomImage>
         {hasScreen(CAPTURE) && hasScreen(BROKEN) ? (
           // Both captures exist, so the visitor can do the repair themselves.

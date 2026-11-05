@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
 import { ChatProvider } from "@/components/chat/ChatProvider";
+import { StickyCTA } from "@/components/motion";
+import { QuoteLink } from "@/components/Cta";
 import { HUB_LABELS, hubNodes, routes, serviceNodes } from "@/config/routes";
-import { NavBar } from "./NavBar";
-import type { MenuCategory } from "./MegaMenu";
+import { NavBar } from "@/components/motion/interactions/NavBar";
+import type { MenuCategory } from "@/components/motion/interactions/MegaMenu";
 
 
 const categories: MenuCategory[] = hubNodes
@@ -42,6 +44,13 @@ export function SiteShell({ children }: { children: ReactNode }) {
       </a>
       <NavBar categories={categories} support={support} />
       {children}
+      {/* Desktop only, which is what makes a third floating control safe to add: under 768px this
+          shell already renders the fixed action bar, and the chat widget floats on every route at
+          every width. Hidden on the two pages that already are the conversion step, because a
+          floating "get a quote" over a quote form is pestering someone who is filling it in. */}
+      <StickyCTA hiddenOn={[routes.contact, routes.check]} label="Quick quote">
+        <QuoteLink location="sticky" className="btn-primary" />
+      </StickyCTA>
     </ChatProvider>
   );
 }

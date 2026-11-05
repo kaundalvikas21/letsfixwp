@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function Terms() {
   if (!brand.legacy.enabled) return <LegalPending title="Terms of Service" />;
   return (
-    <article>
+    <div>
       <h1>Terms Of Service</h1>
 
       <h2>Membership</h2>
@@ -168,6 +168,6 @@ export default function Terms() {
         to access the Site from other locations do so on their own initiative, and are responsible for compliance with
         local laws, if and to the extent local laws are applicable.
       </p>
-    </article>
+    </div>
   );
 }

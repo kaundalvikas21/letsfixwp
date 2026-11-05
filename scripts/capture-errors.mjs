@@ -13,6 +13,21 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { chromium } from "playwright";
 
+// Docker has to be up before wp-env is asked to start anything. Without this the failure surfaces
+// several calls later as a container error, which reads like a bug in this script rather than a
+// machine that is missing a prerequisite.
+try {
+  execFileSync("docker", ["info"], { stdio: "ignore" });
+} catch {
+  console.error(
+    "capture: Docker is not running.\n" +
+      "  wp-env starts a throwaway WordPress in Docker, so Docker Desktop has to be up first.\n" +
+      "  Nothing was created and no file in this repo was touched.\n" +
+      "  See docs/image-todo.md for which captures this would actually produce.",
+  );
+  process.exit(1);
+}
+
 const root = resolve(import.meta.dirname, "..");
 const out = join(root, "public", "screens");
 const envDir = mkdtempSync(join(tmpdir(), "fixmywp-wpenv-"));
@@ -23,8 +38,18 @@ const muDir = join(envDir, "mu-plugins");
 mkdirSync(muDir, { recursive: true });
 writeFileSync(join(envDir, ".wp-env.json"), JSON.stringify({ core: null, port: 8888, config: { WP_DEBUG: false }, mappings: { "wp-content/mu-plugins": "./mu-plugins" } }));
 
-const wpEnv = (...args) =>
-  execFileSync(join(root, "node_modules", ".bin", "wp-env"), args, { cwd: envDir, stdio: "inherit" });
+// Run wp-env's own entry point with the Node we are already running, rather than the shim in
+// node_modules/.bin. The shim is three files: `wp-env` (a POSIX shell script), `wp-env.cmd` and
+// `wp-env.ps1`. On Windows `execFileSync` was handed the extensionless shell script, which Windows
+// cannot execute, and the whole run died on `spawnSync ... ENOENT` before Docker was ever reached.
+//
+// Naming `wp-env.cmd` instead would fix Windows and break everything else, and `.cmd` needs
+// `shell: true` on current Node (the CVE-2024-27980 change), which would then put `sh -c "<php>"`
+// through a shell that has its own ideas about quotes. `bin/wp-env` is a plain `#!/usr/bin/env
+// node` script, so handing it to `process.execPath` is one path that behaves the same everywhere
+// and needs no shell at all.
+const WP_ENV = join(root, "node_modules", "@wordpress", "env", "bin", "wp-env");
+const wpEnv = (...args) => execFileSync(process.execPath, [WP_ENV, ...args], { cwd: envDir, stdio: "inherit" });
 const wp = (...args) => wpEnv("run", "cli", "wp", ...args);
 const inContainer = (cmd) => wpEnv("run", "wordpress", "sh", "-c", cmd);
 const setMu = (php) => writeFileSync(join(muDir, "break.php"), php ? `<?php\n${php}\n` : "<?php\n");

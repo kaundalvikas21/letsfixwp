@@ -1,7 +1,7 @@
 "use client";
 
 import { ChatCircleIcon } from "@phosphor-icons/react/ssr";
-import { motion, useScroll, useTransform } from "motion/react";
+import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -11,7 +11,7 @@ import { brand } from "@/config/brand";
 import { CTA } from "@/config/cta";
 import { routes } from "@/config/routes";
 import { useChat } from "@/components/chat/ChatProvider";
-import { CommandPalette } from "./CommandPalette";
+import { CommandPalette } from "@/components/sections/v4/CommandPalette";
 import { MegaMenu, type MenuCategory, type MenuLink } from "./MegaMenu";
 
 /**
@@ -36,7 +36,7 @@ const Wordmark = ({ onClick }: { onClick?: () => void }) => (
     {/* The one ember on the left of the bar, and only when you reach for it. */}
     <span
       aria-hidden
-      className="absolute inset-x-0 bottom-1.5 h-[2px] origin-left scale-x-0 bg-accent transition-transform duration-200 ease-out group-hover:scale-x-100 group-focus-visible:scale-x-100 motion-reduce:transition-none"
+      className="absolute inset-x-0 bottom-1.5 h-[2px] origin-left scale-x-0 bg-accent transition-[scale] duration-200 ease-out group-hover:scale-x-100 group-focus-visible:scale-x-100 motion-reduce:transition-none"
     />
   </Link>
 );
@@ -60,16 +60,29 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
   const actionBar = path !== routes.contact && `${path}/` !== routes.contact;
 
   // 8px of scroll is the switch: transparent over the hero, --bg at 90% with blur after that. The
-  // backdrop is its own layer and only its opacity moves, so there is no state and no scroll listener.
+  // backdrop is its own layer, so there is no state and no scroll listener.
+  //
+  // It arrives rather than fading in, which is the reference's `sticky-menu` keyframe put on the
+  // thing that actually appears. Its own header slides from `top: -50%` when it becomes sticky;
+  // ours is fixed from the first pixel and never leaves, so there is no bar to slide, only this
+  // panel. `top` would be wrong here anyway: it is not compositor-animatable, so it would relayout
+  // a full-width fixed overlay every frame at first paint on all 99 routes, and contract rule 10
+  // allows transform and opacity only. -64 is the bar's own height, so at rest the panel sits
+  // exactly one bar above the viewport and is never caught half-drawn across the type. The spring
+  // is the site's one spring, so an 8px switch reads as a slide and a settle rather than a snap.
+  //
+  // What it communicates: the page has left the hero, and this is now a surface over content.
+  const reduce = useReducedMotion();
   const backdrop = useTransform(scrollY, [0, 8], [0, 1]);
+  const slide = useSpring(useTransform(scrollY, [0, 8], [-64, 0]), { stiffness: 100, damping: 20 });
 
   const close = () => setOpen(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <header data-action-bar={actionBar ? "" : undefined} className="fixed inset-x-0 top-0 z-40 h-16">
-        <motion.div aria-hidden style={{ opacity: backdrop }} className="nav-blur absolute inset-0 border-b border-line" />
-        <div className="relative mx-auto flex h-16 w-full max-w-6xl items-center gap-2 px-4 md:px-6">
+      <header data-action-bar={actionBar ? "" : undefined} className="fixed inset-x-0 top-0 z-40 h-[var(--header-h)]">
+        <motion.div aria-hidden style={{ opacity: backdrop, y: reduce ? 0 : slide }} className="nav-blur absolute inset-0 border-b border-line" />
+        <div className="relative mx-auto flex h-[var(--header-h)] w-full max-w-page items-center gap-2 px-4 md:px-6">
           <Wordmark />
           <div className="ml-auto flex items-center gap-2">
             <CommandPalette />
@@ -89,7 +102,7 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
       >
         <DialogTitle className="sr-only">Menu</DialogTitle>
         <DialogDescription className="sr-only">Everything on the site, by what has gone wrong</DialogDescription>
-        <div className="mx-auto flex h-16 w-full max-w-6xl shrink-0 items-center gap-2 px-4 md:px-6">
+        <div className="mx-auto flex h-[var(--header-h)] w-full max-w-page shrink-0 items-center gap-2 px-4 md:px-6">
           <Wordmark onClick={close} />
           <button type="button" onClick={close} className="btn-secondary ml-auto gap-2.5">
             <Rules crossed />

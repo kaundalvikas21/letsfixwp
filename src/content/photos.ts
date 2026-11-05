@@ -57,6 +57,48 @@ export const photos = {
     src: "/site_images/services/store.jpg", width: 1600, height: 1000, tone: "dark", focus: "45% 50%",
     alt: "Close-up of hands holding a phone in warm low light",
   },
+  /* The four warm renders of the eight the owner supplied. Object-on-a-lit-surface 3D renders, a
+     different visual language from the documentary photographs above, so they are kept to one
+     place: the hub cards. 359x149 is small, which is why they are used at card width and never in
+     a masthead. The other four glow blue, which is a second accent this site does not have, and
+     are logged in docs/image-todo.md for regeneration rather than used. Measured warm/cool split
+     of the lit pixels is in docs/layout-ledger.md Task 28. */
+  /* The three stations on /about/, supplied by the owner. One ember-monochrome set, 1448x1086,
+     subject right of centre with the left of the frame near black, which is what lets type sit on
+     them. Used at ~352x244 on a desktop card, so they are downscaled about 4x and never stretched.
+     Decorative on the page: each card's own heading already names the step. */
+  "step-meetings": {
+    src: "/site_images/Meetings.png", width: 1448, height: 1086, tone: "dark",
+    alt: "A laptop on a video call with four people, a calendar and a chat panel floating beside it",
+  },
+  "step-while-we-work": {
+    src: "/site_images/While_we_work.png", width: 1448, height: 1086, tone: "dark",
+    alt: "A laptop showing code, with a checklist, a preview and progress markers floating above it",
+  },
+  "step-handover": {
+    src: "/site_images/Handover.png", width: 1448, height: 1086, tone: "dark",
+    alt: "A stack of documents with a tick, a padlock, a user card and a completed checklist around it",
+  },
+  "hub-fix": {
+    src: "/site_images/services/emergency-fixes.png", width: 359, height: 149, tone: "dark",
+    alt: "A glowing life ring on a desk beside a laptop showing the WordPress logo",
+  },
+  "hub-performance": {
+    src: "/site_images/services/speed-optimization.png", width: 359, height: 149, tone: "dark",
+    alt: "A speedometer lit in amber, its needle swinging up through the dial",
+  },
+  "hub-woocommerce": {
+    src: "/site_images/services/woocommerce-help.png", width: 359, height: 149, tone: "dark",
+    alt: "A glowing shopping trolley on a pad beside a laptop showing a shop page",
+  },
+  "hub-maintenance": {
+    src: "/site_images/services/maintenance-care.png", width: 359, height: 149, tone: "dark",
+    alt: "A steel gear resting on a pad lit from beneath in amber",
+  },
+  "hero-background": {
+    src: "/site_images/hero-background.png", width: 1774, height: 522, tone: "dark",
+    alt: "A developer at night at a two-monitor desk, a WordPress site open in a code editor, warm lamplight behind",
+  },
   "hero-console": {
     src: "/site_images/hero-console-bg.jpg", width: 1600, height: 1200, tone: "dark", focus: "60% 50%",
     alt: "An engineer in a dark room reading a WordPress fatal error and stack trace on a monitor",
@@ -88,6 +130,15 @@ export type PhotoId = keyof typeof photos;
 /**
  * Which photograph each service page shows. v2's mapping (from v1), with the red frames swapped for v3:
  * alert and monitors are out, so their services moved to the nearest neutral frame.
+ *
+ * `drafting` is out too, and for the same kind of reason. It is the catalogue's one `daylight` frame,
+ * which v4's Imagery section rules off direction, and /pricing/ had already rejected it by name on
+ * tone: even under the scrim it was the brightest thing on a dark-locked page and read as a stock
+ * photograph pasted into the system. That was survivable while it sat in a 432px column. It is not
+ * now the photograph is the band, which is the largest element on the page, on three service pages,
+ * the development hub and every city page (a city takes its first highlighted service's frame, and
+ * that is `website-design` on most of them). Each moved to the nearest frame on direction rather
+ * than to the nearest subject: night, one warm source, dark page.
  */
 export const servicePhotos: Record<string, PhotoId> = {
   "audit-hardening": "terminal",
@@ -97,7 +148,7 @@ export const servicePhotos: Record<string, PhotoId> = {
   "custom-plugin": "terminal",
   "custom-theme": "night-desk",
   "database-connection-error": "racks",
-  "elementor-issues": "drafting",
+  "elementor-issues": "night-desk",
   "email-not-sending": "workspace",
   emergency: "emergency",
   "hire-developer": "terminal",
@@ -108,7 +159,7 @@ export const servicePhotos: Record<string, PhotoId> = {
   "payment-gateway-gst": "store",
   "platform-migration": "cables",
   "plugin-theme-conflict": "keys",
-  redesign: "drafting",
+  redesign: "workspace",
   "seo-services": "night-desk",
   "seo-spam-cleanup": "keys",
   "server-errors": "racks",
@@ -117,7 +168,7 @@ export const servicePhotos: Record<string, PhotoId> = {
   "speed-optimization": "cables",
   "support-hours": "workspace",
   "update-php-errors": "keys",
-  "website-design": "drafting",
+  "website-design": "terminal",
   "white-label": "night-desk",
   "white-screen": "night-desk",
   "woocommerce-development": "store",
@@ -130,8 +181,30 @@ export const hubPhotos: Record<string, PhotoId> = {
   "wordpress-security": "terminal",
   "wordpress-performance-migration": "racks",
   "wordpress-maintenance": "workspace",
-  "wordpress-development": "drafting",
+  "wordpress-development": "final-cta",
   woocommerce: "store",
+};
+
+/** The station backgrounds on /about/'s "How working with us runs", keyed by the content's label. */
+export const deliveryPhoto: Record<string, PhotoId> = {
+  Meetings: "step-meetings",
+  "While we work": "step-while-we-work",
+  Handover: "step-handover",
+};
+
+/**
+ * The hub card banner, where one exists.
+ *
+ * Deliberately partial, and deliberately not covered by the integrity check below. A banner is an
+ * enhancement to a card that already works, not a requirement of a hub, so a hub without one is
+ * not a build error. `wordpress-security` has renders but both glow blue, and
+ * `wordpress-development` has none at all; both are logged in docs/image-todo.md.
+ */
+export const hubBanners: Partial<Record<string, PhotoId>> = {
+  "wordpress-fix": "hub-fix",
+  "wordpress-performance-migration": "hub-performance",
+  "wordpress-maintenance": "hub-maintenance",
+  woocommerce: "hub-woocommerce",
 };
 
 // Integrity: a new service or hub in SITEMAP without a photograph fails the build here.

@@ -121,7 +121,7 @@ nearly invisible anyway. Edges are carried by `--line` and by `--surface` steppi
 | `--shadow-lift` (hover, links only) | `inset 0 1px 0 rgb(255 255 255 / 0.07), 0 2px 4px rgb(0 0 0 / 0.7)` |
 
 The inset top highlight is the main device: it reads as a lit edge in a dark room. No ember glows,
-no coloured shadows, no 3D effects.
+no coloured shadows, no 3D effects, except the step blocks in the service page's "What we do" flow and the contact page's promises flow (owner decision, 2026-11-05, docs/layout-ledger.md Tasks 77 and 78).
 
 ### Glass
 
@@ -233,6 +233,37 @@ Rendered as real selectable text, never as an image of text.
 
 ## Motion
 
+### The token table
+
+**`src/components/motion/tokens.ts` is the source for every animated value on the site.** These are
+the owner's figures, set in the site-wide scroll animation brief (Task 41) and chosen over the ones
+this file carried before it: a sampled spring at stiffness 100 / damping 20, a 70ms beat and a 14px
+travel. The numbers below are documentation of that file, not a second definition; `globals.css`
+mirrors the subset CSS needs and `npm run check:motion` fails the build if the two drift.
+
+| Token | Value |
+| --- | --- |
+| Easing | `cubic-bezier(0.22, 1, 0.36, 1)`, one curve for everything |
+| Travel | 24px desktop, 14px below 768px |
+| Duration | 0.5s standard, 0.35s small UI, 1.2s CountUp |
+| Stagger | 0.07s a step, laddering stops after the 6th child |
+| Viewport | `once: true`, `amount: 0.2`, `margin: "0px 0px -15% 0px"` |
+
+The old spring is kept under `--ease-spring` for the three places that animate a real spring rather
+than an entrance: the FAQ's `block-size`, and the closing band's tick and border.
+
+### Where motion lives
+
+**Every animation on the site is in `src/components/motion/`**, and nothing outside it may import
+`motion/react`. Eight primitives cover the scroll vocabulary (`Reveal`, `Stagger`, `Parallax`,
+`CountUp`, `ScrollProgress`, `StickyCTA`, `Marquee`, `TextReveal`); the bespoke interaction islands
+in the table below live in `motion/interactions/`. The folder's README says which to reach for.
+
+`Reveal` and `Stagger` are **Server Components that do not use Motion at all**. They emit a class
+and some data attributes, and the inline script in `app/layout.tsx` applies the hidden state. Motion's
+`whileInView` writes `opacity: 0` into the server HTML, and on 99 routes of body copy a blocked
+bundle must not mean a blank page. See their doc comments.
+
 Two libraries, strictly separated. **GSAP + ScrollTrigger** drives the pinned scenes.
 **Motion** (`motion/react`) drives micro-interactions. Contract rule 2: they never share a component
 tree, and every one of these lives in its own `'use client'` leaf.
@@ -242,21 +273,41 @@ tree, and every one of these lives in its own `'use client'` leaf.
 | Hero word reveal | Motion | second headline line only: real `<span>` per word in the DOM, opacity 0 to 1 and y 12 to 0 behind a clip mask, stagger 60ms, spring stiffness 100 / damping 20. The mask carries 0.16em of descender room, pulled back with a negative margin, so a tail is never clipped at rest | Hierarchy: the promise lands word by word |
 | Sticky-stack of error screens | GSAP, skeleton 5.A | `start: "top top"`, `pin: true`, `pinSpacing: false`, next card's trigger scrubs the previous to scale 0.92 / opacity 0.55. The whole scene is inside `gsap.matchMedia("(min-width: 768px) and (prefers-reduced-motion: no-preference)")`, and `useGSAP` reverts it | Story: recognition, "that is my screen" |
 | Horizontal pan through the fix | GSAP, skeleton 5.B | `start: "top top"`, `pin: true`, `end: () => '+=' + distance`, `scrub: 1`, `invalidateOnRefresh: true`. The heading is the first item in the track, and a 2px ember rail at the bottom is `scaleX` 0 to 1 on the same scrubbed timeline; same `gsap.matchMedia` gate and `useGSAP` cleanup as the sticky-stack | Story: progress, the fix moves forward, and the rail says how far through it you are |
-| Logo marquee (one per page) | CSS only | `@keyframes marquee` translating a duplicated track by -50%, 42s linear. Stops on hover, on focus inside it and on a visible pause button (`aria-pressed`); reduced motion renders one static wrapped row and hides both the copy and the button | Breadth: the platforms we repair |
+| Logo marquee (one per page) | CSS only, via the `Marquee` primitive | `@keyframes marquee` translating a tripled track by -33.3333%, 40s linear. Stops on hover, on focus inside it and on a visible pause button (`aria-pressed`); reduced motion renders one static wrapped row and hides both the copy and the button | Breadth: the platforms we repair |
 | Zoom on the restored site | Motion, unpinned | `useScroll` on the section with `offset: ["start end", "center center"]`, `useTransform` to scale 0.7 to 1. Scale only, on a box that never changes size, so nothing below it moves; `motion-reduce:transform-none!` gives the full-width still from the first paint | State change: broken to restored |
 | Quote reveal | Motion | `whileInView` with `once`, the quote's sentences then its attribution, 120ms apart, opacity and y 10 to 0, spring stiffness 100 / damping 20. A browser decides where a line wraps, so the reveal follows the unit the author controls | Hierarchy: the words arrive before the name |
 | FAQ accordion | Motion | the answer's height 0 to auto with the contract spring, the chevron turning 180 degrees, `reducedMotion="user"` plus a duration-0 transition so reduced motion swaps instantly. Height is the one property animated outside transform and opacity on this page: an accordion cannot reveal an answer without it | Feedback: the question opened |
 | Problem grid filter | Motion | `layout` on each tile with a spring (stiffness 100 / damping 20), enter and exit at opacity and scale 0.96, exit shortened to 150ms because one chip can remove 44 tiles at once. The grid container does not animate its own layout | State change: the grid re-forms around what was asked for |
 | Magnetic final CTA | Motion | pointer offset to x/y springs (stiffness 150 / damping 15), travel clamped to 8px, returns to centre on leave. Off entirely under reduced motion and on coarse pointers, where there is no hover to answer; the coarse check is `useSyncExternalStore` so the server never ships a magnet a touch device cannot use | Feedback: the button answers the pointer |
-| Closing block reveal | Motion | `whileInView` with `once`, headline then line then actions 60ms apart, opacity and y 14 to 0 over 500ms on `cubic-bezier(0.23, 1, 0.32, 1)`. Reduced motion renders the block static from the first paint | Hierarchy: the last thing the page says arrives in reading order |
+| Closing block reveal | `Stagger` + `TextReveal` | was `CtaReveal` and `MaskRise`, both deleted in Task 41. The headline rises out of its clip box, then the line and the actions arrive on the shared 70ms ladder at the token duration and curve | Hierarchy: the last thing the page says arrives in reading order |
 | Arrow chip on the closing CTA | CSS | the chip inside the button translates 2px on hover over 150ms `ease-out`, the label does not move | Feedback: the button is a door, not a label |
 | Nav backdrop | Motion | `useScroll` to `useTransform(scrollY, [0, 8], [0, 1])` on the backdrop layer's opacity. No scroll listener, no state, opacity only | State change: the page has left the hero |
 | Nav progress rail | Motion | a 2px ember rule along the bottom of the bar, `scaleX` bound to `scrollYProgress`, fading in with the backdrop. Scale only; reduced motion keeps it, because it tracks the visitor's own scrolling 1:1 rather than moving on its own | Orientation: the home page runs to about 18,000px and two pinned scenes make the scrollbar lie about it |
 | Wordmark underline | CSS | an ember rule, `scale-x-0` to `scale-x-100` from the left over 200ms `ease-out`, on hover and on focus-visible | Feedback: the mark answers the pointer and the keyboard alike |
 | Mega menu reveal | Motion | categories 50ms apart, opacity 0 to 1 and y 24 to 0, spring stiffness 100 / damping 20. Reduced motion fades in 160ms with no stagger and no travel | Hierarchy: the eye lands on Fixes first |
 
-**Nothing else moves.** No hover scales on cards that are not links, no decorative floaters, no
-scroll cues, no `window.addEventListener('scroll')`.
+**Superseded 2026-10-31, by the owner, Task 22.** This section read "Nothing else moves", and the
+rejections log below rejected "Scroll Reveal for everything" on the grounds that the UX lookups cap
+motion at one to two key elements per view. The owner gave gotechark.com as the reference and asked
+twice for its behaviour on every page. That reference reveals per element: 67 `wow fadeInUp` nodes on
+its /wordpress-websites/, 314 on its /portfolio/, 23 on its /about-us/, measured. So a site-wide
+element-level reveal is now the house default, and the cap no longer applies to it.
+
+What did not change, and is not up for re-litigation: the reveal is a played animation and never a
+scrubbed one (two separate axe `color-contrast` failures are on record for the scrubbed version); it
+never touches a Motion or GSAP island, because a WAAPI `fill: both` sits in the animation origin and
+permanently overrides the inline transforms those libraries write; and it still answers rule 10's one
+sentence. docs/layout-ledger.md Task 22 carries the placement rules and the measurements.
+
+Still true: no hover scales on cards that are not links, no decorative floaters, no scroll cues, no
+`window.addEventListener('scroll')`.
+
+**Drift note, 2026-10-31.** Both pinned scenes this section specifies were replaced before Task 22
+and no longer exist: the sticky-stack is now `ErrorPanels` (CSS grid tracks, no pin) and the
+horizontal pan is now `FixRail` (writes `scrollLeft`, no pin). Nothing on the site pins or needs a
+skip control, and the pin budget below is currently unspent. The "Nav progress rail" row in the table
+above was never built. GSAP's only surviving use is `GuaranteeHeading`'s stroke draw, which this
+table does not list.
 
 **Pin budget: 2 per page.** GSAP's own guidance is one to two pinned sections per page, so the
 sticky-stack and the horizontal pan are the only pinned scenes. The zoom-parallax scrubs without
@@ -332,7 +383,7 @@ and sits in the nav. A page's primary CTA follows its SITEMAP node intent (`prim
 - More than two pinned sections per page; more than one marquee per page
 - Scroll-jacking without a skip control, or a pinned scene that still pins under reduced motion
 - Typing effects, character-split body copy, text rendered as an image
-- Glass or `backdrop-filter` anywhere except the scrolled nav bar; ember glows, coloured or complex shadows, 3D effects
+- Glass or `backdrop-filter` anywhere except the scrolled nav bar; ember glows, coloured or complex shadows, 3D effects (one exception: the step blocks in the service page's "What we do" flow and the contact page's promises flow, whose thickness is a hard-edged stacked shadow; docs/layout-ledger.md Tasks 77 and 78)
 - Colour-only indicators for broken versus restored
 - Gradients (including gradient text fills) anywhere except the hero legibility scrim and the flat ember veil inside the guarantee mask, which is a solid colour layered over a photograph and only written as a gradient because that is how CSS layers a colour over an image; pure `#000000` / `#FFFFFF`
 - Emojis as icons. One icon set site-wide: Phosphor (`@phosphor-icons/react/ssr`, `…Icon` names)
@@ -378,7 +429,7 @@ generic GSAP scroll-reveal snippet. Each was replaced by the V4.0 brief:
 | 8 / 12 / 16px radii | 14px everywhere | Brief shape lock. One radius is also the cheapest rule to hold across cards, captures, buttons and inputs. |
 | `rgba(0,0,0,...)` shadow depths, four levels | Two tokens, inset top highlight plus a 1px ambient | The style's AVOID list rules out complex shadows, and drop shadows are invisible on `#0C0C0E`. A lit top edge is what reads in a dark room. |
 | Generic `scrollTrigger` snippet with `end: '+=150%'` | Taste-skill skeletons 5.A and 5.B, used exactly | Contract rule 2 and the skill's own note: the common failure is a trigger that fires mid-scroll instead of pinning at the viewport top. `start: "top top"`, `pin: true`, correct scrub, `ctx.revert()` cleanup. |
-| Scroll Reveal for everything | Six mapped motions, each with a stated reason; nothing else moves | Motion must be motivated. The UX lookups rate excessive motion and scroll-jacking as high-severity: "animate 1 to 2 key elements per view maximum". |
+| Scroll Reveal for everything | ~~Six mapped motions; nothing else moves~~ **Reversed 2026-10-31 (Task 22):** a site-wide element-level reveal, plus the mapped motions | Was: motion must be motivated, and the UX lookups cap it at "1 to 2 key elements per view maximum". Now: the owner named gotechark.com as the reference and asked twice for its behaviour, and that reference reveals per element on every page (67, 314 and 23 `wow` nodes on three of its pages). The cap is overridden knowingly, for this one motion, with the contrast and island constraints in Task 22 holding. |
 | (brief implies 3 scroll scenes) | 2 pinned (sticky-stack, horizontal pan); zoom-parallax scrubs unpinned | GSAP guidance: do not pin more than 1 to 2 sections per page; excessive pinning fights native scroll and hurts mobile. |
 | Trust and Authority + Conversion pattern | Funnel (3-step conversion), mapped to break > fix > result, with no visible step labels or step colours | The brief is a story, and the funnel's section order is that story. Contract rule 6 bans numbered-step labels and the single accent replaces the red / orange / green step colouring. |
 | Logo carousel (pattern note) | One CSS marquee per page with pause, previous and next, hover and focus stop, static under reduced motion | Kept as specified by the pattern and contract rules 3 and 9. |

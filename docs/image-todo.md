@@ -48,7 +48,7 @@ accent is ember and a second red in frame competes with it.
 | --- | --- | --- |
 | dark | hero-console, emergency, terminal, night-desk, store, workspace, final-cta | first choice |
 | mono | cables, keys, racks | fine anywhere |
-| daylight | drafting | off direction |
+| daylight | drafting | off direction, and since Task 9 used by nothing: see below |
 | red | monitors, alert, keyboard-red, laptop-hands | do not use: ember is the only accent |
 
 No placeholder is outstanding for the hero: `hero-console` (an engineer in a dark room reading a WordPress
@@ -131,3 +131,134 @@ The lesson for the next shoot: a night frame needs a real light source inside it
 of the darkest frames were tried behind the closing section's scrim first and both rendered as a black
 panel. `emergency` also has all its light in the left fifth (mean 143 there against 7 at the right), so the
 closing section mirrors it to put that light in the half the scrim does not cover.
+
+### Bands on the five inner templates (Task 9)
+
+Every inner page now opens on a photographic band, so three templates that had no picture at all
+needed a frame. None is a new asset: each is the nearest honest mapping the catalogue already
+offers, and each is a stand-in for a photograph that has still to be shot on the v4 direction.
+
+| Where | Stand-in | Size | Aspect | Art direction the real frame has to satisfy |
+| --- | --- | --- | --- | --- |
+| Compare template (`src/components/templates/CompareTemplate.tsx`) | `<PageMasthead photo="cables">` (mono, a patch panel in black and white) | 1600x1000 source | no aspect ratio; the band is content height, `md:min-h-[24rem]` | The catalogue holds no frame of two technologies being weighed against each other, and inventing one is not an option. Mono is the only tone that cannot imply a verdict on a page that declares no winner. A real frame would be neutral and night-lit: two identical screens side by side on one desk, no branding legible on either. |
+| City hub (`CityTemplates.tsx`, `CityHubTemplate`) | `<PageMasthead photo="racks">` (mono) | 1600x1000 | same | The work is remote and there is no office in any city, so no city gets a photograph of itself and none may be favoured. A real frame would be night-lit infrastructure, no signage, no skyline. |
+| City page (`CityTemplates.tsx`, `CityTemplate`) | `servicePhotos[c.servicesHighlighted[0]]`, the first service the city asks for | 1600x1000 | same | Shows the work rather than the place, for the same reason. No city landmark, no map, no flag: a landmark would assert a local presence that does not exist. |
+| Guide template, all 37 (`GuideTemplate.tsx`) | `servicePhotos[g.parentService]` | 1600x1000 | same | Unchanged direction from the 336px panel this replaces, now at band size. The photograph does not depict the error, so it stays `decorative` with an empty alt; `g.image.alt` describes a capture that does not exist on 33 of these pages. |
+
+Still outstanding from the v4 list above and unchanged by this pass: a phone lighting up with an
+alert on a dark desk, an owner's face lit by a laptop, and the matching restored-site capture for
+each of the four error captures in `public/screens/`.
+
+`drafting` now maps to no service and no hub. It was on `website-design`, `redesign`,
+`elementor-issues` and the development hub, which put the one daylight frame on three service pages,
+a hub and every city page once the photograph became the band. Each moved to the nearest frame on
+direction (`terminal`, `workspace`, `night-desk`, `final-cta`); `docs/layout-ledger.md` under Task 9
+has the table. The file stays in the catalogue because v3 lists it as its first choice.
+
+### The 33 guides with no capture (Task 19)
+
+"What you are seeing" shows the guide's own capture from `public/screens/<image.slot>.png`, and
+only four of those files exist. The other 33 guides render no image in that section at all, which
+is correct rather than broken: `RealScreen` returns `null` when the PNG is absent, contract rule 7
+says every visual is real, and the page's masthead already carries the parent service's photograph.
+
+**The parent service photo is deliberately not reused here.** It is the band at the top of the same
+page, so dropping it into this section would put one picture on screen twice.
+
+**How to fill them:** `npm run capture` drives `scripts/capture-errors.mjs`, which stands up a
+throwaway WordPress with `@wordpress/env`, breaks it one way at a time, and screenshots each result
+at 1600x1000 into `public/screens/<slot>.png`. The names already match `image.slot` in
+`src/content/guides/*.ts`, so a capture appears on its guide the moment its file lands, with no
+code change. **It needs Docker, and Docker is not available on this machine** (checked again this
+pass; the same note was made on 2026-10-13).
+
+Note the slot names, because they change what "fill them" means. **31 of the 33 are prefixed
+`illustration-`**, which is the content's own signal that those were never meant to be screenshots
+of a real error but drawings of one. `capture-errors.mjs` cannot produce those: they need the rule
+7a image-generation route, which is still unavailable (0 Higgsfield credits), or real photography.
+
+**Exactly two are genuine browser states the script can reach**: `stuck-in-maintenance-mode` and
+`too-many-redirects`. Those are the only two that a working Docker would turn into real files.
+
+So the realistic position is that 31 of these 33 sections stay imageless until an image-generation
+budget or an illustrator exists, and that is the honest outcome rather than a gap to paper over.
+
+---
+
+## v4 hub card banners (Task 28)
+
+Eight 359x149 renders were supplied in `public/site_images/services/`. Four are live on the
+`/about/` hub grid through `hubBanners` in `src/content/photos.ts`. Four are **not used** and two
+hubs have no banner at all.
+
+### Not used: a blue glow is a second accent
+
+v4 has a one-accent lock (ember). These four glow cool, measured as the warm/cool split of their
+lit pixels, so putting them on the page would introduce a second accent that CLAUDE.md says to
+strip on sight:
+
+| File | Cool | Subject | Needed as |
+| --- | --- | --- | --- |
+| `malware-cleanup.png` | 77% | shield with a tick | the `wordpress-security` banner |
+| `hacked-site-cleanup.png` | 75% | padlock in front of server racks | spare for security |
+| `backup-recovery.png` | 69% | database stack with a cloud | spare for maintenance |
+| `site-migration.png` | 90% | two arrows crossing between slabs | spare for performance and migration |
+
+**To make them usable:** regenerate with the glow in the ember accent (`--accent`, `#ff5a36`)
+instead of blue, same framing, same 359x149, same dark bokeh background. The four that work
+(`emergency-fixes`, `speed-optimization`, `woocommerce-help`, `maintenance-care`) are the reference
+for the direction. Dropping a regenerated file in at the same path and adding one line to
+`hubBanners` is the whole change; the card already reserves the box.
+
+### Missing
+
+| Hub | Status |
+| --- | --- |
+| `wordpress-security` | falls back to its shield icon until `malware-cleanup` is regenerated warm |
+| `wordpress-development` | **no render exists.** Wants one in the same set: something that reads as building rather than repairing, lit in ember, 359x149 |
+
+### Two notes on the set itself
+
+- **359x149 is small for this job.** On a 2x phone the banner renders about 652 device pixels wide
+  from a 359px source, a 1.8x upscale; on a 1440 desktop card it is about 1.5x. It holds because
+  these are soft renders with one lit subject, but a 720x299 source would need no upscaling at all.
+- They are PNG at 8-bit palette. Fine for flat-ish renders, but these have long gradient falloffs,
+  so a higher bit depth or a WebP would band less and weigh less.
+
+---
+
+## v4 video slots (Task 53)
+
+The first moving assets the site has asked for. **Six slots exist in `src/content/videos.ts` and all
+six are placed** (Task 54 took the home carousel from two client slots to four); every `clip` is null,
+so each renders a composed empty state naming what will play there and saying it is not filmed yet.
+Filling one is a data change: write the paths into that slot and the player appears, the same way a
+capture appears when its PNG lands in `public/screens/`.
+
+Files go in `public/videos/`, posters and captions beside them. Do not reference those paths from a
+component: `scripts/check-content.ts` fails any hardcoded internal path outside `src/content` and
+`src/config`, so the paths belong in `src/content/videos.ts` only.
+
+| Where | Placeholder | Size | Aspect | Art direction |
+| --- | --- | --- | --- | --- |
+| `/about/`, "Watch a rescue" (`src/app/about/page.tsx`) | dashed empty state, caption "How a rescue runs, from the first message to the site loading again. Not filmed yet." | 1600x1000 source, poster at the same size | 16:10, fixed, matching the capture ratio | **60 to 90 seconds.** One real job, start to finish, on the v4 night direction: the message arriving, an engineer's hands at a keyboard under one warm light, the error on screen, then the site loading. Real screens only, shot, never composited. No face needed and no voiceover required; if there is narration it is the engineer's own. The one light source has to be inside frame: the library's measured failure is that a dark room without a lamp renders as a black panel (mean luminance table above). |
+| `/case-studies/` (`src/app/case-studies/page.tsx`) | dashed empty state, caption "A WordPress site going from a fatal error back to loading normally. Not filmed yet." | 1600x1000 source, poster at the same size | 16:10, fixed | **10 to 20 seconds, no audio needed.** A screen recording, not a shoot: the same WordPress site showing a fatal error, the fix applied, the page loading normally. This is the cheapest asset on the whole list and the one with no permission problem, which is why it is on the page that has no published case study yet. It is also the clip `Restored.tsx` would want if that section could host a player; see the Task 53 ledger entry for why it cannot. |
+| `/` home, the four carousel slides (`src/components/sections/v4/Proof.tsx` through `QuoteCarousel`) | dashed empty state in each card's left column, captions "A client on what broke and how it was handled.", "A second client, on work that was not an emergency.", "A third client, on a hacked site and what the cleanup involved.", "A fourth client, on moving a store without losing orders." | 1280x800 is enough at the card's `md:col-span-5` width; poster to match | 16:10, fixed | **30 to 45 seconds each.** The client on camera, in their own words, filmed with written consent. **Four different jobs, not four versions of one:** an emergency, a planned piece of work, a hacked site, a store move. That is the split `src/content/testimonials.ts` asks of the written quotes, and it is what stops four slides making the same point. **A client slot may not be filled with an actor, a voiceover over stock footage, or a reconstruction.** `PRODUCT.md` lists client testimonials under what must not be fabricated by any future work. Lit however the client's own room is lit: a real person's kitchen or shop beats the night direction here. Shoot landscape; a portrait phone clip will letterbox inside a 16:10 box. |
+
+All six slots are placed, so nothing is defined and waiting for a host. The service template's
+`<Section id="quote">` renders only non-placeholder quotes, so it stays empty until a real client
+exists either way, and it needs no slot of its own until then.
+
+**Four client clips is the largest single ask on this page.** If only one client ever agrees to be
+filmed, do not pad the carousel: delete the unused entries from `src/content/testimonials.ts` and the
+carousel renders what is left, controls and counter adjusting themselves.
+
+### The gate that is deliberately not satisfied
+
+**A clip cannot ship without captions.** `Clip` in `src/components/VideoFrame.tsx` always writes a
+`<track kind="captions">`, and `src/content/videos.ts` types `captions` as a required string rather
+than an optional one, so the day someone adds a clip TypeScript asks for the `.vtt` path instead of
+letting an uncaptioned video onto the page. Budget transcription time with the shoot, not after it.
+
+The empty state needs no track: its text alternative is the `figcaption` under the frame, and its icon
+is `aria-hidden`.

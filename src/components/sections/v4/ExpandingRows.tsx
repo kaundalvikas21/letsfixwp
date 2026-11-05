@@ -60,7 +60,7 @@ export function ExpandingRows({ rows, checkIcon }: { rows: Row[]; checkIcon: Rea
                   weight="bold"
                   aria-hidden
                   className={cn(
-                    "mt-1 size-5 shrink-0 text-accent-text transition-transform duration-200 ease-out motion-reduce:transition-none",
+                    "mt-1 size-5 shrink-0 text-accent-text transition-[rotate] duration-200 ease-out motion-reduce:transition-none",
                     open && "rotate-180",
                   )}
                 />

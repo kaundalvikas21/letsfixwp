@@ -29,11 +29,11 @@ const PRACTICES = [
 export function Practices() {
   if (!PRACTICES.length) return null;
   return (
-    // max-w-6xl and the full section rhythm, like every other section: this one was the only block
+    // max-w-page and the full section rhythm, like every other section: this one was the only block
     // narrowed to max-w-4xl, which pushed its left edge 128px inside the heading above and the one
     // below it. DESIGN.md's rule is that measure is capped on the text, never by shrinking the
     // container, so the copy carries its own ch cap below and the spine stays put.
-    <section aria-labelledby="practices" className="mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
+    <section aria-labelledby="practices" className="reveal mx-auto max-w-page px-4 py-16 md:px-6 md:py-24">
       <h2
         id="practices"
         className="font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_30] sm:text-5xl sm:[font-variation-settings:'opsz'_48]"
@@ -57,7 +57,9 @@ export function Practices() {
             {/* 17px against the 15px sentence beside it: the two used to share a size and were told
                 apart by weight alone, which is not a hierarchy at this heading scale. */}
             <span className="text-[17px] leading-snug font-semibold tracking-[-0.01em]">{title}</span>
-            <span className="col-start-2 max-w-[58ch] text-[15px] leading-relaxed text-muted md:col-start-3">{text}</span>
+            {/* One column further along than it was: the index numeral now takes the first column,
+                so the icon, the title and this sentence each move one to the right. */}
+            <span className="col-start-3 max-w-[58ch] text-[15px] leading-relaxed text-muted md:col-start-4">{text}</span>
           </Fragment>
         ))}
       </PracticeRows>

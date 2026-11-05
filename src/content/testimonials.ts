@@ -10,12 +10,17 @@
  * `placeholder: true` marks each card visibly on the page and fails a production deploy (next.config.ts). Delete the
  * flag from an entry only when its words, name, role and org are a real client's.
  *
+ * `video` names this client's reserved video slot in src/content/videos.ts, which is empty until the clip exists.
+ * The same rule governs it: a client video is that client on camera, filmed with their consent, or it is nothing. Do
+ * not fill a slot with an actor, a voiceover over stock footage, or a reconstruction.
+ *
  * The previous contents of this file were two real testimonials belonging to fixmywp.com, a different and still
  * trading business. They were removed on 2026-10-07 when the owner confirmed the two companies are unrelated.
  */
 export const testimonials = [
   {
     placeholder: true,
+    video: "client-story-1",
     name: "Client name",
     role: "Role",
     org: "Company",
@@ -27,11 +32,32 @@ export const testimonials = [
   },
   {
     placeholder: true,
+    video: "client-story-2",
     name: "Second client",
     role: "Role",
     org: "Company",
     quote:
       "Placeholder. Replace with a second client's words. Pick someone whose job was not an emergency, so the two quotes are not making the same point twice.",
     excerpt: "Placeholder: a second client on a care plan or a build, not another emergency.",
+  },
+  {
+    placeholder: true,
+    video: "client-story-3",
+    name: "Third client",
+    role: "Role",
+    org: "Company",
+    quote:
+      "Placeholder. Replace with a third client's words about a hacked or infected site: what they first noticed, who told them, and what it took to get the warnings cleared.",
+    excerpt: "Placeholder: a third client on a hacked site and what the cleanup took.",
+  },
+  {
+    placeholder: true,
+    video: "client-story-4",
+    name: "Fourth client",
+    role: "Role",
+    org: "Company",
+    quote:
+      "Placeholder. Replace with a fourth client's words about a move or a store: what they were afraid of losing, and whether anything was lost.",
+    excerpt: "Placeholder: a fourth client on moving a store and keeping every order.",
   },
 ] as const;

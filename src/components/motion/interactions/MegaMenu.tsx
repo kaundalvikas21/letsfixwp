@@ -91,7 +91,7 @@ export function MegaMenu({
                     weight="duotone"
                     aria-hidden
                     className={cn(
-                      "size-6 shrink-0 text-accent-text transition-transform duration-200 ease-out motion-reduce:transition-none",
+                      "size-6 shrink-0 text-accent-text transition-[rotate] duration-200 ease-out motion-reduce:transition-none",
                       i === active && touched && "rotate-180",
                     )}
                   />

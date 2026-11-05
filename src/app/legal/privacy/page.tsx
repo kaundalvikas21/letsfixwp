@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default function Privacy() {
   if (!brand.legacy.enabled) return <LegalPending title="Privacy Policy" />;
   return (
-    <article>
+    <div>
       <h1>Privacy Policy</h1>
 
       <h2>GENERAL INFO</h2>
@@ -127,6 +127,6 @@ export default function Privacy() {
 
       <h2>CHANGES TO OUR PRIVACY POLICY</h2>
       <p>If we decide to change our privacy policy, we will post those changes on this page.</p>
-    </article>
+    </div>
   );
 }
