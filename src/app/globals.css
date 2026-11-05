@@ -671,6 +671,66 @@
   margin-inline: calc(50% - 50vw);
 }
 
+/* The step block in the service page's "What we do" flow, and the one place 3D is allowed
+   (MASTER amended, docs/layout-ledger.md Task 77). A real rotation with no perspective, so every
+   block projects identically wherever it sits on the page. Thickness is a stack of hard-edged shadows
+   rather than extra faces in the DOM: no blur. In this plane a (-1px, 1px) offset is what lands
+   straight down the screen; (1px, 1px) slides sideways and reads as a misplaced shadow.
+
+   The rotation is on `::before` and never on the element, so the mark stays flat and faces the viewer.
+   A mark inside the rotated box is squashed with it, past recognition at this size. Rotating it back
+   does not help: without `preserve-3d` the inverse is flattened into the plane and squashes it twice,
+   and with it the mark cuts through the face. Tokens only; the one ember block is the end of the flow. */
+@utility flow-block {
+  --flow-face: var(--surface-2);
+  --flow-side: color-mix(in srgb, var(--text) 16%, var(--bg));
+  --flow-edge: var(--line-strong);
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  flex: none;
+  color: var(--accent-text);
+  font-size: 1.375rem;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 14px;
+    border: 1px solid var(--flow-edge);
+    background: var(--flow-face);
+    transform: rotateX(55deg) rotateZ(-45deg);
+    box-shadow:
+      -1px 1px 0 var(--flow-side), -2px 2px 0 var(--flow-side), -3px 3px 0 var(--flow-side), -4px 4px 0 var(--flow-side),
+      -5px 5px 0 var(--flow-side), -6px 6px 0 var(--flow-side), -7px 7px 0 var(--flow-side), -8px 8px 0 var(--flow-side),
+      -9px 9px 0 var(--flow-side), -10px 10px 0 var(--flow-side), -11px 11px 0 var(--flow-side), -12px 12px 0 var(--flow-side),
+      -13px 13px 0 var(--flow-side), -14px 14px 0 var(--flow-side);
+  }
+
+  @media (min-width: 48rem) {
+    width: 4.5rem;
+    height: 4.5rem;
+    font-size: 1.75rem;
+  }
+
+  &[data-compact] {
+    width: 3.5rem;
+    height: 3.5rem;
+    font-size: 1.375rem;
+  }
+
+  &[data-end] {
+    --flow-face: var(--accent);
+    --flow-side: color-mix(in srgb, var(--accent) 55%, var(--bg));
+    --flow-edge: var(--accent);
+    color: var(--on-accent);
+  }
+}
+
 @utility card-plate {
   position: relative;
   isolation: isolate;

@@ -13,12 +13,20 @@ import { useEffect, useRef, useState } from "react";
  * indistinguishable from a curve.
  *
  * **The fan is thinned, which is a deliberate departure from the source.** The original is 58
- * curves at `(+7n, -8n)`, and stretched onto a band this wide it reads as crowded: the owner asked
- * for more air between the lines. This is 39 curves at `(+10.5n, -12n)`, which is **exactly the
- * same overall spread** (399 across, 456 down, because 38 x 10.5 equals 57 x 7) with half again
- * the gap between neighbours. So the artwork occupies the same box and is simply less dense; the
- * emitted paths no longer match the pasted file byte for byte, and that is the one place they
- * deliberately differ.
+ * curves at `(+7n, -8n)`, and stretched onto a band this wide it reads as crowded. The owner has
+ * now asked for more air between the lines twice: first to 39 curves at `(+10.5n, -12n)`, then to
+ * the **29 curves at `(+14n, -16n)`** this ships. Each pass widens the gap and drops curves to pay
+ * for it, so the fan stays the same size and simply gets less dense.
+ *
+ * The step is kept a whole multiple of the source's: `(14, -16)` is exactly twice `(7, -8)`, which
+ * is what holds the fan's rake at 8/7 so the curves stay parallel to the ones in the pasted file.
+ * That constraint costs a little of the spread, and the number is written down rather than rounded
+ * away: 28 x 14 is **392 across and 448 down**, against the 399 x 456 of the previous two passes.
+ * Under 2% narrower on a fan that is stretched by `preserveAspectRatio="none"` and faded out by the
+ * radial falloff well before its edges, so it does not show. The alternative that would have held
+ * 399 exactly is `(21, -24)`, and at 20 curves that is half the line count rather than the few more
+ * units of gap that was asked for. The emitted paths no longer match the pasted file byte for byte,
+ * and this is the one place they deliberately differ.
  *
  * **Retoned for this site.** The source is drawn for a light page in three reds over `#d4d4d4`
  * hairlines at `0.04` opacity. Hardcoded hex is banned here and the variation is accent-locked, so
@@ -52,16 +60,16 @@ const POINTS = [
   [684, 875],
 ] as const;
 
-/** Gap between neighbouring curves. 1.5x the source's `(7, -8)`; see the note above. */
-const STEP = { x: 10.5, y: -12 } as const;
+/** Gap between neighbouring curves. 2x the source's `(7, -8)`; see the note above. */
+const STEP = { x: 14, y: -16 } as const;
 
 const curve = (n: number) => {
   const [m, c1, c2, c3, c4, c5, c6] = POINTS.map(([x, y]) => [x + STEP.x * n, y + STEP.y * n]);
   return `M${m[0]} ${m[1]}C${c1[0]} ${c1[1]} ${c2[0]} ${c2[1]} ${c3[0]} ${c3[1]}C${c4[0]} ${c4[1]} ${c5[0]} ${c5[1]} ${c6[0]} ${c6[1]}`;
 };
 
-// 39 holds the source's full spread at the wider step: 38 x 10.5 is the same 399 as 57 x 7.
-const CURVES = Array.from({ length: 39 }, (_, n) => curve(n));
+// 29 is the most curves the wider step fits in the fan's box: 28 x 14 is 392 of the source's 399.
+const CURVES = Array.from({ length: 29 }, (_, n) => curve(n));
 
 /**
  * Which curves carry a trail.
@@ -71,11 +79,16 @@ const CURVES = Array.from({ length: 39 }, (_, n) => curve(n));
  * either: that puts two lit lines a pixel apart and they read as one thick one, which is what an
  * earlier draft ending 55, 56, 57 did.
  *
- * Carried across from the 58-curve fan by scaling each index by 38/57, so the spacing is unchanged
- * in the artwork's own units: the gaps now run 2, 4, 2, 5, 2, 3, 5, 2, 5, 3, 2, 3, and the tightest
- * of them is 2 x 10.5 = 21 units, exactly the 3 x 7 the tightest pair had before.
+ * **Ten trails now, not thirteen.** Thinning the fan to 29 curves is what forced that. Thirteen
+ * trails across 29 curves is 45% of the lines lit, against 33% before, and it leaves 12 gaps to fit
+ * into 28 curves: with every gap at the 2 minimum that is 24, so only 4 units of slack exist to
+ * vary them with and the scatter collapses into the regular interval this list is written by hand
+ * to avoid. Ten keeps the lit share at roughly a third and leaves 10 units of slack.
+ *
+ * Gaps run 2, 4, 2, 5, 3, 2, 4, 3, 3. No two neighbours, and the tightest pair is 2 x 14 = 28 units
+ * against the 21 it was, so the trails spread with the fan rather than bunching as it thins.
  */
-const TRAILS = [0, 2, 6, 8, 13, 15, 18, 23, 25, 30, 33, 35, 38];
+const TRAILS = [0, 2, 6, 8, 13, 16, 18, 22, 25, 28];
 
 /**
  * Period and phase per trail.

@@ -18,13 +18,16 @@ import { brand } from "../config/brand";
  * claims and answer a different question from "what protects me"; they also ran the /contact/
  * column past the height of the form it sits beside. Each pair carries its own claim rather than a
  * list of sentences, because an unconfirmed claim is null and must then render nothing (contract
- * rule 8). `Promises` in templates/parts.tsx is the only thing that renders these.
+ * rule 8). `Promises` and `PromiseFlow` in templates/parts.tsx are the only things that render these.
+ *
+ * In the order they happen, because /contact/ draws them as a flow: the price is agreed, you create a
+ * login, we back up, and our access goes when the work is done. The third field keys `promiseIcon`.
  */
 export const promises = [
-  [brand.claims.fixedPrice, "fixes are fixed price, agreed before work starts"],
-  [brand.claims.backupFirst, "a full backup is taken before any change"],
-  [brand.claims.ownLogin, "we work through a login you create for us and never ask for your password"],
-  [brand.claims.accessRemoved, "our access is removed when the work is done"],
+  [brand.claims.fixedPrice, "fixes are fixed price, agreed before work starts", "price"],
+  [brand.claims.ownLogin, "we work through a login you create for us and never ask for your password", "login"],
+  [brand.claims.backupFirst, "a full backup is taken before any change", "backup"],
+  [brand.claims.accessRemoved, "our access is removed when the work is done", "access"],
 ] as const;
 
 /** Guide pages, under the safe checks. A safety warning, not a sales line. */

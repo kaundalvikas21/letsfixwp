@@ -7,12 +7,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { BookLink, ChatButton } from "@/components/Cta";
 import { breadcrumbLd, JsonLd, type Crumb } from "@/components/JsonLd";
+import { Stagger } from "@/components/motion";
 import { Photo } from "@/components/Photo";
 import { sharedOpenGraph } from "@/config/brand";
 import { nodeByPath, routes, serviceIdOf, type FlatNode } from "@/config/routes";
 import { getCompare, getGuide, getService } from "@/content";
-import type { Guide } from "@/content/schema";
-import { deliveryIcon } from "@/content/icons";
+import type { Guide, Service } from "@/content/schema";
+import { deliveryIcon, promiseIcon, verbIcon } from "@/content/icons";
 import { promises, remoteDelivery } from "@/content/notices";
 import { deliveryPhoto, type PhotoId } from "@/content/photos";
 import { pngSize } from "@/lib/png-size";
@@ -397,37 +398,46 @@ export function Faqs({ faqs, title = "Questions" }: { faqs: { q: string; a: stri
 }
 
 /**
- * The promises tick list, for /contact/ and /legal/guarantee/.
+ * The promises tick list, for /legal/guarantee/ and /pricing/. /contact/ draws the same sentences as
+ * `PromiseFlow`.
  *
- * Both routes stated the same four commitments from their own copy of the array and their own copy
+ * Each route used to state the same four commitments from its own copy of the array and its own copy
  * of this markup, which is how two promises drift into two different promises. The sentences are
  * the owner's approved wording and live in src/content/notices.ts; nothing here edits them, and
  * `first-letter:uppercase` is presentation only. A row renders only while its own claim is truthy,
  * because an unconfirmed claim is null.
  *
  * Not `TickList`: that one takes any strings and gives them no measure, and these need the claim
- * gate and the capital. `compact` is the /contact/ panel, which sits in a 5-column column beside
- * the form and sets its own measure, against the reading column on /legal/guarantee/, which does
- * not. One flag rather than four, because the two call sites are the two shapes.
+ * gate and the capital.
  */
-export function Promises({ className, compact = false }: { className?: string; compact?: boolean }) {
+export function Promises({ className }: { className?: string }) {
   return (
     <ul className={cn("reveal grid gap-3", className)}>
       {promises
         .filter(([confirmed]) => confirmed)
         .map(([, words]) => (
-          <li key={words} className={cn("flex gap-3", compact && "text-sm")}>
-            <CheckIcon weight="duotone" className={cn(compact ? "mt-0.5" : "mt-1", "size-5 shrink-0 text-accent-text")} aria-hidden />
-            <span className={cn("block", !compact && "max-w-[60ch]", "first-letter:uppercase")}>{words}</span>
+          <li key={words} className="flex gap-3">
+            <CheckIcon weight="duotone" className="mt-1 size-5 shrink-0 text-accent-text" aria-hidden />
+            <span className="block max-w-[60ch] first-letter:uppercase">{words}</span>
           </li>
         ))}
     </ul>
   );
 }
 
-export function TickList({ items, cols = 1 }: { items: readonly string[]; cols?: 1 | 2 }) {
+/**
+ * `animate` exists for one caller and defaults to the behaviour every other caller already had.
+ *
+ * This list carries its own `reveal`, which is right wherever it is the only animated thing in its
+ * section. On `/pricing/` it is not: the three ways rows wanted a marker of their own, and a
+ * `reveal` inside a `reveal` is two levels, which `docs/layout-ledger.md` rules out in one line,
+ * "one level per section, never nested, so nothing animates twice". That page passes
+ * `animate={false}` and tags the list above instead. `ServiceTemplate` and every other caller pass
+ * nothing and render exactly as before.
+ */
+export function TickList({ items, cols = 1, animate = true }: { items: readonly string[]; cols?: 1 | 2; animate?: boolean }) {
   return (
-    <ul className={cn("reveal grid gap-3", cols === 2 && "sm:grid-cols-2 sm:gap-x-8")}>
+    <ul className={cn(animate && "reveal", "grid gap-3", cols === 2 && "sm:grid-cols-2 sm:gap-x-8")}>
       {items.map((x) => (
         <li key={x} className="flex gap-3">
           <CheckIcon weight="duotone" className="mt-1 size-5 shrink-0 text-accent-text" aria-hidden />
@@ -436,6 +446,110 @@ export function TickList({ items, cols = 1 }: { items: readonly string[]; cols?:
       ))}
     </ul>
   );
+}
+
+/**
+ * "Does your site show this?" on a fix-intent service page: one enclosed panel of divided rows.
+ *
+ * It was `TickList`, which is still what the deliverables section below is, so the two read as one
+ * column of sentences with a heading dropped into the middle of it (docs/layout-ledger.md, Task 73).
+ * A continuous ruled rail is a family this page does not otherwise carry: `Faqs` is borderless and
+ * its rows open, and `WorkFlow` is a flow with a connecting line and no panel around it.
+ *
+ * A rail rather than cards on purpose, and that is what now separates this from the tick list under
+ * "What you get". These are symptoms a reader scans for their own, so the job is a fast vertical
+ * read down one edge, and separated cards would put a gap and two borders between every line of it.
+ * The deliverables were built as cards and as a rail during this task and the owner kept neither;
+ * both shapes are described in the ledger if they are ever wanted again.
+ *
+ * `WarningIcon` rather than the tick `TickList` draws. Every string here names something broken, and
+ * a tick against "wp-admin will not load" reads as the opposite of what the row says. Still ember,
+ * like the deliverables' tick, so the two sections are told apart by shape and not by hue, which is
+ * the same reasoning `urgencyIcon` records below.
+ *
+ * `overflow-hidden` is load-bearing rather than tidy: without it the first and last row's hover tint
+ * paints square corners over the panel's 14px radius.
+ *
+ * The hover is a tint and nothing else. MASTER.md keeps lifting for `cardLink`, "the only thing on
+ * this site allowed to lift", and bans hover scales on cards that are not links. These rows are not
+ * links and cannot become them: there is no per-row destination anywhere in the content.
+ */
+export function SymptomPanel({ items }: { items: readonly string[] }) {
+  return (
+    <ul className="reveal divide-y divide-line overflow-hidden rounded-[14px] border border-line bg-surface shadow-card">
+      {items.map((x) => (
+        <li
+          key={x}
+          className="flex gap-3.5 px-5 py-4 transition-colors duration-[var(--motion-duration-small)] ease-[var(--motion-ease)] md:px-6 md:py-5 [@media(hover:hover)]:hover:bg-surface-2"
+        >
+          <WarningIcon weight="duotone" className="mt-0.5 size-5 shrink-0 text-accent-text" aria-hidden />
+          <span className="max-w-[60ch]">{x}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * "What we do" on a service page: the steps as one connected flow, ending on the only filled block.
+ *
+ * It was a 2-up grid of near-identical tiles, so five steps in a fixed order read as five unrelated
+ * facts (docs/layout-ledger.md, Task 77). Vertical because the text decides it: `detail` runs to 169
+ * characters in a 736px column, and five across would give each about 130px and ten lines.
+ *
+ * The rotation lives on an inner element and never on the `li`. The reveal holds `transform: none`
+ * on every child of its container under `fill: both`, so a transform on the `li` would be overwritten
+ * for good the moment the row arrived.
+ *
+ * Nothing is numbered, because the line already gives the order (contract rule 6), and the `ol` gives
+ * it to a screen reader. There is no hover: these rows hold no links, and Hover Earns It forbids hover
+ * on a panel that is not interactive. The connector sits inside each row, so the line grows row by row
+ * as they arrive.
+ */
+export function WorkFlow({ steps }: { steps: Service["whatWeDo"] }) {
+  return <FlowList rows={steps.map((w) => ({ key: w.verb, mark: verbIcon[w.verb as keyof typeof verbIcon], title: w.verb, text: w.detail }))} />;
+}
+
+/**
+ * The four promises on /contact/, drawn as the order they happen in rather than as a tick list.
+ *
+ * Same gate as `Promises`: a claim that is not confirmed removes its row, and the last row left takes
+ * the ember block. The words are the owner's and are never reworded, so there is no title here.
+ */
+export function PromiseFlow() {
+  const rows = promises.filter(([confirmed]) => confirmed).map(([, words, key]) => ({ key, mark: promiseIcon[key], text: words }));
+  return <FlowList rows={rows} compact />;
+}
+
+/**
+ * `compact` keeps the small block at every width, for a panel that is narrow even on a wide screen.
+ * The last row is the only ember one, wherever the list happens to end.
+ */
+function FlowList({ rows, compact = false }: { rows: { key: string; mark: Icon; title?: string; text: string }[]; compact?: boolean }) {
+  const items = rows.map(({ key, mark: Mark, title, text }, i) => {
+        const end = i === rows.length - 1;
+        return (
+          <li key={key} className={cn("relative grid grid-cols-[5.5rem_minmax(0,1fr)] gap-x-4 last:pb-0", compact ? "pb-2" : "pb-9 md:grid-cols-[7.5rem_minmax(0,1fr)] md:gap-x-6")}>
+            <div aria-hidden className={cn("flex h-[4.25rem] justify-center pt-2", !compact && "md:h-[5.25rem]")}>
+              <span data-end={end ? "" : undefined} data-compact={compact ? "" : undefined} className="flow-block">
+                <Mark weight="duotone" />
+              </span>
+            </div>
+            {!end && <span aria-hidden className={cn("absolute top-[4.25rem] -bottom-2 left-[2.75rem] w-px bg-line-strong", !compact && "md:top-[5.25rem] md:left-[3.75rem]")} />}
+            {title ? (
+              <div className="pt-1">
+                <h3 className="font-display text-lg leading-snug font-bold [font-variation-settings:'opsz'_18] md:text-xl md:[font-variation-settings:'opsz'_20]">{title}</h3>
+                <p className="mt-1 max-w-[60ch] text-muted">{text}</p>
+              </div>
+            ) : (
+              <p className="self-center text-[15px] leading-snug first-letter:uppercase">{text}</p>
+            )}
+          </li>
+        );
+      });
+  // No reveal when compact: that list lives in a sticky column, where its lowest rows can stop below
+  // the reveal's trigger line and stay invisible. Its card brings the whole list in on load instead.
+  return compact ? <ol>{items}</ol> : <Stagger as="ol">{items}</Stagger>;
 }
 
 /**

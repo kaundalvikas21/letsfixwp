@@ -58,6 +58,10 @@ export const metadata: Metadata = {
  * which writes `data-rv-delay` per child at 70ms a step and stops laddering after the sixth, so a
  * twelve-card grid never forms a queue. A bare `.reveal` container still has no stagger at all.
  *
+ * Turning reduced motion **off** mid-session drops `.reveal-js`. Under reduced motion an element is
+ * passed without ever animating, so the setting going away would re-apply `opacity: 0` to everything
+ * already scrolled past, with nothing left to clear it (ledger Task 77).
+ *
  * One owner per ancestor chain: if a container carries `.reveal`, nothing inside it may carry either
  * marker. Two animated elements on one chain multiply their opacities and sum their translates, so a
  * deeper marker always means the ancestor gives its own up.
@@ -125,6 +129,8 @@ const revealScript = `(function(){
   var narrow=matchMedia('(max-width: 767px)');
   narrow.addEventListener?narrow.addEventListener('change',readDist):narrow.addListener(readDist);
   var reduce=matchMedia('(prefers-reduced-motion: reduce)');
+  function motionBack(e){if(!e.matches)root.classList.remove('reveal-js');}
+  reduce.addEventListener?reduce.addEventListener('change',motionBack):reduce.addListener(motionBack);
   var seen=new WeakSet();
   function from(el){
     var dir=el.getAttribute('data-rv-dir')||'up';

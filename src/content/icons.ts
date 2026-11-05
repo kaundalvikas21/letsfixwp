@@ -48,7 +48,7 @@ import {
   WrenchIcon,
 } from "@phosphor-icons/react/ssr";
 import { hubIds } from "@/config/routes";
-import { remoteDelivery } from "./notices";
+import { promises, remoteDelivery } from "./notices";
 import { compares, services } from "./index";
 
 /**
@@ -195,12 +195,21 @@ export const deliveryIcon = {
   Handover: PackageIcon,
 } as const satisfies Record<string, Icon>;
 
+/** The four promises as /contact/ draws them, keyed by the field each entry in `promises` carries. */
+export const promiseIcon = {
+  price: ReceiptIcon,
+  login: KeyIcon,
+  backup: HardDrivesIcon,
+  access: LockIcon,
+} as const satisfies Record<string, Icon>;
+
 // Integrity, the same shape `photos.ts` uses: content that grows a value these maps do not cover
 // fails the build here rather than rendering a hole on one page nobody opens.
 for (const id of hubIds) if (!(id in hubIcon)) throw new Error(`icons: hub "${id}" has no icon`);
 for (const s of services) {
   for (const w of s.whatWeDo) if (!(w.verb in verbIcon)) throw new Error(`icons: whatWeDo verb "${w.verb}" has no icon`);
 }
+for (const [, , key] of promises) if (!(key in promiseIcon)) throw new Error(`icons: promise "${key}" has no icon`);
 for (const r of remoteDelivery) if (!(r.label in deliveryIcon)) throw new Error(`icons: delivery "${r.label}" has no icon`);
 for (const c of compares) {
   // Every criterion covered, and no mark used twice inside one comparison: the second check is the

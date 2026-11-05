@@ -7648,3 +7648,762 @@ The city card is unchanged and did not have the problem: its caret shares a line
 `tsc` 0, `eslint` 0, content and motion checks clean, build green at 99 routes. The 375 check noted at
 the end of Task 72 still applies, and now also covers whether `pr-7` is enough clearance for the
 longest title at the narrowest card.
+
+## v4 / the symptom list and the deliverables list stop being the same component (Task 73)
+
+Reported as "over all boring and similar design and not easy to read scannable" on the service
+detail pages. The cause was literal rather than a matter of taste: both sections rendered
+`TickList`, the same component, with `cols` as the only difference between them.
+
+| Section | Was | Is |
+| --- | --- | --- |
+| "Does your site show this?" | `TickList items={s.symptoms}` | `SymptomPanel` |
+| "What we do" | 2-up bordered tile grid | unchanged |
+| "What you get" | `TickList items={s.deliverables} cols={2}` | `DeliverableGrid` |
+
+### Scope: two call sites, and the lists that are not on this page
+
+`TickList` has three call sites. Only the two on the service page move:
+
+| Where | Moved? |
+| --- | --- |
+| `ServiceTemplate` symptoms | **yes**, to `SymptomPanel` |
+| `ServiceTemplate` deliverables | **yes**, to `DeliverableGrid` |
+| `/pricing/` "Three ways to work with us" | no: three plan cards, each holding four deliverables. A bezelled panel inside a card is a bezel inside a bezel, and the lead-card asymmetry has no room at that width. `TickList` stays exported and unchanged for it. |
+| `GuideTemplate` "What you are seeing" | no: a different component on a different route |
+| `Promises` | no: a different component |
+
+Content and schema are untouched. `symptoms` and `deliverables` are read by the home page's
+`Plans` and `ProblemTiles`, by `HubTemplate` and by `/pricing/`, so editing either array to suit
+a layout would change four other places. This is presentation only.
+
+### Layout families, and why neither is already on the page (rule 3)
+
+| New family | Nearest thing on the page | Why it is distinct |
+| --- | --- | --- |
+| Bezelled panel of hairline-divided rows | `Faqs`, which is `divide-y border-y` | `Faqs` is a borderless full-width rail of `details` rows that open. This is an enclosed rounded panel of static rows. |
+| Asymmetric lead card plus row panel, 2/5 and 3/5 | `whatWeDo`, a 2-up bordered tile grid | Unequal columns, one tinted card carrying display type, no tile grid |
+
+Eyebrows on this page: 0 before, 0 after, budget unspent. Marquee: none. CTA intents: unchanged.
+Three columns never occur at any item count, so rule 6's three-equal-cards ban is clear by
+construction rather than by luck.
+
+### The mark was backwards
+
+`TickList` draws `CheckIcon`. On the deliverables that is right. On the symptoms it rendered a tick
+against every sentence describing a broken site: "check, wp-admin will not load". Symptoms now carry
+`WarningIcon`, deliverables keep `CheckIcon`, and both stay `--accent-text`. The two sections are told
+apart by **shape and not by hue**, which is the same reasoning `urgencyIcon` already records three
+lines above `TickList`, and it keeps clear of the colour-only-indicator ban.
+
+### What the hover is, and what it is not
+
+The report asked for a hover effect. `MASTER.md` reserves lifting for `cardLink`, "the only thing on
+this site allowed to lift", and bans hover scales on cards that are not links. These rows are not
+links and are not going to become links: there is no per-symptom destination in the content.
+
+So the hover is a row tint and nothing else: `bg-surface` to `bg-surface-2`, behind
+`@media (hover: hover)` so a touch pointer never fires it, on `--motion-ease` at
+`--motion-duration-small`. No translate, no scale, no shadow change, no text colour change. A
+highlighted table row, which is the one hover a static row can carry without lying about being
+clickable.
+
+`overflow-hidden` on the panel is load-bearing rather than tidy: without it the first and last row's
+tint paints square corners over the panel's 14px radius.
+
+### Measurements
+
+Rendered, `/wordpress-fix/emergency/`:
+
+```
+symptoms      <ul class="reveal divide-y divide-line overflow-hidden rounded-[14px]
+                border border-line bg-surface shadow-card">
+                <li class="flex gap-3.5 px-5 py-4 ...">[WARNING]<span>Every page shows ...
+
+deliverables  <div class="reveal grid gap-4 md:grid-cols-5">
+                <div class="... bg-accent-tint ... md:col-span-2">[CHECK]
+                  <p class="font-display text-lg ...">Your site back online with the cause fixed...
+                <ul class="... md:col-span-3">[CHECK]<span>Backups of files and database ...
+```
+
+**`TickList` calls left in `ServiceTemplate`: 0. `CheckIcon` against a symptom anywhere in the
+build: 0.**
+
+Item counts the two components have to survive, counted across all 32 service files: symptoms 4 or 5
+on the 15 fix-intent services and 0 on the other 17, deliverables 4, 5 or 6 on all 32. So
+`DeliverableGrid` renders a lead card plus 3, 4 or 5 rows, and the `rest.length > 0` guard covers the
+schema's `min(1)` rather than any service that exists today.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off**, motion
+check clean, build green at **99 routes**.
+
+Measured in Chrome against the production build, not inferred from the source:
+
+```
+hover, symptom row 2    background rgb(28,28,33) == --surface-2 #1c1c21
+                        transform none, box-shadow none        (no lift, no scale)
+                        sibling rows rgba(0,0,0,0)             (tint is per row)
+touch emulation 375     matchMedia("(hover: hover)") == false  (tint never fires)
+reduced motion          5 rows at opacity 1, transform none, 0 running animations,
+                        transition-duration 0.35s              (colour survives, travel does not)
+375 viewport            overflow 0px, one column at 343px, row padding 16/20
+1280 viewport           lead 291px / rows 445px                (the 2/5 and 3/5 split)
+contrast                body 14.44 to 16.14, ember marks 5.30 to 5.93
+                        against floors of 4.5 and 3.0
+```
+
+Counts on `/pricing/`, which shares `TickList`: **4 tick lists still rendering with their original
+`reveal grid gap-3` and `flex gap-3` classes, 0 new panels**. On `/wordpress-maintenance/care-plans/`,
+a non-fix service: **no symptom section, "Who this is for" still a `reveal-self max-w-[68ch]
+text-muted` paragraph**, deliverables redesigned with 5 items.
+
+The lead card is anchored to its own foot with `mt-auto`, which the first build did not do. Stretched
+to the row panel beside it, the card put its line at the top and left about 200px of tinted hollow
+under it. `PageMasthead` solved the same problem the same way in Task 68.
+
+**Not run, and not claimed:** axe, and the 768 and 1024 widths. The 375 and 1280 ends were measured
+and the layout has one breakpoint between them, `md`, so the two middle widths are either the stacked
+shape already checked at 375 or the split shape already checked at 1280. That is reasoning rather than
+a measurement, and it is the thing to check first if anything looks wrong.
+
+**Pre-existing and not fixed here:** `/wordpress-fix/emergency/` carries 8px of horizontal overflow at
+1280. Measured to the `full-bleed` masthead and the `ClosingBeams` SVG paths, both untouched by this
+task. Neither new section appears in the overflow set, and at 375 the page overflow is 0.
+
+One redundancy worth knowing rather than changing: Tailwind v4 already wraps a plain `hover:` variant
+in `@media (hover: hover)`, so `[@media(hover:hover)]:hover:bg-surface-2` says it twice. It is kept
+because `cardLink` four hundred lines up writes it the same explicit way, and matching the neighbour
+is worth more than the characters saved.
+
+**A trap for whoever verifies this next.** Checking the reveal with
+`element.scrollIntoView()` from the console reports a false failure: the h2 and the first three rows
+sit at `opacity: 0` with no animation running. Scrolled the way a person scrolls, in steps, every
+reveal target on the route reaches `opacity: 1` and **the count of stuck elements on the page is 0**.
+An instant programmatic jump lands past the observer's trigger window, so it is the measurement that
+is broken and not the section. Scroll in increments when verifying this, and the same caution applies
+to any screenshot taken straight after a jump.
+
+### Correction to the note above: the jump was never the cause
+
+That note is wrong and should not be followed. An instant `scrollIntoView()` reveals correctly:
+measured on this route in a foreground tab, all five rows reached `opacity: 1` with their animations
+`finished`, and only rows still below the fold stayed hidden. The first measurement in this task
+used the same call and passed, which should have ended the theory when it was written.
+
+The stuck elements came from a real bug in the reveal script, set off by the order of the test.
+The page had been loaded under reduced motion, and the script stops watching each element it passes
+without animating it. Emulation was then switched off, the stylesheet's `opacity: 0` applied again,
+and nothing was left to clear it. Fixed in Task 77.
+
+Two things are true about measuring reveals. A background tab gives misleading readings, because
+observers barely run there. And never change the reduced-motion setting on a loaded page without
+expecting exactly this, until that fix is in the build being tested.
+
+### Correction to Task 73: the deliverables were still a plain list
+
+Reported in three words by the owner: "What you get" still "display plain lists as it was".
+
+The report was right and the cause was mine. The owner had picked an asymmetric bento whose right
+hand side was **separated small cards**, and what shipped was a continuous ruled rail: one bordered
+panel with `divide-y` hairlines between the rows. A rail of sentences with a tick at the left is a
+list, whatever its container, so the section landed on the same shape it was supposed to leave.
+
+What changed: the right three fifths is now one card per deliverable, each with its own 14px border,
+its own `--shadow-card` and a 12px gap to the next. The tinted lead card and the 2/5 and 3/5 split
+are unchanged.
+
+| | Rail (what shipped first) | Cards (now) |
+| --- | --- | --- |
+| Borders | one, around all of them | one per deliverable |
+| Between items | a hairline | 12px of page |
+| Reads as | a list of lines | a set of things received |
+
+**The symptom panel stays a rail, and that is the point.** The two sections now differ in more than
+their marks. A symptom list is scanned by someone looking for their own problem, so it wants a fast
+unbroken vertical read down one edge; five separated cards would put a gap and two borders between
+every line of that read. A deliverable is a thing received, so it wants an edge of its own. Same
+reason, opposite answer, which is what keeps the two sections from being siblings again.
+
+Dropped in the same pass: the `MarkRows` helper the two sections used to share. With the deliverables
+no longer rows, it had one caller left, so it is folded back into `SymptomPanel`.
+
+Layout family, restated for rule 3: **asymmetric lead card plus a stack of cards**, one column in the
+right three fifths rather than two. Two columns would put a 445px region into 210px cards and wrap
+every sentence four times. One column per card is still not `whatWeDo`'s full-width 2-up grid of
+equal tiles, which is the family this had to avoid.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off**, motion
+check clean, build green at **99 routes**.
+
+```
+1280, malware-removal   5 cards right, every one border-top 1px and radius 14px, row gap 12px
+(6 deliverables)        lead 381px == list 381px          (lead stretches, line at its foot)
+1280, emergency         3 cards right, lead and list both 14px radius
+(4 deliverables)
+375 touch               overflow 0, one column at 343px, 5 cards stacked,
+                        lead pt 24px, matchMedia("(hover: hover)") == false
+reveal, full scroll     stuck elements on the page: 0
+```
+
+**Not run, and not claimed:** axe, and the 768 and 1024 widths. Same reasoning as the parent task:
+the two measured ends sit either side of the one breakpoint, `md`.
+
+### Second correction to Task 73: "What you get" goes back to the plain list
+
+Owner instruction, after seeing both shapes: revert "What you get" to the display it had. It is
+`TickList items={s.deliverables} cols={2}` again, which is exactly what it was before this task
+started.
+
+**So this task now changes one section, not two.** "Does your site show this?" keeps `SymptomPanel`.
+"What you get" is untouched from its pre-task state.
+
+Two claims in the parent entry above are now wrong, and are corrected here rather than edited there:
+
+| Claimed in Task 73 | Actually true now |
+| --- | --- |
+| "`TickList` calls left in `ServiceTemplate`: 0" | **1**, the deliverables call, restored |
+| "the two sections get two distinct layout families" | one section did; the deliverables section has its original family back |
+
+`DeliverableGrid` is deleted rather than left exported and unused, so the only record of it is this
+ledger. Both shapes it went through are described above if it is ever wanted again: a ruled rail
+first, then separated cards, both with a tinted lead card at 2/5.
+
+The deliverables section is once again a tick list and the symptom section is a bezelled rail, so
+the two no longer render the same component. That much of the original report is still addressed,
+through the symptom side alone: the rail, the warning mark in place of a tick against broken things,
+and the row tint.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off**, motion
+check clean, build green at **99 routes**.
+
+Rendered at 1280 on `/wordpress-fix/emergency/`, read back off the live page:
+
+```
+deliverables   ul class="reveal grid gap-3 sm:grid-cols-2 sm:gap-x-8"
+               li class="flex gap-3"            + CheckIcon  (the original markup, exactly)
+symptoms       ul class="reveal divide-y divide-line overflow-hidden rounded-[14px] ..."
+                                                + WarningIcon
+```
+
+**Not run, and not claimed:** axe. The responsive pass does not need redoing for the deliverables
+section, because it is the markup that shipped on this route before the task and was never changed
+in the interim; the symptom panel's 375 and 1280 measurements in the parent entry still stand.
+
+## v4 / the closing band's beams get more air, a second time (Task 74)
+
+Owner report: more gap between the SVG lines in the closing band. `ClosingBeams` already records the
+same request being made once before, so this is the same move applied again rather than a new idea.
+
+### What changed
+
+| | Source | Task 68 pass | Now |
+| --- | --- | --- | --- |
+| Step | `(7, -8)` | `(10.5, -12)` | **`(14, -16)`** |
+| Curves | 58 | 39 | **29** |
+| Trails | 13 | 13 | **10** |
+| Spread | 399 x 456 | 399 x 456 | 392 x 448 |
+
+The fan is generative, every curve being curve 0 translated by a fixed step, so widening the gap and
+dropping curves to pay for it keeps the artwork the same size and simply makes it less dense. That is
+the whole change.
+
+### Two things that were not free
+
+**The spread moves, by under 2%.** The step is held to a whole multiple of the source's `(7, -8)`,
+because that is what keeps the fan's 8/7 rake and leaves the curves parallel to the ones in the
+pasted file. `(14, -16)` is exactly twice it, and 399 does not divide by 14, so 28 steps reach 392
+rather than 399. The fan is stretched by `preserveAspectRatio="none"` and faded by the radial falloff
+well before its edges, so it does not show. The step that would have held 399 exactly is `(21, -24)`,
+and at 20 curves that halves the line count rather than adding the few units of gap that was asked
+for.
+
+**Thirteen trails no longer fit.** `TRAILS` is scattered by hand under two rules the file already
+states: never two on neighbouring curves, and never an even interval, because a regular one reads as
+a mechanism. Thirteen trails across 29 curves leaves 12 gaps to place in 28 units, and at the
+minimum gap of 2 that is 24, so only 4 units of slack exist to vary them with and the scatter
+collapses into exactly the regular interval the list exists to avoid. Ten trails keep the lit share
+at roughly a third, as it was at 13 of 39, and leave 10 units of slack. Gaps now run 2, 4, 2, 5, 3,
+2, 4, 3, 3.
+
+Untouched: the two radial gradients, the ember retone, `beam-trail` in globals.css, and the
+`IntersectionObserver` that pauses the animation off screen. The trail animation keys off each
+curve's own path length, and every curve is the same shape translated, so the dasharray still fits.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 202 files scanned, legacy off**, motion
+check clean, build green at **99 routes**.
+
+The constants are asserted against the claims above in the same pass that wrote them, and then read
+back off the rendered DOM at 1280 rather than trusted:
+
+```
+curves in the base path        29
+neighbour delta                (14, -16)
+first start / last start       (-380, -189) / (12, -637)
+measured spread                392 across, 448 down
+trail indices                  0, 2, 6, 8, 13, 16, 18, 22, 25, 28
+trails adjacent to each other  0
+trails indexing a missing curve 0
+```
+
+375 was the width worth looking at, because the same fan is stretched into a much narrower box there
+and the thinning reads strongest. Checked: the band measures **343 x 279, a ratio of 1.23** against the
+viewBox's 2.2, so the curves rake steeper and read as diagonal sweeps rather than the near-horizontal
+light they are at 1280. The wider gap holds at that angle and does not go sparse. Page overflow 0.
+
+**Not run, and not claimed:** axe, and the 768 and 1024 widths. The band is decorative, `aria-hidden`,
+and its density changes no layout, so what is unchecked there is taste rather than reflow.
+
+## v4 / the three ways stop reading as one block (Task 75)
+
+Owner report on `/pricing/`: the "Three ways to work with us" section is boring, the three look the
+same, it is not scannable, and there is no hover or motion.
+
+### The complaint was about the content slot, not the family
+
+The three rows are identical by construction. Each renders exactly four deliverables, and `price`,
+`priceFrom` and `typicalTurnaround` are null on all three. The only variance was the name, the CTA
+intent, and one free-prose sentence per row of **97, 143 and 152 characters**. Three prose sentences
+of unequal length in the one slot meant to tell the options apart is what made them read as one
+block of grey.
+
+This is the second time this page has been called boring. The first time the ledger answered that it
+"read as boring because it had nothing to say, which is not a layout problem", and that is still
+true of the prices: there are none, and the owner chose to redesign without them rather than publish
+figures. Task 33 is the closer precedent, same complaint on a sibling ledger: the structure was
+right and left alone, and what was wrong was the contents of the rows.
+
+| Rule 3 question | Answer |
+| --- | --- |
+| Does rule 3 forbid improving a section in its own family? | No. It refuses *building* a section whose family is already on the page. This section **is** the page's ruled ledger; counting a family against itself would make every section uneditable. |
+| Families already spent on `/pricing/` | bordered tiles (catalogue cards, closing band), `divide-y` rails (this, the catalogue's inner lists, `Faqs`), two-column tick grid (`Promises`), asymmetric split (inside these rows) |
+| Families left | a comparison table, and only that |
+| Why not the table | The three services share no feature axis. `CompareTemplate`'s table works because `compareSchema` stores authored `{criterion, a, b}` rows. Building one here means commissioning about six criteria x three cells of new claims about scope, which is rule 8 territory. A content commission, not a redesign. |
+
+So: **the family stays a ruled ledger**, grouped two and one.
+
+### What actually changed
+
+1. **The three get the short lines the home page already uses.** `Plans.tsx` has carried
+   "One problem on your site, found and fixed.", "Malware out, the way in closed." and "Updates,
+   backups and monitoring, every month." since it was built: five to eight words, genuinely distinct,
+   already approved copy. This page had refused them in its own docstring, on the ground that a
+   second wording for the same three choices is drift. **That objection is removed rather than
+   overruled**: the three names and the three lines are extracted to one shared const that both
+   pages read, which is the same move Task 32 made with `RemoteTrack`. The three *names* were already
+   duplicated across the two files, so this removes a drift that existed rather than adding one.
+   The long `whoItsFor` paragraph is what the short line replaces.
+2. **Grouped two and one**, on the one difference that is real in the content: two reactive one-offs
+   under "When something is wrong", the ongoing option under "So nothing goes wrong".
+   `care-plans.ts:11` already publishes "A monthly plan where we handle updates, backups, monitoring
+   and security checks", so the split is read off content, not asserted.
+3. **A "monthly" marker on the care plan row**, in the slot the price will occupy, and only while
+   `prices.planMonthly` is null. Deliberately **not** a marker on the other two: "per fix" and "per
+   site" are price units authored in this file rather than read from content, and stating a billing
+   unit with no price is a pricing claim the owner has not confirmed.
+4. **Hover and motion**, which the section had neither of. Both detailed below.
+
+Not done, and refused on purpose: a "most popular" or "best value" badge on any row.
+`prices.planIsBestValue` is `false` and its own comment says to set it true only once the prices
+bear it out, so a badge would be an invented statistic under rule 6. The three are told apart by
+kind, never by rank.
+
+### The two traps this ran into
+
+**`reveal` cannot go on the section's list.** `TickList` carries `reveal` on its own `ul`
+(`parts.tsx:430`), so tagging the outer list nests one inside the other, and this file's rule is
+"one level per section, never nested, so nothing animates twice". `TickList` takes a defaulted
+`animate` prop instead; `/pricing/` passes `animate={false}` and keeps the outer marker. The 32
+service routes and `ServiceTemplate` pass nothing and are byte-identical.
+
+**The row is not a link and must not become one.** Copying `/compare/`'s stretched `::after` row
+anchor is the obvious move, because it is this family's sibling, and it is wrong here: every ways
+row contains a `btn-primary`, and a stretched pseudo-element would sit over the only converting
+control in the section. The hover is therefore triggered by the controls inside the row, with
+`has-[a:hover]` and `has-[a:focus-visible]`, which is the pattern `/guides/` already uses and which
+`globals.css:316` explains: "It is not a hover on a non-interactive panel, which the Hover Earns It
+rule forbids; the trigger is the control inside it." The response is the site's row idiom, an ember
+hairline growing from the left, identical to the catalogue's below it.
+
+### Eyebrow budget
+
+Six sections, `ceil(6/3)` = **2**, both previously unspent. This task spends both on the two group
+labels. **The page is now at its cap: no further section on `/pricing/` may add one.** The labels
+carry no number, so rule 6's ban on "Step 1 / Stage 2" and section-number eyebrows is untouched.
+Heading order steps with them: the section keeps its `h2`, each group label is an `h3`, and each
+row's name moves from `h3` to `h4`.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 203 files scanned, legacy off** (203
+rather than 202: `src/config/ways.ts` is the new file), motion check clean, build green at
+**99 routes**.
+
+Read back off the rendered page rather than inferred from the source:
+
+```
+structure        h2 "Three ways to work with us"
+                   h3 "When something is wrong"  -> h4 One-time fix, h4 Hacked site cleanup
+                   h3 "So nothing goes wrong"    -> h4 Care plan
+rows per group   2 and 1                        nested reveal containers: 0
+short lines      "One problem on your site, found and fixed."
+                 "Malware out, the way in closed."
+                 "Updates, backups and monitoring, every month."
+"monthly" marker 1, on the care plan row only
+hover, row 1     rule scale 1, rgb(255,90,54) == --accent #ff5a36, name to the same
+                 other two rows scale "0 1"
+                 row transform identity, row background rgba(0,0,0,0)
+                 so nothing lifts, scales or tints: only the hairline moves
+375 touch        overflow 0, matchMedia("(hover: hover)") false, "monthly" 20px and unwrapped
+reduced motion   3 rows at opacity 1, 0 running animations
+contrast         group label 17.16, short line 17.16, "monthly" 7.82, against a floor of 4.5
+```
+
+The home page is unchanged by the extraction: its three `who` lines are still in the built HTML
+byte for byte, now read from `src/config/ways.ts` instead of typed into `Plans.tsx`. `TickList`'s
+new `animate` prop defaults to the old behaviour, so the 32 service routes render as before and
+`/pricing/` is its only caller passing `false`.
+
+**Not run, and not claimed:** axe, and the 768 and 1024 widths. 375 and 1280 were both measured and
+the section has one breakpoint between them, `md`, so the middle widths are one of the two shapes
+already seen.
+
+**Still true, and still the ceiling on this page:** there are no prices. This section is now
+scannable and tells its three options apart, which is what was asked, but it is not a price
+comparison and cannot become one until `src/content/pricing.ts` stops being four nulls. `from()`
+fills the slot the "monthly" marker currently occupies the moment a figure is published.
+
+## v4 / the three ways become three columns, and rule 6 gets an exception (Task 76)
+
+Owner specification, direct: three columns, each one a title and a description, then a relevant
+image, then the feature list, then the CTA. Plus a UX fault they spotted themselves, which is fixed
+in the same pass.
+
+### This breaks a banned pattern on purpose, and the ban has been amended to match
+
+`docs/section-contract.md` rule 6 banned **three equal cards in a row** outright, in the same list
+as em dashes and invented statistics, and Task 34 records that ban being enforced by removing a
+`md:grid-cols-3` from `/compare/`. The owner was shown the conflict and chose to build the three
+columns and amend the rule rather than work around it.
+
+The amendment is narrow, and the narrowness is the point:
+
+> three equal cards in a row **except where every column carries its own image, its own list and its
+> own CTA**
+
+What the ban was protecting against is a three-up of a title and a sentence, which is filler in a
+grid: three thin cards side by side, nothing to compare, chosen because three is a tidy number.
+That is still banned. A column holding a photograph, four inclusions and its own call to action is
+not that: it is three parallel offers with enough in each to be worth comparing, which is the one
+shape where a three-up earns its place. The exception names the three things that must be present,
+so it cannot be stretched back into the pattern it replaced.
+
+| | Still banned | Now allowed |
+| --- | --- | --- |
+| Per column | a title and a sentence | title, description, image, list, CTA |
+| Why | nothing to compare, the grid is decoration | three parallel offers, the grid is the comparison |
+
+### What the section is now
+
+| | Was (Task 75) | Is |
+| --- | --- | --- |
+| Shape | ruled rows, grouped two and one | three columns |
+| Per option | name, short line, four ticks, CTA | name, short line, **photograph**, four ticks, CTA |
+| Images | none in the section | `emergency`, `cables`, `racks` |
+| Group labels | two, spending the page's whole eyebrow budget | **none**, budget back to 0 of 2 |
+| Care plan CTA | PLANS, "See plans" | **QUOTE, "Get a quote"** |
+
+The photographs are not new art direction. `Plans.tsx` has used exactly these three for exactly
+these three options since it was built, so the pricing page now shows the same picture for the same
+choice as the home page does, read from the same `src/content/photos.ts` ids.
+
+The grouping from Task 75 is gone. Three columns put the three side by side, which is the
+comparison the grouping was approximating by stacking two above one. Its two labels went with it,
+so the eyebrow budget of `ceil(6/3)` is unspent again.
+
+### The CTA fault the owner reported
+
+"See plans" pointed at `/wordpress-maintenance/care-plans/`, through `routes.plans()`. That page is
+the care plan **service** page: it has no tiers and no prices, because there are none anywhere on
+this site. So the button promised plans and delivered a service description, which is the clearest
+over-promise on the page.
+
+It is `QuoteLink` now, labelled "Get a quote" from `src/config/cta.ts`. For an option with no
+published price, asking is the true next step, and the label stops naming a thing the destination
+does not show. This is a deliberate departure from `primaryCtaFor`, which resolves `plan` intent to
+PLANS: the rule is about a page's own node intent, and this is one card inside a section, chosen
+against the destination it actually has. Recorded here so it is not read as drift.
+
+The two fix rows keep BOOK and `service=`, which are correct and were never in question.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 203 files scanned, legacy off**,
+motion check clean, build green at **99 routes**.
+
+### The bands are a subgrid, which is not decoration
+
+The first build of the three columns put every band wherever the text above it stopped. The three
+descriptions wrap to one or two lines depending on the column width, so the three photographs
+started about **60px apart** and the inclusions and buttons after them. In a grid whose entire job
+is comparison, bands that do not line up are the thing the reader fights.
+
+Each card is `grid-rows-subgrid` over four shared rows, so the heading block, the photograph, the
+inclusions and the button each sit on one line across all three. `1fr` on the inclusions row absorbs
+the slack, so a short column pads in its middle rather than lifting its button. Title and
+description are **one** band and not two, so the tight 4px between them stays local instead of
+becoming a shared row that would space all three cards by the same amount. Below `md` the cards are
+a flex column again and nothing aligns, because nothing is side by side.
+
+Measured at 1280, read off the rendered page:
+
+```
+subgrid active          yes          card heights 737 / 737 / 737
+image tops              -529 / -529 / -529      aligned
+inclusion list tops     -309 / -309 / -309      aligned
+button tops                -8 /    -8 /    -8   aligned
+```
+
+### Everything else measured
+
+```
+column order            h3 title (link) -> p description -> img -> list -> CTA
+columns                 3 at 371px, equal
+CTAs                    Fix my site, Fix my site, Get a quote
+care plan destination   /contact/?service=care-plans&type=project   (was the price-less service page)
+                        lands on the Project enquiry tab, no error
+images                  emergency.jpg, cables.jpg, racks.jpg, all loaded, alt="" (decorative)
+hover, card 1           border rgba(255,255,255,0.36) == --line-strong, others at 0.08
+                        title to ember, transform identity on all three, box-shadow unchanged,
+                        heights still 737: nothing lifts, so the grid cannot reflow under a pointer
+375 touch               overflow 0, one column, subgrid off (display flex),
+                        matchMedia("(hover: hover)") false, buttons 301px full width
+reduced motion          3 cards at opacity 1, 0 running animations
+contrast                description 16.14, "monthly" marker 7.35, floor 4.5
+nested reveal           0
+```
+
+**A pre-existing gap this change did not cause and did not fix:** the quote flow does not visibly
+preselect the service it is handed. `/contact/?service=care-plans&type=project` opens the Project
+enquiry tab with care plans in its list but nothing highlighted, and
+`/contact/?service=website-design&type=project`, an older `QuoteLink` destination, behaves
+identically. So it is every quote link on the site, not this one, and fixing it means changing
+`BookingFlow` rather than this section.
+
+**Not run, and not claimed:** axe, and the 768 and 1024 widths. 375 and 1280 were measured; the
+`md` breakpoint between them is where the subgrid turns on, so 768 is the first width where the
+three sit side by side and is the one worth a look if anything is off.
+
+**Still true:** there are no prices. Three columns make the three offers comparable and the care
+plan's button now asks for a quote instead of promising plans, which is the confusion that was
+reported. None of it is a price comparison, and it cannot be until `src/content/pricing.ts` stops
+being four nulls.
+
+**One diff-reading note.** `docs/section-contract.md` shows 20 changed lines for a one-line edit.
+The file was the only one in the repo still stored with CRLF endings, against the `* text=auto
+eol=lf` its own `.gitattributes` declares, and rewriting rule 6 normalised it. `git diff
+--ignore-cr-at-eol -- docs/section-contract.md` shows the real change, which is one line. It was
+left normalised rather than put back, because putting it back means re-committing the one file that
+breaks the repo's stated policy.
+
+## v4 / "What we do" becomes a 3D flow, and a site-wide reveal bug goes (Task 77)
+
+Owner report on the service pages: "What we do" is boring and hard to scan, and should be a clean 3D
+flow showing how the problem gets solved. It was a 2-up grid of near-identical tiles, so five steps
+in a fixed order read as five unrelated facts.
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| - | What we do | vertical connected flow with 3D blocks | no | no | none |
+
+Not already on the page: `SymptomPanel` is an enclosed panel with hairlines and no connector, `Faqs`
+is a borderless rail of rows that open, and "What you get" is a tick grid.
+
+### A ban amended, a ban left alone
+
+MASTER banned 3D effects. The owner chose real CSS 3D and a narrowed rule, so the ban now excepts
+these step blocks by name and nothing else. Their thickness is a stacked hard-edged shadow, which the
+"complex shadows" line also had to except.
+
+Contract rule 6 is not spent. The connecting line shows the order, so nothing is numbered, and the
+list is a real `ol` for a screen reader.
+
+There is no hover. These rows hold no links, and Hover Earns It forbids hover on a panel that is not
+interactive.
+
+### What the screenshots changed
+
+The first build passed every measurement and was still wrong, in two ways only looking could show.
+
+**The thickness went sideways.** In this projection a (1px, 1px) shadow offset lands to the right, so
+each block looked like a tile with a misplaced shadow. Straight down is (-1px, 1px).
+
+**The marks were unreadable on the rotated face**, squashed to about 40% of their height. Rotating
+them back made it worse: without `preserve-3d` the inverse is flattened into the plane and squashes
+them twice, and with it the mark cuts through the face. So the rotation moved to `::before`, and the
+mark is a flat child centred above it, with no inverse needed.
+
+### The reveal fix
+
+Under reduced motion the script stops watching each element without animating it. Turning the setting
+off then re-applied `opacity: 0` to everything already scrolled past, with nothing left to clear it,
+on every route. The script now drops `.reveal-js` when the setting goes off.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 203 files scanned, legacy off**, motion
+check clean, build green at **99 routes**.
+
+Measured in a foreground tab against the production build:
+
+```
+emergency, 1280          5 rows at opacity 1, delays 0/70/140/210/280, li transform identity
+plugin-theme-conflict    375 touch: 169 character detail, document overflow 0, 4 connectors
+support-hours            768 and 1024: 4 steps, 3 connectors, last block is the only ember one,
+                         block corners end at 135, text starts at 168
+care-plans               1440: 5 steps, no symptom section above
+overflow                 list 0 at every width; document 8 at 768 and 1024 with a scrollbar, the
+                         overflow Task 73 already traced to the masthead
+contrast                 verb 17.16, detail 7.82, mark on face 5.47, mark on ember 6.30
+axe, the section         0 violations, 0 incomplete, 13 passes
+axe, the page            1 moderate `region` on a `.left-1/2` element outside this section,
+                         2 incomplete, not investigated
+reduced motion           5 rows at opacity 1, 0 running animations
+reveal fix, reproduced   setting switched off on a loaded page: heading 1, rows 1, hidden on page 0
+                         (before the fix: heading 0, five rows 0)
+reveal, /about/          fresh load: 16 of 20 hidden, 0 hidden after a full scroll
+```
+
+21st.dev was searched first and nothing was taken. Build Pipeline gave the idea of blocks joined by a
+line but is a dashboard of invented run data (rules 6 and 8). The timelines are built on numbered
+steps, and the 3D card stacks are carousels that hide all but one step.
+
+**Not run, and not claimed:** a real touch device, Safari and Firefox. The block relies on `rotateX`,
+`rotateZ` and `color-mix`, and only Chromium was checked. The other 28 service routes share the
+component and were not opened one by one.
+
+## v4 / the contact page's empty column becomes the promises, in the order they happen (Task 78)
+
+Owner report from a screenshot: dead space under "What we promise", and what could go there.
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| - | What we promise | panel stretching to the form's foot, holding a 3D flow | no | no | none |
+
+### The space has no fixed size
+
+Measured at 1280 x 900, the gap under the left column at each form step:
+
+| Form step | Emergency | Project |
+| --- | --- | --- |
+| First | 425px | 627px |
+| Your site | 217px | n/a |
+| Contact | 121px | 121px |
+| Confirm | 219px | 174px |
+
+A block sized for the screenshot's 627px would overhang the form by about 500px one click later, and
+the empty space would simply move to the right. So the panel resizes with the form instead of adding
+a fixed block, and the two columns end level at every step.
+
+### What was refused, and why
+
+A WebGL model: `three.js` is not installed, it would load on the page people reach when their site is
+down, and it tells them nothing. A live ticket preview: it repeats the Confirm step and starts empty.
+Scroll-follow alone: one line, but it adds nothing and a full-page view still looks empty.
+
+### What changed
+
+The four promises, unreworded, now draw as a flow in the order they happen: price agreed, login
+created, backup taken, access removed. The panel fills its grid row, so it ends level with the form,
+and the content inside it is sticky so it stays beside the field being filled in. Reused: the Task 77
+blocks and `ClosingBeams`. The nested `reveal` this panel carried is gone.
+
+`promises` was reordered to do this, so `/legal/guarantee/` and `/pricing/` show the same four in the
+new order. Same sentences. `Promises` lost its `compact` option, which only this panel used.
+
+### What measuring and screenshots changed
+
+**The beams were upside down for this shape.** They are densest at the top and fade downward, which
+left the foot of the panel a plain empty block and put trails through the text. Flipped, they fill the
+empty part. On the shortest steps a faint trail can still cross a sentence.
+
+**Two states overhung.** The panel needs 400px and the Contact step has 355px, so the columns stopped
+69px apart there and 16px apart on Project Confirm. The form card sat in a stretching wrapper without
+stretching itself. It now has `lg:h-full`, and the rows were tightened. Cost: 78px under the Contact
+step's buttons against the usual 33px.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 203 files scanned, legacy off**, motion
+check clean, build green at **99 routes**.
+
+Measured in a foreground tab against the production build. The final submit was never pressed.
+
+```
+column foot difference, 1280 x 900
+  Emergency    Problem 0, Your site 0, Contact 0, Confirm 0
+  Project      Project 0, Contact 0, Confirm 0
+  also level   Problem with a problem selected, which collapses the list
+sticky         1280 x 900 and 1280 x 600: holds at 104, fully on screen, clear of the 80px header
+widths         375 overflow 0, form before panel, sticky off; 1024 overflow 0; 1440 overflow 0
+contrast       text and heading 14.9 against the solid panel, mark on face 5.47, mark on ember 6.30
+axe, panel     0 violations, 12 passes, 1 incomplete: color-contrast on 5 nodes, because text over
+               the SVG cannot be resolved automatically
+axe, page      0 violations, 1 incomplete
+reduced motion 4 rows at opacity 1, 0 running animations
+gradient ids   closing-beam-fade appears once
+regressions    guarantee and pricing lists correct in the new order; service page flow has 0 compact
+               blocks and keeps its classes; free-site-check has its form and no compact blocks
+```
+
+**Not run, and not claimed:** Safari, Firefox and real touch devices. Text contrast is against the
+solid panel colour, not measured at the moment a trail crosses a sentence. The trail motion while
+someone types is a judgment for the owner to make by eye.
+
+### Correction to Task 78: the card fits its content and the whole column is sticky
+
+Owner report from a screenshot: the stretched card still read as extra space, wanted to fit its
+content, and the left column should be sticky. So the stretching above is gone, and with it the
+reason for the "both columns end level" table: the columns no longer try to match.
+
+| | Was | Is |
+| --- | --- | --- |
+| Promises card | filled its grid row, up to 861px | fits its content, 380px |
+| Sticky | the promises only, inside the card | the whole left column |
+| Form card | `lg:h-full` | its own height |
+| Rows | scroll reveal | no reveal; the card uses `rise-in` on load |
+
+**A sticky column broke the scroll reveal, so it was removed from these rows.** Stuck under the
+header, the lowest rows can stop below the reveal's trigger line, and they would stay invisible for as
+long as the column is stuck.
+
+**The column is taller than some screens.** Pinned at 104px, the last promise would sit below the fold
+for the whole form on any laptop. So `top` goes negative on short screens: the heading scrolls away
+and the promises stay in view. `50.25rem` is a measured height written by hand, marked `ponytail:` in
+the page, and needs re-measuring if the intro or promises change length.
+
+**Below lg the column wrapper is `display: contents`** and `order` places the form between its two
+children, so a phone still shows intro, form, promises. The promises now come before the form in the
+document. Nothing in them takes focus, so tab order is unaffected, but a screen reader hears them first.
+
+Spacing was tightened by 36px so the column clears the header at 900px of height.
+
+```
+1280 x 900    column 779, card 380, stuck at 96, heading clear of the 80px header, last row on screen
+1440 x 900    stuck at 96, heading clear, last row on screen, overflow 0
+1366 x 650    stuck at -154, promises heading clear, last row on screen
+1024 x 768    column 837, stuck at -54, last row on screen, card foot clipped by about 15px, overflow 0
+375 touch     display contents, order intro then form then promises, overflow 0
+reduced       4 rows at opacity 1, 0 running animations
+```
+
+`tsc` 0, `eslint` 0, content and motion checks clean, build green at 99 routes.
+
+**Not run, and not claimed:** `axe` again after this change, the 768 width, Safari and Firefox.

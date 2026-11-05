@@ -4,12 +4,11 @@ import { SiteStatus } from "@/components/SiteStatus";
 import { CLOSING_ASK, primaryCtaFor } from "@/config/cta";
 import { getGuide } from "@/content";
 import { testimonials } from "@/content/testimonials";
-import { verbIcon } from "@/content/icons";
 import { servicePhotos } from "@/content/photos";
 import type { Service } from "@/content/schema";
 import { cn } from "@/lib/utils";
 import { ReadingRail } from "./ReadingRail";
-import { ClosingBand, ErrorCards, Faqs, LinkList, PageMasthead, Section, TickList, page, pageYMasthead } from "./parts";
+import { ClosingBand, ErrorCards, Faqs, LinkList, PageMasthead, Section, SymptomPanel, TickList, WorkFlow, page, pageYMasthead } from "./parts";
 
 const Primary = ({ intent, ...rest }: { intent: ReturnType<typeof primaryCtaFor>; location: string; service: string; className?: string }) =>
   intent === "PLANS" ? <PlansLink {...rest} /> : intent === "QUOTE" ? <QuoteLink {...rest} /> : <BookLink {...rest} />;
@@ -68,7 +67,7 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
 
           {s.intent === "fix" ? (
             <Section id="symptoms" title="Does your site show this?">
-              <TickList items={s.symptoms} />
+              <SymptomPanel items={s.symptoms} />
             </Section>
           ) : (
             <Section id="who" title="Who this is for">
@@ -77,30 +76,7 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
           )}
 
           <Section id="what-we-do" title="What we do">
-            <ol className="reveal grid gap-4 sm:grid-cols-2">
-              {s.whatWeDo.map((w, i) => (
-                <li
-                  key={w.verb}
-                  className={cn(
-                    "rounded-[14px] border border-line bg-surface p-5",
-                    // whatWeDo holds 3 to 5 steps, so an odd count leaves the last one alone in a
-                    // two-up grid with a hole beside it. Letting it run the full width reads as the
-                    // closing step rather than as a tile the layout forgot.
-                    s.whatWeDo.length % 2 === 1 && i === s.whatWeDo.length - 1 && "sm:col-span-2",
-                  )}
-                >
-                  {/* The verb already carries the step; the mark lets the four be told apart at a
-                      glance instead of read in sequence. Keyed off `w.verb` through one map, so the
-                      same verb is the same mark on all 32 service pages. */}
-                  {(() => {
-                    const Mark = verbIcon[w.verb as keyof typeof verbIcon];
-                    return <Mark weight="duotone" aria-hidden className="size-5 text-accent-text" />;
-                  })()}
-                  <span className="mt-3 block font-display text-sm font-bold tracking-wide text-accent-text">{w.verb}</span>
-                  <p className="mt-1.5 text-sm">{w.detail}</p>
-                </li>
-              ))}
-            </ol>
+            <WorkFlow steps={s.whatWeDo} />
           </Section>
 
           <Section id="deliverables" title="What you get">
