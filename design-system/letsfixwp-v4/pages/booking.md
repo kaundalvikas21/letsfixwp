@@ -19,11 +19,11 @@
 
 ### Spacing Overrides
 
-- **Content Density:** High — optimize for information display
+- **Content Density:** High, optimize for information display
 
 ### Typography Overrides
 
-- No overrides — use Master typography
+- No overrides: use Master typography
 
 ### Color Overrides
 

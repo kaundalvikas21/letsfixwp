@@ -2588,7 +2588,7 @@ rotating 45 degrees.
 | Panel wipes in from the left, 650ms | **Ported.** Same duration, same direction |
 | Gradient sweep in the brand colour | **Refused.** Gradients are banned outside the hero scrim and the guarantee mask. An ember fill under a row would also read as a selected state rather than a hover |
 | Heading to brand colour | Already ours: the ember rail under the row says the same thing |
-| Outlined `01`–`04` numerals filling with the accent | **Refused.** Numbered rows are a step label, which contract rule 6 bans outright |
+| Outlined `01` to `04` numerals filling with the accent | **Refused.** Numbered rows are a step label, which contract rule 6 bans outright |
 | Arrow rotating 45 degrees | **Refused.** An arrow claims the row is a link. Theirs are `<a>`; ours are five promises and link nowhere |
 | Preview image scaling on hover | **Refused.** These rows have no image, and the catalogue has no honest frame for "a vetted engineer" |
 
@@ -3523,7 +3523,7 @@ branch gains no stray CSS file: `relative size-full overflow-hidden` on the host
   and a literal `#ff5a36` in the props would put the accent in two places. Same
   `useSyncExternalStore` arrangement as `CtaShader`, with a `null` server snapshot so both render
   passes agree on the first frame and nothing paints at the component's amber-and-blue defaults.
-- **Reduced motion gets `speed: 0`, `intro: false`, `followMouse: false`** — lit and still, which is
+- **Reduced motion gets `speed: 0`, `intro: false`, `followMouse: false`**: lit and still, which is
   the final static state rule 10 asks for. The component's own reduced-motion branch only slows its
   clock to 0.3x, so this does not rely on it.
 - **A ref write moved out of render.** The original assigns `settingsRef.current = settings` during
@@ -3667,7 +3667,7 @@ the worst case, at native resolution:
 
 | scrim alpha | `--on-photo` text | `--accent` "today." |
 | --- | --- | --- |
-| 0.66 | 5.8:1 | **2.1:1 — fails** |
+| 0.66 | 5.8:1 | **2.1:1, fails** |
 | 0.80 | 9.6:1 | 3.5:1 |
 | **0.84** | **11.1:1** | **4.1:1** |
 
@@ -3913,9 +3913,9 @@ rule 6. So this is a reversal, not a gap being filled, and it is recorded as one
 
 ### Two of rule 6's bans are spent here, on instruction
 
-- **"Step 1 / Stage 2" labels** — the 01/02/03 stations are the spine of the requested design and
+- **"Step 1 / Stage 2" labels**: the 01/02/03 stations are the spine of the requested design and
   cannot be removed without removing the design.
-- **Three equal cards in a row** — likewise. `LinkCards` still refuses a three-up elsewhere
+- **Three equal cards in a row**: likewise. `LinkCards` still refuses a three-up elsewhere
   (`across = n < 4 ? (n === 3 ? 2 : n) : cols`), so this section is now the one exception on the
   site rather than a new general rule.
 
