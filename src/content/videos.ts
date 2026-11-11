@@ -7,7 +7,12 @@
  *
  * Paths live in this file rather than in a component because scripts/check-content.ts fails any
  * hardcoded internal path outside src/content and src/config. Put the files in public/videos/ and
- * their posters and captions beside them, then write the paths here.
+ * their posters and captions beside them, then write the paths here. docs/video-todo.md is the brief
+ * for whoever films them: the required shape, length, codec and filenames, one row per slot.
+ *
+ * Two shapes, declared per slot by `ratio`. The captures are 16/10 like every other asset here; a
+ * client filming themselves on a phone is 9/16. A slot reserves its own shape whether or not the clip
+ * exists, so filling one in later shifts nothing.
  *
  * Do not fill a slot with footage of someone else's work, and do not fill a client slot with a
  * reconstruction. PRODUCT.md lists client testimonials under what must not be fabricated by any
@@ -20,7 +25,15 @@ export type VideoId =
   | "client-story-1"
   | "client-story-2"
   | "client-story-3"
-  | "client-story-4";
+  | "client-story-4"
+  | "client-story-5"
+  | "client-story-6"
+  | "client-story-7"
+  | "client-story-8"
+  | "client-story-9"
+  | "client-story-10"
+  | "client-story-11"
+  | "client-story-12";
 
 export type Clip = {
   src: string;
@@ -44,6 +57,17 @@ export type Clip = {
 export type VideoSlot = {
   /** One sentence naming what plays here. Shown under the frame whether or not the clip exists. */
   label: string;
+  /**
+   * The shape of the box this slot reserves, which the slot declares rather than the component,
+   * because an empty slot has to reserve the same box its clip will fill.
+   *
+   * 16/10 is the house ratio and the default: it matches the 1600x1000 captures, so a clip and a
+   * screenshot read as the same device photographed twice. A client filming themselves holds a phone,
+   * and 9/16 is that clip at its own shape. Letterboxing a phone clip into 16/10 puts dead bars down
+   * both sides, and cropping it to fit takes the speaker's head out of frame. Amended into MASTER.md
+   * for client clips by name and nothing else, owner decision 2026-11-11, ledger Task 79.
+   */
+  ratio?: "16/10" | "9/16";
   clip: Clip | null;
 };
 
@@ -57,19 +81,63 @@ export const videos: Record<VideoId, VideoSlot> = {
     clip: null,
   },
   "client-story-1": {
+    ratio: "9/16",
     label: "A client on what broke and how it was handled.",
     clip: null,
   },
   "client-story-2": {
+    ratio: "9/16",
     label: "A second client, on work that was not an emergency.",
     clip: null,
   },
   "client-story-3": {
+    ratio: "9/16",
     label: "A third client, on a hacked site and what the cleanup involved.",
     clip: null,
   },
   "client-story-4": {
+    ratio: "9/16",
     label: "A fourth client, on moving a store without losing orders.",
+    clip: null,
+  },
+  "client-story-5": {
+    ratio: "9/16",
+    label: "A fifth client, on a site that went down right after an update.",
+    clip: null,
+  },
+  "client-story-6": {
+    ratio: "9/16",
+    label: "A sixth client, on what a care plan does month to month.",
+    clip: null,
+  },
+  "client-story-7": {
+    ratio: "9/16",
+    label: "A seventh client, on a site that was slow rather than broken.",
+    clip: null,
+  },
+  "client-story-8": {
+    ratio: "9/16",
+    label: "An eighth client, on changing hosts without losing a day of orders.",
+    clip: null,
+  },
+  "client-story-9": {
+    ratio: "9/16",
+    label: "A ninth client, on a checkout that had stopped taking payments.",
+    clip: null,
+  },
+  "client-story-10": {
+    ratio: "9/16",
+    label: "A tenth client, on a PHP upgrade that took the page builder with it.",
+    clip: null,
+  },
+  "client-story-11": {
+    ratio: "9/16",
+    label: "An eleventh client, on a redesign that kept every page in place.",
+    clip: null,
+  },
+  "client-story-12": {
+    ratio: "9/16",
+    label: "A twelfth client, an agency, on handing their support over to us.",
     clip: null,
   },
 };

@@ -349,6 +349,16 @@ The guarantee words are the one place a photograph is a CSS background rather th
 mask needs `background-image`, which `next/image` cannot provide. It is a single 77KB file, requested only
 when that section comes into view.
 
+**Media ratio: 16/10, with 9/16 excepted for client-filmed clips and nothing else.** Every asset here is
+16/10 (the captures are 1600x1000), so a photograph, a screenshot and a clip read as the same device
+photographed in the same frame. Client testimonial clips are the one exception: a client filming
+themselves holds a phone, and 9/16 is that clip at its own shape. Letterboxing it into 16/10 puts dead
+bars down both sides, and cropping it to fit takes the speaker's head out of frame, which is the opposite
+of what a clip filmed by a client is for. The ratio is declared per slot in `src/content/videos.ts`, so a
+slot reserves the right box whether or not it has been filmed yet. The exception covers the
+`client-story-*` slots by name; `how-a-rescue-runs` and `a-site-brought-back` stay 16/10. Owner decision
+2026-11-11, ledger Task 79.
+
 Order of sourcing and logging follows contract rule 7: an image-generation tool first using this art
 direction, then real captures, then `https://picsum.photos/seed/letsfixwp-<section>-<n>/<w>/<h>`
 logged in `docs/image-todo.md` with size, aspect ratio and art direction. `next/image` with explicit

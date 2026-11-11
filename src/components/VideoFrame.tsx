@@ -1,52 +1,89 @@
 import { FilmSlateIcon } from "@phosphor-icons/react/ssr";
+import Image from "next/image";
+import { ClipPlayer } from "@/components/ClipPlayer";
 import { videos, type Clip as ClipData, type VideoId } from "@/content/videos";
+import { hasScreen } from "@/components/Photo";
 import { cn } from "@/lib/utils";
 
 /**
- * A reserved video slot, in three layers so each host can take the one it needs.
+ * A reserved video slot, in two layers so each host can take the one it needs.
  *
- * Server Components throughout: a <video controls> needs no client boundary, which keeps these out of
- * the bundle entirely and satisfies contract rule 2. There is no player library, no custom chrome and
- * no autoplay, so the slot costs nothing until someone presses play. That matters on the home page,
- * measured at LCP 5.2s against the contract's 2.5s budget.
+ * Server Components except the one leaf that has to hold a boolean: the poster and the frame are
+ * rendered here, and `ClipPlayer` swaps in a real player on the first click (contract rule 2). There is
+ * no player library. Until someone presses play the slot is one optimised image and no media element
+ * at all, which is what the home page needed, measured at LCP 5.2s against the contract's 2.5s budget.
  *
  * The frame is not new: it is the capture frame from MASTER.md, the same --surface-2 bezel with 14px
  * outside and 14px inside that Restored.tsx and the error cards already use, so a clip and a capture
  * read as the same device photographed twice.
  */
 
-/** The clip itself, for a host that already owns a frame. */
-export function Clip({ clip, className }: { clip: ClipData; className?: string }) {
-  return (
-    <video
-      controls
-      preload="none"
-      poster={clip.poster}
-      width={clip.width}
-      height={clip.height}
-      aria-label={clip.alt}
-      className={cn("size-full object-cover", className)}
-    >
-      <source src={clip.src} type="video/mp4" />
-      <track kind="captions" src={clip.captions} srcLang="en" label="English" default />
-    </video>
-  );
-}
+/**
+ * The capture frame from MASTER.md, as one string, because two components now draw it: this file's
+ * `VideoFrame` and the client clip card. Same bezel as Restored.tsx and the error cards.
+ */
+export const frameShell = "overflow-hidden rounded-[14px] border border-line bg-surface-2 p-2 shadow-card";
 
 /**
- * The 16/10 box: the clip, or the empty state while there is no clip. 16/10 is the house media ratio,
- * matching the 1600x1000 captures, and the box is fixed so filling a slot later shifts nothing.
+ * The clip for a slot, but only if its files are actually on disk.
+ *
+ * One definition, because the box and the caption have to agree. If the box checked the filesystem and
+ * the caption only checked for a non-null `clip`, a slot whose paths were written in ahead of the files
+ * landing would render a dashed empty box under the words "28 seconds", which is worse than either
+ * state on its own. Both read this.
+ */
+const playable = (id: VideoId): ClipData | null => {
+  const { clip } = videos[id];
+  if (!clip) return null;
+  return hasScreen(clip.src) && hasScreen(clip.poster) ? clip : null;
+};
+
+/**
+ * The slot's reserved box: the clip, or the empty state while there is no clip. The shape comes from
+ * the slot rather than from here, because the two kinds of clip are not the same shape: 16/10 for the
+ * captures, 9/16 for a client holding a phone. Either way the box is fixed before the file loads, so
+ * filling a slot later shifts nothing. Written as two whole class strings because Tailwind reads
+ * source text and cannot see `aspect-[${ratio}]`.
+ *
+ * `hasScreen` is the same existence gate Restored.tsx runs its captures through, applied here to the
+ * clip and the poster. A slot whose paths are written in but whose files are not on disk falls back to
+ * the empty state instead of shipping a player with a broken source and a black poster. That is the
+ * difference between a slot being filled and a clip existing, and only the filesystem knows.
  *
  * The empty state is a dashed --line-strong border, which is this codebase's existing signal that
- * something is a placeholder (QuoteCarousel.tsx, case-studies/page.tsx). It carries an icon and no text:
+ * something is a placeholder (case-studies/page.tsx, the service page quote). It carries an icon and no text:
  * the words belong to the caption under the frame, because contract rule 6 bans labels on images.
  */
-export function VideoSlotBox({ id, className }: { id: VideoId; className?: string }) {
-  const { clip } = videos[id];
+export function VideoSlotBox({
+  id,
+  sizes = "(min-width: 768px) 25vw, 50vw",
+  className,
+}: {
+  id: VideoId;
+  /** What width the poster will be asked to fill. The default suits a four up wall of clips. */
+  sizes?: string;
+  className?: string;
+}) {
+  const clip = playable(id);
+  const { ratio } = videos[id];
   return (
-    <div className={cn("relative aspect-[16/10] overflow-hidden rounded-[14px] bg-surface", className)}>
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-[14px] bg-surface",
+        ratio === "9/16" ? "aspect-[9/16]" : "aspect-[16/10]",
+        className,
+      )}
+    >
       {clip ? (
-        <Clip clip={clip} />
+        <ClipPlayer clip={clip}>
+          <Image
+            src={clip.poster}
+            alt=""
+            fill
+            sizes={sizes}
+            className="object-cover"
+          />
+        </ClipPlayer>
       ) : (
         <div className="grid size-full place-items-center rounded-[14px] border border-dashed border-line-strong">
           <FilmSlateIcon weight="duotone" className="size-10 text-muted" aria-hidden />
@@ -63,7 +100,8 @@ export function VideoSlotBox({ id, className }: { id: VideoId; className?: strin
  * need this exact sentence. One definition rather than the same two branches written twice.
  */
 export const videoCaption = (id: VideoId) => {
-  const { label, clip } = videos[id];
+  const { label } = videos[id];
+  const clip = playable(id);
   return clip ? `${label} ${clip.seconds} seconds.` : `${label} Not filmed yet.`;
 };
 
@@ -76,8 +114,8 @@ export const videoCaption = (id: VideoId) => {
  */
 export function VideoFrame({ id, className }: { id: VideoId; className?: string }) {
   return (
-    <figure className={cn("overflow-hidden rounded-[14px] border border-line bg-surface-2 p-2 shadow-card", className)}>
-      <VideoSlotBox id={id} />
+    <figure className={cn(frameShell, className)}>
+      <VideoSlotBox id={id} sizes="(min-width: 1024px) 1152px, 100vw" />
       <figcaption className="px-2 pt-3 pb-1 text-sm text-muted">{videoCaption(id)}</figcaption>
     </figure>
   );

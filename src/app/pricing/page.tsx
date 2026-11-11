@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BookLink, ChatButton, CheckLink, QuoteLink } from "@/components/Cta";
 import { collectionLd, faqLd, JsonLd, nodeCrumbs } from "@/components/JsonLd";
+import { ClientClips } from "@/components/sections/v4/ClientClips";
 import { Photo } from "@/components/Photo";
 import { ClosingBand, Faqs, PageMasthead, Promises, Section, TickList, page, pageYMasthead } from "@/components/templates/parts";
 import { brand } from "@/config/brand";
@@ -411,6 +412,11 @@ export default function Pricing() {
           })}
         </div>
       </Section>
+
+      {/* The clients, before the questions about cost rather than after them. This page had no social
+          proof of any kind: a visitor reading prices had nothing here answering "did this work for
+          someone like me", which is the doubt a price raises. Ledger Task 79. */}
+      <ClientClips id="clips" title="Clients on camera" />
 
       {/* The four cost questions already answered in src/content/services/, in the plain disclosure
           list parts.tsx owns. Nothing here is written for this page, which is why the page can carry

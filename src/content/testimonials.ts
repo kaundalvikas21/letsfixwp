@@ -60,4 +60,84 @@ export const testimonials = [
       "Placeholder. Replace with a fourth client's words about a move or a store: what they were afraid of losing, and whether anything was lost.",
     excerpt: "Placeholder: a fourth client on moving a store and keeping every order.",
   },
+  {
+    placeholder: true,
+    video: "client-story-5",
+    name: "Fifth client",
+    role: "Role",
+    org: "Company",
+    quote:
+      "Placeholder. Replace with this client's words about a site that went down right after an update: what they clicked, what they saw, and how long it took to get the page back.",
+    excerpt: "Placeholder: a site that went down the moment an update finished, and what it took to undo.",
+  },
+  {
+    placeholder: true,
+    video: "client-story-6",
+    name: "Sixth client",
+    role: "Role",
+    org: "Company",
+    quote:
+      "Placeholder. Replace with this client's words about a care plan, month to month: what actually arrives in their inbox, and what has not gone wrong since.",
+    excerpt: "Placeholder: what a care plan looks like from the client's side, month after month.",
+  },
+  {
+    placeholder: true,
+    video: "client-story-7",
+    name: "Seventh client",
+    role: "Role",
+    org: "Company",
+    quote:
+      "Placeholder. Replace with this client's words about a site that was slow rather than broken: what they were losing to it, and what changed after.",
+    excerpt: "Placeholder: a slow site rather than a broken one, and what the speed was costing.",
+  },
+  {
+    placeholder: true,
+    video: "client-story-8",
+    name: "Eighth client",
+    role: "Role",
+    org: "Company",
+    quote:
+      "Placeholder. Replace with this client's words about a change of hosting: what they were afraid would happen during the move, and what the day was actually like.",
+    excerpt: "Placeholder: changing hosts without losing a day, in the client's own words.",
+  },
+  {
+    placeholder: true,
+    video: "client-story-9",
+    name: "Ninth client",
+    role: "Role",
+    org: "Company",
+    quote:
+      "Placeholder. Replace with this client's words about a checkout that had stopped taking payments: how they found out, and how much it cost before it was fixed.",
+    excerpt: "Placeholder: a checkout that stopped taking payments, and how they found out.",
+  },
+  {
+    placeholder: true,
+    video: "client-story-10",
+    name: "Tenth client",
+    role: "Role",
+    org: "Company",
+    quote:
+      "Placeholder. Replace with this client's words about a PHP upgrade that took their page builder with it: who told them to upgrade, and what broke when they did.",
+    excerpt: "Placeholder: a PHP upgrade that took the page builder down with it.",
+  },
+  {
+    placeholder: true,
+    video: "client-story-11",
+    name: "Eleventh client",
+    role: "Role",
+    org: "Company",
+    quote:
+      "Placeholder. Replace with this client's words about a redesign: what they wanted to keep, and whether the pages they already ranked for survived it.",
+    excerpt: "Placeholder: a redesign that kept every page that was already working.",
+  },
+  {
+    placeholder: true,
+    video: "client-story-12",
+    name: "Twelfth client",
+    role: "Role",
+    org: "Company",
+    quote:
+      "Placeholder. Replace with this client's words about an agency handing their WordPress support over: what they stopped doing, and what their own clients noticed.",
+    excerpt: "Placeholder: an agency on handing WordPress support over and what their clients noticed.",
+  },
 ] as const;

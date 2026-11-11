@@ -8407,3 +8407,888 @@ reduced       4 rows at opacity 1, 0 running animations
 `tsc` 0, `eslint` 0, content and motion checks clean, build green at 99 routes.
 
 **Not run, and not claimed:** `axe` again after this change, the 768 width, Safari and Firefox.
+
+## v4 / client clips reach the three pages where someone is deciding to buy (Task 79)
+
+Owner is commissioning UGC testimonial clips (real clients on camera, filmed on a phone) and asked
+which pages need them to build trust before a purchase. Recorded before coding, per contract rule 3.
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| - | Clients on camera | vertical clip wall, 9:16 cards, 2 up then 4 up | no | no | none |
+| - | In a client's words | existing quote section, a clip added beside the words | no | no | none |
+
+**Why this family is not already on `/pricing/`.** The page carries a three column block of photo
+plus list plus CTA, the promises flow, a catalogue list and a FAQ accordion. None of them is a media
+grid, and none of them is vertical.
+
+**Why this family is not already on `/case-studies/`.** This is the weaker of the two cases and worth
+stating plainly: the page has two card grids already, the four `HoverFill` cards describing what a
+write up contains and the `LinkCards` at the foot. Both are text cards, each with a title, a summary
+and a link, laid out at four across in a landscape box. The clip wall has no title, no summary, no
+caret and no link in a cell; it is four portrait frames and an attribution. The distinction being
+relied on is orientation plus the absence of a link target, not just different content.
+
+**Why the service pages add no family at all.** `Section#quote` already exists and already renders a
+blockquote with an attribution. The clip goes beside the words in the same section.
+
+### The gap this closes
+
+There is no real social proof anywhere on the site. Measured before the change:
+
+| Surface | Social proof today |
+| --- | --- |
+| `/` | 4 client slots in a carousel, every clip null, every quote a marked placeholder |
+| `/about/` | `how-a-rescue-runs`, a process clip, not a client |
+| `/case-studies/` | `a-site-brought-back`, a demo capture, not a client. No write ups exist |
+| Service pages, 32 | `Section#quote` renders on none of them: the only non placeholder lookup is undefined |
+| `/pricing/` | none |
+| `/contact/`, `/free-site-check/` | none |
+
+So the order of need is pricing first, because the price objection has nothing answering it; then the
+service pages, because intent is highest there and the proof slot is already built and dark; then
+case studies, because it is the page the home carousel sends people to for proof.
+
+### What was refused, and why
+
+**A lightbox.** `@radix-ui/react-dialog` is installed and `globals.css` already has a `dialog-in`
+keyframe, so it would have been cheap. Refused for now because `video controls` fullscreens natively
+on every target, a dialog makes the card a client island, and contract rule 13 asks for below fold
+islands to be lazy. Recorded as the upgrade if the posters prove too small to persuade.
+
+**A carousel.** The home page already has one for these same four clients. A second one would spend
+contract rule 9's pause and prev/next budget again, and a static wall needs none of it.
+
+**Quote text inside a wall card.** Contract rule 14 caps a quote at three lines and forbids cutting
+one. `excerpt` is about 90 characters, which is five or six lines in a 264px column. The words stay
+where the column is wide enough: the home carousel and the service page blockquote.
+
+**Placeholder quotes on commercial pages.** `ServiceTemplate` already filters placeholders out and its
+comment says why: on a service page they would read as a client's words. That stance is kept, and
+extended to the wall, which shows the reserved slot and its label but no invented quote.
+
+### What changed
+
+| | Was | Is |
+| --- | --- | --- |
+| Client slot shape | 16/10, the house capture ratio | 9/16, declared per slot by `ratio` in `src/content/videos.ts` |
+| `/pricing/` | no social proof of any kind | a wall of four client frames above the cost questions |
+| `/case-studies/` | one 16/10 demo capture | the demo capture, then the four client frames |
+| Service pages | `Section#quote`, words only, rendering on none of them | the same words with the client's frame beside them |
+| Home carousel media | `md:col-span-5`, uncapped | `md:col-span-4`, capped at 220px, quote took the 8th |
+| A slot whose files are missing | would have shipped a broken `source` and a black poster | falls back to the empty state, and the caption agrees |
+
+**One new file in `src/`**: `src/components/sections/v4/ClientClips.tsx`, a Server Component with no
+client island. `VideoFrame.tsx` gained a `playable()` helper and a `frameShell` string, both because two
+callers now need them. Nothing else was added. `QuoteCarousel` was not touched beyond its two column
+numbers; it takes a node and does not know what shape it is.
+
+### The ban amended
+
+MASTER named 16/10 as the media ratio with no exception. It now excepts client-filmed clips by name,
+the same way the 3D ban excepts the Task 77 step blocks by name. `how-a-rescue-runs` and
+`a-site-brought-back` stay 16/10. Owner decision 2026-11-11.
+
+### Eyebrow budget
+
+Unchanged. The new sections carry no eyebrow. `/pricing/` goes from 5 sections to 6 and
+`/case-studies/` from 4 to 5, which raises each page's `ceil(sections / 3)` allowance rather than
+spending it.
+
+### What measuring changed
+
+**The two up at 768 was wrong and the measurements caught it.** A portrait box punishes a wide
+column: at 768 a two up clip measured 323 x 573 and the section ran 1350px over two rows. The switch
+to four columns moved from `lg` to `md`, which puts 768 at 140 x 249 in a single 476px row. Two and
+four only; three stays banned.
+
+**The home carousel needed the cap, and the number is measured not guessed.** Its media cell is 341px
+wide at 1440, so an uncapped 9/16 box stood 606px tall and the card about 750px. Capped at 220px the
+clip is 220 x 391 and all four cards settle at 529px.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 204 files scanned, legacy off**, motion
+check clean, build green at **99 routes**. `check-confirmed` still reports 4 placeholder testimonials,
+so a production deploy still fails, which is the point.
+
+Measured against the production build in a foreground tab.
+
+```
+ratio          0.563 at every width on every page, against 9/16 = 0.563 exactly
+375 mobile     2 cols, clip 142x252, section 881, page overflow 0, rail overflow 0
+768            4 cols, clip 140x249, 4 cards all 415, section 476
+1024           4 cols, clip 204x363, 4 cards all 509, section 570
+1440           4 cols, clip 252x448, 4 cards all 448+caption, section 570
+home 1440      clip capped 220x391, 4 cards all 529, page overflow 0
+service 1440   figure is a row, clip 180x320, quote 498 wide at 2 lines, figure 442
+axe clips      /pricing/ 0 violations 14 passes 0 incomplete; /case-studies/ 0, 14 passes, 0
+axe quote      service page 0 violations, 11 passes
+axe whole page /pricing/ 1 violation, `region`, on the fixed "Quick quote" bar in SiteShell.tsx.
+               Pre-existing and not this change: StickyCTA is untouched in the diff
+reduced motion 4 cards at opacity 1, transform none, 0 running animations, before and after scroll
+overflow note  8px of documentElement overflow reports at 1440, 1024 and 768 on /pricing/ AND on
+               /about/, which this change does not touch. Baseline, not a regression. 0 at 375
+gate, filled   clip wired + files present: 1 player, preload="none", poster, captions track,
+               caption reads "28 seconds.", 0 dashed boxes on that card
+gate, missing  clip wired + mp4 deleted: 0 players, 0 references to the missing file in the HTML,
+               caption reads "Not filmed yet.", dashed box back, and the service page quote still
+               renders because the words do not depend on the clip
+service spread one template edit reaches every service page: checked plugin-theme-conflict and
+               white-screen, both render the section when a testimonial is confirmed
+```
+
+**Not run, and not claimed:** actual playback. No client clip exists and `ffmpeg` is not on this
+machine, so the fixture was a real 1080x1920-shaped poster from `public/screens/` with a non-media
+file behind it. That exercises the existence gate, the markup, the box and the caption, but nobody has
+watched a frame play through this component. Also not run: Safari, Firefox, a real touch device,
+`prefers-reduced-transparency`, and a Lighthouse pass for the LCP effect of the new section. The
+142px clip width at 375 is legible as a poster and opens fullscreen on tap, but whether it is
+persuasive at that size is a judgment for the owner once there is something in it.
+
+## v4 / the clips get a play button, and the home carousel becomes a wall (Task 80)
+
+Owner sent a reference screenshot of a UGC grid: portrait cards, a play button on each, a small scale
+and a dark wash on hover. Asked for it on the clips throughout the site, and for the home page's "What
+clients say" to become four cards like the other two pages.
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 9 | What clients say | vertical clip wall, 9:16 cards, 2 up then 4 up | no | no | none |
+
+**Why this family is not already on the home page.** Nothing else on `/` is a card grid. `ProblemTiles`
+is a filtered list of links, `Practices` is divided rows and refused a two column grid in its own
+comment, `Plans` is `ExpandingRows`, `Logos` is the page's one marquee. The wall is also the same
+section the pricing and case study pages now carry, which is the point: someone moving between those
+three pages should find the same thing.
+
+### What changed
+
+| | Was | Is |
+| --- | --- | --- |
+| A filled slot | `video controls preload="none"` with native chrome | poster via `next/image`, one button, and a real player on first click |
+| Media elements at rest | one `video` per filled slot | none. Four fewer on `/`, `/pricing/` and `/case-studies/` |
+| Hover | nothing | poster scale 1.04, a `--bg` wash at 0.30, badge 1.05, all gated on `(hover:hover)` |
+| Press | nothing | badge `scale(0.97)` |
+| Home "What clients say" | a one card per view carousel with paging, dots and a counter | four cards, all four on screen |
+| `QuoteCarousel.tsx` | the home carousel, 160 lines of client island | deleted, nothing imported it |
+| `Clip` export in `VideoFrame.tsx` | the bare `video` element | deleted, `ClipPlayer` replaced it |
+
+**One new client component, and it is a leaf holding one boolean.** `src/components/ClipPlayer.tsx`.
+The poster is rendered on the server and handed in as a node, the way `ExpandingRows` takes its
+`image`, so nothing in `src/content/videos.ts` reaches the bundle. It went into `VideoSlotBox` rather
+than into each caller, so all six slots got it from one edit: the four 9:16 client clips and the two
+16:10 captures on `/about/` and `/case-studies/`.
+
+### What the screenshot asked for and did not get
+
+**The category pills.** The reference has `Lifestyle`, `Unboxing`, `Testimonials` and so on sitting on
+the images. Contract rule 6 bans pills or labels on images outright, with no exception recorded, so
+they are not here and this task did not spend an amendment to add them.
+
+**A circular play button.** MASTER's shape lock is 14px everywhere, including nested, and bans pills
+and any other radius by name. A circle would have been the one round corner in the design system, so
+the badge is a 14px square with a filled triangle. It reads as play without spending the lock.
+
+**A card that scales.** The poster scales inside a fixed frame instead. In a four up row a card that
+grows pushes at its neighbours; the image moving under a fixed edge says the same thing and cannot
+shift anything.
+
+### What was refused
+
+**autoplay, muted loops on the wall.** Four muted clips playing at once is four video decoders on a
+page whose LCP budget is already the tightest thing in the contract, and `Marquee` is the page's one
+auto-moving track under rule 3. Nothing moves until it is asked to.
+
+**backdrop-blur behind the badge**, which is the usual way to make a play button read on any frame.
+MASTER allows one glass surface, the scrolled nav, and nothing else. `shadow-card` does the separating.
+
+### The excerpt left the home page
+
+Contract rule 14 caps a quote at three lines and forbids cutting one. At four across a card is 252px,
+where a 90 character excerpt is five or six lines. The words are on the service pages, where the
+column is 498px and the same string renders at two. The clip is the testimonial here; `videoCaption`
+is its text alternative.
+
+### What measuring changed
+
+**The badge was one size and is now two.** At 375 a clip is 142px wide, and a 56px badge covered 39%
+of the frame, which reads as a button with a picture behind it. 44px below 768 and 56px above, 31% at
+375. 44 is the floor because contract rule 5 sets it, though the real tap target is the whole card.
+
+**`docs/image-todo.md` was giving instructions that would have wasted a shoot.** Its video block told
+whoever films the client clips to shoot landscape, because "a portrait phone clip will letterbox
+inside a 16:10 box", and it pointed at the deleted carousel. It now points at `docs/video-todo.md`, which owns the
+specs.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 204 files scanned, legacy off**, motion
+check clean, build green at **99 routes**. `check-confirmed` still reports 4 placeholder testimonials.
+
+Measured against the production build with all six slots temporarily filled, then reverted.
+
+```
+rest state     scrim opacity 0, badge scale none, 0 video elements, 4 img elements per wall
+hover, real    poster scale 1.04, scrim opacity 0.30, badge scale 1.05 on the hovered card;
+               the neighbouring card stayed at none / 0 / none
+click          1 video, autoplay true, controls true, playsInline true, poster set, source
+               video/mp4, track kind captions default true, aria-label from clip.alt
+layout on swap all four boxes 252x448 before and after, so the player replaces the poster exactly
+keyboard       button takes focus, Enter activates, 4 tabbables in the section and no more
+badge          44x44 at 375 (31% of a 142px clip), 56x56 from 768, centred to within 1px
+375 mobile     2 cols, clip 142x252, page overflow 0
+1440           4 cols, clip 252x448, section 1212 on home
+landscape slot /about/ "Watch a rescue" 1134x709, ratio 1.600, same badge, same button, caption
+               "... 90 seconds."
+empty slot     no play button and no hover: /about/ showed 0 buttons while its clip was null
+axe, home      0 violations, 19 passes, 0 incomplete on "What clients say"
+a11y tree      region "What clients say" with 4 buttons named "Play: <what the clip shows>", the
+               attribution and caption as text, and no carousel controls left behind
+reduced motion 4 cards opacity 1, transform none, 0 running animations; scale transitions report
+               "none" while the scrim keeps transitioning opacity, which is the intent
+```
+
+**Not run, and not claimed:** actual playback, again. No client clip exists and `ffmpeg` is not on
+this machine, so a fixture file stood behind a real poster. The swap, the markup, the box and the
+captions track are all verified; nobody has watched a frame decode. Also not run: Safari and Firefox,
+a real touch device, and a Lighthouse pass on whether dropping six `video` elements for six `img`
+moved LCP. Badge contrast was not measured against a real client poster, because there is not one yet:
+a light badge on a blown out frame is the case to watch, and `docs/video-todo.md` carries the poster
+guidance rather than the code carrying a scrim for it.
+
+## v4 / the wall swipes on a phone and stays a row on a desktop (Task 81)
+
+Owner asked where a carousel makes sense, now that all three placements are a static wall of four.
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| - | Clients on camera / What clients say | same wall, swipe rail below 768 | no | no | none |
+
+No new family: this is the Task 79 and 80 wall responding to its width, not a second layout.
+
+### The answer, which is "almost nowhere"
+
+A carousel earns its cost when the items do not fit the space. So the question is per viewport, not
+per page. Measured on `/` with all four slots filled:
+
+| Where | Verdict | The measurement behind it |
+| --- | --- | --- |
+| 1440 and 1024 | no | four cards are one row, 252x448 each, nothing hidden. Paging them would put three of four behind a press |
+| 768 | no | four cards are one row at 140x249 |
+| 375 | **yes** | the wall was a 2x2 block 1212px tall whose clips were 142px wide |
+| Service pages, 32 | no | one clip in the quote section. Nothing to page |
+| `/case-studies/`, later | not yet | a rail or a show-more earns it past roughly eight clips. There are four |
+
+So the only place it was right is the phone, and what belongs there is a swipe rail rather than a
+paged carousel.
+
+### What changed
+
+| | Was | Is |
+| --- | --- | --- |
+| Below 768 | 2 columns, 2 rows | one row, swiped, 96px of the next card showing |
+| Clip at 375 | 142 x 252 | 230 x 408, about three quarters wider |
+| Section at 375 | 1212px | 795px |
+| 768 and above | 4 column grid | unchanged |
+| The wall's markup | written twice, in `ClientClips` and again in `ClientStories` | one `ClipWall`, used by both |
+
+**It costs no JavaScript.** `overflow-x-auto` with `snap-x snap-mandatory` and a card width, nothing
+else. The island that used to do this was `QuoteCarousel`, deleted in Task 80, and nothing replaced it.
+
+**It owes contract rule 9 nothing, and the reason is worth writing down.** The rule asks a carousel for
+pause, prev and next, and stops on hover, focus and reduced motion. Nothing here moves on its own, so
+pause and the three stops are vacuous. Prev and next exist because a rail is awkward with a mouse, and
+this rail only exists below 768, where the pointer is a finger and the swipe is the control. Above 768
+there is no rail to give buttons to.
+
+**No `tabIndex` on the list,** which a scroll container normally needs for keyboard reach. Every card
+holds a real play button, so tabbing through the four scrolls the rail itself; this was measured, not
+assumed. Adding one would have put a focus stop on a desktop grid that does not scroll.
+
+### The thing that nearly shipped broken
+
+`.reveal > *` watches its children against the viewport, and on a rail cards three and four start off
+to the right of it, so they sit at opacity 0 until they are scrolled to. Three paths had to be checked
+rather than reasoned about, and all three hold: a swipe to the end brings them to 1 and they stay
+there; focusing the fourth card's button scrolls the rail to 695 and reveals all four; and under
+reduced motion all four are already at 1 without any swipe, because the start state collapses. A card
+that stayed blank after a swipe was the failure this was looking for and it did not happen.
+
+`py-2 -my-2` on the rail is also load-bearing rather than spacing: `overflow-x: auto` makes
+`overflow-y` compute to `auto` too, which would clip a focused button's 2px ring and 2px offset.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 204 files scanned, legacy off**, motion
+check clean, build green at **99 routes**.
+
+Measured against the production build with all four client slots temporarily filled, then reverted.
+
+```
+375 rail       display flex, overflow-x auto, snap x mandatory, scrollWidth 1038 vs client 343
+               clip 230x408, next card peek 96px, section 795, page overflow 0
+768            display grid, 4 columns, overflow visible, rail does not scroll, clip 140x249
+1440           display grid, 4 columns, clip 252x448
+reveal, swipe  [1,1,0,0] at rest, [1,1,1,1] after scrolling to the end, still [1,1,1,1] back at 0
+reveal, tab    focusing card 4's button scrolled the rail to 695 and took all four to 1
+reduced motion all four at 1 without swiping, 0 running animations, rail still swipeable
+axe            /pricing/ clips section 0 violations, 18 passes, 0 incomplete at 1440
+one definition all three pages serve the same markup: 1 rail, 1 md-grid, 4 cards each
+```
+
+**Not run, and not claimed:** a real finger on real glass. Swipe was driven by setting `scrollLeft`
+and by moving focus, which exercises the same scroller but is not the same as momentum and a thumb;
+snap behaviour under a fast flick is the thing to look at on a device. Also not run: Safari and
+Firefox, where scroll snap and the hidden scrollbar differ most, and playback, which still has no clip
+to play.
+
+## v4 / the rail gets the controls it was argued out of (Task 82)
+
+Owner sent a screenshot of the phone layout: a card, a second card running off the edge, and no sign
+the thing moves. "not carousel visible? Make it carousel small screens."
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| - | Clients on camera / What clients say | same wall, paged carousel below 768 | no | no | none |
+
+No new family. This is Task 81's rail with the controls it should have had.
+
+### The correction, and what it corrects
+
+Task 81 shipped the rail with no controls and wrote this into the ledger: "the rail exists only below
+768, which is where the pointer is a finger and swipe is already the control. Above 768 there is no
+rail to give buttons to." That reasoning was right about how the rail behaves and wrong about how it
+reads. Swipe works, and nothing on screen says so, so the section looked like a grid that had been cut
+off by the viewport. **An affordance nobody can see is not an affordance.** Contract rule 9 asks a
+carousel for prev and next; Task 81 argued that away on the grounds that those are for mouse users,
+and the screenshot is the counter-argument.
+
+So rule 9 is now satisfied literally rather than reasoned around: prev, next, four dots and an "n of
+m" counter, below 768 only.
+
+### What is still vacuous, and still says so
+
+Nothing moves on its own. There is no autoplay and no timer, so rule 9's pause and its stops on hover,
+focus and reduced motion have nothing to act on. The only motion is the scroll a press asks for, and
+`motion-reduce:scroll-auto` turns that into a jump. That is one line of CSS rather than a JS branch
+that could drift from it, which is the same choice `QuoteCarousel` made before it was deleted.
+
+### What changed
+
+| | Was (Task 81) | Is |
+| --- | --- | --- |
+| Controls below 768 | none | prev, next, 4 dots, "1 of 4" |
+| Card width at 375 | 66vw, 230 x 408 | 62vw, 215 x 381 |
+| Heading to controls at 375 | n/a | 616px |
+| Carousel roles | none | `group` + `aria-roledescription="carousel"`, per slide "n of m" |
+| 768 and above | 4 column grid | unchanged, and the roles are not rendered at all |
+| Client JS | none | one leaf, `ClipRail.tsx` |
+
+**The island is back, and smaller than the one it replaces.** `QuoteCarousel` was 160 lines and owned
+the card markup; `ClipRail` owns the rail and the controls and takes the cards as server-rendered
+nodes, so nothing in src/content/videos.ts reaches it. The observer that tracks the active card is the
+one `QuoteCarousel` used, including the part that matters: the per-slide ratio is kept across
+callbacks, because a callback only carries the slides whose visibility just changed, so picking the
+best of one batch lets a slide that is leaving win over the one arriving.
+
+**The controls are not rendered above 768 rather than hidden with CSS.** `md:hidden` would leave six
+buttons in the tab order of a grid that does not scroll, which is a trap. The 768 is read once with
+`matchMedia` into state, so the server and the first paint agree.
+
+### What measuring changed
+
+**The card got narrower so the controls would land with it.** At 66vw the run from the heading to the
+dots measured 651px, against the 642px an 812px phone leaves under the 80px header and over the sticky
+action bar. The dots sat just off the bottom of the screen, which is the exact fault this row was added
+to fix: a control you have to scroll to find is no better than no control. 62vw and `mt-4` instead of
+`mt-6` bring it to 616, with the controls' bottom edge at 712 against a 722 floor. The peek of the next
+card went from 96px to 111px as a side effect, which is a better signal as well.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 205 files scanned, legacy off**, motion
+check clean, build green at **99 routes**.
+
+Measured against the production build with all four client slots temporarily filled, then reverted.
+
+```
+375 layout     clip 215x381, peek 111px, heading to controls 616, controls bottom 712 of 812,
+               clear of the sticky bar, page overflow 0
+controls       next -> "2 of 4" scrollLeft 249; dot 4 -> "4 of 4" scrollLeft 635; prev -> "3 of 4"
+               scrollLeft 497; dot 1 -> "1 of 4" scrollLeft 0
+disabled ends  prev disabled at card 1, next disabled at card 4, neither disabled between
+swipe         setting scrollLeft to 500 moved the counter to "3 of 4" with no button pressed, so
+               the dots follow a finger and not just a press
+targets        all six controls 44x44
+1440           grid, 4 columns, clip 252x448, carousel role absent, slide roles absent, the only
+               buttons in the section are the four play controls
+axe            /pricing/ 375 with the carousel: 0 violations, 23 passes, 0 incomplete
+               /pricing/ 1440 as a grid: 0 violations, 18 passes, 0 incomplete
+reduced motion scroll-behavior auto so a press jumps rather than glides, controls still move the
+               rail, 4 cards at opacity 1, 0 running animations
+rotate         375x812 portrait to 812x375 landscape with no reload: carousel role gone, 6 controls
+               gone, slide roles gone, list back to grid. Rotated back: all four restored. So the
+               matchMedia listener is exercised, not just present
+```
+
+**Not run, and not claimed:** a real finger on real glass, again. The swipe was driven by setting
+`scrollLeft`, which moves the same scroller but is not momentum and a thumb; snap under a fast flick
+is still the thing to check on a device. Also not run: Safari and Firefox, where scroll snap and the
+hidden scrollbar differ most, and playback, which still has no clip to play.
+
+## v4 / the library splits from the teaser, and the carousel learns to be swiped (Task 83)
+
+Owner: "mobile smooth scroll carousel also touch swipe cards to be able, and mobile screen display in
+grid 2 columns, 4 rows case-studies page there also in desktop 4 columns 3 rows display."
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| - | Clients on camera, `/case-studies/` | plain clip grid, 2 up then 4 up, no paging at any width | no | no | none |
+
+Not a new family on that page so much as the carousel's twin: same card, same ratio, no rail.
+
+### The two numbers did not reconcile, so it was asked rather than guessed
+
+2 columns by 4 rows is 8 clips; 4 columns by 3 rows is 12. The owner chose 12, shown in full at every
+width, so the desktop lands on exactly the 4 by 3 asked for and the phone is 2 by 6 rather than 2 by 4.
+Also chosen: the home and pricing pages stay at four.
+
+### What changed
+
+| | Was | Is |
+| --- | --- | --- |
+| Reserved client slots | 4 | 12 |
+| `/case-studies/` | the 4 clip carousel | every clip, 2 across on a phone, 4 across from 768 |
+| `/` and `/pricing/` | the 4 clip carousel | unchanged, and now explicitly the first 4 of 12 |
+| Touch on the rail | browser defaults | `touch-pan-x` and `overscroll-x-contain` |
+| `/case-studies/` client JS | the `ClipRail` island | none. The grid is a Server Component |
+
+**The library and the teaser are different jobs, so they are different components.** A carousel is a
+teaser: it shows one client and implies more, which is right where clips interrupt a page about
+something else. The case study page is the library, and someone who got there has already decided to
+look at proof; a grid lets them see how much there is and choose, where a rail hides the count behind
+eleven presses. `ClipGrid` is markup only, so that page gave its island back.
+
+**The teaser cap is one constant, not a `slice` at each call site.** `TEASER = 4` in ClientClips.tsx,
+with `teaserClients` exported for the home page, which composes its own section. Two pages cannot drift
+apart on what "the first few" means.
+
+### The two touch classes, and what they are for
+
+`overscroll-x-contain` stops a swipe that reaches the last card continuing into the page behind it,
+which on iOS Safari and Chrome for Android is the gesture that navigates back; without it a flick past
+the end can leave the site. `touch-pan-x` tells the compositor the box takes horizontal drags, so a
+swipe is handled without waiting to see whether a listener cancels it, and a vertical drag still
+scrolls the page instead of fighting the rail. Both are dropped at `md`, where there is no rail.
+
+### Content added, and the discipline it keeps
+
+Eight more reserved slots in `src/content/videos.ts` and eight more entries in
+`src/content/testimonials.ts`, every one `placeholder: true`. They are reservations with a named
+subject, not invented clients: the eight new subjects follow the service catalogue, so the library
+spreads across updates, care plans, speed, hosting moves, checkout, PHP upgrades, redesigns and agency
+white label rather than being eight more emergencies. `check-confirmed` now reports 12 placeholders
+instead of 4, so a production deploy fails harder than it did, which is correct.
+
+`docs/video-todo.md` was rewritten to list all fourteen slots and to say plainly that clips 1 to 4 do
+the most work, since they are the ones the home and pricing pages show.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 205 files scanned, legacy off**, motion
+check clean, build green at **99 routes**, `check-confirmed` reporting **12 placeholder testimonials**.
+
+Measured against the production build with all twelve client slots temporarily filled, then reverted.
+
+```
+case-studies 1440   12 cards, 4 columns, 3 rows, exactly the shape asked for, clip 252x448
+case-studies 375    12 cards, 2 columns, 6 rows, clip 146x259, page overflow 0, section 2430
+case-studies        no carousel role, no controls, list not scrollable at either width
+home 1440           4 cards, 4 columns, link "Read the case studies" still present
+pricing             4 cards
+rail touch          touch-action pan-x, overscroll-behavior-x contain, scroll-behavior smooth,
+                    scroll-snap-type x mandatory, next button still moves "1 of 4" to "2 of 4"
+reveal at 12        [1,1,1,1,0,0,0,0,0,0,0,0] on arrival, all 12 at 1 after scrolling through,
+                    0 stuck hidden, so the stagger ladder's cap of 6 does not strand children 7 to 12
+reduced motion      12 cards at opacity 1 without scrolling, 0 running animations, still 2 columns
+axe                 /case-studies/ 12 card grid at 1440: 0 violations, 18 passes, 0 incomplete
+content integrity   12 testimonials, 14 slots, 0 dangling video ids
+line endings        testimonials.ts stayed CRLF, diff additive only, 80 insertions 0 deletions
+```
+
+**Not run, and not claimed:** a real finger on real glass. `touch-action` and `overscroll-behavior` are
+verified as computed styles, which is what makes a native swipe behave, but a synthetic touch event
+does not drive a compositor scroll, so the swipe itself was exercised by setting `scrollLeft` and by
+moving focus. Momentum, a fast flick against the snap points, and whether the back-navigation gesture
+is really suppressed all need a device. Also not run: Safari and Firefox, and playback, which still has
+no clip to play. The 2430px phone height of a full twelve clip library is measured but not judged; if
+it reads as too long once there are real faces in it, a show more at eight is the next lever.
+
+## v4 / one card at ninety percent, and the controls move above it (Task 84)
+
+Owner: "UGC videos on mobile screen there pages display in carousel, that i want display main card
+visible 90% width and 10% next card. All pages there mobile screen carousel this section. but
+somewhere display grid in mobile that sits as it is dont that changes."
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| - | Clients on camera / What clients say | same carousel, one card per view at 90/10 | no | no | none |
+
+No new family. A width and an order, inside `ClipRail`.
+
+### Scope, which the request drew itself
+
+The carousel pages only: `/` and `/pricing/`. `/case-studies/` shows a grid on a phone and was asked
+to stay exactly as it is, so `ClipGrid` was not touched, and that was verified rather than assumed:
+after the change it still measures 2 columns, 6 rows, clip 146x259, no controls. Every other grid on
+the site is untouched for the same reason, since the change is three class names inside one component.
+
+### The split is arithmetic rather than eyeballed
+
+The gutter is 1rem, so `calc(90% - 1rem)` makes the card plus its gutter exactly 90% of the rail and
+leaves the next card exactly 10%. Measured at 375, where the rail is 343 wide: card 293, gutter 16,
+peek 34. That reads as 90.0 and 10.0 on both carousel pages.
+
+| | Was (Task 82) | Is |
+| --- | --- | --- |
+| Card width | `62vw`, capped 244 | `calc(90% - 1rem)`, capped 400 |
+| Card at 375 | 215 | 293 |
+| Clip at 375 | 215 x 381 | 275 x 488 |
+| Peek | 111px, about 32% | 34px, exactly 10% |
+| Controls | under the rail | above it |
+
+**The cap is for the gap between a large phone and the 768 switch,** not for phones. 90% of a 700px
+rail is a 630px card, which at 9/16 stands 1120px tall and is taller than the screen showing it. Real
+phones run 320 to 430 wide and stay under 400, so they keep the true 90/10. At 767, the widest the rail
+ever is, the cap holds: card 400, clip 382 x 679, which fits a 900px viewport, and the peek opens to
+42%, which reads as a two up rather than as a broken ratio.
+
+### The controls had to move, and the measurement is why
+
+This was the predictable cost of a bigger card and it was handled in the same change rather than
+shipped and found later. A 293px card is a 488px clip; with its caption the run from the heading to the
+foot of the card is past 700px, against the 642px an 812px phone leaves under the 80px header and over
+the sticky action bar. Controls under that card would have sat off the bottom of the screen, which is
+the exact fault Task 82 added them to fix and Task 82 then had to narrow the card to avoid.
+
+Above the rail they are on screen the moment the heading is: measured at y 177 to 221 of 812, which is
+125px below the top of the heading. The card no longer competes with them for the fold, so the card
+could take the width the owner asked for. Controls above a carousel is also an ordinary pattern, and
+the row is unchanged otherwise: same prev, next, four dots, same counter, same 44px targets.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 205 files scanned, legacy off**, motion
+check clean, build green at **99 routes**, `check-confirmed` still reporting 12 placeholders.
+
+Measured against the production build with all twelve client slots temporarily filled, then reverted.
+
+```
+375 split       rail 343, card 293, gutter 16, peek 34. card+gutter 90.0%, peek 10.0%, on / and
+                /pricing/ alike. clip 275x488
+375 controls    above the rail, y 177 to 221 of 812, 125px below the heading top, clear of the
+                sticky bar, rail begins below them
+controls work   next -> "2 of 4" scrollLeft 309; dot 4 -> "4 of 4" scrollLeft 876, next disabled;
+                prev -> "3 of 4" scrollLeft 617; scrollLeft 0 -> "1 of 4", so a swipe still drives
+                the dots from the new position
+767             cap holds at 400, clip 382x679 fits the 900 viewport, peek opens to 42%
+1440            grid, 4 columns, clip 252x448, no carousel role, no controls. Unchanged
+case-studies    375: grid, 2 columns, 6 rows, clip 146x259, no controls, overflow 0. Unchanged
+targets         all six controls 44x44
+axe             /pricing/ 375 with the carousel: 0 violations, 23 passes, 0 incomplete
+reduced motion  scroll-behavior auto so a press jumps, controls still move the rail, 4 cards at
+                opacity 1, 0 running animations
+overflow        0 at 375 on every page touched; the 8px reported at 767 and 1440 is the site-wide
+                baseline recorded in Task 79, present on pages this change does not touch
+```
+
+**Not run, and not claimed:** a real finger on real glass. The 90/10 geometry, the snap points and the
+control row are measured, but the swipe was driven by setting `scrollLeft`, which moves the same
+scroller without momentum. How a 293px card settles against its snap point under a fast flick is still
+a device question. Also not run: Safari and Firefox, and playback, which has no clip to play. Whether
+controls reading above the carousel is the right order by eye rather than by measurement is a judgment
+for the owner; the measurement only says they are on screen.
+
+## v4 / three faults from one phone screenshot, and only one of them was what it looked like (Task 85)
+
+Owner, with a screenshot of the carousel in its unfilmed state: "look this not visible next UGC card
+and carousel nav button place at bottom right side of the Read the case studies text and not
+displaying dot nav." Then, mid-change: "dot nav dont display."
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| - | Clients on camera / What clients say | same carousel, control row returned below the rail | no | no | none |
+
+### Each fault was reproduced at 375 against the empty state before anything was changed
+
+That mattered. All three reports described what the owner saw; only one of them described what was
+wrong with the markup.
+
+| Reported | Measured | What it actually was |
+| --- | --- | --- |
+| Next card not visible | rendered, 34px sliver at x 325, rail edge 359 | real, but a contrast problem: an unfilmed card is `--surface-2` on `--bg`, 28 against 12 |
+| Dot nav not displaying | 4 dot buttons present, `display: grid`, 6px | real, but a legibility problem, not a missing element |
+| Nav in the wrong place | controls above the rail | the only one that was a layout fault |
+
+### What changed
+
+| | Was (Task 84) | Is |
+| --- | --- | --- |
+| Control row | above the rail | below it, on one row with the section's link |
+| Row layout | paging only | link left, paging right, wrapping to two lines at 375 |
+| Home page link | its own `<p>` under the rail | the row's left half, one line of height instead of two |
+| Inactive dot | 6px, `--line-strong` | 8px, `--muted` |
+| Rail `tabIndex` | none | `0` while it is a scroll container |
+
+**The control row went back below the rail, and the fold is the accepted cost.** Task 84 moved it
+above precisely because a 90% card is 488px tall and controls under it fall past the fold on an 812px
+phone. That reasoning has not changed and the measurement still holds; the owner has now seen both and
+asked for bottom right, which is their call to make. The row is reached by scrolling, and the peek of
+the next card is what has to say the rail moves before you get there.
+
+**The dots were never missing.** At 6px in `--line-strong`, which is `rgba(255,255,255,.36)` and which
+MASTER itself records at 3.26:1, the floor for a UI boundary, they were reported absent twice. They are
+`--muted` at 8px now: the token this site already trusts for small text. The active dot keeps its ember
+pill, so position is carried by shape as well as colour.
+
+**The peek was never missing either, and it is still 34px.** The owner asked for 90/10 in Task 84 and
+that is unchanged. What is invisible is a 34px slice of an empty card, because `--surface-2` on `--bg`
+is 28 against 12. With a poster in it the same 34px is a slice of a photograph. If it still does not
+read once there are real faces in the slots, the lever is the ratio, not the markup.
+
+### The bug the empty state exposed, which the fixtures had been hiding
+
+`axe` reported **`scrollable-region-focusable`** on `/pricing/` at 375. Every earlier run in Tasks 81
+to 84 passed, because every earlier run was against filled fixtures: a filled card holds a play button,
+so the rail had focusable children and the rule was satisfied. An unfilmed card is a dashed box with
+nothing focusable in it, which leaves the rail a scrollable region a keyboard cannot reach at all.
+
+Task 81 reasoned this away in writing: "every card here holds a real play button, so tabbing through
+the four scrolls the rail by itself." True of a filled rail, false of the one actually on the site
+today, and the site is unfilmed for as long as the clips take to make.
+
+The rail now carries `tabIndex={0}` and `aria-label` while `railed` is true, and neither above 768,
+where it is a grid that does not scroll and a focus stop would go nowhere.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 205 files scanned, legacy off**, motion
+check clean, build green at **99 routes**, `check-confirmed` reporting 12 placeholders.
+
+Measured against the production build in the **empty state**, which is what the site serves today, and
+spot checked filled.
+
+```
+diagnosis, empty  dots: 4 buttons rendered, 6px, rgba(255,255,255,.36). Peek: card 2 left edge x 325,
+                  rail right edge 359, sliver 34px, card rgb(28,28,33) on page rgb(12,12,14)
+row position      below the rail on / and /pricing/; link left, paging right aligned at x 359, the
+                  row wrapping to two lines at 375
+controls work     next -> "2 of 4" scrollLeft 309; dot 4 -> "4 of 4" scrollLeft 876, next disabled;
+                  prev -> "3 of 4" 617; scrollLeft 0 -> "1 of 4"
+dots after        active 24x8 ember, inactive 8x8 rgb(163,163,173), all four on screen
+desktop 1440      link still present, nav controls absent, no carousel role, grid 4 columns,
+                  rail has no tabIndex, page overflow 0
+pricing 375       no link on that page, nav right aligned on its own, all six targets 44x44
+axe before fix    /pricing/ 375 empty: 1 violation, scrollable-region-focusable, 1 node
+axe after fix     /pricing/ 375 empty: 0 violations, 21 passes, 0 incomplete; rail takes focus and
+                  carries aria-label "Client clips"
+case-studies      1440: grid, 4 columns, 3 rows, 12 cards, clip 252x448, no tabIndex, no controls.
+                  Unchanged, as the owner asked
+```
+
+**Not run, and not claimed:** `axe` was not re-run after the dot colour change. `--muted` is brighter
+than `--line-strong` against the same background, so the change can only raise that contrast, but the
+number was not measured again and is not claimed. Also not run: a real finger on real glass, Safari and
+Firefox, and playback, which has no clip to play. Whether the control row reading below a card that
+runs past the fold is right by eye is the owner's judgment; the measurement only says where it is.
+
+## v4 / the dots come out, and the link was never gone (Task 86)
+
+Owner, with a phone screenshot: "dot nav remove dont display. Read the case studies why removed that
+revert it."
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| - | Clients on camera / What clients say | same carousel, control row is link, counter, arrows | no | no | none |
+
+### Two reports, one change
+
+**The dots are removed.** Asked for plainly and done. The counter carries the same two facts they did,
+which card you are on and how many there are, in about a quarter of the width. Position is no longer
+indicated twice.
+
+**"Read the case studies" was never removed.** It is in `ClientStories.tsx` and was through Task 85,
+which moved it from its own line into the left half of the control row, where the owner had asked for
+the paging to sit beside it. The screenshot was taken against `localhost:3000`, a dev server holding a
+build from before that change, so the link it was rendering was the one that had been taken out of its
+old position and not yet put into its new one. Checked rather than assumed: the link is in the source,
+and the served HTML carries it and its `href="/case-studies/"`.
+
+Nothing was reverted, because there was nothing to revert. What the removal of the dots does change is
+the row's width: the link, the counter and the two arrows together are about 350px against the 343px
+the spine gives them at 375, where link plus dots plus counter plus arrows was about 520. So the row
+is now near enough one line, which is what "nav at the bottom right side of the Read the case studies
+text" asked for in the first place.
+
+### Checks
+
+`tsc` 0, `eslint` 0 (the `cn` import went with the dots and was removed), content check **ok: 52 match
+candidates, 205 files scanned, legacy off**, motion check clean, build green at **99 routes**.
+
+```
+source          0 dot buttons, 2 arrows, 1 counter, 1 action slot in ClipRail.tsx
+client bundle   "Go to client" in 0 chunks, "Previous client" and "Next client" in 3 each
+home HTML       "Read the case studies" present with href="/case-studies/"
+pricing HTML    no link on that page, as before
+case-studies    grid markup unchanged, no controls of any kind
+```
+
+**Not run, and not claimed, and this one is a real gap:** nothing was measured in a browser. The
+chrome-devtools connection dropped during Task 85 and did not come back, so this change is verified by
+source, by the shipped bundle and by the served HTML only. **Whether the link, the counter and the two
+arrows actually settle on one line at 375 rather than wrapping is arithmetic here, not a measurement**,
+and the arithmetic is close enough to the spine width that it could go either way with a different text
+size. `flex-wrap` means a wrap is tidy rather than broken if it happens, but it has not been seen. The
+first thing to check when a browser is available again is that row at 375, and the dots' absence on a
+real screen.
+
+## v4 / the peek gets wider and the card gets an edge (Task 87)
+
+Owner, third report on the same thing, with a phone screenshot: "again spacing not next card visible
+fix why not visible?"
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| - | Clients on camera / What clients say | same carousel, 85/15 and a stronger card edge | no | no | none |
+
+### Why three rounds of explaining was the wrong answer
+
+The peek was never missing. It measured 34px every time: card 2's left edge at x 325 against a rail
+edge at 359. Tasks 85 and 86 both recorded that and both left the geometry alone on the reasoning that
+a filled slot would fix it. That reasoning is correct and was not useful. **The site is unfilmed and
+stays unfilmed until the clips exist, so the empty state is the state that has to work**, and in the
+empty state 34px of `--surface-2` on `--bg` is 28 against 12 behind a 1px border at 8% white. There
+was nothing to see. Every check that passed had passed against filled fixtures.
+
+### Both halves, because width alone would not have done it
+
+| | Was | Is |
+| --- | --- | --- |
+| Card | `calc(90% - 1rem)` | `calc(85% - 1rem)` |
+| Card at 375 | 293 | 275 |
+| Peek at 375 | 34px, 10% | 52px, 15% |
+| Card outline, in the rail | `--line`, 8% white, which MASTER calls decorative | `--line-strong`, 36% white, 3.26:1 |
+
+The ratio moved against what Task 84 was asked for, and that is the deliberate part: 10% was asked for
+before anyone had seen 10% of an empty card. Width on its own would only have made a larger patch of
+the same near black, so the edge matters more than the extra 18px. `--line-strong` is the token MASTER
+reserves for a boundary that has to be seen; a clip card holds a play button and is the control, so it
+qualifies.
+
+**`[&>figure]:border-line-strong` sits on the rail's `li`, not in `ClipCard`,** so the case study grid
+keeps the border it has. The owner asked for that page to be left alone and it was: 4 cards carry the
+class on `/` and `/pricing/`, 0 on `/case-studies/`.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 205 files scanned, legacy off**, motion
+check clean, build green at **99 routes**.
+
+```
+generated CSS   .\[\&\>figure\]\:border-line-strong>figure{border-color:var(--line-strong)} present
+                in the shipped stylesheet; calc(85% - 1rem) present; no stale calc(90%
+scoping         strong-border li: 4 on /, 4 on /pricing/, 0 on /case-studies/
+arithmetic      rail 343 at 375 -> card 275, gutter 16, peek 52, which is 15.2%
+```
+
+**Not run, and not claimed, and it matters here more than usual:** none of this was seen. The
+chrome-devtools connection dropped during Task 85 and has not come back, so Tasks 86 and 87 are both
+verified by source, generated CSS and served HTML only. The numbers above are arithmetic and build
+output, not measurements of a rendered page. **Whether 52px of a dark card behind a 36% white edge is
+actually visible on a phone is the whole point of this change and is exactly the thing that was not
+checked.** It is the first thing to look at when a browser is available. If it still does not read,
+the remaining levers in order are the card surface itself, the gutter, and then the ratio again.
+
+## v4 / the next card was painted at opacity 0, and had been for four tasks (Task 88)
+
+Owner: "not visible when i click next card view nav button and then prev click then correct display
+but not initial correct them gap and next card same repeat when prev button click then correct
+display."
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| - | Clients on camera / What clients say | same carousel, rail reveals as one element | no | no | none |
+
+### The report contained the diagnosis
+
+"Click next, then prev, and it is correct" is not a sizing fault. Scrolling the card into view is what
+repairs it, and a state repaired by scrolling and not by time is a scroll-triggered reveal.
+
+The inline reveal engine in `layout.tsx` observes with `threshold: [0, 0.2]` and hides every watched
+element at `opacity: 0` until it fires. `.reveal` applies that to each **direct child**. On a column
+that is right: everything crosses the line eventually. On a horizontal rail the cards to the right of
+the fold may never cross it at all.
+
+| Task | Card | Peek | Peek as a share of the card | Crosses 20%? |
+| --- | --- | --- | --- | --- |
+| 81, 82 | 215 | 111 | 51.6% | yes |
+| 84 | 293 | 34 | 11.6% | no |
+| 87 | 275 | 52 | 18.9% | no, by a point |
+
+So the second card was laid out, measured, and painted invisible. Clicking next pushed it past 20%,
+the observer fired, `once: true` held it at opacity 1, and prev returned to a card that was now there.
+Exactly the sequence reported.
+
+### Why four tasks of measuring missed it
+
+Every check in Tasks 84 to 87 measured a bounding box: "card 2 left edge x 325, rail edge 359, sliver
+34px, RENDERED". A bounding box does not care about opacity. The owner was describing what was painted
+and the measurements were describing what was laid out, and both were correct the whole time. Task 85
+even recorded `[1,1,0,0]` opacities for a longer rail and read it as acceptable rather than as the
+same bug one card further along.
+
+**The lesson for this file: when a report and a measurement disagree, the measurement is answering a
+different question.** Opacity was never measured at the peek until the owner described the repair
+sequence.
+
+### The fix
+
+`reveal-self` on the rail instead of `reveal`, so the rail animates as one element and no card is
+individually hidden. The peek is painted from the first frame.
+
+`ClipGrid` keeps per child `reveal`. It is a column, its children do all cross the threshold, and the
+stagger there is correct and wanted.
+
+| | Was | Is |
+| --- | --- | --- |
+| Rail | `.reveal`, each card hidden until it is 20% visible | `.reveal-self`, the rail fades in as one |
+| Cards off the fold | opacity 0 until scrolled to | always painted |
+| Desktop | four cards staggered | the row fades in together |
+| `/case-studies/` grid | per child reveal | unchanged |
+
+Task 87's 85/15 and the `--line-strong` card edge are both kept. Neither was the cause, and both still
+help an unfilmed card read, but the ratio is now a free choice again rather than a workaround: 90/10
+was what the owner originally asked for and is one value away.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 205 files scanned, legacy off**, motion
+check clean, build green at **99 routes**.
+
+```
+source of truth  layout.tsx observes at threshold [0, 0.2]; globals.css hides
+                 `:where(.reveal-js) .reveal > *` and `:where(.reveal-js) .reveal-self`, so moving
+                 the class from the list to itself moves the hiding from the cards to the rail
+served HTML      rail `reveal-self`: 1 on /, 1 on /pricing/, 0 on /case-studies/
+                 grid per child `reveal`: 0, 0, 1
+                 old broken form `class="reveal -my-2`: 0 occurrences site-wide
+```
+
+**Not run, and not claimed:** still nothing seen in a browser. chrome-devtools dropped during Task 85
+and has not returned, so Tasks 86, 87 and 88 are verified by source, generated CSS and served HTML.
+The cause here is established from the engine's own threshold and the arithmetic of the peek, and the
+fix is a one class change whose semantics are written in `globals.css` above, but **the one thing that
+would actually close this report, seeing the second card painted on first load, has not been done.**
+That is the first check when a browser is available: load `/` at 375, do not touch anything, and read
+the computed opacity of the second `li`. It must be 1.
