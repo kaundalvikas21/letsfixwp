@@ -12,11 +12,11 @@ export default guideSchema.parse({
     "Only wp-admin, or only certain pages, return the error while the rest of the site loads",
   ],
   likelyCauses: [
-    "A corrupted or badly edited .htaccess file with rules the server cannot read",
-    "A PHP fatal error in a plugin or theme that the server reports as a 500",
-    "The PHP memory limit or execution time being exceeded",
-    "Wrong file or folder permissions after a migration or manual upload",
-    "A PHP version or server module change made by the host",
+    { text: "A corrupted or badly edited .htaccess file with rules the server cannot read", layers: ["server"] },
+    { text: "A PHP fatal error in a plugin or theme that the server reports as a 500", layers: ["extensions", "php"] },
+    { text: "The PHP memory limit or execution time being exceeded", layers: ["php"] },
+    { text: "Wrong file or folder permissions after a migration or manual upload", layers: ["server"] },
+    { text: "A PHP version or server module change made by the host", layers: ["php", "server"] },
   ],
   safeChecks: [
     "Open the error log in your hosting control panel and note the most recent lines and their time. They usually name the file or rule causing the 500.",

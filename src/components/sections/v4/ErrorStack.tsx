@@ -42,7 +42,7 @@ const panels: ErrorPanel[] = CARDS.map(({ slug, name, quote, Icon }) => {
     quote,
     captured,
     symptom: guide.symptoms[0],
-    cause: guide.likelyCauses[0],
+    cause: guide.likelyCauses[0].text,
     icon: <Icon weight="duotone" className="size-5" />,
     screen: captured ? (
       // fill, not a declared width and height: the captures from scripts/capture-errors.mjs are

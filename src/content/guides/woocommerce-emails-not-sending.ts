@@ -12,11 +12,11 @@ export default guideSchema.parse({
     "An SMTP plugin log shows \"SMTP Error: Could not authenticate.\" or a connection failure",
   ],
   likelyCauses: [
-    "The site sends through the host's PHP mail() function, which is blocked, rate limited or rejected by inbox providers",
-    "Missing or wrong SPF, DKIM and DMARC records for your domain, which Gmail and Yahoo now require from bulk senders",
-    "An email type switched off, or the wrong recipient address, under WooCommerce > Settings > Emails",
-    "Orders stuck at \"Pending payment\" or \"On hold\", which do not trigger the same emails as \"Processing\"",
-    "A changed SMTP password, or an email account that now requires an app password or OAuth",
+    { text: "The site sends through the host's PHP mail() function, which is blocked, rate limited or rejected by inbox providers", layers: ["server", "edge"] },
+    { text: "Missing or wrong SPF, DKIM and DMARC records for your domain, which Gmail and Yahoo now require from bulk senders", layers: ["edge"] },
+    { text: "An email type switched off, or the wrong recipient address, under WooCommerce > Settings > Emails", layers: ["extensions"] },
+    { text: "Orders stuck at \"Pending payment\" or \"On hold\", which do not trigger the same emails as \"Processing\"", layers: ["extensions"] },
+    { text: "A changed SMTP password, or an email account that now requires an app password or OAuth", layers: ["edge"] },
   ],
   safeChecks: [
     "Open WooCommerce > Settings > Emails and check each email you rely on is enabled. Note the recipient listed for New order.",

@@ -11,11 +11,11 @@ export default guideSchema.parse({
     "Settings, plugins or passwords change without anyone on your side doing it",
   ],
   likelyCauses: [
-    "A plugin vulnerability that lets visitors create accounts or raise their own role",
-    "Settings left with \"Anyone can register\" on and the default role set to Administrator",
-    "A stolen or guessed admin password",
-    "Backdoor code that recreates an admin account each time it is deleted",
-    "Code in a theme or mu-plugin that hides an admin from the Users list",
+    { text: "A plugin vulnerability that lets visitors create accounts or raise their own role", layers: ["extensions"] },
+    { text: "Settings left with \"Anyone can register\" on and the default role set to Administrator", layers: ["wordpress"] },
+    { text: "A stolen or guessed admin password", layers: ["wordpress"] },
+    { text: "Backdoor code that recreates an admin account each time it is deleted", layers: ["extensions"] },
+    { text: "Code in a theme or mu-plugin that hides an admin from the Users list", layers: ["extensions"] },
   ],
   safeChecks: [
     "In wp-admin, open Settings then General and look at Membership and New User Default Role. If anyone can register as Administrator, note it down.",

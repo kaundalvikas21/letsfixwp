@@ -13,11 +13,11 @@ export default guideSchema.parse({
     "The payment succeeds in the gateway dashboard but the WooCommerce order stays at \"Pending payment\" or \"Failed\"",
   ],
   likelyCauses: [
-    "API keys or merchant credentials that are wrong, revoked or still in test mode on the live store, or a gateway account that is restricted or not yet activated",
-    "Webhooks failing because the signing secret is wrong or a firewall or security plugin blocks the callback",
-    "A domain or SSL change after a migration that breaks the gateway's return and callback URLs, or a new domain not yet approved in the gateway account",
-    "A JavaScript conflict stopping the card field, the payment popup or the 3D Secure or OTP window from loading",
-    "An outdated gateway plugin, or a currency or country the gateway account is not set up for",
+    { text: "API keys or merchant credentials that are wrong, revoked or still in test mode on the live store, or a gateway account that is restricted or not yet activated", layers: ["extensions", "edge"] },
+    { text: "Webhooks failing because the signing secret is wrong or a firewall or security plugin blocks the callback", layers: ["extensions", "server"] },
+    { text: "A domain or SSL change after a migration that breaks the gateway's return and callback URLs, or a new domain not yet approved in the gateway account", layers: ["edge"] },
+    { text: "A JavaScript conflict stopping the card field, the payment popup or the 3D Secure or OTP window from loading", layers: ["extensions"] },
+    { text: "An outdated gateway plugin, or a currency or country the gateway account is not set up for", layers: ["extensions"] },
   ],
   safeChecks: [
     "Log in to your gateway dashboard, such as Razorpay, PayU, Cashfree, PhonePe, CCAvenue, Stripe or PayPal, and look at recent failed payments. Note the reason shown next to each.",

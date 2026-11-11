@@ -121,7 +121,7 @@ nearly invisible anyway. Edges are carried by `--line` and by `--surface` steppi
 | `--shadow-lift` (hover, links only) | `inset 0 1px 0 rgb(255 255 255 / 0.07), 0 2px 4px rgb(0 0 0 / 0.7)` |
 
 The inset top highlight is the main device: it reads as a lit edge in a dark room. No ember glows,
-no coloured shadows, no 3D effects, except the step blocks in the service page's "What we do" flow and the contact page's promises flow (owner decision, 2026-11-05, docs/layout-ledger.md Tasks 77 and 78).
+no coloured shadows, no 3D effects, except the step blocks in the service page's "What we do" flow and the contact page's promises flow (owner decision, 2026-11-05, docs/layout-ledger.md Tasks 77 and 78), and two motifs on the guide template: the rolling tick cube on the symptom check and the extruded hand-off slab in "When to call us" (owner decision, 2026-11-11, docs/layout-ledger.md Tasks 89 and 93; the fault map planes and stair treads were retired in Task 93). Neither may be reused on another page without a new owner decision.
 
 ### Glass
 
@@ -393,7 +393,7 @@ and sits in the nav. A page's primary CTA follows its SITEMAP node intent (`prim
 - More than two pinned sections per page; more than one marquee per page
 - Scroll-jacking without a skip control, or a pinned scene that still pins under reduced motion
 - Typing effects, character-split body copy, text rendered as an image
-- Glass or `backdrop-filter` anywhere except the scrolled nav bar; ember glows, coloured or complex shadows, 3D effects (one exception: the step blocks in the service page's "What we do" flow and the contact page's promises flow, whose thickness is a hard-edged stacked shadow; docs/layout-ledger.md Tasks 77 and 78)
+- Glass or `backdrop-filter` anywhere except the scrolled nav bar; ember glows, coloured or complex shadows, 3D effects (two exceptions: the step blocks in the service page's "What we do" flow and the contact page's promises flow, whose thickness is a hard-edged stacked shadow, docs/layout-ledger.md Tasks 77 and 78; and the guide template's tick cube and hand-off slab, docs/layout-ledger.md Tasks 89 and 93)
 - Colour-only indicators for broken versus restored
 - Gradients (including gradient text fills) anywhere except the hero legibility scrim and the flat ember veil inside the guarantee mask, which is a solid colour layered over a photograph and only written as a gradient because that is how CSS layers a colour over an image; pure `#000000` / `#FFFFFF`
 - Emojis as icons. One icon set site-wide: Phosphor (`@phosphor-icons/react/ssr`, `…Icon` names)

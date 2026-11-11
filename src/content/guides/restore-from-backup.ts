@@ -11,11 +11,11 @@ export default guideSchema.parse({
     "You are not sure which of several backups is complete or free of malware",
   ],
   likelyCauses: [
-    "A backup that holds only the database, or files without the uploads folder",
-    "An archive too large for the server's upload limits or PHP timeouts",
-    "A backup taken after the site was already infected, which brings the malware back",
-    "A different domain, PHP version or database table prefix on the server being restored to",
-    "A restore that would overwrite orders, form entries or posts made since the backup was taken",
+    { text: "A backup that holds only the database, or files without the uploads folder", layers: ["database", "server"] },
+    { text: "An archive too large for the server's upload limits or PHP timeouts", layers: ["server", "php"] },
+    { text: "A backup taken after the site was already infected, which brings the malware back", layers: ["server"] },
+    { text: "A different domain, PHP version or database table prefix on the server being restored to", layers: ["server", "php"] },
+    { text: "A restore that would overwrite orders, form entries or posts made since the backup was taken", layers: ["database"] },
   ],
   safeChecks: [
     "List the backups you have: where each one is stored (host panel, UpdraftPlus, Google Drive, your computer) and its date. Do not run a restore yet.",

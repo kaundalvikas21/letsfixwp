@@ -9292,3 +9292,272 @@ fix is a one class change whose semantics are written in `globals.css` above, bu
 would actually close this report, seeing the second card painted on first load, has not been done.**
 That is the first check when a browser is available: load `/` at 375, do not touch anything, and read
 the computed opacity of the second `li`. It must be 1.
+
+## v4 / the guide's four body sections, each with its own picture and its own 3D (Task 89)
+
+Owner: "guides slug page, What you are seeing, What usually causes it, Safe things to try first & When
+to call us sections currently over all boring by design point if view and not Good UI/UX scannable,
+please re-design this page sections are visually more clean unique 3D representation don't existing
+3D repeat and easy understandable visually section content rather than read first. As be like a SaaS
+page i want."
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 2 | What you are seeing | toggle checklist panel; split with a perspective capture on the 4 guides that have one | no | no | none (in-page link to #safe-checks) |
+| 3 | What usually causes it | exploded plane diagram over a tagged row list | no | no | none |
+| 4 | Safe things to try first | climbing step grid (2 or 3) plus warning strip | no | no | none |
+| 5 | When to call us | split panel, statement left, 3D slab right, action row under a hairline | no | no | book, chat, check |
+
+### What changed, and why each shape
+
+The data was four lists of sentences, so a visitor had to read every one to learn anything. Each
+section now has one idea, and the shape says it before the words do.
+
+- **Recognise it.** Symptoms are toggle rows (`aria-pressed`). The tick is a cube (`flip-tick`) that
+  rolls a quarter turn to its ember face; the footer counts "2 of 4 match" live and then offers the
+  safe checks. The count is the reader's input over the guide's own list, so rule 8 holds.
+- **See where it lives.** `likelyCauses` became `{ text, layers }`, and all 182 causes across the 37
+  guides were tagged by hand against six layers (`causeLayers` in schema.ts: server, PHP, database,
+  WordPress, plugins and theme, edge and delivery), two where the sentence names two. Owner chose
+  hand tags over a keyword map, which would have filed "a PHP fatal error in a plugin" under one
+  layer only. The fault map draws the six as planes (`fault-plane`), ember where this guide breaks;
+  pointing at a cause lifts its plane through `:has()` (`fault-map`), no script. The planes are
+  `aria-hidden` and the list carries every layer name as text.
+- **Try things in order.** The checks are steps (`stair-step`) that climb left to right from 768px,
+  each with a perspective tread, the top tread ember. The first sentence of each check is the bold
+  lead (`leadSentence` in utils.ts), the rest muted. Every lead was read across the 37 guides before
+  shipping; the full-stop-then-capital rule keeps paths like `wp-content/plugins.` whole.
+- **Know where to stop.** The first sentence of `whenToCallUs` is the stop condition, set as a display
+  line; the slab beside it (`TiltSlab`, the one Motion island) is twelve 3px slices of the face, so
+  its corners stay round at any angle, and it leans after the pointer on the contract's spring.
+
+### Not the existing 3D
+
+The service and contact flows' block is isometric (rotateX 55, rotateZ -45) with hard stacked
+shadows; `card-plate` is an offset sheet. The four here are a cube roll, front-on planes (rotateX 62,
+no Z turn), receding treads (rotateX 68 on a hinge) and a sliced extrusion. MASTER's 3D exception is
+amended to name them and to keep them on this template.
+
+### The reveal trap, again
+
+The reveal pins `transform` with `fill: both` (Task 88). Every motif therefore puts its 3D on a child
+or a pseudo-element, the stair climb uses the separate `translate` property, and reveals sit on
+wrappers. Measured after a full scroll at 375: 0 revealed elements below opacity 1.
+
+### 21st.dev
+
+Searched first: "Hairline Exploded", "Isometric Steps", the motion-primitives "Tilt" and a spring
+"Checkbox Group". None was installed. Isometric Steps is the projection this brief rules out, and
+the other three are a pattern each, rebuilt here as CSS utilities on the v4 tokens and one Motion
+island, which is less code than rewriting their shadcn tokens and second accents.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 209 files scanned, legacy off**, motion
+check clean, build green at **99 routes**.
+
+```
+browser          production build, Chrome, 375 / 768 / 1024 / 1440
+guides           500-internal-server-error (no capture, 2 checks), php-fatal-error (3 checks),
+                 white-screen-of-death (capture)
+overflow-x       0 at 375, none at 768 / 1024
+reveal           0 elements below opacity 1 after a full scroll at 375
+symptom check    2 rows ticked: aria-pressed true/false/false/true, live text "2 of 4 match this guide."
+fault map        hover on the PHP memory cause fills and lifts the PHP plane only
+reading rail     5 h2 ticks in the column, unchanged
+reduced motion   cube transform none, ember face cross-fades to opacity 1, slab static at its rest angle
+axe              white-screen-of-death, reduced motion, 1440: 0 violations, 23 passes; color-contrast
+                 incomplete only on the masthead, closing band and stair text (the tread pseudo-element),
+                 all existing token pairs
+```
+
+**Not run, and not claimed:** no real touch device; `build:prod` (strict) still fails on the
+unconfirmed brand values and placeholder testimonials, as before this task.
+
+## v4 / the guide sections, quietened (Task 90)
+
+Owner: "polish the page clean roughness and proper UI/UX clean working as expectation not noisy and
+over unecesary"
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 2 to 5 | the four guide body sections | unchanged from Task 89 | no | no | unchanged |
+
+### What came out, and why
+
+Read as a whole page, Task 89 said several things twice, and most of the repeats were ember. Each
+removal leaves one carrier per idea.
+
+- **Cause rows lost their icon chips.** The plane stack above already draws the layers in ember; the
+  chips put a second ember mark on every row. The layer name stays as text, and it turns ember when
+  its row is pointed at, so the row now answers the pointer where it used to answer only in the
+  diagram 300px away.
+- **Idle planes recede** (`--line-strong` at 55%) so the ember planes are the only thing in the
+  diagram that reads at a glance. The diagram is `aria-hidden`, so this is not a control boundary.
+- **Planes sit inside the column.** Perspective widens each front edge past its box; `px-3` on the
+  stack keeps it off the page gutter.
+- **Steps lost their ordinals.** The climb and the `<ol>` already give the order.
+- **"When to call us" lost its ember hairline**, and the slab went from 144 to 112px: one ember mark
+  per panel, and the statement is the larger thing.
+- **Symptom rows no longer scale on press.** A full-width row shrinking inside a ruled list jitters;
+  the cube roll is the feedback.
+- **"Get a free site check" is a visible link now.** `CheckLink` ships unstyled, so it rendered as
+  muted text with no underline. It takes a quiet underline in `--line-strong` that turns ember on
+  hover.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content and motion checks clean, build green at **99 routes**. Production build in
+Chrome at 1440 (reduced motion) and 375 (motion on): overflow-x 0, 0 revealed elements below opacity 1
+after a full scroll, site-check link computes `text-decoration-line: underline`.
+
+**Not run, and not claimed:** axe was not re-run after these removals (Task 89's run was 0 violations;
+nothing here adds a colour pair except the link, which is `--text` on `--surface`).
+
+## v4 / causes become an explorer, safe checks become a climb that ends in a stop (Task 91)
+
+Owner: "What usually causes it refine clean UI/UX and more interactive professionaly think and
+redesign. Safe things to try first section enhancement the concepual thinks than UI/UX clean"
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 3 | What usually causes it | master and detail: 3D layer stack as a vertical tablist, cause panel beside it | no | no | none |
+| 4 | Safe things to try first | climbing step grid with done toggles, landing strip that hands off | no | no | none (in-page link to #call-us) |
+
+### What usually causes it
+
+The stack was a picture and the list sat under it, joined only by a hover that phones do not have.
+The stack is now the control (`FaultExplorer`, a client leaf; `FaultMap` stays the server half and
+regroups the causes by layer, so the content modules never reach the bundle).
+
+- Every lit layer is a tab with its cause count; picking one opens that layer's causes in the panel
+  beside it, the plane lifts and fills. Unlit layers stay in the stack, dimmed and `aria-hidden`:
+  they tell the reader where it probably is not.
+- A cause tagged with two layers appears under both, with "Also starts in PHP" linking across and
+  moving focus to that tab.
+- WAI-ARIA vertical tablist: arrows move and select (wrapping), Home and End jump, roving tabindex.
+- All panels render into one grid cell; the inactive ones are `inert` and invisible (`fault-panel`).
+  The box is the tallest panel's height, so switching never moves the page, and every cause stays
+  in the HTML.
+- Opens on the first cause's first layer: each guide lists its most common cause first.
+- The `fault-map` `:has()` hover utility is gone; `fault-plane` gained `data-selected` and a half lift
+  on hover under a fine pointer.
+
+### Safe things to try first
+
+The section's real message is the stop, and nothing on screen said it. Now each step has a Done
+toggle (the same rolling tick as the symptom check, so a tick means one thing on this page) that
+lights its tread, so the lit treads are how far the reader has climbed. The core-file warning is the
+landing at the top: it counts "1 of 2 tried", and when every step is done it turns ember, says
+"Tried them all and it is still broken? Stop here." and points at "When to call us". The hand-off
+arrives at the moment the safe options run out. The ember last tread from Task 89 is retired; the
+landing carries the stop.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content and motion checks clean, build green at **99 routes**.
+
+```
+1440             500 guide opens on Server (first cause); "Also starts in PHP" selects PHP and focuses
+                 its tab; ArrowUp to Plugins and theme, ArrowUp again wraps to Server; tabIndex
+                 -1,-1,0; inactive panels inert and visibility hidden
+stairs           one Done: tread ember, landing "1 of 2 tried"; both: landing border ember, text
+                 "Tried them all and it is still broken? Stop here."
+375              php-fatal-error: overflow-x 0, 0 revealed elements below opacity 1, tabs 44px tall
+axe              php-fatal-error 375 with a step done: 0 violations, 30 passes
+```
+
+**Not run, and not claimed:** no real touch device; no screen reader pass beyond axe.
+
+## v4 / causes and safe checks, back to plain sight with hover (Task 92)
+
+Owner: "What usually causes it & Safe things to try first sections display simple and beautiful with
+hover effect."
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 3 | What usually causes it | split: sticky 3D layer stack beside a ruled cause card | no | no | none |
+| 4 | Safe things to try first | climbing step grid, landing strip | no | no | none (in-page link to #call-us) |
+
+Read as: show everything at once, and make hover the only interaction. Task 91's tabs and done
+toggles are gone, and both sections are Server Components again (`FaultExplorer` deleted,
+`fault-panel` utility deleted, no client JS in either).
+
+- **Causes.** The stack sits beside the causes, sticky from 768px so it stays next to whichever row
+  the pointer is on. Hover runs both ways through `fault-map` (`:has()`, fine pointers only):
+  a cause lifts and fills its layers and turns its layer names ember; a lit layer dims every cause
+  not in it to 35%. The dimming is on the inner row, never the Stagger `li`, whose reveal holds
+  opacity. On touch it is simply the picture beside the list.
+- **Safe checks.** Steps climb as before, with no toggle. Hovering a step lifts it 4px off its place
+  in the climb (`--lift`, composed into the same `translate` as the rise) and lights its tread; no
+  lift under reduced motion. The landing is static: "Still broken after these?" leading the existing
+  core-file warning, and the link on to "When to call us".
+
+### Checks
+
+`tsc` 0, `eslint` 0, content and motion checks clean, build green at **99 routes**. Production build
+in Chrome at 1440: hovering "A PHP fatal error in a plugin or theme" fills Plugins and PHP; hovering the
+Server layer leaves its three causes bright and dims the other two; hovering step 1 lifts it and lights
+its tread. At 375 on php-fatal-error: overflow-x 0, 0 revealed elements below opacity 1, the stack is
+`position: static`.
+
+**Not run, and not claimed:** axe was not re-run; this pass removes the interactive controls Task 91
+added and introduces no new colour pairs.
+
+## v4 / causes as a 2x2 table with layer icons, safe checks as plain cards (Task 93)
+
+Owner, on a screenshot with the 3D stack struck out and the cause card ticked: "What usually causes
+it: right stack display in 2*2 table with same current also include relevant icons placement. Safe
+things to try first section cards top shadow whatever remove and only re-use existing best fit hover
+state."
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 3 | What usually causes it | ruled two-column table, layer icons per cell | no | no | none |
+| 4 | Safe things to try first | separate `HoverFill` cards (2 or 3 across), landing strip | no | no | none (in-page link to #call-us) |
+
+- **Causes.** The 3D layer stack is gone (`fault-plane`, `fault-map` deleted; `FaultMap.tsx` replaced
+  by `CauseTable.tsx`). The cause card is now a ruled table, two columns from 768px: the rules are the
+  card's `--line` through a 1px gap, and an odd last cell spans both columns so it never ends on a
+  hole. Each cell leads with the `layerIcon` mark of every layer its cause is tagged with, the layer
+  names beside them, then the cause; hover keeps Task 92's surface fill and ember layer names. The
+  table reveals as one element, because a staggered cell would show the gap as a solid block.
+- **Safe checks.** The treads and the climb are gone (`stair-step` deleted): without the treads an
+  offset reads as misaligned cards. Each check is a `card` wrapped in `HoverFill`, the existing hover
+  for non-link cards (case studies' anatomy, About's stats strip). Separate cards, not a table, so
+  the two sections stay different families (contract rule 3).
+- MASTER's 3D exception now names only the guide's tick cube and hand-off slab.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content and motion checks clean, build green at **99 routes**. Chrome at 1440 on
+redirect-hack: 2x2 plus a spanning fifth cell, two-layer cause shows both marks; the first check fills
+under the pointer. At 375 on php-fatal-error: one column, overflow-x 0, 0 revealed elements below
+opacity 1.
+
+**Not run, and not claimed:** axe not re-run; no new colour pairs.
+
+### Follow-up (Task 93b)
+
+Owner: "Plugins and theme, WordPress before one icon and last row also 5 col width contain not full
+next col width contain."
+
+- One mark per cell: the cause's first layer, which is its main tag. Every layer name still follows.
+- The odd last cause keeps one column's width. An empty `bg-surface` cell (`aria-hidden`, md+ only)
+  closes the row, because without it the gap's `--line` showed through the hole as a grey block.
+
+Checked at 1440 on redirect-hack: one mark on the two-layer cause, fifth cell half width beside a
+plain empty cell. `tsc` 0, `eslint` 0, build green at 99 routes.
+
+## v4 / no scroll progress bar on guides (Task 94)
+
+Owner: "site header page progress bar remove no need page progress on scroll"
+
+The bar under the header was mounted on the guide template only, as an owner-granted exception to
+contract rule 6's ban on scroll cues. That exception is withdrawn: `ScrollProgress` is no longer
+mounted anywhere, so rule 6 now holds without exception. The primitive stays in
+`src/components/motion/` (it is part of the documented motion set) but has no caller. `ReadingRail`
+in the lg sidebar is unaffected; it reads `[data-rail-scope] h2[id]`, not the article id.
+
+Checks: `tsc` 0, `eslint` 0, build green at 99 routes; the built
+`/guides/500-internal-server-error/` HTML contains no element with the bar's classes.

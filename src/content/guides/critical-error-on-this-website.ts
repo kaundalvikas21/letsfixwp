@@ -12,11 +12,11 @@ export default guideSchema.parse({
     "The admin email received a message titled \"Your Site is Experiencing a Technical Issue\"",
   ],
   likelyCauses: [
-    "A PHP fatal error in a plugin or theme, caught by the WordPress fatal error handler",
-    "A plugin or theme update that calls a function or class that is no longer there",
-    "A PHP version change on the server that the active theme or a plugin cannot run on",
-    "The PHP memory limit being reached while a page or admin screen loads",
-    "A file left half-written by an interrupted update or upload",
+    { text: "A PHP fatal error in a plugin or theme, caught by the WordPress fatal error handler", layers: ["extensions", "php"] },
+    { text: "A plugin or theme update that calls a function or class that is no longer there", layers: ["extensions"] },
+    { text: "A PHP version change on the server that the active theme or a plugin cannot run on", layers: ["php"] },
+    { text: "The PHP memory limit being reached while a page or admin screen loads", layers: ["php"] },
+    { text: "A file left half-written by an interrupted update or upload", layers: ["server"] },
   ],
   safeChecks: [
     "Search the site admin email inbox, including spam, for \"Your Site is Experiencing a Technical Issue\". It names the broken plugin or theme and includes a recovery mode login link.",

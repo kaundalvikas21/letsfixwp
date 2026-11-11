@@ -794,6 +794,113 @@
   }
 }
 
+/* The guide page's two 3D motifs (owner request, docs/layout-ledger.md Tasks 89 and 93, MASTER 3D
+   exception amended). Neither is the isometric diamond of `flow-block` or the offset sheet of
+   `card-plate`: a cube that rolls (symptoms) and a slab extruded from slices (when to call us).
+   Tokens only, no blur, no glow, 14px on every face.
+
+   One trap governs both. The reveal script animates `transform` with `fill: both`, which pins
+   the final `transform: none` on whatever it reveals. So nothing here puts its 3D on an element
+   that carries `reveal`, `reveal-self` or a `Stagger` slot: the 3D lives on a child or a
+   pseudo-element, and the stair offset uses the separate `translate` property for the same reason. */
+
+/* "What you are seeing": the tick on each symptom row is a cube. Unticked shows its plain face;
+   pressing the row rolls the cube a quarter turn on X and the ember face with the tick comes round
+   to the front. State indication: the roll says this row changed, and the colour says to what.
+   Under reduced motion the faces cross-fade in place instead of rolling. */
+@utility flip-tick {
+  --tick: 2rem;
+  position: relative;
+  flex: none;
+  width: var(--tick);
+  height: var(--tick);
+  perspective: 12rem;
+
+  & > span {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    transform: translateZ(calc(var(--tick) / -2));
+    transition: transform var(--motion-duration-small) var(--motion-ease);
+  }
+
+  & [data-face] {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    backface-visibility: hidden;
+  }
+
+  & [data-face="off"] {
+    transform: translateZ(calc(var(--tick) / 2));
+    background: var(--surface-2);
+    /* A control boundary, so the strong line (3:1), not the decorative one. */
+    border: 1px solid var(--line-strong);
+  }
+
+  & [data-face="on"] {
+    transform: rotateX(90deg) translateZ(calc(var(--tick) / 2));
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  :where([aria-pressed="true"]) & > span {
+    transform: translateZ(calc(var(--tick) / -2)) rotateX(-90deg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    & > span,
+    :where([aria-pressed="true"]) & > span {
+      transform: none;
+      transition: none;
+    }
+    & [data-face] {
+      transform: none;
+      transition: opacity var(--motion-duration-small) var(--motion-ease);
+    }
+    & [data-face="on"] {
+      opacity: 0;
+    }
+    :where([aria-pressed="true"]) & [data-face="on"] {
+      opacity: 1;
+    }
+  }
+}
+
+/* "When to call us": the hand-off, as a solid ember block. It is twelve copies of the face stacked
+   3px apart in Z behind it, which is what gives the sides their depth at any angle and keeps the
+   14px corners round all the way through, where flat side faces would leave square edges poking
+   past a round front. It rests turned toward the reader and leans after the pointer on a spring
+   (`TiltSlab`); the leaning is feedback that the panel is live, and it never moves under reduced
+   motion or a coarse pointer. */
+@utility tilt-slab {
+  position: relative;
+  width: 7rem;
+  aspect-ratio: 1;
+  transform-style: preserve-3d;
+
+  & > [data-slice] {
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--accent) 45%, var(--bg));
+    transform: translateZ(calc(var(--n) * -3px));
+  }
+
+  & > [data-face] {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    background: var(--accent);
+    color: var(--on-accent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 35%, transparent);
+  }
+}
+
 @utility marquee-fade {
   mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
   @media (prefers-reduced-motion: reduce) {

@@ -12,11 +12,11 @@ export default guideSchema.parse({
     "The site broke overnight and you received an email listing automatic updates",
   ],
   likelyCauses: [
-    "A plugin update that is not compatible with your WordPress or PHP version",
-    "A theme or child theme relying on code the updated plugin or core removed",
-    "An update interrupted partway, leaving a mix of old and new files",
-    "Two plugins that clash once one of them is updated",
-    "Automatic background updates applied without testing",
+    { text: "A plugin update that is not compatible with your WordPress or PHP version", layers: ["extensions"] },
+    { text: "A theme or child theme relying on code the updated plugin or core removed", layers: ["extensions", "wordpress"] },
+    { text: "An update interrupted partway, leaving a mix of old and new files", layers: ["wordpress"] },
+    { text: "Two plugins that clash once one of them is updated", layers: ["extensions"] },
+    { text: "Automatic background updates applied without testing", layers: ["wordpress"] },
   ],
   safeChecks: [
     "Search the site admin email inbox for \"Your Site is Experiencing a Technical Issue\" or a list of automatic updates. Either one tells you which plugin or theme changed.",

@@ -13,11 +13,11 @@ export default guideSchema.parse({
     "Your account has lost its Administrator role or no longer exists",
   ],
   likelyCauses: [
-    "A security plugin lockout, IP block or changed login URL nobody wrote down",
-    "Administrator role or capabilities changed in the database by a plugin, a bad migration or an attacker",
-    "The admin account's password or email changed without your knowledge",
-    "A plugin or theme error that only appears when wp-admin loads",
-    "Two-factor authentication tied to a phone or app you no longer have",
+    { text: "A security plugin lockout, IP block or changed login URL nobody wrote down", layers: ["extensions"] },
+    { text: "Administrator role or capabilities changed in the database by a plugin, a bad migration or an attacker", layers: ["database"] },
+    { text: "The admin account's password or email changed without your knowledge", layers: ["wordpress"] },
+    { text: "A plugin or theme error that only appears when wp-admin loads", layers: ["extensions"] },
+    { text: "Two-factor authentication tied to a phone or app you no longer have", layers: ["extensions"] },
   ],
   safeChecks: [
     "Try logging in from a private window or a different network, such as your phone on mobile data. IP lockouts often only block one address.",

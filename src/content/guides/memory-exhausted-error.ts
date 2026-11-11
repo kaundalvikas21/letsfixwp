@@ -12,10 +12,10 @@ export default guideSchema.parse({
     "The error appears together with \"There has been a critical error on this website.\"",
   ],
   likelyCauses: [
-    "WP_MEMORY_LIMIT or the host's PHP memory_limit set lower than the site now needs",
-    "A plugin with a memory leak or a loop that keeps loading data until memory runs out",
-    "Heavy operations such as large imports, WooCommerce reports or image processing",
-    "Too many plugins loading large amounts of data on every request",
+    { text: "WP_MEMORY_LIMIT or the host's PHP memory_limit set lower than the site now needs", layers: ["php", "wordpress"] },
+    { text: "A plugin with a memory leak or a loop that keeps loading data until memory runs out", layers: ["extensions"] },
+    { text: "Heavy operations such as large imports, WooCommerce reports or image processing", layers: ["extensions", "php"] },
+    { text: "Too many plugins loading large amounts of data on every request", layers: ["extensions"] },
   ],
   safeChecks: [
     "Look in your host's control panel under PHP settings and note the current memory_limit value. Do not change it yet, just record it.",

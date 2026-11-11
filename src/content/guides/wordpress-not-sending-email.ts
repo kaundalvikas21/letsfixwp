@@ -11,11 +11,11 @@ export default guideSchema.parse({
     "Emails land in spam, or Gmail shows them as sent \"via\" your host's server name",
   ],
   likelyCauses: [
-    "The host blocks or limits PHP mail(), which WordPress uses by default",
-    "No SPF, DKIM or DMARC records authorizing the server to send for your domain",
-    "A From address on a different domain to the site, such as a Gmail address, which inbox providers reject",
-    "An SMTP password that changed, or a Google or Microsoft account that now requires an app password or OAuth",
-    "A form plugin sending to the wrong address or with a broken notification setting",
+    { text: "The host blocks or limits PHP mail(), which WordPress uses by default", layers: ["server", "edge"] },
+    { text: "No SPF, DKIM or DMARC records authorizing the server to send for your domain", layers: ["edge"] },
+    { text: "A From address on a different domain to the site, such as a Gmail address, which inbox providers reject", layers: ["edge", "wordpress"] },
+    { text: "An SMTP password that changed, or a Google or Microsoft account that now requires an app password or OAuth", layers: ["edge"] },
+    { text: "A form plugin sending to the wrong address or with a broken notification setting", layers: ["extensions"] },
   ],
   safeChecks: [
     "Use the Lost your password link on your login page for your own account, then check your inbox and spam folder.",

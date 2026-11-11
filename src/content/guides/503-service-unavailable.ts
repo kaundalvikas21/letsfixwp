@@ -12,11 +12,11 @@ export default guideSchema.parse({
     "wp-admin is extremely slow or times out before showing the 503",
   ],
   likelyCauses: [
-    "All PHP workers busy, so the server turns new requests away",
-    "A plugin, cron job or background task running in a loop and holding the server",
-    "Bot traffic, brute force login attempts or xmlrpc.php abuse flooding the site",
-    "The hosting plan's CPU, memory or process limits being reached",
-    "The host carrying out maintenance or restarting services",
+    { text: "All PHP workers busy, so the server turns new requests away", layers: ["php", "server"] },
+    { text: "A plugin, cron job or background task running in a loop and holding the server", layers: ["extensions", "wordpress"] },
+    { text: "Bot traffic, brute force login attempts or xmlrpc.php abuse flooding the site", layers: ["edge"] },
+    { text: "The hosting plan's CPU, memory or process limits being reached", layers: ["server"] },
+    { text: "The host carrying out maintenance or restarting services", layers: ["server"] },
   ],
   safeChecks: [
     "Check your host's status page for maintenance or an outage in your region. If the host is working on the server, the 503 will clear when they finish.",

@@ -11,11 +11,11 @@ export default guideSchema.parse({
     "Only one post type fails, such as products, portfolio items or events",
   ],
   likelyCauses: [
-    "Missing or overwritten WordPress rewrite rules in .htaccess",
-    "mod_rewrite disabled on Apache, or Nginx missing the try_files rule WordPress needs",
-    "Stored rewrite rules out of date after a plugin added or removed a custom post type",
-    "A migration that changed the site path or left the old URL in the database",
-    "A slug that clashes with another page, category or plugin route",
+    { text: "Missing or overwritten WordPress rewrite rules in .htaccess", layers: ["server"] },
+    { text: "mod_rewrite disabled on Apache, or Nginx missing the try_files rule WordPress needs", layers: ["server"] },
+    { text: "Stored rewrite rules out of date after a plugin added or removed a custom post type", layers: ["database"] },
+    { text: "A migration that changed the site path or left the old URL in the database", layers: ["database"] },
+    { text: "A slug that clashes with another page, category or plugin route", layers: ["wordpress"] },
   ],
   safeChecks: [
     "Go to Settings > Permalinks and click Save Changes without changing anything. This rebuilds WordPress rewrite rules and often fixes the 404s.",

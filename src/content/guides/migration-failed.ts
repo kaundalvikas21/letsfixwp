@@ -12,11 +12,11 @@ export default guideSchema.parse({
     "The home page works, but every other page returns a 404",
   ],
   likelyCauses: [
-    "Database name, user, password, host or table prefix in wp-config.php not matching the new server",
-    "Old URLs left in the database, or a plain find and replace that broke serialized settings and widgets",
-    "An incomplete transfer caused by upload size limits or timeouts on large sites",
-    "Missing .htaccess or server rewrite rules, or a different PHP version and extensions on the new host",
-    "DNS pointing some visitors to the old server and some to the new one",
+    { text: "Database name, user, password, host or table prefix in wp-config.php not matching the new server", layers: ["database", "wordpress"] },
+    { text: "Old URLs left in the database, or a plain find and replace that broke serialized settings and widgets", layers: ["database"] },
+    { text: "An incomplete transfer caused by upload size limits or timeouts on large sites", layers: ["server"] },
+    { text: "Missing .htaccess or server rewrite rules, or a different PHP version and extensions on the new host", layers: ["server", "php"] },
+    { text: "DNS pointing some visitors to the old server and some to the new one", layers: ["edge"] },
   ],
   safeChecks: [
     "Do not cancel your old hosting yet. Leave the original site where it is until the new one is confirmed working.",
