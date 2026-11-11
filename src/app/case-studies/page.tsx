@@ -4,6 +4,7 @@ import { BookLink, ChatButton } from "@/components/Cta";
 import { HoverFill } from "@/components/HoverFill";
 import { nodeCrumbs } from "@/components/JsonLd";
 import { Stagger } from "@/components/motion";
+import { ClientClips } from "@/components/sections/v4/ClientClips";
 import { ClosingBand, LinkCards, PageMasthead, Section, card, page, pageYMasthead } from "@/components/templates/parts";
 import { VideoFrame } from "@/components/VideoFrame";
 import { routes } from "@/config/routes";
@@ -93,6 +94,12 @@ export default function CaseStudies() {
       <Section id="film" title="The same site, before and after">
         <VideoFrame id="a-site-brought-back" />
       </Section>
+
+      {/* The clients, above the empty state for the same reason the clip is: a client on camera needs
+          no write-up to exist first, so it is proof this page can carry today. The wall is four
+          portrait frames with no title, summary, caret or link in a cell, which is what keeps it clear
+          of the two text-card grids this page already has. Ledger Task 79. */}
+      <ClientClips id="clips" title="Clients on camera" layout="grid" />
 
       {/* One sentence, and deliberately no buttons. The masthead above and the closing band below
           already carry this page's two CTAs, and a third copy of the same pair would be the

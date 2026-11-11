@@ -1,6 +1,7 @@
 import { BookLink, ChatButton, PlansLink, QuoteLink } from "@/components/Cta";
 import { faqLd, JsonLd, nodeCrumbs, serviceLd } from "@/components/JsonLd";
 import { SiteStatus } from "@/components/SiteStatus";
+import { videoCaption, VideoSlotBox } from "@/components/VideoFrame";
 import { CLOSING_ASK, primaryCtaFor } from "@/config/cta";
 import { getGuide } from "@/content";
 import { testimonials } from "@/content/testimonials";
@@ -85,16 +86,27 @@ export function ServiceTemplate({ service: s }: { service: Service }) {
 
           {quote && (
             <Section id="quote" title="In a client's words">
-              <figure className="reveal-self rounded-[14px] border border-line bg-surface p-6">
-                <blockquote className="font-display text-lg leading-snug font-bold [font-variation-settings:'opsz'_18] md:text-xl md:[font-variation-settings:'opsz'_20]">
-                  &ldquo;{quote.excerpt}&rdquo;
-                </blockquote>
-                <figcaption className="mt-4 text-[15px]">
-                  <span className="font-semibold">{quote.name}</span>
-                  <span className="text-muted">
-                    , {quote.role}, {quote.org}
-                  </span>
-                </figcaption>
+              {/* The clip beside the words, not instead of them. The frame is a narrow fixed column so
+                  the 9/16 box stays about 320px tall and the quote keeps the width contract rule 14's
+                  three lines needs. It stacks under 640px, where there is no room for both.
+                  ponytail: every service page shows this one client, because `quote` takes the first
+                  confirmed testimonial. Pick by `s.intent` once more than one is real. */}
+              <figure className="reveal-self flex flex-col gap-6 rounded-[14px] border border-line bg-surface p-6 sm:flex-row">
+                <div className="w-[150px] shrink-0 sm:w-[180px]">
+                  <VideoSlotBox id={quote.video} />
+                  <p className="mt-3 text-sm text-muted">{videoCaption(quote.video)}</p>
+                </div>
+                <div>
+                  <blockquote className="font-display text-lg leading-snug font-bold [font-variation-settings:'opsz'_18] md:text-xl md:[font-variation-settings:'opsz'_20]">
+                    &ldquo;{quote.excerpt}&rdquo;
+                  </blockquote>
+                  <figcaption className="mt-4 text-[15px]">
+                    <span className="font-semibold">{quote.name}</span>
+                    <span className="text-muted">
+                      , {quote.role}, {quote.org}
+                    </span>
+                  </figcaption>
+                </div>
               </figure>
             </Section>
           )}
