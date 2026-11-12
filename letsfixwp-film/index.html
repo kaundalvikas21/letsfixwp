@@ -1,0 +1,19 @@
+<!doctype html><html><head><meta charset="utf-8"><title>LetsFixWP · Back Online Today</title>
+<style>
+@font-face{font-family:MR;font-weight:200 800;src:url(fonts/Manrope.ttf) format('truetype')}
+@font-face{font-family:JB;font-weight:100 800;src:url(fonts/JetBrainsMono.ttf) format('truetype')}
+:root{--paper:#e5e9ed;--ink:#20252b;--accent:#ff5a36}
+html,body{margin:0;background:#e4e2df;overflow:hidden;width:1920px;height:1080px}
+canvas{display:block;position:absolute;left:0;top:0}
+#sub{position:absolute;left:50%;bottom:64px;transform:translateX(-50%);display:none;flex-direction:column;align-items:center;gap:6px;
+  max-width:1720px;padding:14px 34px 16px;border-radius:18px;background:rgba(32,37,43,.72);pointer-events:none}
+#sub .zh{font:700 40px/1.25 MR;color:#fff;letter-spacing:.01em;white-space:nowrap}
+#sub .en{font:500 26px/1.25 MR;color:#d6dce4;white-space:nowrap}
+#sub .en:empty{display:none}
+#credit{display:none}
+</style></head><body>
+<div id="sub"><div class="zh"></div><div class="en"></div></div>
+<div id="credit"></div>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<script type="module" src="./src/main.js"></script>
+</body></html>

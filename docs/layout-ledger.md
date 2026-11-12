@@ -9942,3 +9942,55 @@ rather than assumed.
 arithmetic from Task 98 are untouched.
 
 **Not run, and not claimed:** no browser pass. Loopback HTTP is blocked in this sandbox.
+
+## v4 / the brand film is replaced: Back Online Today (Task 101)
+
+The film in the home page's film section (`FilmBand.tsx`, slot `what-a-fix-looks-like`) is a new 45 second
+film. Same slot, same file names in `public/videos/`, same `VideoFrame` and `ClipPlayer`: no layout change, so
+the section row from Task 100 stands as written.
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 7 | Watch a fix, start to finish (`FilmBand.tsx`) | one framed media block on the spine, copy above it, caption under the frame | no | no | none |
+
+Budgets unchanged: 13 sections, 1 marquee, 0 eyebrows, 0 pinned scenes of 2.
+
+### What changed
+
+- `public/videos/back-online-today.{mp4,jpg,vtt}`: the new film, its poster and captions, under new names so no browser or image cache keeps serving the old film under the old URL. The slot id stays `what-a-fix-looks-like`.
+- `src/content/videos.ts`: label, alt, `seconds: 45`, and the comment on what the film may claim.
+- `FilmBand.tsx`: the sentence under the heading no longer names "the five moves", which the new film does not show.
+- `.gitignore` and `eslint.config.mjs`: the film's source folder `letsfixwp-film/` keeps its code in the repo and
+  ignores what `build.sh` regenerates; ESLint skips it (browser modules for the film renderer, not app code).
+
+### What the film may say
+
+Only the four owner-confirmed promises in PRODUCT.md (fixed price agreed first, a full backup before any change,
+a login the client creates and never their password, access removed when done) and the home H1 "back online
+today". No price, count, rating or turnaround. `brand.claims.sameDay` is still wrapped in `confirm()`; if the
+owner withdraws it, the last voice line, the closing title card and the H1 all have to change together.
+
+### The poster
+
+Rendered from the film's own scene with a dedicated camera (`?thumb=` in `letsfixwp-film/src/shots.js`) so the
+centred play control lands on open card space, not on the title: the site back online with the team, customers
+queuing, the title card and the agreed-price and access-removed cards in one frame.
+
+### Measurements
+
+Read off `.next/server/app/index.html` and the files.
+
+| | |
+| --- | --- |
+| Film | 45.0 s, 1920 x 1080, 30 fps, H.264 + AAC, 6.3MB web encode (`+faststart`), -14.1 LUFS master |
+| Poster | 1920 x 1080 JPEG, 211KB |
+| Captions | 11 cues, WebVTT |
+| `<video>` elements in the prerendered page | **0** (the facade from Task 98 still mounts it on click) |
+| Caption under the frame | "How a fix runs, from a site that is down to the same site back online. 45 seconds." |
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check ok, motion check clean, build 99 routes. Film: speech-to-text on the final mix
+reads back every line; 0 black frames; every in-world text passes the library's reading-time check.
+
+**Not run, and not claimed:** no browser pass of the modal player with the new file.

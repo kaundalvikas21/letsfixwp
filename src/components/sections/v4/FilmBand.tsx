@@ -8,7 +8,7 @@ const ID = "what-a-fix-looks-like" as const;
  *
  * **Where it sits, and why.** Between "Same site. Working again." and "Choose how you want help":
  * after the triage path, before the commercial ask. `ProblemTiles` is the section that converts a
- * visitor whose site is down right now, and nothing may come between them and it, so a forty second
+ * visitor whose site is down right now, and nothing may come between them and it, so a forty-five second
  * commitment belongs below it. `Plans` is the decision, and trust should be highest in the section
  * immediately before a decision rather than twenty sections earlier.
  *
@@ -42,7 +42,7 @@ export function FilmBand() {
           Watch a fix, start to finish.
         </h2>
         <p className="mt-4 max-w-[52ch] text-lg text-muted">
-          The error on your screen, the five moves that follow, and the site working again.
+          What happens when your site is down: a fixed price, a backup first, and the site back online.
         </p>
       </Stagger>
 

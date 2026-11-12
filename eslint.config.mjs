@@ -15,6 +15,8 @@ const eslintConfig = defineConfig([
     // Vendored agent skills, not app code.
     ".claude/**",
     ".agents/**",
+    // The brand film's source: browser modules for the Lemo-Opuscar renderer, not app code.
+    "letsfixwp-film/**",
   ]),
 ]);
 

@@ -73,22 +73,23 @@ export type VideoSlot = {
 };
 
 export const videos: Record<VideoId, VideoSlot> = {
-  // The one filmed slot on the site. It is a drawn explainer, not a recording of a client's site, and
-  // the label says so: it describes what a fix involves rather than claiming to be evidence of one.
-  // Every word it puts on screen is quoted from this repo (src/content/guides, FixPan, Practices,
-  // page.tsx, cta.ts), and it states no price, turnaround, count or guarantee, because every such
-  // figure here is still a placeholder.
+  // The one filmed slot on the site. It is a drawn brand film (3D voxel figures on a desk, made in code),
+  // not a recording of a client's site, and the label says so: it describes how a fix runs rather than
+  // claiming to be evidence of one. It states only the promises the owner has confirmed in PRODUCT.md
+  // (fixed price agreed first, full backup before any change, a login the client creates and never their
+  // password, access removed afterwards) plus the home H1's "back online today". No price, count, rating
+  // or turnaround figure appears, because every such figure here is still a placeholder.
   "what-a-fix-looks-like": {
     ratio: "16/9",
-    label: "What a fix looks like, from the error on your screen to the site working again.",
+    label: "How a fix runs, from a site that is down to the same site back online.",
     clip: {
-      src: "/videos/what-a-fix-looks-like.mp4",
-      poster: "/videos/what-a-fix-looks-like.jpg",
-      captions: "/videos/what-a-fix-looks-like.vtt",
+      src: "/videos/back-online-today.mp4",
+      poster: "/videos/back-online-today.jpg",
+      captions: "/videos/back-online-today.vtt",
       width: 1920,
       height: 1080,
-      alt: "The five moves of a fix, from a WordPress error on screen to the site working again",
-      seconds: 40,
+      alt: "The LetsFixWP team takes a broken WordPress site through a fixed price, a login you create and a full backup, then brings it back online",
+      seconds: 45,
     },
   },
   "how-a-rescue-runs": {

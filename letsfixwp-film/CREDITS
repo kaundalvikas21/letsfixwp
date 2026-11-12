@@ -1,0 +1,29 @@
+Back Online Today: the LetsFixWP brand film (45 s), in the Tabletop App Flythrough style
+
+Code: src/film.js, src/shots.js, audio/*.py, index.html and build.sh were written for this film. The engine files
+src/world.js, cards.js, voxel.js, anim.js, camera.js, post.js, main.js, captions.js and tools/camspeed.mjs come from the
+Lemo-Opuscar library's Tabletop App Flythrough demo (MIT, Lemomo / LemoLab, github.com/lemomo-ai/lemo-opuscar).
+The renderer, reading-time check, TTS and speech-check wrappers, sampler and foley helpers are the library's core/ (MIT).
+three.js r170 (MIT), loaded from the library's node_modules.
+
+Fonts (SIL Open Font License 1.1; licence texts in fonts/; downloaded by build.sh from github.com/google/fonts):
+  Manrope (fonts/Manrope.ttf), JetBrains Mono (fonts/JetBrainsMono.ttf).
+
+Voice-over: Microsoft neural text-to-speech, voice en-IN-NeerjaNeural, through edge-tts (the free Edge "Read aloud" service).
+  This service's terms do not clearly grant commercial use. Before the film runs in paid ads, either re-voice the same
+  lines with the same voice on a paid Azure AI Speech subscription (commercial use licensed), or record a person.
+  The lines are in vo/lines.json; build.sh rebuilds everything else around a new recording.
+Speech check: faster-whisper, model small.en (MIT); used to verify the voice, not part of the film.
+
+Music samples (CC0 1.0, no attribution required; acknowledged): VS Chamber Orchestra: Community Edition (Versilian Studios),
+  Versilian Community Sample Library (Versilian Studios). Instruments: marimba, vibraphone, glockenspiel, contrabass,
+  contrabass pizz, cellos, cellos pizz, violas, horn, timpani, suspended cymbal, claps, shaker.
+Kick drum, room tone and all foley: synthesised in code (audio/compose.py, audio/foley.py, the library's core/audio/sfx.py).
+
+Pixel art (Pip the site, the three developers, the visitors, the key, the envelope), the browser, phone, price, access and team
+cards, the backup tower, the desk props, wood and paper textures: drawn in code. No photographs, no generated images,
+no third-party logos. "your-site" and the shop on the browser card are fictional.
+
+Facts on screen and in the voice: the owner-confirmed promises in PRODUCT.md (fixed price agreed before work starts,
+a full backup before any change, a login the client creates and never their password, access removed when done)
+and the home page H1 "Back online today". No prices, counts, ratings or turnaround figures.
