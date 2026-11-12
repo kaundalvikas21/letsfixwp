@@ -12,11 +12,11 @@ export default guideSchema.parse({
     "The site looks normal to you while you are logged in to wp-admin",
   ],
   likelyCauses: [
-    "Malicious JavaScript injected into posts, widgets or the wp_options table",
-    "Rewrite rules added to .htaccess that redirect only search or mobile visitors",
-    "The WordPress Address or Site Address settings changed to an attacker's domain",
-    "Infected plugin or theme files, often header.php or functions.php",
-    "A fake plugin installed through a stolen admin account",
+    { text: "Malicious JavaScript injected into posts, widgets or the wp_options table", layers: ["database"] },
+    { text: "Rewrite rules added to .htaccess that redirect only search or mobile visitors", layers: ["server"] },
+    { text: "The WordPress Address or Site Address settings changed to an attacker's domain", layers: ["wordpress"] },
+    { text: "Infected plugin or theme files, often header.php or functions.php", layers: ["extensions"] },
+    { text: "A fake plugin installed through a stolen admin account", layers: ["extensions", "wordpress"] },
   ],
   safeChecks: [
     "On your phone, in a private browser tab, search Google for your site and tap the result. This is how most redirect hacks show themselves.",

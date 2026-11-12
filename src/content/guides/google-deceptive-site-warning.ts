@@ -13,11 +13,11 @@ export default guideSchema.parse({
     "Search Console reports problems under Security issues",
   ],
   likelyCauses: [
-    "Phishing pages uploaded into a hidden folder on your hosting",
-    "Malicious redirects sending visitors to scam or fake login pages",
-    "Injected scripts loading code from domains Google has flagged",
-    "A compromised third party script or ad embedded on the site",
-    "Malware files left on the server from an earlier hack",
+    { text: "Phishing pages uploaded into a hidden folder on your hosting", layers: ["server"] },
+    { text: "Malicious redirects sending visitors to scam or fake login pages", layers: ["wordpress"] },
+    { text: "Injected scripts loading code from domains Google has flagged", layers: ["edge"] },
+    { text: "A compromised third party script or ad embedded on the site", layers: ["edge"] },
+    { text: "Malware files left on the server from an earlier hack", layers: ["server"] },
   ],
   safeChecks: [
     "Enter your domain on Google's Safe Browsing site status page at transparencyreport.google.com to confirm the warning and see what Google reports.",

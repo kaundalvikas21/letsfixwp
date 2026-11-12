@@ -12,11 +12,11 @@ export default guideSchema.parse({
     "The front end, wp-admin or both keep bouncing between http and https, or www and non-www",
   ],
   likelyCauses: [
-    "The WordPress Address and Site Address settings not matching how the site is actually served",
-    "Cloudflare SSL set to Flexible while the server or WordPress also forces HTTPS",
-    "Conflicting redirect rules in .htaccess, the server config and a redirect or SSL plugin",
-    "A caching plugin or server cache serving an old redirect",
-    "A security or redirect plugin forcing a URL that redirects straight back",
+    { text: "The WordPress Address and Site Address settings not matching how the site is actually served", layers: ["wordpress"] },
+    { text: "Cloudflare SSL set to Flexible while the server or WordPress also forces HTTPS", layers: ["edge"] },
+    { text: "Conflicting redirect rules in .htaccess, the server config and a redirect or SSL plugin", layers: ["server", "extensions"] },
+    { text: "A caching plugin or server cache serving an old redirect", layers: ["extensions", "server"] },
+    { text: "A security or redirect plugin forcing a URL that redirects straight back", layers: ["extensions"] },
   ],
   safeChecks: [
     "Clear cookies for your site only, or open it in a private window. Old cookies can keep a loop going after the cause is fixed.",

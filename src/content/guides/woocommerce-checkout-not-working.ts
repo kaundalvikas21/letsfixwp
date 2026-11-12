@@ -14,11 +14,11 @@ export default guideSchema.parse({
     "The checkout page is blank, missing fields or missing the payment options",
   ],
   likelyCauses: [
-    "A JavaScript error from a plugin or theme stopping the checkout script from submitting",
-    "A caching or optimization layer caching the cart or checkout page and breaking the customer's session",
-    "Payment gateway settings, API keys or webhooks that are wrong or have expired",
-    "Outdated WooCommerce template overrides in the theme that no longer match the current WooCommerce version",
-    "Extensions that do not support the block based Checkout, or a mix of block and classic checkout settings",
+    { text: "A JavaScript error from a plugin or theme stopping the checkout script from submitting", layers: ["extensions"] },
+    { text: "A caching or optimization layer caching the cart or checkout page and breaking the customer's session", layers: ["extensions", "edge"] },
+    { text: "Payment gateway settings, API keys or webhooks that are wrong or have expired", layers: ["extensions", "edge"] },
+    { text: "Outdated WooCommerce template overrides in the theme that no longer match the current WooCommerce version", layers: ["extensions"] },
+    { text: "Extensions that do not support the block based Checkout, or a mix of block and classic checkout settings", layers: ["extensions"] },
   ],
   safeChecks: [
     "Open WooCommerce > Status in wp-admin and scroll to the Templates section. Note any warning about outdated template overrides.",

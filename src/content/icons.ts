@@ -12,6 +12,11 @@ import {
   ClipboardTextIcon,
   ClockCounterClockwiseIcon,
   CodeIcon,
+  CloudIcon,
+  DatabaseIcon,
+  FileCodeIcon,
+  PuzzlePieceIcon,
+  GearSixIcon,
   CreditCardIcon,
   CurrencyInrIcon,
   EqualsIcon,
@@ -50,6 +55,7 @@ import {
 import { hubIds } from "@/config/routes";
 import { promises, remoteDelivery } from "./notices";
 import { compares, services } from "./index";
+import type { CauseLayer } from "./schema";
 
 /**
  * Every icon the content layer maps, in one file.
@@ -202,6 +208,20 @@ export const promiseIcon = {
   backup: HardDrivesIcon,
   access: LockIcon,
 } as const satisfies Record<string, Icon>;
+
+/**
+ * The six layers a guide's causes are tagged with, keyed by `causeLayers` in schema.ts, shown beside
+ * each cause in the guide's cause table. Every mark is distinct because two can share a cell: `HardDrives` is the machine, `FileCode` the language running on
+ * it, `Cloud` everything past it. `Database` says itself, and `GearSix` is core plus its settings, which is what that layer holds.
+ */
+export const layerIcon = {
+  server: HardDrivesIcon,
+  php: FileCodeIcon,
+  database: DatabaseIcon,
+  wordpress: GearSixIcon,
+  extensions: PuzzlePieceIcon,
+  edge: CloudIcon,
+} as const satisfies Record<CauseLayer, Icon>;
 
 // Integrity, the same shape `photos.ts` uses: content that grows a value these maps do not cover
 // fails the build here rather than rendering a hole on one page nobody opens.

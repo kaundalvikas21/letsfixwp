@@ -147,6 +147,7 @@ export function PageMasthead({
   decorative = true,
   plate,
   actions,
+  screen,
   minH = "md:min-h-[24rem]",
   className,
 }: {
@@ -164,6 +165,16 @@ export function PageMasthead({
   /** The literal string the owner is staring at, in the one typeface allowed to carry it. */
   plate?: string;
   actions?: React.ReactNode;
+  /**
+   * A real capture under `public/screens/`, which takes the place of `photo` as the band's own
+   * background. The guides pass theirs: the picture of the error is the error, so it belongs behind
+   * the error string rather than in a panel over the band or two sections down the page. It is the
+   * same image, used the same way, as a critical tile on the home page's problem grid.
+   *
+   * It composites under the same flat `--photo-scrim`, which is what keeps the type legal over it:
+   * at 0.66 over a pure white capture (the worst case this site has) `--on-photo` measures 5.7:1.
+   */
+  screen?: string;
   minH?: string;
   className?: string;
 }) {
@@ -192,7 +203,13 @@ export function PageMasthead({
       {/* `100vw` now that the band is the window's width, not the spine's. `hero-settle` eases it
           from 1.06 to its own box over 1.2s on load: scale only, cropped by this header's
           overflow, and gone entirely under reduced motion. */}
-      <Photo id={photo} decorative={decorative} preload sizes="100vw" className="hero-settle absolute inset-0 -z-10" />
+      {screen ? (
+        // Decorative, with no alt: the h1 and the error plate under it already say what this is a
+        // picture of, and `g.image.alt` describes it as an inline figure rather than as a backdrop.
+        <Image src={screen} alt="" fill preload sizes="100vw" className="hero-settle -z-10 object-cover" />
+      ) : (
+        <Photo id={photo} decorative={decorative} preload sizes="100vw" className="hero-settle absolute inset-0 -z-10" />
+      )}
       <span aria-hidden className="absolute inset-0 -z-10 bg-photo-scrim" />
 
       {/* The breadcrumbs sit on the photograph, at the band's top edge, and the headline block is
@@ -205,7 +222,13 @@ export function PageMasthead({
         </div>
       )}
 
-      <div className={cn(page, "mt-auto", crumbs && "pt-10")}>
+      {/* `my-auto`, not `mt-auto`. The band has a min-height and most pages do not fill it, and with
+          the slack all on one side it landed in a single place: between the breadcrumbs and the h1,
+          where it read as a hole rather than as spacing, and it measured differently on every page
+          because it is whatever that page's content does not use. Split in two it is top and bottom
+          padding around the words, which is what it looks like, and the crumb-to-headline gap is the
+          40px below within about 8px on every route. */}
+      <div className={cn(page, "my-auto", crumbs && "pt-10")}>
         <h1 className={h1}>{title}</h1>
       {/* The machine's own words, and the anchor of the page: this string is what the visitor pasted
           into a search box. Mono on the inset surface, which is opaque, so its contrast is the

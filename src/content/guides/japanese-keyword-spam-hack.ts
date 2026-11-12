@@ -12,11 +12,11 @@ export default guideSchema.parse({
     "Search traffic to your real pages drops while unknown pages get indexed",
   ],
   likelyCauses: [
-    "Cloaking code that shows spam only to Googlebot and hides it from you",
-    "Injected PHP in theme, plugin or core files that generates spam pages on the fly",
-    "Rewrite rules in .htaccess sending spam URLs to the attacker's script",
-    "A Google verification file uploaded by the attacker to take over Search Console",
-    "An outdated or nulled plugin used as the way in",
+    { text: "Cloaking code that shows spam only to Googlebot and hides it from you", layers: ["wordpress", "edge"] },
+    { text: "Injected PHP in theme, plugin or core files that generates spam pages on the fly", layers: ["extensions", "wordpress"] },
+    { text: "Rewrite rules in .htaccess sending spam URLs to the attacker's script", layers: ["server"] },
+    { text: "A Google verification file uploaded by the attacker to take over Search Console", layers: ["edge"] },
+    { text: "An outdated or nulled plugin used as the way in", layers: ["extensions"] },
   ],
   safeChecks: [
     "Search Google for site:yourdomain.com (with your domain). If you see Japanese titles or product listings you did not create, the site is affected.",

@@ -11,10 +11,10 @@ export default guideSchema.parse({
     "The error started right after adding a code snippet or editing a file",
   ],
   likelyCauses: [
-    "A code snippet pasted into functions.php with a missing semicolon, bracket or quote",
-    "Curly quotes copied from a blog post or document instead of plain straight quotes",
-    "A file edited over FTP or the host file manager, which skips the safety check the WordPress editor runs",
-    "An incomplete upload that cut a PHP file off partway through",
+    { text: "A code snippet pasted into functions.php with a missing semicolon, bracket or quote", layers: ["extensions"] },
+    { text: "Curly quotes copied from a blog post or document instead of plain straight quotes", layers: ["extensions"] },
+    { text: "A file edited over FTP or the host file manager, which skips the safety check the WordPress editor runs", layers: ["server"] },
+    { text: "An incomplete upload that cut a PHP file off partway through", layers: ["server"] },
   ],
   safeChecks: [
     "Copy the full error message and note the file path and line number. That tells you exactly which file needs fixing.",

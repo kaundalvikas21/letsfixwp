@@ -12,11 +12,11 @@ export default guideSchema.parse({
     "The host suspends the site or pushes you to upgrade your plan",
   ],
   likelyCauses: [
-    "Bots and scrapers hammering pages, or brute force attempts against wp-login.php and xmlrpc.php",
-    "WP-Cron running heavy scheduled jobs on page loads, or a backlog of failed scheduled tasks",
-    "Frequent admin-ajax.php calls from the Heartbeat API, open dashboards or plugins",
-    "Uncached pages, WooCommerce cart fragments and product filters sending heavy queries to the database",
-    "Malware or spam scripts running on the server and using CPU in the background",
+    { text: "Bots and scrapers hammering pages, or brute force attempts against wp-login.php and xmlrpc.php", layers: ["edge"] },
+    { text: "WP-Cron running heavy scheduled jobs on page loads, or a backlog of failed scheduled tasks", layers: ["wordpress"] },
+    { text: "Frequent admin-ajax.php calls from the Heartbeat API, open dashboards or plugins", layers: ["wordpress", "extensions"] },
+    { text: "Uncached pages, WooCommerce cart fragments and product filters sending heavy queries to the database", layers: ["database", "extensions"] },
+    { text: "Malware or spam scripts running on the server and using CPU in the background", layers: ["server"] },
   ],
   safeChecks: [
     "In cPanel Resource Usage or your host's dashboard, note the dates and times the limits were hit.",

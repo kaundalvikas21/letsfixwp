@@ -12,11 +12,11 @@ export default guideSchema.parse({
     "wp-admin keeps showing the \"Database Update Required\" screen, or some admin screens look old and others new",
   ],
   likelyCauses: [
-    "The update timed out partway through, leaving a mix of old and new core files",
-    "File permissions or ownership that stop WordPress writing to wp-admin and wp-includes",
-    "The hosting account running out of disk space or memory while unpacking the update",
-    "A leftover .maintenance file or update lock from an interrupted attempt blocking the next one",
-    "A security plugin or server firewall blocking the download from wordpress.org",
+    { text: "The update timed out partway through, leaving a mix of old and new core files", layers: ["wordpress"] },
+    { text: "File permissions or ownership that stop WordPress writing to wp-admin and wp-includes", layers: ["server"] },
+    { text: "The hosting account running out of disk space or memory while unpacking the update", layers: ["server"] },
+    { text: "A leftover .maintenance file or update lock from an interrupted attempt blocking the next one", layers: ["wordpress"] },
+    { text: "A security plugin or server firewall blocking the download from wordpress.org", layers: ["extensions", "server"] },
   ],
   safeChecks: [
     "Write down the exact wording of the failure email or message, including any version number. It tells us which step broke.",

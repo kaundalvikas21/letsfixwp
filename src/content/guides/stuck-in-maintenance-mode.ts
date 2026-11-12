@@ -12,11 +12,11 @@ export default guideSchema.parse({
     "The Updates screen says \"Another update is currently in progress.\"",
   ],
   likelyCauses: [
-    "A .maintenance file left in the WordPress root folder by an update that did not finish",
-    "The browser tab being closed or the connection dropping during an update",
-    "The server timing out partway through a bulk plugin or core update",
-    "A page cache still serving the maintenance page after the update ended",
-    "An update lock left in the database, blocking further updates",
+    { text: "A .maintenance file left in the WordPress root folder by an update that did not finish", layers: ["wordpress"] },
+    { text: "The browser tab being closed or the connection dropping during an update", layers: ["wordpress"] },
+    { text: "The server timing out partway through a bulk plugin or core update", layers: ["server"] },
+    { text: "A page cache still serving the maintenance page after the update ended", layers: ["extensions"] },
+    { text: "An update lock left in the database, blocking further updates", layers: ["database"] },
   ],
   safeChecks: [
     "In your host's file manager, turn on Show hidden files and look in the main WordPress folder for a file named .maintenance. Rename it to .maintenance-old rather than deleting it, then reload the site.",

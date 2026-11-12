@@ -1,0 +1,13 @@
+[
+ {"id": "v01", "text": "Your WordPress site is down."},
+ {"id": "v02", "text": "Customers hit an error page, and leave."},
+ {"id": "v03", "text": "At LetsFixWP, we have one goal: getting broken WordPress sites back online.", "say": "At Let's Fix W P, we have one goal: getting broken WordPress sites back online.", "asr": "At Let's Fix WP, we have one goal: getting broken WordPress sites back online."},
+ {"id": "v04", "text": "Tell us what you're seeing. Our engineers find what's wrong."},
+ {"id": "v05", "text": "You get a fixed price before any work starts."},
+ {"id": "v06", "text": "We work through a login you create. Never your password."},
+ {"id": "v07", "text": "Before any change, we back up your whole site."},
+ {"id": "v08", "text": "Then the team fixes it, one step at a time."},
+ {"id": "v09", "text": "When we are done, our access is removed."},
+ {"id": "v10", "text": "Your site is back online. Today."},
+ {"id": "v11", "text": "LetsFixWP.", "say": "Let's Fix W P.", "asr": "Let's Fix WP."}
+]

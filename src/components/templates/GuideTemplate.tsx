@@ -1,16 +1,21 @@
-import { WarningIcon } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
 import { BookLink, ChatButton, CheckLink } from "@/components/Cta";
 import { faqLd, guideLd, JsonLd } from "@/components/JsonLd";
-import { ScrollProgress } from "@/components/motion";
+import { Reveal } from "@/components/motion";
+import { TiltSlab } from "@/components/motion/interactions/TiltSlab";
+import { hasScreen } from "@/components/Photo";
+import { CauseTable } from "@/components/sections/v4/guide/CauseTable";
+import { SafeStairs } from "@/components/sections/v4/guide/SafeStairs";
+import { SymptomCheck } from "@/components/sections/v4/guide/SymptomCheck";
 import { CLOSING_ASK } from "@/config/cta";
 import { routes } from "@/config/routes";
 import { getService, guidesFor } from "@/content";
+import { hubIcon } from "@/content/icons";
 import { coreFileWarning } from "@/content/notices";
 import { servicePhotos } from "@/content/photos";
 import type { Guide } from "@/content/schema";
-import { cn } from "@/lib/utils";
-import { card, ClosingBand, ErrorCards, Faqs, PageMasthead, RealScreen, Section, page, pageYMasthead } from "./parts";
+import { cn, leadSentence } from "@/lib/utils";
+import { card, ClosingBand, ErrorCards, Faqs, PageMasthead, Section, page, pageYMasthead } from "./parts";
 import { ReadingRail } from "./ReadingRail";
 
 /**
@@ -41,26 +46,24 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
   const parent = getService(g.parentService)!;
   const loc = `guide:${g.slug}`;
   const siblings = guidesFor(g.parentService).filter((x) => x.slug !== g.slug);
+  const captured = hasScreen(`/screens/${g.image.slot}.png`);
+  const [stopIf, why] = leadSentence(g.whenToCallUs);
+  const Mark = hubIcon[parent.hub as keyof typeof hubIcon];
 
   return (
     <article id="guide-article" data-urgency={g.urgency} className={cn(page, pageYMasthead)}>
-      {/* The one route family that carries a progress bar. Contract rule 6 bans scroll cues and
-          this is an owner-instructed, scoped exception: a guide runs to several thousand pixels of
-          troubleshooting and the reader wants to know how much of it is left. Scoped by being
-          mounted here and nowhere else, and it reports this article's length rather than the
-          document's, so the footer does not make the guide look longer than it is. */}
-      <ScrollProgress target="#guide-article" />
       <JsonLd data={[guideLd(g), faqLd(g.faqs)]} />
 
       {/* The 8/4 split is gone. The parent service's night frame was a 336px panel in the right-hand
           four columns and is the band itself now, which is the shape every inner page here runs. The
           error string moves onto it: the h1 says which error this is and the plate under it is the
-          error, so the two belong in one box. All 37 guides get a band, because the photograph is
-          the fallback arm and the capture was only ever on four of them.
+          error, so the two belong in one box.
 
-          The photograph does not depict the error, so it carries no alt: `g.image.alt` describes a
-          capture that does not exist on 33 of these pages, and using it would describe the wrong
-          picture. */}
+          The band's own background is the real capture on the four guides that have one, and the
+          parent service's night frame on the other 33. The capture is the picture of the error, so
+          it belongs behind the error string: the same image the home page's critical tiles already
+          run as a tile background, under the same flat scrim. Both arms are decorative and carry no
+          alt, because the h1 and the plate under it say what the reader is looking at. */}
       {/* Two CTAs, and the same two the rail carries further down. The page is informational and
           the reader arrived from a search for this exact string, so the band answers "is this my
           error" first and offers the two ways out second: the high-commitment one that starts the
@@ -75,97 +78,70 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
         photo={servicePhotos[g.parentService]}
         title={g.h1}
         plate={g.errorText}
+        lead={g.seo.description}
         actions={
           <>
             <BookLink location={`${loc}:hero`} service={parent.id} guide={g.slug} className="btn-primary" />
             <ChatButton location={`${loc}:hero`} service={parent.id} className="btn-secondary" />
           </>
         }
+        screen={captured ? `/screens/${g.image.slot}.png` : undefined}
       />
 
       {/* No top margin: the first Section's own 64/96 carries the gap, and the rail starts level with
           the body rather than 112px below the header. */}
       <div className="grid gap-10 lg:grid-cols-12 lg:gap-12">
         <div data-rail-scope className={cn("lg:col-span-8", guideHeadings)}>
+          {/* The four sections below are the guide's argument, each with its own picture and its own
+              3D motif (docs/layout-ledger.md Task 89): recognise it, see where it lives, try the
+              safe things in order, know where to stop. Reveals sit on wrappers throughout, because
+              the reveal pins `transform` and every 3D motif here is made of it. */}
           <Section id="symptoms" title="What you are seeing">
-            {/* Capped on the same measure as every paragraph on the page: the column is 720px, which
-                is 88 characters of 17px Geist, and a symptom is a sentence. */}
-            <ul className="reveal ml-5 max-w-[68ch] list-disc space-y-2 text-muted marker:text-accent-text">
-              {g.symptoms.map((x) => (
-                <li key={x}>{x}</li>
-              ))}
-            </ul>
-            {/* The real capture of this error, on the four guides that have one. It is what this
-                section is already about: the list says what you are seeing, and this is it.
-
-                No wrapper around it. There was one, and because `RealScreen` returns `null` while
-                its PNG does not exist and the wrapper did not, 33 of the 37 guides rendered an
-                empty `<figure>` carrying a live `mt-6`, and the four that do have a capture rendered
-                a figure inside a figure. The margin and the measure are the component's own
-                `className` now, so there is nothing left to render when there is nothing to show
-                (contract rule 7, docs/image-todo.md). */}
-            <RealScreen
-              slot={g.image.slot}
-              alt={g.image.alt}
-              sizes="(min-width: 816px) 680px, calc(100vw - 32px)"
-              className="mt-6 max-w-[68ch]"
-            />
+            {/* A check the reader runs, at the full measure. The real capture used to sit beside it
+                on the four guides that have one; it is on the masthead now, next to the error string
+                it is a picture of. */}
+            <Reveal>
+              <SymptomCheck items={g.symptoms} />
+            </Reveal>
           </Section>
 
           <Section id="causes" title="What usually causes it">
-            {/* Tiles, not a second bullet list: no layout family repeats on a page (contract rule 3). */}
-            <ul className="reveal grid gap-3 sm:grid-cols-2">
-              {g.likelyCauses.map((x) => (
-                <li key={x} className="rounded-[14px] border border-line bg-surface p-4 text-sm text-muted">
-                  {x}
-                </li>
-              ))}
-            </ul>
+            <CauseTable causes={g.likelyCauses} />
           </Section>
 
           <Section id="safe-checks" title="Safe things to try first">
-            <ol className="reveal max-w-[68ch] space-y-4">
-              {g.safeChecks.map((x, i) => (
-                <li key={x} className="flex gap-4">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-[14px] bg-accent-tint font-display text-sm font-bold text-accent-text">
-                    {i + 1}
-                  </span>
-                  <span className="pt-0.5">{x}</span>
-                </li>
-              ))}
-            </ol>
-            <p className="mt-6 flex max-w-[68ch] gap-3 rounded-[14px] border border-line-strong bg-surface-2 p-4 text-sm">
-              <WarningIcon weight="duotone" className="mt-0.5 size-5 shrink-0 text-accent-text" aria-hidden />
-              <span>{coreFileWarning}</span>
-            </p>
+            <SafeStairs checks={g.safeChecks} warning={coreFileWarning} />
           </Section>
 
-          {/* The heading was already an invitation and the block still read as another article
-              section: a paragraph, a link, two loose buttons and a footnote, stacked in the reading
-              column with nothing marking them off from "What usually causes it" above.
-
-              It is a panel on the site's own card tokens, with the argument and the action
-              separated by a hairline. That separation is the whole design: above the rule is the
-              reason to hand this over, below it is the handing over. Stacked in one column they
-              read as four more paragraphs; split, the eye can take the offer without reading the
-              case for it again.
-
-              The free-site-check sits opposite the buttons rather than under them, because it is
-              the other door and not a footnote to the first one: it is for the reader whose site is
-              not down, who would otherwise find nothing here addressed to them.
+          {/* Still one panel on the card tokens with the argument above the hairline and the hand-off
+              below it. The argument is split: its first sentence is the stop condition and is set as
+              the lead, the rest is why, muted. The slab beside it is the hand-off made solid, carrying
+              the mark of the service that does the fix; from 768px only, because under that the
+              panel is a single column and the slab would push the buttons a screen down.
 
               The h2 stays outside the panel. It belongs to the document outline, and `ReadingRail`
               derives its ticks from `h2[id]` inside the reading column. */}
           <Section id="call-us" title="When to call us">
             <div className={cn(card, "reveal-self overflow-hidden p-6 md:p-8")}>
-              <span aria-hidden className="block h-px w-10 bg-accent" />
-              <p className="mt-5 max-w-[68ch] text-muted">{g.whenToCallUs}</p>
-              <p className="mt-4 text-[15px]">
-                How we fix it:{" "}
-                <Link href={parent.path} className="font-semibold text-accent-text underline underline-offset-4 hover:no-underline">
-                  {parent.title}
-                </Link>
-              </p>
+              <div className="md:grid md:grid-cols-12 md:items-center md:gap-8">
+                <div className="md:col-span-8">
+                  <p className="font-display text-xl leading-snug font-bold [font-variation-settings:'opsz'_20] md:text-[1.375rem] md:[font-variation-settings:'opsz'_22]">
+                    {stopIf}
+                  </p>
+                  {why && <p className="mt-3 max-w-[60ch] text-muted">{why}</p>}
+                  <p className="mt-4 text-[15px]">
+                    How we fix it:{" "}
+                    <Link href={parent.path} className="font-semibold text-accent-text underline underline-offset-4 hover:no-underline">
+                      {parent.title}
+                    </Link>
+                  </p>
+                </div>
+                <div className="hidden md:col-span-4 md:block">
+                  <TiltSlab>
+                    <Mark weight="duotone" className="size-11" />
+                  </TiltSlab>
+                </div>
+              </div>
 
               {/* One wrapping row, not a `md:flex-row` split. The reading column is 704px and the
                   panel's padding takes 64 of it, so the two buttons and the sentence never fit on
@@ -178,7 +154,13 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
                   <ChatButton location={`${loc}:call-us`} service={parent.id} className="btn-secondary" />
                 </div>
                 <p className="text-sm text-muted">
-                  Nothing down right now? <CheckLink location={`${loc}:call-us`} service={parent.id} icon={null} />
+                  Nothing down right now?{" "}
+                  <CheckLink
+                    location={`${loc}:call-us`}
+                    service={parent.id}
+                    icon={null}
+                    className="font-semibold text-text underline decoration-line-strong underline-offset-4 transition-colors hover:decoration-accent"
+                  />
                 </p>
               </div>
             </div>

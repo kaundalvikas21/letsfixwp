@@ -8,6 +8,26 @@ const seo = z.object({ title: z.string().min(1).max(60), description: z.string()
 const image = z.object({ slot: text, alt: text });
 const intent = z.enum(["fix", "plan", "project", "info"]);
 
+/**
+ * Where in a WordPress site a cause lives, bottom of the stack to the top. Each guide's cause table
+ * ("What usually causes it") shows these as an icon and a name beside every cause. Each cause
+ * is tagged by hand, with two layers where its sentence names two ("a plugin or theme" that a "PHP
+ * version" change broke). `extensions` is plugins and themes together, because a cause that names
+ * one nearly always names the other; `edge` is everything past the server: CDN, cache, DNS, email
+ * providers and the visitor's browser.
+ */
+export const causeLayers = ["server", "php", "database", "wordpress", "extensions", "edge"] as const;
+export type CauseLayer = (typeof causeLayers)[number];
+export const layerLabel: Record<CauseLayer, string> = {
+  server: "Server",
+  php: "PHP",
+  database: "Database",
+  wordpress: "WordPress",
+  extensions: "Plugins and theme",
+  edge: "Edge and delivery",
+};
+const cause = z.object({ text, layers: z.array(z.enum(causeLayers)).min(1).max(2) });
+
 /** One per SITEMAP service leaf: src/content/services/<id>.ts */
 export const serviceSchema = z
   .object({
@@ -42,7 +62,7 @@ export const guideSchema = z.object({
   h1: text,
   errorText: text.optional(), // literal message as WordPress prints it
   symptoms: z.array(text).min(1),
-  likelyCauses: z.array(text).min(1),
+  likelyCauses: z.array(cause).min(1),
   safeChecks: z.array(text).min(2).max(3), // never editing core files
   whenToCallUs: text,
   parentService: slug,

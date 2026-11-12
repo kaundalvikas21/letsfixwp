@@ -11,11 +11,11 @@ export default guideSchema.parse({
     "The site gets slower at busy times or has slowed down steadily as content and orders have grown",
   ],
   likelyCauses: [
-    "No page caching, so PHP and the database rebuild every page for every visitor",
-    "Heavy plugins loading their scripts, styles and database queries on every page",
-    "Large, uncompressed images served at full size to phones and desktops alike",
-    "A bloated database with oversized autoloaded options, expired transients and thousands of revisions",
-    "Underpowered or overcrowded hosting, or an old PHP version",
+    { text: "No page caching, so PHP and the database rebuild every page for every visitor", layers: ["server"] },
+    { text: "Heavy plugins loading their scripts, styles and database queries on every page", layers: ["extensions"] },
+    { text: "Large, uncompressed images served at full size to phones and desktops alike", layers: ["edge"] },
+    { text: "A bloated database with oversized autoloaded options, expired transients and thousands of revisions", layers: ["database"] },
+    { text: "Underpowered or overcrowded hosting, or an old PHP version", layers: ["server", "php"] },
   ],
   safeChecks: [
     "Run your home page through PageSpeed Insights at pagespeed.web.dev and keep the report link. It gives a before picture to compare against.",

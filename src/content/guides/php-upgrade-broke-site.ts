@@ -12,11 +12,11 @@ export default guideSchema.parse({
     "Most of the site works, but one plugin's settings page, shortcode or form is suddenly broken",
   ],
   likelyCauses: [
-    "A plugin or theme that still calls functions removed in PHP 8, such as create_function() or each()",
-    "Stricter type checks in PHP 8 turning what used to be harmless warnings into fatal errors",
-    "An abandoned plugin or an old premium theme that no longer receives compatibility updates",
-    "A PHP extension the site relies on, such as mysqli, intl or imagick, not enabled for the new version",
-    "A WordPress core version too old to support the PHP version the server now runs",
+    { text: "A plugin or theme that still calls functions removed in PHP 8, such as create_function() or each()", layers: ["extensions", "php"] },
+    { text: "Stricter type checks in PHP 8 turning what used to be harmless warnings into fatal errors", layers: ["php"] },
+    { text: "An abandoned plugin or an old premium theme that no longer receives compatibility updates", layers: ["extensions"] },
+    { text: "A PHP extension the site relies on, such as mysqli, intl or imagick, not enabled for the new version", layers: ["php", "server"] },
+    { text: "A WordPress core version too old to support the PHP version the server now runs", layers: ["wordpress", "php"] },
   ],
   safeChecks: [
     "In your hosting control panel, check which PHP version the site runs now and when it changed. Many hosts send an email before an automatic upgrade.",

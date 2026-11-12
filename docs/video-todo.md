@@ -21,6 +21,7 @@ happened to their business.
 | --- | --- | --- |
 | Slots | `client-story-1` to `client-story-4` | `how-a-rescue-runs`, `a-site-brought-back` |
 | Shape | 9:16 portrait, 1080 x 1920 | 16:10 landscape, 1600 x 1000 |
+| | | (the brand film is the exception: 16:9, 1920 x 1080) |
 | Length | 20 to 35 seconds | up to 90 seconds |
 | Container | mp4, H.264 video, AAC audio | same |
 | Target size | under 4MB | under 8MB |
@@ -95,6 +96,7 @@ are the same person, and the attribution on the card comes from the quote.
 | `client-story-12` | An agency handing WordPress support over: what they stopped doing, and what their own clients noticed. | `/case-studies/` |
 | `how-a-rescue-runs` | A rescue from the first message to the site loading again. Our own work, no client needed. | `/about/` |
 | `a-site-brought-back` | A WordPress site going from a fatal error back to loading normally. Our own work, no client needed. | `/case-studies/` |
+| `what-a-fix-looks-like` | **Done.** The brand film, *Back Online Today*: a broken site, the team, a fixed price, a login the client creates, a full backup, the fix, access removed, back online. 3D voxel figures drawn in code, not recorded. 16:9 in the home page's film section. | `/` |
 
 **Twelve client slots, and the pages do not all show twelve.** `/case-studies/` is the library and
 shows every clip that exists, four across on a desktop and two across on a phone. The home and pricing
@@ -103,6 +105,15 @@ filming first; 5 to 12 fill the library out.
 
 The two capture clips need nobody's approval, which is why they are the evidence those pages can carry
 before any client clip exists.
+
+**One slot is filled.** `what-a-fix-looks-like` is on the home page: *Back Online Today*, 45 seconds,
+English voice-over with burned-in subtitles and a WebVTT track, poster composed for the play button.
+It is drawn rather than recorded and its label says so, so it explains the service without claiming to
+be evidence of any particular job. It states only the owner-confirmed promises from PRODUCT.md and the
+home H1. It does not retire `how-a-rescue-runs` or `a-site-brought-back`: a real rescue recorded on a
+real site is evidence in a way a drawn film is not. Source and rebuild script: `letsfixwp-film/`
+(`sh build.sh`, needs the Lemo-Opuscar library at `~/lemo-opuscar`). It replaced an earlier 40 second
+film whose source lives in `~/films/letsfixwp-rescue`.
 
 ## Briefing a client
 

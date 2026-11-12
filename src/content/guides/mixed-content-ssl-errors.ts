@@ -11,11 +11,11 @@ export default guideSchema.parse({
     "Sliders, forms or payment fields stop working because insecure scripts are blocked",
   ],
   likelyCauses: [
-    "WordPress Address and Site Address still set to http after moving to HTTPS",
-    "Hardcoded http links in post content, widgets, menus and theme options",
-    "Page builder or plugin settings storing http URLs inside serialized data",
-    "Third party scripts, fonts or embeds loaded from http addresses",
-    "A CDN or caching layer still serving old http versions of files",
+    { text: "WordPress Address and Site Address still set to http after moving to HTTPS", layers: ["wordpress"] },
+    { text: "Hardcoded http links in post content, widgets, menus and theme options", layers: ["database"] },
+    { text: "Page builder or plugin settings storing http URLs inside serialized data", layers: ["extensions", "database"] },
+    { text: "Third party scripts, fonts or embeds loaded from http addresses", layers: ["edge"] },
+    { text: "A CDN or caching layer still serving old http versions of files", layers: ["edge"] },
   ],
   safeChecks: [
     "Open the page in a private window and click the padlock or \"Not secure\" label. The browser often names which items are insecure.",

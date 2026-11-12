@@ -13,11 +13,11 @@ export default guideSchema.parse({
     "Small images upload fine but large photos fail every time",
   ],
   likelyCauses: [
-    "PHP upload_max_filesize, post_max_size or memory_limit too low for the image",
-    "The image library (Imagick or GD) running out of resources while creating thumbnail sizes",
-    "Wrong folder permissions or ownership on wp-content/uploads",
-    "A server firewall such as ModSecurity blocking the upload request",
-    "A plugin hooking into uploads, such as an image optimizer, failing partway through",
+    { text: "PHP upload_max_filesize, post_max_size or memory_limit too low for the image", layers: ["php"] },
+    { text: "The image library (Imagick or GD) running out of resources while creating thumbnail sizes", layers: ["php", "server"] },
+    { text: "Wrong folder permissions or ownership on wp-content/uploads", layers: ["server"] },
+    { text: "A server firewall such as ModSecurity blocking the upload request", layers: ["server"] },
+    { text: "A plugin hooking into uploads, such as an image optimizer, failing partway through", layers: ["extensions"] },
   ],
   safeChecks: [
     "Resize the image to under 2560 pixels wide and try again. If the smaller copy uploads, the server is running short on resources for large images.",

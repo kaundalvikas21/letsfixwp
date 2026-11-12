@@ -11,10 +11,10 @@ export default guideSchema.parse({
     "Errors such as \"Cannot redeclare\" or \"Uncaught TypeError\" appear at the top of the page",
   ],
   likelyCauses: [
-    "A plugin or theme calling a function or class that was removed or renamed in an update",
-    "Code that is not compatible with the server's PHP version, especially after a move to PHP 8",
-    "Two plugins defining the same function or class name",
-    "A missing or partly uploaded file that another file depends on",
+    { text: "A plugin or theme calling a function or class that was removed or renamed in an update", layers: ["extensions"] },
+    { text: "Code that is not compatible with the server's PHP version, especially after a move to PHP 8", layers: ["php", "extensions"] },
+    { text: "Two plugins defining the same function or class name", layers: ["extensions"] },
+    { text: "A missing or partly uploaded file that another file depends on", layers: ["server"] },
   ],
   safeChecks: [
     "Search your admin email inbox and spam folder for \"Your Site is Experiencing a Technical Issue\". It names the plugin or theme that failed.",

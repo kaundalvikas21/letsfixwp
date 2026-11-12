@@ -12,11 +12,11 @@ export default guideSchema.parse({
     "Menus, the mobile menu toggle or theme options panels no longer work",
   ],
   likelyCauses: [
-    "A theme update overwrote edits made directly to the parent theme instead of a child theme",
-    "An outdated theme that no longer works with the current WordPress, PHP or WooCommerce version",
-    "Outdated template overrides in a child theme, such as old WooCommerce template files",
-    "A caching, minify or CDN setting serving old or broken CSS and JavaScript",
-    "An incomplete theme upload or a missing style.css file",
+    { text: "A theme update overwrote edits made directly to the parent theme instead of a child theme", layers: ["extensions"] },
+    { text: "An outdated theme that no longer works with the current WordPress, PHP or WooCommerce version", layers: ["extensions", "php"] },
+    { text: "Outdated template overrides in a child theme, such as old WooCommerce template files", layers: ["extensions"] },
+    { text: "A caching, minify or CDN setting serving old or broken CSS and JavaScript", layers: ["edge", "extensions"] },
+    { text: "An incomplete theme upload or a missing style.css file", layers: ["extensions"] },
   ],
   safeChecks: [
     "Open the site in a private window and on your phone. If it looks fine there, the problem may only be your browser's cached files.",

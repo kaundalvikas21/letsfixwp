@@ -12,11 +12,11 @@ export default guideSchema.parse({
     "The error started right after moving hosts or changing the database password",
   ],
   likelyCauses: [
-    "Wrong DB_NAME, DB_USER, DB_PASSWORD or DB_HOST values in wp-config.php",
-    "The MySQL or MariaDB server is down, restarting or refusing new connections",
-    "Corrupted database tables, often after a crash or a full disk",
-    "The database user lost its privileges or was removed in the hosting panel",
-    "The hosting account hit its database connection or resource limits",
+    { text: "Wrong DB_NAME, DB_USER, DB_PASSWORD or DB_HOST values in wp-config.php", layers: ["database", "wordpress"] },
+    { text: "The MySQL or MariaDB server is down, restarting or refusing new connections", layers: ["database", "server"] },
+    { text: "Corrupted database tables, often after a crash or a full disk", layers: ["database"] },
+    { text: "The database user lost its privileges or was removed in the hosting panel", layers: ["database", "server"] },
+    { text: "The hosting account hit its database connection or resource limits", layers: ["database", "server"] },
   ],
   safeChecks: [
     "Check your host's status page or support channel for a database or MySQL outage. If the server itself is down, only the host can bring it back.",

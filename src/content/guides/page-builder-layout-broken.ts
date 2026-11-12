@@ -13,11 +13,11 @@ export default guideSchema.parse({
     "The page looks right when you are logged in but broken for visitors, or the other way round",
   ],
   likelyCauses: [
-    "The builder plugin has been deactivated, its license has lapsed, or the theme was switched away from Divi, which carries its own builder",
-    "Mismatched versions, such as Elementor updated without Elementor Pro, or a WPBakery copy bundled with an outdated theme",
-    "Stale generated CSS from Elementor or Divi, or a caching or minification plugin combining builder files incorrectly",
-    "A JavaScript error from another plugin stopping the editor or the page's scripts from running",
-    "A PHP memory limit too low for the editor to load larger pages",
+    { text: "The builder plugin has been deactivated, its license has lapsed, or the theme was switched away from Divi, which carries its own builder", layers: ["extensions"] },
+    { text: "Mismatched versions, such as Elementor updated without Elementor Pro, or a WPBakery copy bundled with an outdated theme", layers: ["extensions"] },
+    { text: "Stale generated CSS from Elementor or Divi, or a caching or minification plugin combining builder files incorrectly", layers: ["extensions"] },
+    { text: "A JavaScript error from another plugin stopping the editor or the page's scripts from running", layers: ["extensions"] },
+    { text: "A PHP memory limit too low for the editor to load larger pages", layers: ["php"] },
   ],
   safeChecks: [
     "Open the broken page in a private browser window. If it looks different there than in your normal window, caching is part of the problem.",

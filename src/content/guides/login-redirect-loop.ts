@@ -11,11 +11,11 @@ export default guideSchema.parse({
     "The loop started after a migration, an SSL change or adding a CDN",
   ],
   likelyCauses: [
-    "WordPress Address and Site Address not matching the URL you log in on (http vs https, or www vs non-www)",
-    "Login cookies not being saved because of a wrong COOKIE_DOMAIN or cookie path",
-    "A caching plugin, server cache or CDN caching wp-login.php or wp-admin",
-    "A security or login plugin redirecting the login page to itself",
-    "Corrupted or stale login cookies in your browser",
+    { text: "WordPress Address and Site Address not matching the URL you log in on (http vs https, or www vs non-www)", layers: ["wordpress"] },
+    { text: "Login cookies not being saved because of a wrong COOKIE_DOMAIN or cookie path", layers: ["wordpress", "edge"] },
+    { text: "A caching plugin, server cache or CDN caching wp-login.php or wp-admin", layers: ["extensions", "edge"] },
+    { text: "A security or login plugin redirecting the login page to itself", layers: ["extensions"] },
+    { text: "Corrupted or stale login cookies in your browser", layers: ["edge"] },
   ],
   safeChecks: [
     "Clear cookies for your site only, then try again. Old login cookies are a common cause.",

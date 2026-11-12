@@ -12,11 +12,11 @@ export default guideSchema.parse({
     "Two features that used to work together, such as a cache plugin and a form plugin, now break each other",
   ],
   likelyCauses: [
-    "Two plugins loading different versions of the same JavaScript library, or one plugin breaking another's scripts",
-    "A plugin update that is not compatible with your WordPress or PHP version",
-    "Two plugins declaring the same PHP function or class, which triggers \"Cannot redeclare\" fatal errors",
-    "A caching or minify plugin combining JavaScript files in the wrong order",
-    "An abandoned plugin that has not been updated for current WordPress",
+    { text: "Two plugins loading different versions of the same JavaScript library, or one plugin breaking another's scripts", layers: ["extensions"] },
+    { text: "A plugin update that is not compatible with your WordPress or PHP version", layers: ["extensions"] },
+    { text: "Two plugins declaring the same PHP function or class, which triggers \"Cannot redeclare\" fatal errors", layers: ["extensions"] },
+    { text: "A caching or minify plugin combining JavaScript files in the wrong order", layers: ["extensions"] },
+    { text: "An abandoned plugin that has not been updated for current WordPress", layers: ["extensions"] },
   ],
   safeChecks: [
     "Note which plugin was installed or updated last. The Plugins screen and Dashboard > Updates show recent version changes.",

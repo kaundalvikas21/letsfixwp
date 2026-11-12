@@ -9292,3 +9292,705 @@ fix is a one class change whose semantics are written in `globals.css` above, bu
 would actually close this report, seeing the second card painted on first load, has not been done.**
 That is the first check when a browser is available: load `/` at 375, do not touch anything, and read
 the computed opacity of the second `li`. It must be 1.
+
+## v4 / the guide's four body sections, each with its own picture and its own 3D (Task 89)
+
+Owner: "guides slug page, What you are seeing, What usually causes it, Safe things to try first & When
+to call us sections currently over all boring by design point if view and not Good UI/UX scannable,
+please re-design this page sections are visually more clean unique 3D representation don't existing
+3D repeat and easy understandable visually section content rather than read first. As be like a SaaS
+page i want."
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 2 | What you are seeing | toggle checklist panel; split with a perspective capture on the 4 guides that have one | no | no | none (in-page link to #safe-checks) |
+| 3 | What usually causes it | exploded plane diagram over a tagged row list | no | no | none |
+| 4 | Safe things to try first | climbing step grid (2 or 3) plus warning strip | no | no | none |
+| 5 | When to call us | split panel, statement left, 3D slab right, action row under a hairline | no | no | book, chat, check |
+
+### What changed, and why each shape
+
+The data was four lists of sentences, so a visitor had to read every one to learn anything. Each
+section now has one idea, and the shape says it before the words do.
+
+- **Recognise it.** Symptoms are toggle rows (`aria-pressed`). The tick is a cube (`flip-tick`) that
+  rolls a quarter turn to its ember face; the footer counts "2 of 4 match" live and then offers the
+  safe checks. The count is the reader's input over the guide's own list, so rule 8 holds.
+- **See where it lives.** `likelyCauses` became `{ text, layers }`, and all 182 causes across the 37
+  guides were tagged by hand against six layers (`causeLayers` in schema.ts: server, PHP, database,
+  WordPress, plugins and theme, edge and delivery), two where the sentence names two. Owner chose
+  hand tags over a keyword map, which would have filed "a PHP fatal error in a plugin" under one
+  layer only. The fault map draws the six as planes (`fault-plane`), ember where this guide breaks;
+  pointing at a cause lifts its plane through `:has()` (`fault-map`), no script. The planes are
+  `aria-hidden` and the list carries every layer name as text.
+- **Try things in order.** The checks are steps (`stair-step`) that climb left to right from 768px,
+  each with a perspective tread, the top tread ember. The first sentence of each check is the bold
+  lead (`leadSentence` in utils.ts), the rest muted. Every lead was read across the 37 guides before
+  shipping; the full-stop-then-capital rule keeps paths like `wp-content/plugins.` whole.
+- **Know where to stop.** The first sentence of `whenToCallUs` is the stop condition, set as a display
+  line; the slab beside it (`TiltSlab`, the one Motion island) is twelve 3px slices of the face, so
+  its corners stay round at any angle, and it leans after the pointer on the contract's spring.
+
+### Not the existing 3D
+
+The service and contact flows' block is isometric (rotateX 55, rotateZ -45) with hard stacked
+shadows; `card-plate` is an offset sheet. The four here are a cube roll, front-on planes (rotateX 62,
+no Z turn), receding treads (rotateX 68 on a hinge) and a sliced extrusion. MASTER's 3D exception is
+amended to name them and to keep them on this template.
+
+### The reveal trap, again
+
+The reveal pins `transform` with `fill: both` (Task 88). Every motif therefore puts its 3D on a child
+or a pseudo-element, the stair climb uses the separate `translate` property, and reveals sit on
+wrappers. Measured after a full scroll at 375: 0 revealed elements below opacity 1.
+
+### 21st.dev
+
+Searched first: "Hairline Exploded", "Isometric Steps", the motion-primitives "Tilt" and a spring
+"Checkbox Group". None was installed. Isometric Steps is the projection this brief rules out, and
+the other three are a pattern each, rebuilt here as CSS utilities on the v4 tokens and one Motion
+island, which is less code than rewriting their shadcn tokens and second accents.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check **ok: 52 match candidates, 209 files scanned, legacy off**, motion
+check clean, build green at **99 routes**.
+
+```
+browser          production build, Chrome, 375 / 768 / 1024 / 1440
+guides           500-internal-server-error (no capture, 2 checks), php-fatal-error (3 checks),
+                 white-screen-of-death (capture)
+overflow-x       0 at 375, none at 768 / 1024
+reveal           0 elements below opacity 1 after a full scroll at 375
+symptom check    2 rows ticked: aria-pressed true/false/false/true, live text "2 of 4 match this guide."
+fault map        hover on the PHP memory cause fills and lifts the PHP plane only
+reading rail     5 h2 ticks in the column, unchanged
+reduced motion   cube transform none, ember face cross-fades to opacity 1, slab static at its rest angle
+axe              white-screen-of-death, reduced motion, 1440: 0 violations, 23 passes; color-contrast
+                 incomplete only on the masthead, closing band and stair text (the tread pseudo-element),
+                 all existing token pairs
+```
+
+**Not run, and not claimed:** no real touch device; `build:prod` (strict) still fails on the
+unconfirmed brand values and placeholder testimonials, as before this task.
+
+## v4 / the guide sections, quietened (Task 90)
+
+Owner: "polish the page clean roughness and proper UI/UX clean working as expectation not noisy and
+over unecesary"
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 2 to 5 | the four guide body sections | unchanged from Task 89 | no | no | unchanged |
+
+### What came out, and why
+
+Read as a whole page, Task 89 said several things twice, and most of the repeats were ember. Each
+removal leaves one carrier per idea.
+
+- **Cause rows lost their icon chips.** The plane stack above already draws the layers in ember; the
+  chips put a second ember mark on every row. The layer name stays as text, and it turns ember when
+  its row is pointed at, so the row now answers the pointer where it used to answer only in the
+  diagram 300px away.
+- **Idle planes recede** (`--line-strong` at 55%) so the ember planes are the only thing in the
+  diagram that reads at a glance. The diagram is `aria-hidden`, so this is not a control boundary.
+- **Planes sit inside the column.** Perspective widens each front edge past its box; `px-3` on the
+  stack keeps it off the page gutter.
+- **Steps lost their ordinals.** The climb and the `<ol>` already give the order.
+- **"When to call us" lost its ember hairline**, and the slab went from 144 to 112px: one ember mark
+  per panel, and the statement is the larger thing.
+- **Symptom rows no longer scale on press.** A full-width row shrinking inside a ruled list jitters;
+  the cube roll is the feedback.
+- **"Get a free site check" is a visible link now.** `CheckLink` ships unstyled, so it rendered as
+  muted text with no underline. It takes a quiet underline in `--line-strong` that turns ember on
+  hover.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content and motion checks clean, build green at **99 routes**. Production build in
+Chrome at 1440 (reduced motion) and 375 (motion on): overflow-x 0, 0 revealed elements below opacity 1
+after a full scroll, site-check link computes `text-decoration-line: underline`.
+
+**Not run, and not claimed:** axe was not re-run after these removals (Task 89's run was 0 violations;
+nothing here adds a colour pair except the link, which is `--text` on `--surface`).
+
+## v4 / causes become an explorer, safe checks become a climb that ends in a stop (Task 91)
+
+Owner: "What usually causes it refine clean UI/UX and more interactive professionaly think and
+redesign. Safe things to try first section enhancement the concepual thinks than UI/UX clean"
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 3 | What usually causes it | master and detail: 3D layer stack as a vertical tablist, cause panel beside it | no | no | none |
+| 4 | Safe things to try first | climbing step grid with done toggles, landing strip that hands off | no | no | none (in-page link to #call-us) |
+
+### What usually causes it
+
+The stack was a picture and the list sat under it, joined only by a hover that phones do not have.
+The stack is now the control (`FaultExplorer`, a client leaf; `FaultMap` stays the server half and
+regroups the causes by layer, so the content modules never reach the bundle).
+
+- Every lit layer is a tab with its cause count; picking one opens that layer's causes in the panel
+  beside it, the plane lifts and fills. Unlit layers stay in the stack, dimmed and `aria-hidden`:
+  they tell the reader where it probably is not.
+- A cause tagged with two layers appears under both, with "Also starts in PHP" linking across and
+  moving focus to that tab.
+- WAI-ARIA vertical tablist: arrows move and select (wrapping), Home and End jump, roving tabindex.
+- All panels render into one grid cell; the inactive ones are `inert` and invisible (`fault-panel`).
+  The box is the tallest panel's height, so switching never moves the page, and every cause stays
+  in the HTML.
+- Opens on the first cause's first layer: each guide lists its most common cause first.
+- The `fault-map` `:has()` hover utility is gone; `fault-plane` gained `data-selected` and a half lift
+  on hover under a fine pointer.
+
+### Safe things to try first
+
+The section's real message is the stop, and nothing on screen said it. Now each step has a Done
+toggle (the same rolling tick as the symptom check, so a tick means one thing on this page) that
+lights its tread, so the lit treads are how far the reader has climbed. The core-file warning is the
+landing at the top: it counts "1 of 2 tried", and when every step is done it turns ember, says
+"Tried them all and it is still broken? Stop here." and points at "When to call us". The hand-off
+arrives at the moment the safe options run out. The ember last tread from Task 89 is retired; the
+landing carries the stop.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content and motion checks clean, build green at **99 routes**.
+
+```
+1440             500 guide opens on Server (first cause); "Also starts in PHP" selects PHP and focuses
+                 its tab; ArrowUp to Plugins and theme, ArrowUp again wraps to Server; tabIndex
+                 -1,-1,0; inactive panels inert and visibility hidden
+stairs           one Done: tread ember, landing "1 of 2 tried"; both: landing border ember, text
+                 "Tried them all and it is still broken? Stop here."
+375              php-fatal-error: overflow-x 0, 0 revealed elements below opacity 1, tabs 44px tall
+axe              php-fatal-error 375 with a step done: 0 violations, 30 passes
+```
+
+**Not run, and not claimed:** no real touch device; no screen reader pass beyond axe.
+
+## v4 / causes and safe checks, back to plain sight with hover (Task 92)
+
+Owner: "What usually causes it & Safe things to try first sections display simple and beautiful with
+hover effect."
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 3 | What usually causes it | split: sticky 3D layer stack beside a ruled cause card | no | no | none |
+| 4 | Safe things to try first | climbing step grid, landing strip | no | no | none (in-page link to #call-us) |
+
+Read as: show everything at once, and make hover the only interaction. Task 91's tabs and done
+toggles are gone, and both sections are Server Components again (`FaultExplorer` deleted,
+`fault-panel` utility deleted, no client JS in either).
+
+- **Causes.** The stack sits beside the causes, sticky from 768px so it stays next to whichever row
+  the pointer is on. Hover runs both ways through `fault-map` (`:has()`, fine pointers only):
+  a cause lifts and fills its layers and turns its layer names ember; a lit layer dims every cause
+  not in it to 35%. The dimming is on the inner row, never the Stagger `li`, whose reveal holds
+  opacity. On touch it is simply the picture beside the list.
+- **Safe checks.** Steps climb as before, with no toggle. Hovering a step lifts it 4px off its place
+  in the climb (`--lift`, composed into the same `translate` as the rise) and lights its tread; no
+  lift under reduced motion. The landing is static: "Still broken after these?" leading the existing
+  core-file warning, and the link on to "When to call us".
+
+### Checks
+
+`tsc` 0, `eslint` 0, content and motion checks clean, build green at **99 routes**. Production build
+in Chrome at 1440: hovering "A PHP fatal error in a plugin or theme" fills Plugins and PHP; hovering the
+Server layer leaves its three causes bright and dims the other two; hovering step 1 lifts it and lights
+its tread. At 375 on php-fatal-error: overflow-x 0, 0 revealed elements below opacity 1, the stack is
+`position: static`.
+
+**Not run, and not claimed:** axe was not re-run; this pass removes the interactive controls Task 91
+added and introduces no new colour pairs.
+
+## v4 / causes as a 2x2 table with layer icons, safe checks as plain cards (Task 93)
+
+Owner, on a screenshot with the 3D stack struck out and the cause card ticked: "What usually causes
+it: right stack display in 2*2 table with same current also include relevant icons placement. Safe
+things to try first section cards top shadow whatever remove and only re-use existing best fit hover
+state."
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 3 | What usually causes it | ruled two-column table, layer icons per cell | no | no | none |
+| 4 | Safe things to try first | separate `HoverFill` cards (2 or 3 across), landing strip | no | no | none (in-page link to #call-us) |
+
+- **Causes.** The 3D layer stack is gone (`fault-plane`, `fault-map` deleted; `FaultMap.tsx` replaced
+  by `CauseTable.tsx`). The cause card is now a ruled table, two columns from 768px: the rules are the
+  card's `--line` through a 1px gap, and an odd last cell spans both columns so it never ends on a
+  hole. Each cell leads with the `layerIcon` mark of every layer its cause is tagged with, the layer
+  names beside them, then the cause; hover keeps Task 92's surface fill and ember layer names. The
+  table reveals as one element, because a staggered cell would show the gap as a solid block.
+- **Safe checks.** The treads and the climb are gone (`stair-step` deleted): without the treads an
+  offset reads as misaligned cards. Each check is a `card` wrapped in `HoverFill`, the existing hover
+  for non-link cards (case studies' anatomy, About's stats strip). Separate cards, not a table, so
+  the two sections stay different families (contract rule 3).
+- MASTER's 3D exception now names only the guide's tick cube and hand-off slab.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content and motion checks clean, build green at **99 routes**. Chrome at 1440 on
+redirect-hack: 2x2 plus a spanning fifth cell, two-layer cause shows both marks; the first check fills
+under the pointer. At 375 on php-fatal-error: one column, overflow-x 0, 0 revealed elements below
+opacity 1.
+
+**Not run, and not claimed:** axe not re-run; no new colour pairs.
+
+### Follow-up (Task 93b)
+
+Owner: "Plugins and theme, WordPress before one icon and last row also 5 col width contain not full
+next col width contain."
+
+- One mark per cell: the cause's first layer, which is its main tag. Every layer name still follows.
+- The odd last cause keeps one column's width. An empty `bg-surface` cell (`aria-hidden`, md+ only)
+  closes the row, because without it the gap's `--line` showed through the hole as a grey block.
+
+Checked at 1440 on redirect-hack: one mark on the two-layer cause, fifth cell half width beside a
+plain empty cell. `tsc` 0, `eslint` 0, build green at 99 routes.
+
+## v4 / no scroll progress bar on guides (Task 94)
+
+Owner: "site header page progress bar remove no need page progress on scroll"
+
+The bar under the header was mounted on the guide template only, as an owner-granted exception to
+contract rule 6's ban on scroll cues. That exception is withdrawn: `ScrollProgress` is no longer
+mounted anywhere, so rule 6 now holds without exception. The primitive stays in
+`src/components/motion/` (it is part of the documented motion set) but has no caller. `ReadingRail`
+in the lg sidebar is unaffected; it reads `[data-rail-scope] h2[id]`, not the article id.
+
+Checks: `tsc` 0, `eslint` 0, build green at 99 routes; the built
+`/guides/500-internal-server-error/` HTML contains no element with the bar's classes.
+
+## v4 / the error capture becomes the guide band's background (Task 95)
+
+Owner: "What you are seeing section in guide slug page there right side display image remove that
+image display in hero banner image i think better approach." Then: "image place in the background
+not over the banner? Commes from card same image Pick your problem. We take it from there. cards"
+
+The capture is the band's background, not a panel on it. `PageMasthead` takes an optional `screen`
+(a path under `public/screens/`) which takes the place of `photo` on that one layer: same
+`hero-settle` settle, same flat `--photo-scrim` over it, same single column of words underneath. The
+four guides with a capture pass theirs; the other 33 keep the parent service's night frame, and
+every other caller of the masthead is untouched.
+
+This is the home page's own pattern reused rather than a new one: `ProblemTiles` already runs the
+identical capture as the background of a critical tile under the identical scrim, so the error
+screen a visitor clicked on the grid is the error screen behind the heading when they land. Both
+arms are decorative with an empty alt: the h1 and the error plate say what the picture is of, and
+`g.image.alt` was written for an inline figure.
+
+Legibility is the reason the scrim stays as it is. `--photo-scrim` is `rgb(12 12 14 / 0.66)`, and
+over a pure white capture (white-screen-of-death, the brightest image on the site) it composites to
+about `#5e5e60`, where `--on-photo` measures 5.7:1. Every darker capture is further above the line.
+
+"What you are seeing" is a single column on all 37 guides: `SymptomCheck` at the full measure, no
+conditional grid, no `RealScreen` and no perspective turn on the page at all.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check ok, build green at **99 routes**. Built HTML:
+`/guides/white-screen-of-death/` has the `/screens/` image inside the masthead `<header>` with the
+scrim over it and no service photo; `/guides/500-internal-server-error/` has the service frame
+(`racks.jpg`) and no capture; neither page contains a `<figure>` any more.
+
+**Not run, and not claimed:** no browser pass at 375 or 1440, and no axe run. Loopback HTTP is
+blocked in this sandbox, so `next start` reported ready and could not be reached. The 5.7:1 figure
+above is computed from the token values, not sampled from a rendered page.
+
+## v4 / the guide band gets its description back, and its slack split (Task 96)
+
+Owner, on a 1440 capture of /guides/php-fatal-error/: "look this hero breadcrumbs and H1 b/w very
+spacing please fix this accurate consistency spacing. And where is description?"
+
+**The hole between the crumbs and the h1.** `PageMasthead` is a flex column with a min-height, and
+the words carried `mt-auto`, so every pixel the page did not use piled up in one place: directly
+under the breadcrumbs. It is `my-auto` now. The same leftover becomes padding above and below the
+words, which is what it looks like, and the crumb-to-headline gap is the declared 40px plus half the
+slack rather than all of it. On the guide above that is 105px before and about 48px after. Every
+caller of the masthead gets the same correction; no page where the content already fills the band
+changes at all.
+
+**The missing description.** The guide band had an h1, a plate on 20 of the 37 and two buttons, and
+nothing that said what the page does: on a guide with no `errorText` it was a headline and two
+buttons on a photograph. It carries `seo.description` now, which is the lead `CityTemplate` and
+`CompareTemplate` already pass and the one sentence every guide has written for it.
+
+That sentence runs to about 25 words, over contract rule 4's 20-word hero subtext cap, and this is
+an owner-granted exception recorded here rather than a rule quietly dropped. `ServiceTemplate` makes
+the opposite call for the same reason (its `summary` is 25+ words, so it renders under the hero
+instead), and that stays as it is: a service page has a lead paragraph in the body to hold it and a
+guide does not.
+
+### Checks
+
+`tsc` 0, `eslint` 0, build green at **99 routes**. Built HTML for `/guides/php-fatal-error/`: the
+band carries `my-auto` and no `mt-auto`, and the description renders between the h1 and the buttons
+at `--on-photo` on the scrim.
+
+**Not run, and not claimed:** no browser pass. Loopback HTTP is blocked in this sandbox, so the
+spacing figures above are computed from the token values and the built classes, not measured on a
+rendered page.
+
+## v4 / the brand film gets a full-bleed band on the home page (Task 97)
+
+The 40-second film `what-a-fix-looks-like` is the first clip on this site that exists. It plays in a
+new home section between "Same site. Working again." and "Choose how you want help".
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 7 | Watch a fix, start to finish (**new**, `FilmBand.tsx`) | full-bleed media band, copy centred on the spine above it, caption under the band | no | no | none |
+
+Budgets after: home goes from 12 sections to **13**, still **1 marquee**, still **0 eyebrows**, still
+**0 pinned scenes of 2**. No two consecutive image-plus-text splits: the band has no text column beside
+it, and the section above it is a single framed capture with its copy overlaid, not a split.
+
+### Why this position
+
+Two constraints decide it and they point at the same gap.
+
+`ProblemTiles` is the section that converts a visitor whose site is down right now, and `PRODUCT.md`
+puts success at "a booked fix or a live conversation in about two minutes". Nothing asking for forty
+seconds may sit above it. That rules out the hero and everything before section 5.
+
+`Plans` is where the visitor decides what to buy. Trust should be highest in the section immediately
+before a decision, not twenty sections earlier, which rules out parking the film down with the FAQ.
+
+Between `Restored` and `Plans` is the one slot that satisfies both: past the triage path, immediately
+before the ask, and high enough on the page to be seen.
+
+### Why a full-bleed band, and not the capture frame
+
+Every other section on this page sits on the 75rem spine, so edge-to-edge is a layout family the page
+does not already use (contract rule 3). The change of register is also the point: a film in the same
+bezel as the screenshots reads as one more card.
+
+It settles the ratio at the same time. The film is 1920x1080 and the house ratio is 16/10, so in
+`VideoSlotBox`'s framed box `object-cover` would shave about a tenth off each side, through text that
+sits close to those edges. A band that meets both window edges owes a screenshot no agreement, which is
+the 9/16 argument from Task 79 applied to the opposite shape. MASTER amended for
+`what-a-fix-looks-like` by name and tied to the band; a 16/9 clip in a framed slot on the spine is
+still out of bounds. Owner decision 2026-11-12.
+
+`rounded-none` on the box: a 14px radius against the viewport edge shows as two notches rather than as
+the shape lock it is everywhere else.
+
+### Why `Restored` is still not the host
+
+Task 53 planned the second business slot there and reading the section ruled it out: `RestoredOverlay`
+covers that frame edge to edge with `absolute inset-0 bg-photo-scrim` and holds the section's own
+`h2#same-site` on top, so a player underneath is unreachable and its control bar lands under the copy.
+Nothing about that has changed, and this band leaves `Restored` untouched, fallback chain and all. The
+honest note stands that it still wants `/screens/restored.png` from `npm run capture`.
+
+### What the caption claims, and what it does not
+
+The film is drawn, not recorded. Its WordPress pages are reproductions of what the software prints,
+not screenshots of a client's site, and the repaired page at the end is a generic drawn site that
+names nobody. The label says what it is, "What a fix looks like", rather than borrowing the evidence
+framing of `a-site-brought-back`. It states no price, turnaround, site count, guarantee or testimonial,
+because every one of those figures in this repo is still a placeholder. Every word it puts on screen is
+quoted from `src/content/guides/*.ts`, `FixPan.tsx`, `Practices.tsx`, `page.tsx` and `cta.ts`.
+
+### Measurements
+
+Read off the prerendered HTML in `.next/server/app/index.html`.
+
+| | |
+| --- | --- |
+| `<video>` elements on the home page | **0** |
+| Box classes | `aspect-[16/9] full-bleed rounded-none` |
+| Clip, poster and captions resolved | `/videos/what-a-fix-looks-like.{mp4,jpg,vtt}` |
+| Caption rendered | "What a fix looks like, from the error on your screen to the site working again. 40 seconds." |
+| Heading order | one h1, then the new h2 seventh, between "Same site. Working again." and "Choose how you want help"; no level skipped |
+| Clip size | 5.25MB against the 8MB budget in `docs/video-todo.md` |
+
+Zero `<video>` elements is the point: `ClipPlayer` renders the poster through `next/image` and swaps a
+player in on the first click, so the band costs one image until someone asks for the film. This page was
+measured at LCP 5.2s against contract rule 13's 2.5s budget, which is why that facade exists.
+
+The poster is the frame at 30.4s, chosen against the rule in `docs/video-todo.md` that the centre of a
+poster must not be the brightest thing in it: the play badge is near-white and sits dead centre. Centre
+luminance measured across the candidates was 243, 222 and 174 for the frames showing the white error
+pages, against 25 here, where the centre is also the gap between the two cards rather than text.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check ok (52 match candidates, 210 files, legacy off), motion check clean,
+build 99 routes.
+
+**Not run, and not claimed:** no browser pass, so no measured CLS, INP or axe run. Loopback HTTP is
+blocked in this sandbox. The band reserves its box through `aspect-[16/9]` before the poster loads, so
+CLS from this section is zero by construction, but that is reasoning rather than a measurement.
+
+## v4 / clips play in a modal, sized to fit both axes (Task 98)
+
+`ClipPlayer` swapped a player into the card it was clicked in. It now opens the clip in a modal. No
+section changed, no layout family changed, no box moved: the poster, the caption and every slot's
+reserved box are exactly as they were, and only playback moved.
+
+### Why
+
+A clip played at the size of its card. On a 375px phone that is a 9:16 client clip about 142px wide
+and the home band's 16:9 film about 200px tall. The modal gives any clip the viewport instead and
+darkens the page behind it, which is the point of a film on a page that is otherwise dense with text.
+
+### Why the existing dialog rather than a new overlay
+
+`src/components/ui/dialog.tsx` is already in the bundle through `NavBar`, `CommandPalette` and
+`ChatProvider`, so the modal costs no new vendor code, and it brings the focus trap, Escape, the
+portal, the return of focus to the trigger and the body scroll lock with it. Radix unmounts content on
+close, which is also what stops playback: there is no pause to wire, and no `<video>` survives a close.
+
+Its defaults are v3 era and three are overridden at the call site rather than at the source, where
+three other components depend on them: `rounded-[20px]` and the `rounded-full` close button both break
+v4's 14px shape lock, and `top-[12dvh] max-w-xl` is a reading box rather than a film. The replacement
+close button is 44px, 14px radius, with the contract's focus ring and `active:scale-[0.98]`.
+
+### How the box cannot overflow
+
+One expression constrains both axes at once, in `ClipPlayer`:
+
+```
+width: min(96vw, calc((100dvh - 7rem) * w / h))
+```
+
+The first term caps width against the viewport; the second caps height by asking what width that
+height allows at the clip's own ratio. The smaller wins, so neither axis can be exceeded, at any
+orientation, for 16:9 and 9:16 alike. `dvh` rather than `vh` counts a mobile browser's collapsing
+toolbar. 7rem is the close button, its gap and the margins. `max-h-[calc(100dvh-7rem)]` and
+`max-w-[96vw]` repeat the same limits as a floor under the arithmetic, and the video is
+`object-contain`, so a browser that disagrees about `dvh` letterboxes rather than overflowing.
+
+Computed across 10 viewports in both orientations for both ratios, 20 cases, checking box width
+against viewport width and box height plus the 56px close row against viewport height:
+
+| Clip | Tightest case | Box | Used | Headroom |
+| --- | --- | --- | --- | --- |
+| 16:9 film | 667x375 landscape | 468 x 263 | 468 x 319 | 56px |
+| 16:9 film | 1920x1080 | 1721 x 968 | 1721 x 1024 | 56px |
+| 9:16 client clip | 320x480 | 207 x 368 | 207 x 424 | 56px |
+| 9:16 client clip | 320x568 | 256 x 456 | 256 x 512 | 56px |
+
+**0 failures of 20.** Minimum headroom is the 56px margin itself; it is never negative. Page scroll is
+not introduced in either axis: the dialog is portalled and fixed, and the body is locked while open.
+
+### Reach
+
+Every slot routes through `ClipPlayer`, so this is also how the 12 client clips on `/case-studies/`
+and `/`, `how-a-rescue-runs` on `/about/`, `a-site-brought-back` on `/case-studies/` and the service
+page quotes will play. One path rather than two.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check ok, motion check clean, build 99 routes. Prerendered home page:
+**0 `<video>` elements and 0 dialog nodes**, so the modal still costs one optimised poster until a
+visitor asks for the film, which is what keeps contract rule 13 satisfied on a page measured at LCP
+5.2s. `dialog-in` animates opacity and scale only and is already `motion-safe:` gated (rule 10).
+
+**Not run, and not claimed:** no browser pass. Loopback HTTP is blocked in this sandbox, so the fit
+table above is arithmetic over the shipped expression rather than measured layout, and there is no axe
+run on the open dialog.
+
+## v4 / the film section comes back onto the spine, and gains an index (Task 99)
+
+Task 97 put the brand film in a full-bleed band. This replaces it with a section shaped like every
+other one on the page, and spends the attention it gave up on an index into the film instead.
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 7 | Watch a fix, start to finish (`FilmBand.tsx`) | media panel with an index column beside it, 7/5 on desktop, stacked below `md` | no | no | none |
+
+Budgets unchanged: 13 sections, **1 marquee**, **0 eyebrows**, 0 pinned scenes of 2. Rule 3 still
+holds, and no two splits are consecutive: the section above is a single framed capture with its copy
+overlaid, the one below is a three up with an image, a list and a CTA per column.
+
+### Why the band went
+
+Edge to edge made the film the loudest thing on a page whose job is triage, and it was the one
+section not on the 75rem spine, which read as a different site for the length of one scroll rather
+than as emphasis. Size is the cheapest way to ask for attention and the least convincing.
+
+### What replaced it
+
+A chapter list beside the poster. Four entries, each opening the player at its own timestamp:
+
+| Chapter | Starts |
+| --- | --- |
+| The error on your screen | 0:00 |
+| The five moves of a fix | 0:15 |
+| How we work on your site | 0:28 |
+| Let's fix it. | 0:32 |
+
+Every `t` is a section boundary the film was cut to, held in `src/content/videos.ts` beside the clip
+(contract rule 8), so a chapter never lands mid sentence and the timestamp a visitor reads is
+formatted from the same number that seeks the video. The list also does the work the band was trying
+to do: it says what is in the film before anyone spends forty seconds on it.
+
+`ClipPlayer` was taken apart into `ClipModal`, `PlayFacade` and the wired `ClipPlayer` the other
+thirteen slots still use, because five controls have to open one player at five different timestamps
+and a facade that owns its own state cannot be opened from outside. `startAt` is set on the element
+in `onLoadedMetadata` rather than written into the source as a media fragment, so the scrub bar still
+shows the whole film: a chapter is a place to start, not a clip of its own.
+
+### A build failure worth recording
+
+`FilmStage` is a client component and imported `frameShell` from `VideoFrame.tsx`, which reaches
+`node:fs` through `Photo.tsx`'s `hasScreen`. Turbopack failed the production build with "the chunking
+context does not support external modules (request: node:fs)" while writing `/page`. It is not caught
+by `tsc` or `eslint`: both see a valid import.
+
+The class string now lives in `src/components/frame.ts`, which has no imports at all, and
+`VideoFrame.tsx` re-exports it so the four existing call sites are unchanged. The general shape of
+the mistake is worth remembering: a constant exported from a module that touches the filesystem
+carries that module into every bundle that imports it. The other `frameShell` consumer,
+`ClientClips.tsx`, is a Server Component, which is why this had never fired before.
+
+### The poster changed with the size
+
+Task 97 chose the frame at 30.4s, the two practice cards, because at full-bleed width it read well and
+its centre was dark enough for the near-white play badge. At the contained size it is 637px wide on a
+1440px viewport, a third of its source, and at that scale it goes flat: two dark cards on a dark field
+with an 8px mono label, low contrast and nothing to look at.
+
+The poster is now the frame at **36.4s**: the repaired site in its window, the ember headline, the
+muted hero copy and the call to action. At 637px it still has structure, contrast and depth, and it
+reads as a product rather than as a slide. Centre luminance is 33, so the badge still carries.
+
+The general point: a poster has to be chosen at the size it will be shown, not at the size it was
+rendered.
+
+### Measurements
+
+Read off the prerendered HTML in `.next/server/app/index.html`.
+
+| | |
+| --- | --- |
+| `full-bleed` on the home page | **0** |
+| `<video>` elements | **0** |
+| Section classes | `reveal mx-auto max-w-page px-4 py-16 md:px-6 md:py-24`, identical to its neighbours |
+| Chapter controls | 4, each named "Play from m:ss: label" |
+| Heading order | h1, then the section's h2 seventh; the chapter list carries `aria-label` rather than a visible heading, so no level is added or skipped |
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check ok (211 files), motion check clean, build 99 routes. The modal's
+fit arithmetic from Task 98 is unchanged and still covers 16:9 and 9:16 at 0 failures of 20.
+
+**Not run, and not claimed:** no browser pass. Loopback HTTP is blocked in this sandbox, so the 7/5
+split is not measured at 375, 768, 1024 or 1440, and there is no axe run on the chapter list.
+
+## v4 / the film section loses the chapter index (Task 100)
+
+Task 99 put a four entry chapter list beside the film. Owner removed it. The section is now a poster,
+a sentence and one play control.
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 7 | Watch a fix, start to finish (`FilmBand.tsx`) | one framed media block on the spine, copy above it, caption under the frame | no | no | none |
+
+Budgets unchanged: 13 sections, 1 marquee, 0 eyebrows, 0 pinned scenes of 2.
+
+### Rule 3, checked rather than assumed
+
+`Restored` directly above is also a single framed visual, which is close enough to be worth writing
+down. It is a different family because it holds the section's copy **on** the frame, through
+`RestoredOverlay` and the one scrim pairing this site has measured for text over photography
+(`--on-photo` on flat `--photo-scrim`, 6.58:1). This section's copy sits above the frame and its
+caption under it. `/case-studies/` records "one framed media block, caption under it" as a family of
+its own (Task 56), and rule 3 is per page, so it is free here.
+
+### What was deleted with it
+
+Removing four controls removed everything that existed to serve them, rather than leaving the
+scaffolding behind:
+
+- `FilmStage.tsx`, deleted. Without chapters it was `PlayFacade` plus `ClipModal`, which is what
+  `ClipPlayer` already is, and `VideoFrame` already renders frame, poster and caption together. The
+  section is now ten lines of JSX over `VideoFrame`.
+- `ClipModal` and `PlayFacade` folded back into `ClipPlayer`. They were split apart so five controls
+  could open one player at five timestamps; with one control each had exactly one consumer.
+- `startAt` and the `onLoadedMetadata` seek, gone with them.
+- `chapters` removed from `Clip` in `src/content/videos.ts`, data and type.
+- `src/components/frame.ts`, deleted. It existed because a client component needed `frameShell`
+  without inheriting `VideoFrame`'s `node:fs` dependency, and that client component was `FilmStage`.
+  The constant is back in `VideoFrame.tsx` carrying a comment that names the failure, because the
+  trap is real and the next person to import it into a client component should be warned rather than
+  made to rediscover it: Turbopack fails the build with "the chunking context does not support
+  external modules (request: node:fs)" and neither `tsc` nor `eslint` sees it coming.
+
+### Measurements
+
+Read off `.next/server/app/index.html`.
+
+| | |
+| --- | --- |
+| Chapter controls | **0** |
+| `In the film` heading | **0** |
+| `<video>` elements | **0** |
+| `full-bleed` | **0** |
+| Section classes | `reveal mx-auto max-w-page px-4 py-16 md:px-6 md:py-24`, identical to its neighbours |
+| Frame | `...bg-surface-2 p-2 shadow-card mt-10 md:mt-12` wrapping `aspect-[16/9]` |
+| Caption | "What a fix looks like, from the error on your screen to the site working again. 40 seconds." |
+
+The one `md:col-span-7` left on the page belongs to `ExpandingRows` in the plans section, checked
+rather than assumed.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check ok, motion check clean, build 99 routes. The modal and its fit
+arithmetic from Task 98 are untouched.
+
+**Not run, and not claimed:** no browser pass. Loopback HTTP is blocked in this sandbox.
+
+## v4 / the brand film is replaced: Back Online Today (Task 101)
+
+The film in the home page's film section (`FilmBand.tsx`, slot `what-a-fix-looks-like`) is a new 45 second
+film. Same slot, same file names in `public/videos/`, same `VideoFrame` and `ClipPlayer`: no layout change, so
+the section row from Task 100 stands as written.
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 7 | Watch a fix, start to finish (`FilmBand.tsx`) | one framed media block on the spine, copy above it, caption under the frame | no | no | none |
+
+Budgets unchanged: 13 sections, 1 marquee, 0 eyebrows, 0 pinned scenes of 2.
+
+### What changed
+
+- `public/videos/back-online-today.{mp4,jpg,vtt}`: the new film, its poster and captions, under new names so no browser or image cache keeps serving the old film under the old URL. The slot id stays `what-a-fix-looks-like`.
+- `src/content/videos.ts`: label, alt, `seconds: 45`, and the comment on what the film may claim.
+- `FilmBand.tsx`: the sentence under the heading no longer names "the five moves", which the new film does not show.
+- `.gitignore` and `eslint.config.mjs`: the film's source folder `letsfixwp-film/` keeps its code in the repo and
+  ignores what `build.sh` regenerates; ESLint skips it (browser modules for the film renderer, not app code).
+
+### What the film may say
+
+Only the four owner-confirmed promises in PRODUCT.md (fixed price agreed first, a full backup before any change,
+a login the client creates and never their password, access removed when done) and the home H1 "back online
+today". No price, count, rating or turnaround. `brand.claims.sameDay` is still wrapped in `confirm()`; if the
+owner withdraws it, the last voice line, the closing title card and the H1 all have to change together.
+
+### The poster
+
+Rendered from the film's own scene with a dedicated camera (`?thumb=` in `letsfixwp-film/src/shots.js`) so the
+centred play control lands on open card space, not on the title: the site back online with the team, customers
+queuing, the title card and the agreed-price and access-removed cards in one frame.
+
+### Measurements
+
+Read off `.next/server/app/index.html` and the files.
+
+| | |
+| --- | --- |
+| Film | 45.0 s, 1920 x 1080, 30 fps, H.264 + AAC, 6.3MB web encode (`+faststart`), -14.1 LUFS master |
+| Poster | 1920 x 1080 JPEG, 211KB |
+| Captions | 11 cues, WebVTT |
+| `<video>` elements in the prerendered page | **0** (the facade from Task 98 still mounts it on click) |
+| Caption under the frame | "How a fix runs, from a site that is down to the same site back online. 45 seconds." |
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check ok, motion check clean, build 99 routes. Film: speech-to-text on the final mix
+reads back every line; 0 black frames; every in-world text passes the library's reading-time check.
+
+**Not run, and not claimed:** no browser pass of the modal player with the new file.

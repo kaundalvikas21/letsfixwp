@@ -27,3 +27,16 @@ import { extendTailwindMerge } from "tailwind-merge";
 const twMerge = extendTailwindMerge({ extend: { classGroups: { "max-w": ["max-w-page"] } } });
 
 export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
+
+/**
+ * A guide sentence block split into its first sentence and the rest, so the first can be set as the
+ * bold lead that a reader scans and the rest as the muted detail they read only if it applies.
+ *
+ * A sentence ends at a full stop followed by a space and a capital. That rule is what keeps
+ * "wp-content/plugins." or "yoursite.com/wp-admin." intact: a dot inside a path is never followed by
+ * a space. A block with one sentence returns it as the lead and an empty rest.
+ */
+export const leadSentence = (text: string): [lead: string, rest: string] => {
+  const at = text.search(/\.\s+(?=[A-Z"])/);
+  return at === -1 ? [text, ""] : [text.slice(0, at + 1), text.slice(at + 1).trim()];
+};

@@ -121,7 +121,7 @@ nearly invisible anyway. Edges are carried by `--line` and by `--surface` steppi
 | `--shadow-lift` (hover, links only) | `inset 0 1px 0 rgb(255 255 255 / 0.07), 0 2px 4px rgb(0 0 0 / 0.7)` |
 
 The inset top highlight is the main device: it reads as a lit edge in a dark room. No ember glows,
-no coloured shadows, no 3D effects, except the step blocks in the service page's "What we do" flow and the contact page's promises flow (owner decision, 2026-11-05, docs/layout-ledger.md Tasks 77 and 78).
+no coloured shadows, no 3D effects, except the step blocks in the service page's "What we do" flow and the contact page's promises flow (owner decision, 2026-11-05, docs/layout-ledger.md Tasks 77 and 78), and two motifs on the guide template: the rolling tick cube on the symptom check and the extruded hand-off slab in "When to call us" (owner decision, 2026-11-11, docs/layout-ledger.md Tasks 89 and 93; the fault map planes and stair treads were retired in Task 93). Neither may be reused on another page without a new owner decision.
 
 ### Glass
 
@@ -349,7 +349,7 @@ The guarantee words are the one place a photograph is a CSS background rather th
 mask needs `background-image`, which `next/image` cannot provide. It is a single 77KB file, requested only
 when that section comes into view.
 
-**Media ratio: 16/10, with 9/16 excepted for client-filmed clips and nothing else.** Every asset here is
+**Media ratio: 16/10, with 9/16 excepted for client-filmed clips and 16/9 for the brand film.** Every asset here is
 16/10 (the captures are 1600x1000), so a photograph, a screenshot and a clip read as the same device
 photographed in the same frame. Client testimonial clips are the one exception: a client filming
 themselves holds a phone, and 9/16 is that clip at its own shape. Letterboxing it into 16/10 puts dead
@@ -358,6 +358,16 @@ of what a clip filmed by a client is for. The ratio is declared per slot in `src
 slot reserves the right box whether or not it has been filmed yet. The exception covers the
 `client-story-*` slots by name; `how-a-rescue-runs` and `a-site-brought-back` stay 16/10. Owner decision
 2026-11-11, ledger Task 79.
+
+The second exception is the brand film, `what-a-fix-looks-like`, at 16/9. It is the only media here that
+is a film rather than a capture: it was drawn at screen shape, and it plays in a modal at its own ratio
+rather than in a box sized by a screenshot. Cropping it into 16/10 shaves roughly a tenth off each side,
+and this film sets text close to those edges. The reason 16/10 exists, that a photograph, a screenshot and
+a clip beside each other read as one device photographed in the same frame, does not apply to it: it is
+the only piece of media in its section, so there is nothing beside it to disagree with. The exception
+covers `what-a-fix-looks-like` by name and no other slot; `how-a-rescue-runs` and `a-site-brought-back`
+are captures of real work and stay 16/10. Owner decision 2026-11-12, ledger Task 97, reasoning revised in
+Task 99 when the section stopped being full bleed.
 
 Order of sourcing and logging follows contract rule 7: an image-generation tool first using this art
 direction, then real captures, then `https://picsum.photos/seed/letsfixwp-<section>-<n>/<w>/<h>`
@@ -393,7 +403,7 @@ and sits in the nav. A page's primary CTA follows its SITEMAP node intent (`prim
 - More than two pinned sections per page; more than one marquee per page
 - Scroll-jacking without a skip control, or a pinned scene that still pins under reduced motion
 - Typing effects, character-split body copy, text rendered as an image
-- Glass or `backdrop-filter` anywhere except the scrolled nav bar; ember glows, coloured or complex shadows, 3D effects (one exception: the step blocks in the service page's "What we do" flow and the contact page's promises flow, whose thickness is a hard-edged stacked shadow; docs/layout-ledger.md Tasks 77 and 78)
+- Glass or `backdrop-filter` anywhere except the scrolled nav bar; ember glows, coloured or complex shadows, 3D effects (two exceptions: the step blocks in the service page's "What we do" flow and the contact page's promises flow, whose thickness is a hard-edged stacked shadow, docs/layout-ledger.md Tasks 77 and 78; and the guide template's tick cube and hand-off slab, docs/layout-ledger.md Tasks 89 and 93)
 - Colour-only indicators for broken versus restored
 - Gradients (including gradient text fills) anywhere except the hero legibility scrim and the flat ember veil inside the guarantee mask, which is a solid colour layered over a photograph and only written as a gradient because that is how CSS layers a colour over an image; pure `#000000` / `#FFFFFF`
 - Emojis as icons. One icon set site-wide: Phosphor (`@phosphor-icons/react/ssr`, `…Icon` names)

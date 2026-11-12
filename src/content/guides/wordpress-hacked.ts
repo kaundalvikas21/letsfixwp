@@ -13,11 +13,11 @@ export default guideSchema.parse({
     "Posts, pages or admin users appear that nobody on your team created",
   ],
   likelyCauses: [
-    "An outdated plugin or theme with a publicly known vulnerability",
-    "A nulled (pirated) theme or plugin that shipped with a backdoor",
-    "A weak or reused password on an admin, hosting or FTP account",
-    "Another infected site in the same hosting account spreading across folders",
-    "A backdoor left behind by an earlier cleanup that was not complete",
+    { text: "An outdated plugin or theme with a publicly known vulnerability", layers: ["extensions"] },
+    { text: "A nulled (pirated) theme or plugin that shipped with a backdoor", layers: ["extensions"] },
+    { text: "A weak or reused password on an admin, hosting or FTP account", layers: ["wordpress", "server"] },
+    { text: "Another infected site in the same hosting account spreading across folders", layers: ["server"] },
+    { text: "A backdoor left behind by an earlier cleanup that was not complete", layers: ["server"] },
   ],
   safeChecks: [
     "Search Google for site:yourdomain.com (with your own domain) and look for pages you never made, such as spam in other languages or pharmacy and casino titles.",

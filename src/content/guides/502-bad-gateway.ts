@@ -13,11 +13,11 @@ export default guideSchema.parse({
     "Long admin tasks such as imports, bulk edits or saving a large page end in a 502",
   ],
   likelyCauses: [
-    "PHP-FPM crashed, stopped or restarted, so the web server got no usable answer from PHP",
-    "All PHP workers busy, or a single request running longer than the web server is willing to wait",
-    "A plugin or theme fault that kills the PHP process partway through a request",
-    "A CDN or proxy such as Cloudflare that cannot reach your server, or a server firewall blocking the proxy",
-    "Host maintenance, a server restart or a server overloaded by traffic or bots",
+    { text: "PHP-FPM crashed, stopped or restarted, so the web server got no usable answer from PHP", layers: ["php", "server"] },
+    { text: "All PHP workers busy, or a single request running longer than the web server is willing to wait", layers: ["php", "server"] },
+    { text: "A plugin or theme fault that kills the PHP process partway through a request", layers: ["extensions", "php"] },
+    { text: "A CDN or proxy such as Cloudflare that cannot reach your server, or a server firewall blocking the proxy", layers: ["edge", "server"] },
+    { text: "Host maintenance, a server restart or a server overloaded by traffic or bots", layers: ["server"] },
   ],
   safeChecks: [
     "Wait a minute, then reload the page in a private window and on mobile data. If it loads, the 502 was a short server restart, but note the time in case it repeats.",

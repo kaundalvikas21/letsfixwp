@@ -11,11 +11,11 @@ export default guideSchema.parse({
     "The blank page started right after a plugin, theme or PHP update",
   ],
   likelyCauses: [
-    "A PHP fatal error with error display turned off, so the page dies silently",
-    "A plugin or theme calling a function that no longer exists after an update",
-    "The PHP memory limit being hit partway through rendering the page",
-    "A corrupted or half-uploaded file in the active theme or a plugin",
-    "A PHP version change on the server that older code cannot run on",
+    { text: "A PHP fatal error with error display turned off, so the page dies silently", layers: ["php"] },
+    { text: "A plugin or theme calling a function that no longer exists after an update", layers: ["extensions"] },
+    { text: "The PHP memory limit being hit partway through rendering the page", layers: ["php"] },
+    { text: "A corrupted or half-uploaded file in the active theme or a plugin", layers: ["extensions"] },
+    { text: "A PHP version change on the server that older code cannot run on", layers: ["php"] },
   ],
   safeChecks: [
     "Open yoursite.com/wp-admin. If the dashboard loads, the fault is in the theme or a front end plugin, not the whole install.",

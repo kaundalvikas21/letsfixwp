@@ -56,3 +56,13 @@ __pycache__/
 # Windows temp path is taken literally under WSL; brag-output is the /brag skill's
 brag-output*/
 C:\\Users\\*
+
+# brand film source (letsfixwp-film/): keep the code, ignore what build.sh regenerates
+letsfixwp-film/out/
+letsfixwp-film/stills/
+letsfixwp-film/fonts/*.ttf
+letsfixwp-film/vo/*.wav
+letsfixwp-film/vo/.cache/
+letsfixwp-film/vo/words.json
+letsfixwp-film/music/score.wav
+letsfixwp-film/*.mp4

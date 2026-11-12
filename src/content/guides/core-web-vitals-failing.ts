@@ -12,11 +12,11 @@ export default guideSchema.parse({
     "Text and buttons jump around while the page loads, or taps and clicks take a moment to respond",
   ],
   likelyCauses: [
-    "A large hero image or slider that is lazy loaded or not prioritized, delaying Largest Contentful Paint",
-    "Render-blocking CSS and JavaScript from the theme, page builder and plugins",
-    "Images, ads, embeds and web fonts loading without reserved space, causing layout shift",
-    "Heavy third party scripts such as chat widgets, tag managers and animation libraries tying up the browser and hurting INP",
-    "Slow server response from the host or no page caching",
+    { text: "A large hero image or slider that is lazy loaded or not prioritized, delaying Largest Contentful Paint", layers: ["extensions", "edge"] },
+    { text: "Render-blocking CSS and JavaScript from the theme, page builder and plugins", layers: ["extensions"] },
+    { text: "Images, ads, embeds and web fonts loading without reserved space, causing layout shift", layers: ["edge"] },
+    { text: "Heavy third party scripts such as chat widgets, tag managers and animation libraries tying up the browser and hurting INP", layers: ["edge"] },
+    { text: "Slow server response from the host or no page caching", layers: ["server"] },
   ],
   safeChecks: [
     "In Search Console, open Core Web Vitals and note whether the problem is on mobile, desktop or both, and which metric is failing.",

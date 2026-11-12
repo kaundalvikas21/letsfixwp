@@ -12,11 +12,11 @@ export default guideSchema.parse({
     "The login page says \"Error: There is no account with that username or email address.\"",
   ],
   likelyCauses: [
-    "The server cannot send email, or PHP mail() is disabled by the host",
-    "Reset emails rejected or sent to spam because the domain lacks SPF, DKIM or DMARC records",
-    "Email scanners or link tracking opening the reset link first and using up the one-time key",
-    "The account email address being out of date or changed",
-    "A security or login plugin replacing the normal reset process",
+    { text: "The server cannot send email, or PHP mail() is disabled by the host", layers: ["server", "edge"] },
+    { text: "Reset emails rejected or sent to spam because the domain lacks SPF, DKIM or DMARC records", layers: ["edge"] },
+    { text: "Email scanners or link tracking opening the reset link first and using up the one-time key", layers: ["edge"] },
+    { text: "The account email address being out of date or changed", layers: ["wordpress"] },
+    { text: "A security or login plugin replacing the normal reset process", layers: ["extensions"] },
   ],
   safeChecks: [
     "Search your spam, junk and promotions folders for an email from WordPress with \"Password Reset\" in the subject.",
