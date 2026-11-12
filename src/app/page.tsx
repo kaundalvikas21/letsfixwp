@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClientStories } from "@/components/sections/v4/ClientStories";
 import { Faq } from "@/components/sections/v4/Faq";
+import { FilmBand } from "@/components/sections/v4/FilmBand";
 import { FinalCta } from "@/components/sections/v4/FinalCta";
 import { ErrorStack } from "@/components/sections/v4/ErrorStack";
 import { FixPan } from "@/components/sections/v4/FixPan";
@@ -46,6 +47,7 @@ export default function Home() {
       <FixPan />
       <ProblemTiles />
       <Restored />
+      <FilmBand />
       <Plans />
       <Guarantee />
       <ClientStories />

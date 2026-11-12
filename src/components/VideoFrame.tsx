@@ -19,8 +19,14 @@ import { cn } from "@/lib/utils";
  */
 
 /**
- * The capture frame from MASTER.md, as one string, because two components now draw it: this file's
- * `VideoFrame` and the client clip card. Same bezel as Restored.tsx and the error cards.
+ * The capture frame from MASTER.md, as one string: `--surface-2` bezel, `p-2`, 14px outside and 14px
+ * inside, `border-line`, `--shadow-card`. Same frame `Restored.tsx` has inline and the error cards use.
+ *
+ * **Do not import this into a client component.** This file reaches `node:fs` through `Photo.tsx`'s
+ * `hasScreen`, which is right for a Server Component checking what is on disk and fatal for a client
+ * one: Turbopack fails the production build with "the chunking context does not support external
+ * modules (request: node:fs)", and neither `tsc` nor `eslint` sees it coming. If a client component
+ * ever needs this string, move it to a module of its own rather than importing it from here.
  */
 export const frameShell = "overflow-hidden rounded-[14px] border border-line bg-surface-2 p-2 shadow-card";
 
@@ -70,7 +76,7 @@ export function VideoSlotBox({
     <div
       className={cn(
         "relative overflow-hidden rounded-[14px] bg-surface",
-        ratio === "9/16" ? "aspect-[9/16]" : "aspect-[16/10]",
+        ratio === "9/16" ? "aspect-[9/16]" : ratio === "16/9" ? "aspect-[16/9]" : "aspect-[16/10]",
         className,
       )}
     >

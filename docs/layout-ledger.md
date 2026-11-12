@@ -9631,3 +9631,314 @@ at `--on-photo` on the scrim.
 **Not run, and not claimed:** no browser pass. Loopback HTTP is blocked in this sandbox, so the
 spacing figures above are computed from the token values and the built classes, not measured on a
 rendered page.
+
+## v4 / the brand film gets a full-bleed band on the home page (Task 97)
+
+The 40-second film `what-a-fix-looks-like` is the first clip on this site that exists. It plays in a
+new home section between "Same site. Working again." and "Choose how you want help".
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 7 | Watch a fix, start to finish (**new**, `FilmBand.tsx`) | full-bleed media band, copy centred on the spine above it, caption under the band | no | no | none |
+
+Budgets after: home goes from 12 sections to **13**, still **1 marquee**, still **0 eyebrows**, still
+**0 pinned scenes of 2**. No two consecutive image-plus-text splits: the band has no text column beside
+it, and the section above it is a single framed capture with its copy overlaid, not a split.
+
+### Why this position
+
+Two constraints decide it and they point at the same gap.
+
+`ProblemTiles` is the section that converts a visitor whose site is down right now, and `PRODUCT.md`
+puts success at "a booked fix or a live conversation in about two minutes". Nothing asking for forty
+seconds may sit above it. That rules out the hero and everything before section 5.
+
+`Plans` is where the visitor decides what to buy. Trust should be highest in the section immediately
+before a decision, not twenty sections earlier, which rules out parking the film down with the FAQ.
+
+Between `Restored` and `Plans` is the one slot that satisfies both: past the triage path, immediately
+before the ask, and high enough on the page to be seen.
+
+### Why a full-bleed band, and not the capture frame
+
+Every other section on this page sits on the 75rem spine, so edge-to-edge is a layout family the page
+does not already use (contract rule 3). The change of register is also the point: a film in the same
+bezel as the screenshots reads as one more card.
+
+It settles the ratio at the same time. The film is 1920x1080 and the house ratio is 16/10, so in
+`VideoSlotBox`'s framed box `object-cover` would shave about a tenth off each side, through text that
+sits close to those edges. A band that meets both window edges owes a screenshot no agreement, which is
+the 9/16 argument from Task 79 applied to the opposite shape. MASTER amended for
+`what-a-fix-looks-like` by name and tied to the band; a 16/9 clip in a framed slot on the spine is
+still out of bounds. Owner decision 2026-11-12.
+
+`rounded-none` on the box: a 14px radius against the viewport edge shows as two notches rather than as
+the shape lock it is everywhere else.
+
+### Why `Restored` is still not the host
+
+Task 53 planned the second business slot there and reading the section ruled it out: `RestoredOverlay`
+covers that frame edge to edge with `absolute inset-0 bg-photo-scrim` and holds the section's own
+`h2#same-site` on top, so a player underneath is unreachable and its control bar lands under the copy.
+Nothing about that has changed, and this band leaves `Restored` untouched, fallback chain and all. The
+honest note stands that it still wants `/screens/restored.png` from `npm run capture`.
+
+### What the caption claims, and what it does not
+
+The film is drawn, not recorded. Its WordPress pages are reproductions of what the software prints,
+not screenshots of a client's site, and the repaired page at the end is a generic drawn site that
+names nobody. The label says what it is, "What a fix looks like", rather than borrowing the evidence
+framing of `a-site-brought-back`. It states no price, turnaround, site count, guarantee or testimonial,
+because every one of those figures in this repo is still a placeholder. Every word it puts on screen is
+quoted from `src/content/guides/*.ts`, `FixPan.tsx`, `Practices.tsx`, `page.tsx` and `cta.ts`.
+
+### Measurements
+
+Read off the prerendered HTML in `.next/server/app/index.html`.
+
+| | |
+| --- | --- |
+| `<video>` elements on the home page | **0** |
+| Box classes | `aspect-[16/9] full-bleed rounded-none` |
+| Clip, poster and captions resolved | `/videos/what-a-fix-looks-like.{mp4,jpg,vtt}` |
+| Caption rendered | "What a fix looks like, from the error on your screen to the site working again. 40 seconds." |
+| Heading order | one h1, then the new h2 seventh, between "Same site. Working again." and "Choose how you want help"; no level skipped |
+| Clip size | 5.25MB against the 8MB budget in `docs/video-todo.md` |
+
+Zero `<video>` elements is the point: `ClipPlayer` renders the poster through `next/image` and swaps a
+player in on the first click, so the band costs one image until someone asks for the film. This page was
+measured at LCP 5.2s against contract rule 13's 2.5s budget, which is why that facade exists.
+
+The poster is the frame at 30.4s, chosen against the rule in `docs/video-todo.md` that the centre of a
+poster must not be the brightest thing in it: the play badge is near-white and sits dead centre. Centre
+luminance measured across the candidates was 243, 222 and 174 for the frames showing the white error
+pages, against 25 here, where the centre is also the gap between the two cards rather than text.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check ok (52 match candidates, 210 files, legacy off), motion check clean,
+build 99 routes.
+
+**Not run, and not claimed:** no browser pass, so no measured CLS, INP or axe run. Loopback HTTP is
+blocked in this sandbox. The band reserves its box through `aspect-[16/9]` before the poster loads, so
+CLS from this section is zero by construction, but that is reasoning rather than a measurement.
+
+## v4 / clips play in a modal, sized to fit both axes (Task 98)
+
+`ClipPlayer` swapped a player into the card it was clicked in. It now opens the clip in a modal. No
+section changed, no layout family changed, no box moved: the poster, the caption and every slot's
+reserved box are exactly as they were, and only playback moved.
+
+### Why
+
+A clip played at the size of its card. On a 375px phone that is a 9:16 client clip about 142px wide
+and the home band's 16:9 film about 200px tall. The modal gives any clip the viewport instead and
+darkens the page behind it, which is the point of a film on a page that is otherwise dense with text.
+
+### Why the existing dialog rather than a new overlay
+
+`src/components/ui/dialog.tsx` is already in the bundle through `NavBar`, `CommandPalette` and
+`ChatProvider`, so the modal costs no new vendor code, and it brings the focus trap, Escape, the
+portal, the return of focus to the trigger and the body scroll lock with it. Radix unmounts content on
+close, which is also what stops playback: there is no pause to wire, and no `<video>` survives a close.
+
+Its defaults are v3 era and three are overridden at the call site rather than at the source, where
+three other components depend on them: `rounded-[20px]` and the `rounded-full` close button both break
+v4's 14px shape lock, and `top-[12dvh] max-w-xl` is a reading box rather than a film. The replacement
+close button is 44px, 14px radius, with the contract's focus ring and `active:scale-[0.98]`.
+
+### How the box cannot overflow
+
+One expression constrains both axes at once, in `ClipPlayer`:
+
+```
+width: min(96vw, calc((100dvh - 7rem) * w / h))
+```
+
+The first term caps width against the viewport; the second caps height by asking what width that
+height allows at the clip's own ratio. The smaller wins, so neither axis can be exceeded, at any
+orientation, for 16:9 and 9:16 alike. `dvh` rather than `vh` counts a mobile browser's collapsing
+toolbar. 7rem is the close button, its gap and the margins. `max-h-[calc(100dvh-7rem)]` and
+`max-w-[96vw]` repeat the same limits as a floor under the arithmetic, and the video is
+`object-contain`, so a browser that disagrees about `dvh` letterboxes rather than overflowing.
+
+Computed across 10 viewports in both orientations for both ratios, 20 cases, checking box width
+against viewport width and box height plus the 56px close row against viewport height:
+
+| Clip | Tightest case | Box | Used | Headroom |
+| --- | --- | --- | --- | --- |
+| 16:9 film | 667x375 landscape | 468 x 263 | 468 x 319 | 56px |
+| 16:9 film | 1920x1080 | 1721 x 968 | 1721 x 1024 | 56px |
+| 9:16 client clip | 320x480 | 207 x 368 | 207 x 424 | 56px |
+| 9:16 client clip | 320x568 | 256 x 456 | 256 x 512 | 56px |
+
+**0 failures of 20.** Minimum headroom is the 56px margin itself; it is never negative. Page scroll is
+not introduced in either axis: the dialog is portalled and fixed, and the body is locked while open.
+
+### Reach
+
+Every slot routes through `ClipPlayer`, so this is also how the 12 client clips on `/case-studies/`
+and `/`, `how-a-rescue-runs` on `/about/`, `a-site-brought-back` on `/case-studies/` and the service
+page quotes will play. One path rather than two.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check ok, motion check clean, build 99 routes. Prerendered home page:
+**0 `<video>` elements and 0 dialog nodes**, so the modal still costs one optimised poster until a
+visitor asks for the film, which is what keeps contract rule 13 satisfied on a page measured at LCP
+5.2s. `dialog-in` animates opacity and scale only and is already `motion-safe:` gated (rule 10).
+
+**Not run, and not claimed:** no browser pass. Loopback HTTP is blocked in this sandbox, so the fit
+table above is arithmetic over the shipped expression rather than measured layout, and there is no axe
+run on the open dialog.
+
+## v4 / the film section comes back onto the spine, and gains an index (Task 99)
+
+Task 97 put the brand film in a full-bleed band. This replaces it with a section shaped like every
+other one on the page, and spends the attention it gave up on an index into the film instead.
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 7 | Watch a fix, start to finish (`FilmBand.tsx`) | media panel with an index column beside it, 7/5 on desktop, stacked below `md` | no | no | none |
+
+Budgets unchanged: 13 sections, **1 marquee**, **0 eyebrows**, 0 pinned scenes of 2. Rule 3 still
+holds, and no two splits are consecutive: the section above is a single framed capture with its copy
+overlaid, the one below is a three up with an image, a list and a CTA per column.
+
+### Why the band went
+
+Edge to edge made the film the loudest thing on a page whose job is triage, and it was the one
+section not on the 75rem spine, which read as a different site for the length of one scroll rather
+than as emphasis. Size is the cheapest way to ask for attention and the least convincing.
+
+### What replaced it
+
+A chapter list beside the poster. Four entries, each opening the player at its own timestamp:
+
+| Chapter | Starts |
+| --- | --- |
+| The error on your screen | 0:00 |
+| The five moves of a fix | 0:15 |
+| How we work on your site | 0:28 |
+| Let's fix it. | 0:32 |
+
+Every `t` is a section boundary the film was cut to, held in `src/content/videos.ts` beside the clip
+(contract rule 8), so a chapter never lands mid sentence and the timestamp a visitor reads is
+formatted from the same number that seeks the video. The list also does the work the band was trying
+to do: it says what is in the film before anyone spends forty seconds on it.
+
+`ClipPlayer` was taken apart into `ClipModal`, `PlayFacade` and the wired `ClipPlayer` the other
+thirteen slots still use, because five controls have to open one player at five different timestamps
+and a facade that owns its own state cannot be opened from outside. `startAt` is set on the element
+in `onLoadedMetadata` rather than written into the source as a media fragment, so the scrub bar still
+shows the whole film: a chapter is a place to start, not a clip of its own.
+
+### A build failure worth recording
+
+`FilmStage` is a client component and imported `frameShell` from `VideoFrame.tsx`, which reaches
+`node:fs` through `Photo.tsx`'s `hasScreen`. Turbopack failed the production build with "the chunking
+context does not support external modules (request: node:fs)" while writing `/page`. It is not caught
+by `tsc` or `eslint`: both see a valid import.
+
+The class string now lives in `src/components/frame.ts`, which has no imports at all, and
+`VideoFrame.tsx` re-exports it so the four existing call sites are unchanged. The general shape of
+the mistake is worth remembering: a constant exported from a module that touches the filesystem
+carries that module into every bundle that imports it. The other `frameShell` consumer,
+`ClientClips.tsx`, is a Server Component, which is why this had never fired before.
+
+### The poster changed with the size
+
+Task 97 chose the frame at 30.4s, the two practice cards, because at full-bleed width it read well and
+its centre was dark enough for the near-white play badge. At the contained size it is 637px wide on a
+1440px viewport, a third of its source, and at that scale it goes flat: two dark cards on a dark field
+with an 8px mono label, low contrast and nothing to look at.
+
+The poster is now the frame at **36.4s**: the repaired site in its window, the ember headline, the
+muted hero copy and the call to action. At 637px it still has structure, contrast and depth, and it
+reads as a product rather than as a slide. Centre luminance is 33, so the badge still carries.
+
+The general point: a poster has to be chosen at the size it will be shown, not at the size it was
+rendered.
+
+### Measurements
+
+Read off the prerendered HTML in `.next/server/app/index.html`.
+
+| | |
+| --- | --- |
+| `full-bleed` on the home page | **0** |
+| `<video>` elements | **0** |
+| Section classes | `reveal mx-auto max-w-page px-4 py-16 md:px-6 md:py-24`, identical to its neighbours |
+| Chapter controls | 4, each named "Play from m:ss: label" |
+| Heading order | h1, then the section's h2 seventh; the chapter list carries `aria-label` rather than a visible heading, so no level is added or skipped |
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check ok (211 files), motion check clean, build 99 routes. The modal's
+fit arithmetic from Task 98 is unchanged and still covers 16:9 and 9:16 at 0 failures of 20.
+
+**Not run, and not claimed:** no browser pass. Loopback HTTP is blocked in this sandbox, so the 7/5
+split is not measured at 375, 768, 1024 or 1440, and there is no axe run on the chapter list.
+
+## v4 / the film section loses the chapter index (Task 100)
+
+Task 99 put a four entry chapter list beside the film. Owner removed it. The section is now a poster,
+a sentence and one play control.
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 7 | Watch a fix, start to finish (`FilmBand.tsx`) | one framed media block on the spine, copy above it, caption under the frame | no | no | none |
+
+Budgets unchanged: 13 sections, 1 marquee, 0 eyebrows, 0 pinned scenes of 2.
+
+### Rule 3, checked rather than assumed
+
+`Restored` directly above is also a single framed visual, which is close enough to be worth writing
+down. It is a different family because it holds the section's copy **on** the frame, through
+`RestoredOverlay` and the one scrim pairing this site has measured for text over photography
+(`--on-photo` on flat `--photo-scrim`, 6.58:1). This section's copy sits above the frame and its
+caption under it. `/case-studies/` records "one framed media block, caption under it" as a family of
+its own (Task 56), and rule 3 is per page, so it is free here.
+
+### What was deleted with it
+
+Removing four controls removed everything that existed to serve them, rather than leaving the
+scaffolding behind:
+
+- `FilmStage.tsx`, deleted. Without chapters it was `PlayFacade` plus `ClipModal`, which is what
+  `ClipPlayer` already is, and `VideoFrame` already renders frame, poster and caption together. The
+  section is now ten lines of JSX over `VideoFrame`.
+- `ClipModal` and `PlayFacade` folded back into `ClipPlayer`. They were split apart so five controls
+  could open one player at five timestamps; with one control each had exactly one consumer.
+- `startAt` and the `onLoadedMetadata` seek, gone with them.
+- `chapters` removed from `Clip` in `src/content/videos.ts`, data and type.
+- `src/components/frame.ts`, deleted. It existed because a client component needed `frameShell`
+  without inheriting `VideoFrame`'s `node:fs` dependency, and that client component was `FilmStage`.
+  The constant is back in `VideoFrame.tsx` carrying a comment that names the failure, because the
+  trap is real and the next person to import it into a client component should be warned rather than
+  made to rediscover it: Turbopack fails the build with "the chunking context does not support
+  external modules (request: node:fs)" and neither `tsc` nor `eslint` sees it coming.
+
+### Measurements
+
+Read off `.next/server/app/index.html`.
+
+| | |
+| --- | --- |
+| Chapter controls | **0** |
+| `In the film` heading | **0** |
+| `<video>` elements | **0** |
+| `full-bleed` | **0** |
+| Section classes | `reveal mx-auto max-w-page px-4 py-16 md:px-6 md:py-24`, identical to its neighbours |
+| Frame | `...bg-surface-2 p-2 shadow-card mt-10 md:mt-12` wrapping `aspect-[16/9]` |
+| Caption | "What a fix looks like, from the error on your screen to the site working again. 40 seconds." |
+
+The one `md:col-span-7` left on the page belongs to `ExpandingRows` in the plans section, checked
+rather than assumed.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check ok, motion check clean, build 99 routes. The modal and its fit
+arithmetic from Task 98 are untouched.
+
+**Not run, and not claimed:** no browser pass. Loopback HTTP is blocked in this sandbox.
