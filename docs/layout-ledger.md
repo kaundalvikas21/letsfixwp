@@ -9561,3 +9561,73 @@ in the lg sidebar is unaffected; it reads `[data-rail-scope] h2[id]`, not the ar
 
 Checks: `tsc` 0, `eslint` 0, build green at 99 routes; the built
 `/guides/500-internal-server-error/` HTML contains no element with the bar's classes.
+
+## v4 / the error capture becomes the guide band's background (Task 95)
+
+Owner: "What you are seeing section in guide slug page there right side display image remove that
+image display in hero banner image i think better approach." Then: "image place in the background
+not over the banner? Commes from card same image Pick your problem. We take it from there. cards"
+
+The capture is the band's background, not a panel on it. `PageMasthead` takes an optional `screen`
+(a path under `public/screens/`) which takes the place of `photo` on that one layer: same
+`hero-settle` settle, same flat `--photo-scrim` over it, same single column of words underneath. The
+four guides with a capture pass theirs; the other 33 keep the parent service's night frame, and
+every other caller of the masthead is untouched.
+
+This is the home page's own pattern reused rather than a new one: `ProblemTiles` already runs the
+identical capture as the background of a critical tile under the identical scrim, so the error
+screen a visitor clicked on the grid is the error screen behind the heading when they land. Both
+arms are decorative with an empty alt: the h1 and the error plate say what the picture is of, and
+`g.image.alt` was written for an inline figure.
+
+Legibility is the reason the scrim stays as it is. `--photo-scrim` is `rgb(12 12 14 / 0.66)`, and
+over a pure white capture (white-screen-of-death, the brightest image on the site) it composites to
+about `#5e5e60`, where `--on-photo` measures 5.7:1. Every darker capture is further above the line.
+
+"What you are seeing" is a single column on all 37 guides: `SymptomCheck` at the full measure, no
+conditional grid, no `RealScreen` and no perspective turn on the page at all.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check ok, build green at **99 routes**. Built HTML:
+`/guides/white-screen-of-death/` has the `/screens/` image inside the masthead `<header>` with the
+scrim over it and no service photo; `/guides/500-internal-server-error/` has the service frame
+(`racks.jpg`) and no capture; neither page contains a `<figure>` any more.
+
+**Not run, and not claimed:** no browser pass at 375 or 1440, and no axe run. Loopback HTTP is
+blocked in this sandbox, so `next start` reported ready and could not be reached. The 5.7:1 figure
+above is computed from the token values, not sampled from a rendered page.
+
+## v4 / the guide band gets its description back, and its slack split (Task 96)
+
+Owner, on a 1440 capture of /guides/php-fatal-error/: "look this hero breadcrumbs and H1 b/w very
+spacing please fix this accurate consistency spacing. And where is description?"
+
+**The hole between the crumbs and the h1.** `PageMasthead` is a flex column with a min-height, and
+the words carried `mt-auto`, so every pixel the page did not use piled up in one place: directly
+under the breadcrumbs. It is `my-auto` now. The same leftover becomes padding above and below the
+words, which is what it looks like, and the crumb-to-headline gap is the declared 40px plus half the
+slack rather than all of it. On the guide above that is 105px before and about 48px after. Every
+caller of the masthead gets the same correction; no page where the content already fills the band
+changes at all.
+
+**The missing description.** The guide band had an h1, a plate on 20 of the 37 and two buttons, and
+nothing that said what the page does: on a guide with no `errorText` it was a headline and two
+buttons on a photograph. It carries `seo.description` now, which is the lead `CityTemplate` and
+`CompareTemplate` already pass and the one sentence every guide has written for it.
+
+That sentence runs to about 25 words, over contract rule 4's 20-word hero subtext cap, and this is
+an owner-granted exception recorded here rather than a rule quietly dropped. `ServiceTemplate` makes
+the opposite call for the same reason (its `summary` is 25+ words, so it renders under the hero
+instead), and that stays as it is: a service page has a lead paragraph in the body to hold it and a
+guide does not.
+
+### Checks
+
+`tsc` 0, `eslint` 0, build green at **99 routes**. Built HTML for `/guides/php-fatal-error/`: the
+band carries `my-auto` and no `mt-auto`, and the description renders between the h1 and the buttons
+at `--on-photo` on the scrim.
+
+**Not run, and not claimed:** no browser pass. Loopback HTTP is blocked in this sandbox, so the
+spacing figures above are computed from the token values and the built classes, not measured on a
+rendered page.

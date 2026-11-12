@@ -15,7 +15,7 @@ import { coreFileWarning } from "@/content/notices";
 import { servicePhotos } from "@/content/photos";
 import type { Guide } from "@/content/schema";
 import { cn, leadSentence } from "@/lib/utils";
-import { card, ClosingBand, ErrorCards, Faqs, PageMasthead, RealScreen, Section, page, pageYMasthead } from "./parts";
+import { card, ClosingBand, ErrorCards, Faqs, PageMasthead, Section, page, pageYMasthead } from "./parts";
 import { ReadingRail } from "./ReadingRail";
 
 /**
@@ -57,12 +57,13 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
       {/* The 8/4 split is gone. The parent service's night frame was a 336px panel in the right-hand
           four columns and is the band itself now, which is the shape every inner page here runs. The
           error string moves onto it: the h1 says which error this is and the plate under it is the
-          error, so the two belong in one box. All 37 guides get a band, because the photograph is
-          the fallback arm and the capture was only ever on four of them.
+          error, so the two belong in one box.
 
-          The photograph does not depict the error, so it carries no alt: `g.image.alt` describes a
-          capture that does not exist on 33 of these pages, and using it would describe the wrong
-          picture. */}
+          The band's own background is the real capture on the four guides that have one, and the
+          parent service's night frame on the other 33. The capture is the picture of the error, so
+          it belongs behind the error string: the same image the home page's critical tiles already
+          run as a tile background, under the same flat scrim. Both arms are decorative and carry no
+          alt, because the h1 and the plate under it say what the reader is looking at. */}
       {/* Two CTAs, and the same two the rail carries further down. The page is informational and
           the reader arrived from a search for this exact string, so the band answers "is this my
           error" first and offers the two ways out second: the high-commitment one that starts the
@@ -77,12 +78,14 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
         photo={servicePhotos[g.parentService]}
         title={g.h1}
         plate={g.errorText}
+        lead={g.seo.description}
         actions={
           <>
             <BookLink location={`${loc}:hero`} service={parent.id} guide={g.slug} className="btn-primary" />
             <ChatButton location={`${loc}:hero`} service={parent.id} className="btn-secondary" />
           </>
         }
+        screen={captured ? `/screens/${g.image.slot}.png` : undefined}
       />
 
       {/* No top margin: the first Section's own 64/96 carries the gap, and the rail starts level with
@@ -94,24 +97,12 @@ export function GuideTemplate({ guide: g }: { guide: Guide }) {
               safe things in order, know where to stop. Reveals sit on wrappers throughout, because
               the reveal pins `transform` and every 3D motif here is made of it. */}
           <Section id="symptoms" title="What you are seeing">
-            {/* A check the reader runs. Beside it, on the four guides that have one, the real capture,
-                turned in perspective so it reads as the thing on their screen rather than an inline
-                image. No capture, no column: the check takes the full measure. */}
-            <div className={cn(captured && "grid gap-6 md:grid-cols-12 md:items-center")}>
-              <Reveal className={cn(captured && "md:col-span-7")}>
-                <SymptomCheck items={g.symptoms} />
-              </Reveal>
-              {captured && (
-                <div className="md:col-span-5 md:[perspective:60rem]">
-                  <RealScreen
-                    slot={g.image.slot}
-                    alt={g.image.alt}
-                    sizes="(min-width: 768px) 300px, calc(100vw - 32px)"
-                    className="md:[transform:rotateY(-12deg)_rotateX(4deg)] md:origin-left"
-                  />
-                </div>
-              )}
-            </div>
+            {/* A check the reader runs, at the full measure. The real capture used to sit beside it
+                on the four guides that have one; it is on the masthead now, next to the error string
+                it is a picture of. */}
+            <Reveal>
+              <SymptomCheck items={g.symptoms} />
+            </Reveal>
           </Section>
 
           <Section id="causes" title="What usually causes it">
