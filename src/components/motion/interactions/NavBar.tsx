@@ -1,7 +1,7 @@
 "use client";
 
 import { ChatCircleIcon } from "@phosphor-icons/react/ssr";
-import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
+import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -12,6 +12,7 @@ import { CTA } from "@/config/cta";
 import { routes } from "@/config/routes";
 import { useChat } from "@/components/chat/ChatProvider";
 import { CommandPalette } from "@/components/sections/v4/CommandPalette";
+import { actionBarRevealVh, duration, easing } from "../tokens";
 import { MegaMenu, type MenuCategory, type MenuLink } from "./MegaMenu";
 
 /**
@@ -77,6 +78,14 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
   const backdrop = useTransform(scrollY, [0, 8], [0, 1]);
   const slide = useSpring(useTransform(scrollY, [0, 8], [-64, 0]), { stiffness: 100, damping: 20 });
 
+  // The bar waits for the reader to leave the first screen. Until then the hero's own CTA is on
+  // screen and the bar would be the same words a second time, sitting on top of them: the state the
+  // owner reported from a phone. `useMotionValueEvent` rather than a scroll listener, which is the
+  // same reading of `scrollY` the backdrop above already subscribes to, and the state flips at most
+  // twice per visit because it is a boolean and not a position.
+  const [pastFirstScreen, setPastFirstScreen] = useState(false);
+  useMotionValueEvent(scrollY, "change", (v) => setPastFirstScreen(v > window.innerHeight * actionBarRevealVh));
+
   const close = () => setOpen(false);
 
   return (
@@ -113,16 +122,27 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
         <MegaMenu categories={categories} support={support} onNavigate={close} />
       </DialogContent>
 
-      {actionBar && !open && (
-        // A landmark, so the bar is not page content sitting outside one (axe: region).
-        <nav
-          aria-label="Quick actions"
-          className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-line bg-surface px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:hidden"
-        >
-          <BookLink location="bottom-bar" className="btn-primary h-12 flex-1" />
-          <ChatIconButton />
-        </nav>
-      )}
+      <AnimatePresence>
+        {actionBar && !open && pastFirstScreen && (
+          // A landmark, so the bar is not page content sitting outside one (axe: region).
+          //
+          // It arrives from under the fold on its own height, so the travel is right at any text
+          // size and is a transform, which is all rule 10 allows. Reduced motion cross-fades in
+          // place: the arrival is information, not decoration, so it still happens.
+          <motion.nav
+            key="action-bar"
+            aria-label="Quick actions"
+            initial={reduce ? { opacity: 0 } : { opacity: 0, y: "100%" }}
+            animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            exit={reduce ? { opacity: 0 } : { opacity: 0, y: "100%" }}
+            transition={{ duration: reduce ? 0 : duration.smallUi, ease: [...easing] }}
+            className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-line bg-surface px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:hidden"
+          >
+            <BookLink location="bottom-bar" className="btn-primary h-12 flex-1" />
+            <ChatIconButton />
+          </motion.nav>
+        )}
+      </AnimatePresence>
     </Dialog>
   );
 }

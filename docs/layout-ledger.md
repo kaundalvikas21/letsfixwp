@@ -10205,3 +10205,62 @@ driven in a real browser; the two that the report named are the two that were br
 
 **Not run:** no pass on a physical iOS device. These are Chromium viewports sized to match Safari's visible
 area, which is what the report described but not the same engine.
+
+## v4 / the mobile action bar waits for the first screen, and Task 103 is reverted (Task 104)
+
+The owner, from a phone, on seeing Task 103 shipped: the bar should not be there when the page opens, and
+should arrive after a little scrolling. Task 103 read the same screenshot as "the bar must stop covering
+the hero" and kept the bar where it was. The behaviour, not the hero, was the thing to change.
+
+### What changed
+
+`NavBar` gates the bar on scroll. It renders once the reader has passed `actionBarRevealVh` of the
+viewport, which is 0.85, and leaves again on the way back up. `useMotionValueEvent` on the `scrollY` the
+nav backdrop already subscribes to, so there is no second listener and no new scroll work; the state is a
+boolean, so it flips at most twice a visit.
+
+It arrives from under the fold on `y: 100%`, its own height, which is right at any text size and is a
+transform, so rule 10 holds. Reduced motion cross-fades in place rather than not arriving at all, which is
+the choice `StickyCTA` already makes two files over and for the same reason: the arrival is information.
+
+A share of the viewport and not a pixel count, because what it has to clear is the first screen. The cost
+is recorded in the token: on a page shorter than about 1.85 screens there is never enough scroll and the
+bar does not appear, which is the right answer, because a page that short has its footer CTA in view.
+
+### Task 103 is reverted
+
+Its hero changes are gone and `Hero.tsx` is byte for byte what it was before that task. They existed only
+to keep the hero's CTAs clear of a bar that was always on screen, and bought that with the hero's own
+design on short phones: the photograph capped against the viewport below 756px and dropped entirely below
+626px. With the bar waiting for the first screen the CTAs are clear on their own, so that was a price paid
+for nothing. Measured after the revert: when the bar does arrive, the hero's buttons are already above it
+at 390x656 and at 375x553.
+
+What Task 103 leaves behind is its two findings, which stand and are worth keeping:
+
+- an attribute rule in `@layer base` ties with a Tailwind utility on specificity and loses on layer order,
+  so it silently does nothing;
+- `max-height` with `aspect-ratio` still in force transfers the constraint to the other axis, and a
+  full-bleed box went to 240px wide on a 390px screen.
+
+The `brand-wordmark` top crop from Task 102 is untouched by the revert.
+
+### Measurements
+
+Home page, three contexts, scroll driven in a real browser.
+
+| | At rest | 0.8 screens | 1.2 screens | Back at top |
+| --- | --- | --- | --- | --- |
+| 390 x 656 | absent | absent | present, opacity 1 | absent |
+| 375 x 553 | absent | absent | present, opacity 1 | absent |
+| 390 x 656, reduced motion | absent | absent | present, opacity 1 | absent |
+
+When it arrives it is clear of the hero's buttons at both sizes.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check ok, motion check clean, build 99 routes, route test ok. axe
+(wcag2a, wcag2aa, wcag21a, wcag21aa) on the mobile home page: 0 violations with the bar hidden and 0 with
+it showing.
+
+**Not run:** no pass on a physical iOS device.

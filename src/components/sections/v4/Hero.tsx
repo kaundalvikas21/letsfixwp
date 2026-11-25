@@ -62,37 +62,11 @@ export function Hero() {
             absolutely positioned box with both insets set still answers its margins and the
             full-bleed negatives would push it past the viewport. 45% keeps the monitors and the
             desk in the middle 47% that survives there. */}
-        {/* **Keeping the CTAs off the action bar.** Rule 4's actual requirement, written in the
-            comment above, is that the CTA is visible without scrolling, and below md a fixed bottom
-            bar owns the last 4.75rem of the screen. Measured before this: at 390x656, an iPhone 15
-            with Safari's chrome, both hero buttons sat behind the bar, and at 375x553, an iPhone SE,
-            they were 38px under it.
-
-            Everything below this photograph is close to a fixed cost, about 286px at phone widths,
-            so the room has to come from the picture and the gaps:
-
-            1. The height below md is `min(the 3/2 height, what the screen has left)`. 31rem is that
-               fixed cost plus the bar plus the top padding. It binds under about 756px, so a tall
-               phone keeps the 3/2 crop it has today, and `object-cover` crops rather than squashes.
-            2. The three `max-md:[@media(height<804px)]` margins below close the rhythm by one step,
-               which buys 40px and is the difference between a photograph and a letterbox strip.
-            3. Under 626px there is no crop left worth looking at, so the picture goes and the words
-               keep the screen.
-
-            **An explicit height, not `max-height`.** With `aspect-ratio` still in force a capped
-            height transfers back to the width in Chromium: the box went to 240px wide and the
-            photograph stopped reaching the right edge. `aspect-auto` plus a real height keeps the
-            full-bleed width and moves only the crop. All of it is here rather than in `globals.css`
-            because these override Tailwind utilities, and a rule in `@layer base` loses to a
-            utility however specific it looks. */}
-        <div
-          data-hero-photo
-          className="-mx-4 aspect-[3/2] overflow-hidden max-md:aspect-auto max-md:h-[min(calc(100vw/1.5),max(6rem,calc(100dvh-31rem)))] max-md:[@media(height<626px)]:hidden md:-mx-6 md:aspect-[2/1] lg:absolute lg:inset-0 lg:mx-0 lg:aspect-auto"
-        >
+        <div className="-mx-4 aspect-[3/2] overflow-hidden md:-mx-6 md:aspect-[2/1] lg:absolute lg:inset-0 lg:mx-0 lg:aspect-auto">
           <Photo id="hero-background" preload sizes="100vw" className="lg:object-[45%_50%]" />
         </div>
 
-        <div className="mt-10 max-md:[@media(height<804px)]:mt-6 grid grid-cols-4 gap-x-6 md:grid-cols-12 lg:mt-0">
+        <div className="mt-10 grid grid-cols-4 gap-x-6 md:grid-cols-12 lg:mt-0">
           <div className="relative z-10 col-span-4 md:col-span-8">
             <h1
               id="hero-title"
@@ -101,12 +75,12 @@ export function Hero() {
               <span className="block">Broken WordPress? </span>
               <HeroWords line="Back online today." ember="today." />
             </h1>
-            <p className="mt-6 max-md:[@media(height<804px)]:mt-4 max-w-[42ch] text-lg text-muted">{SUBTEXT}</p>
+            <p className="mt-6 max-w-[42ch] text-lg text-muted">{SUBTEXT}</p>
             {/* Stacked and full width on a phone, a row from sm up. Two content-width buttons on
                 separate lines read as a ragged edge, and the primary is the page's whole job here,
                 so it gets the column. `w-full` is safe on both utilities: each is an inline-flex
                 box that already centres its own label and chip. */}
-            <div className="mt-10 max-md:[@media(height<804px)]:mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <BookLink location="home:hero" className="btn-primary w-full sm:w-auto" />
               <ChatButton location="home:hero" className="btn-secondary w-full sm:w-auto" />
             </div>

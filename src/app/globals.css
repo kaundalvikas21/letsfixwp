@@ -98,11 +98,6 @@
       padding-bottom: calc(4.75rem + env(safe-area-inset-bottom));
     }
   }
-  /* That padding reserves the bar's space at the foot of the document. The first screen is a
-     separate problem, because the bar is fixed and also covers whatever the last 4.75rem of the
-     viewport holds, which on a short phone was the hero's own two buttons. Hero.tsx carries that
-     fix and the reasoning: the rules there have to beat Tailwind utilities, which a rule in this
-     layer cannot do. */
   body {
     /* So a `full-bleed` band, which is 100vw wide, cannot raise a horizontal scrollbar of its own
        on a page whose vertical scrollbar already eats into the viewport. `clip` and never `hidden`:
