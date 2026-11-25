@@ -17,7 +17,18 @@ export type SiteNode = {
   children?: SiteNode[];
 };
 
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://letsfixwp.com";
+export const PRODUCTION_URL = "https://letsfixwp.com";
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? PRODUCTION_URL;
+
+/**
+ * Whether this build is serving the real site, rather than a staging or preview host.
+ *
+ * Anything that must not leak off production reads this: robots.txt disallows everything and the
+ * root metadata adds `noindex, nofollow` when it is false. Staging would otherwise canonicalise to
+ * letsfixwp.com, because every canonical, sitemap entry, JSON-LD @id and OG url resolves from
+ * SITE_URL above, so a crawl of a staging host would consolidate onto the production domain.
+ */
+export const IS_PRODUCTION_HOST = SITE_URL === PRODUCTION_URL;
 
 export const SITEMAP: SiteNode = {
   title: "Home", path: "/", kind: "home",

@@ -1,0 +1,33 @@
+# Netlify deploy config.
+#
+# No [[plugins]] block on purpose. Netlify auto-installs @netlify/plugin-nextjs (the OpenNext
+# adapter) on every build and auto-updates it, which is how their Next.js security fixes arrive.
+# Pinning it here would freeze that.
+#
+# The `echo` before the build is not boilerplate, it is load-bearing. Measured on Next 16.3.8:
+# `next build` does NOT read NEXT_PUBLIC_* from the ambient process environment, only from `.env*`
+# files. Verified three ways in this repo, each a full build:
+#   NEXT_PUBLIC_SITE_URL=... npm run build   -> ignored, sitemap emitted letsfixwp.com
+#   NEXT_PUBLIC_SITE_URL=... npx next build  -> ignored (so it is not npm dropping it)
+#   .env.local with the same value           -> honoured, "- Environments: .env.local"
+# Netlify injects its variables as ambient environment, so a NEXT_PUBLIC_SITE_URL set in the
+# Netlify UI alone would be silently ignored and every canonical, sitemap entry, JSON-LD @id and
+# OG url would claim to be production. Writing the file first is what makes the value land.
+# `scripts/check-confirmed.ts` documents the same class of env loss from the other direction.
+#
+# DEPLOY_PRIME_URL is Netlify's own address for this deploy, so staging needs no variable set by
+# hand. An explicit NEXT_PUBLIC_SITE_URL still wins, which is how production uses its real domain.
+# `.env.production.local` is the highest-precedence file Next reads for a production build, and
+# `.env*` is gitignored, so this never pollutes the repo.
+#
+# `command` runs the repo's own build, not a bare `next build`: it wraps check-confirmed.ts (warns
+# on unconfirmed brand values) and route-test.ts (fails if a SITEMAP node has no built route).
+# Without VERCEL_ENV or BRAND_STRICT, the brand gate warns rather than throws, which is what a
+# staging deploy wants. `npm run build:prod` is the strict version, for production.
+
+[build]
+  command = "echo \"NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-$DEPLOY_PRIME_URL}\" > .env.production.local && npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"

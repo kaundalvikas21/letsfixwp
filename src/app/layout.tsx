@@ -4,7 +4,7 @@ import { JsonLd, organizationLd } from "@/components/JsonLd";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteShell } from "@/components/sections/v4/SiteShell";
 import { brand, sharedOpenGraph } from "@/config/brand";
-import { SITE_URL } from "@/config/sitemap";
+import { IS_PRODUCTION_HOST, SITE_URL } from "@/config/sitemap";
 import "./globals.css";
 
 // opsz is the only extra axis the site actually sets; wght comes with the variable font. Dropping wdth,
@@ -15,6 +15,9 @@ const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  // robots.txt asks a crawler not to crawl. It does not stop a URL found elsewhere from being
+  // indexed, so off production the directive goes on the page too. Inherited by every route.
+  ...(IS_PRODUCTION_HOST ? {} : { robots: { index: false, follow: false } }),
   title: { default: `${brand.name}: WordPress fixes, care plans and development`, template: `%s | ${brand.name}` },
   description: "Broken WordPress site? Pick your problem and book a fix, or chat with an engineer.",
   openGraph: { ...sharedOpenGraph },
