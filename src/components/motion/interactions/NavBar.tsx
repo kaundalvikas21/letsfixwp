@@ -1,17 +1,18 @@
 "use client";
 
 import { ChatCircleIcon } from "@phosphor-icons/react/ssr";
-import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
+import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { BookLink } from "@/components/Cta";
+import { Wordmark } from "@/components/Logo";
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { brand } from "@/config/brand";
 import { CTA } from "@/config/cta";
 import { routes } from "@/config/routes";
 import { useChat } from "@/components/chat/ChatProvider";
 import { CommandPalette } from "@/components/sections/v4/CommandPalette";
+import { actionBarRevealVh, duration, easing } from "../tokens";
 import { MegaMenu, type MenuCategory, type MenuLink } from "./MegaMenu";
 
 /**
@@ -26,13 +27,14 @@ const Rules = ({ crossed = false }: { crossed?: boolean }) => (
   </span>
 );
 
-const Wordmark = ({ onClick }: { onClick?: () => void }) => (
+/** The mark, as the link home. The mark itself is `Wordmark`; this is the box around it. */
+const MarkLink = ({ onClick }: { onClick?: () => void }) => (
   <Link
     href={routes.home}
     onClick={onClick}
     className="group relative flex h-11 items-center font-display text-xl font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_20]"
   >
-    {brand.name}
+    <Wordmark />
     {/* The one ember on the left of the bar, and only when you reach for it. */}
     <span
       aria-hidden
@@ -76,6 +78,14 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
   const backdrop = useTransform(scrollY, [0, 8], [0, 1]);
   const slide = useSpring(useTransform(scrollY, [0, 8], [-64, 0]), { stiffness: 100, damping: 20 });
 
+  // The bar waits for the reader to leave the first screen. Until then the hero's own CTA is on
+  // screen and the bar would be the same words a second time, sitting on top of them: the state the
+  // owner reported from a phone. `useMotionValueEvent` rather than a scroll listener, which is the
+  // same reading of `scrollY` the backdrop above already subscribes to, and the state flips at most
+  // twice per visit because it is a boolean and not a position.
+  const [pastFirstScreen, setPastFirstScreen] = useState(false);
+  useMotionValueEvent(scrollY, "change", (v) => setPastFirstScreen(v > window.innerHeight * actionBarRevealVh));
+
   const close = () => setOpen(false);
 
   return (
@@ -83,7 +93,7 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
       <header data-action-bar={actionBar ? "" : undefined} className="fixed inset-x-0 top-0 z-40 h-[var(--header-h)]">
         <motion.div aria-hidden style={{ opacity: backdrop, y: reduce ? 0 : slide }} className="nav-blur absolute inset-0 border-b border-line" />
         <div className="relative mx-auto flex h-[var(--header-h)] w-full max-w-page items-center gap-2 px-4 md:px-6">
-          <Wordmark />
+          <MarkLink />
           <div className="ml-auto flex items-center gap-2">
             <CommandPalette />
             {/* Under 768px the bottom bar carries BOOK, so the bar does not show it twice. */}
@@ -103,7 +113,7 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
         <DialogTitle className="sr-only">Menu</DialogTitle>
         <DialogDescription className="sr-only">Everything on the site, by what has gone wrong</DialogDescription>
         <div className="mx-auto flex h-[var(--header-h)] w-full max-w-page shrink-0 items-center gap-2 px-4 md:px-6">
-          <Wordmark onClick={close} />
+          <MarkLink onClick={close} />
           <button type="button" onClick={close} className="btn-secondary ml-auto gap-2.5">
             <Rules crossed />
             Close
@@ -112,16 +122,27 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
         <MegaMenu categories={categories} support={support} onNavigate={close} />
       </DialogContent>
 
-      {actionBar && !open && (
-        // A landmark, so the bar is not page content sitting outside one (axe: region).
-        <nav
-          aria-label="Quick actions"
-          className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-line bg-surface px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:hidden"
-        >
-          <BookLink location="bottom-bar" className="btn-primary h-12 flex-1" />
-          <ChatIconButton />
-        </nav>
-      )}
+      <AnimatePresence>
+        {actionBar && !open && pastFirstScreen && (
+          // A landmark, so the bar is not page content sitting outside one (axe: region).
+          //
+          // It arrives from under the fold on its own height, so the travel is right at any text
+          // size and is a transform, which is all rule 10 allows. Reduced motion cross-fades in
+          // place: the arrival is information, not decoration, so it still happens.
+          <motion.nav
+            key="action-bar"
+            aria-label="Quick actions"
+            initial={reduce ? { opacity: 0 } : { opacity: 0, y: "100%" }}
+            animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            exit={reduce ? { opacity: 0 } : { opacity: 0, y: "100%" }}
+            transition={{ duration: reduce ? 0 : duration.smallUi, ease: [...easing] }}
+            className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-line bg-surface px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:hidden"
+          >
+            <BookLink location="bottom-bar" className="btn-primary h-12 flex-1" />
+            <ChatIconButton />
+          </motion.nav>
+        )}
+      </AnimatePresence>
     </Dialog>
   );
 }

@@ -9994,3 +9994,273 @@ Read off `.next/server/app/index.html` and the files.
 reads back every line; 0 black frames; every in-world text passes the library's reading-time check.
 
 **Not run, and not claimed:** no browser pass of the modal player with the new file.
+
+## v4 / the brand gets a mark: the ember drop, and a 404 that reveals it (Task 102)
+
+Logged before coding, as contract rule 3 asks. The site had no logo at all: `brand.name` was a bare text
+node in the nav, in the footer brand line, in the giant footer wordmark and on the OG cards, and
+`src/app/favicon.ico` was still the file `create-next-app` wrote in October. This task draws the mark and
+gives it a home.
+
+### The mark
+
+**Wordmark.** `brand.name` set in Bricolage 800 as it already was, with one change: the dot of the `i` in
+"Fix" is replaced by a falling ember droplet. The letter underneath is the dotless `ı` (U+0131), which is in
+the latin subset the display face already loads, so the name stays live selectable text and the drop is a
+sibling SVG rather than a glyph swap. Copy and paste still yields "LetsFixWP", and a screen reader reads the
+name once from an `sr-only` node while the visual pair is `aria-hidden`.
+
+What it says: the fix landing on the site. The drop is above the word and on its way down, not a finished
+state, which is the same tense as the H1 ("back online today").
+
+**Monogram.** The same droplet at the size of an app icon, with a W knocked out of its body by
+`fill-rule="evenodd"`. One path, so it survives being reduced to alpha: the glass reveal below turns the
+logo into a signed distance field and a second coloured shape inside the first would fill solid.
+
+### The 404
+
+A page that did not exist before this task. `src/app/not-found.tsx`, which Next also serves for every
+unmatched URL.
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 1 | This page is broken (`not-found.tsx`) | centred single column, the mark above the headline | no | no | BOOK, CHAT |
+
+Budgets for this route: 1 section, 0 marquees, 0 eyebrows, 0 pinned scenes of 2.
+
+### The WebGL exception, and why it is argued here
+
+Task 15 recorded that WebGL is home-page only, and refused a shader in the shared `ClosingBand` because that
+band renders on about 99 routes. That decision holds. This is the narrow case it leaves room for: a single
+route, reached deliberately or by accident, which renders no `ClosingBand`, carries no other client island,
+and is the one page on the site whose whole subject is something broken. The reveal is the mark arriving
+out of glass, which is the fix arriving. Nothing else on the route moves.
+
+It is not on the home page, which already runs two contexts (`HeroRays`, `CtaShader`), and it is not in the
+shared band. If it ever wants a second home, that is a new row here, not an edit to this one.
+
+### The glass override
+
+MASTER's anti-patterns ban glass and `backdrop-filter` outside the scrolled nav bar, and ban any second
+accent or status hue. The vendored component ships both: rainbow dispersion at the rim and a cool blue
+specular. Both are dialled out rather than accepted:
+
+- dispersion and colour bleed held low, so the light that the rim bends stays warm around the ember instead
+  of fanning into a spectrum
+- the rim and halo colour, two hardcoded cool blue literals in the shader, become one `uRimCol` uniform fed
+  from `--text`
+
+The override is recorded in MASTER's overrides table as glass in this one reveal only.
+
+### Fallback
+
+The reveal is never assumed. Reduced motion, no WebGL, or tokens not yet read all render the static monogram
+in ember, which is the complete design for the page on its own and the final state contract rule 10 asks for.
+The probe is `CtaShader`'s, promoted to a shared module rather than copied.
+
+### What changed
+
+- `src/components/Logo.tsx`: the mark. `Wordmark`, `Monogram`, `monogramSvg()` and the two path constants.
+- `src/components/motion/interactions/NavBar.tsx`: the bar and the mega menu both mount it. The local
+  `Wordmark` there, which is the link box and not the mark, is renamed `MarkLink`.
+- `src/components/SiteFooter.tsx`, `src/components/FooterWordmark.tsx`: the footer brand line and the giant
+  wordmark. `FooterWordmark` loses its `name` prop, since the mark reads `brand.name` itself.
+- `src/app/globals.css`: `brand-wordmark`'s top crop moves from `-0.105em` to `-0.055em`. The number is the
+  air above the ink, and the ink moved: the drop stands 0.05em taller than the dot it replaced, so the old
+  crop took the tip off it.
+- `src/lib/brand-raster.tsx` (new), `src/lib/og.tsx`: the share card moves off the v3 light and green palette
+  onto v4, and carries the monogram. The palette is literal there because Satori has no stylesheet.
+- `src/app/icon.tsx`, `src/app/apple-icon.tsx` (new), `src/app/favicon.ico` (deleted).
+- `src/lib/webgl.ts` (new): `CtaShader`'s WebGL probe, promoted so a second component can ask. `hasWebGl2`
+  is added beside it, because this renderer asks for version 2 and a browser with 1 and no 2 would pass the
+  looser check and still get an empty box. It probes both types on one canvas and releases the context it
+  gets through `WEBGL_lose_context`: a browser allows about sixteen live contexts and the home page already
+  spends two, and taking a context type per call built a second canvas on exactly the machines with the
+  least room for one.
+- `src/components/ui/liquid-glass-logo-reveal.tsx` (new, vendored), `LogoReveal.tsx` (new leaf),
+  `src/app/not-found.tsx` (new page).
+- `scripts/route-test.ts`: `icon` and `apple-icon` join the metadata routes it already allows beside
+  `favicon.ico`, or the build fails them as routes with no SITEMAP entry.
+
+### The chunk, which did not split on its own
+
+The leaf boundary was not enough. Importing the renderer statically put it in the same chunk as
+`motion/react`, which every route loads, so the shader shipped on all 99: **16.7KB gzipped of WebGL on
+about 23 routes that otherwise ship no client JS at all.** Measured, not assumed, by reading
+`precision highp float` out of the built chunks and counting the HTML files that reference each one.
+
+`next/dynamic` with `ssr: false` fixes it and is the only one on the site. The renderer is now a chunk of
+its own, **10.4KB gzipped, referenced by 0 prerendered HTML files**, fetched when the component mounts.
+
+### Measurements
+
+| | |
+| --- | --- |
+| Favicon (`/icon`) | 32 x 32 PNG, 822B, generated |
+| Touch icon (`/apple-icon`) | 180 x 180 PNG, 3,891B, generated |
+| Glass renderer chunk | 25.7KB raw, 10.4KB gzipped, 0 HTML references (fetched on mount) |
+| Home page shader chunk | unchanged, still referenced by `index.html` only |
+| `_not-found.html` | 63.3KB |
+| Drop, measured off the face | dot of Bricolage `i` at 800 sits 0.575em to 0.725em above the baseline; dotless stem ends at the 0.53em x-height; stem advance 0.235em |
+| Drop, as drawn | 0.16em wide, 0.20em tall, bottom at 0.575em above the baseline, 0.05em taller than the dot |
+| Reveal | plays once, about 3.5s, no loop |
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check ok (52 match candidates, 218 files), motion check clean, build 99 routes,
+route test ok.
+
+**Browser pass, and this one was run.** Loopback is blocked in this sandbox, but the Windows host that
+serves the build is reachable on its own address, so Playwright drove the real pages for the first time in
+this project:
+
+- `/no-such-page/` returns **404**, not 200, and renders the new page.
+- The reveal runs: a 480 x 480 canvas mounts, no console errors, and frames at 250ms, 600ms and 4.2s show
+  the droplet bending the mark at the rim, the glass tile holding it, and the bare mark at rest. The rim
+  reads near-white, not blue, so the `uRimCol` change holds.
+- Reduced motion renders the static monogram, which is the same frame the reveal ends on.
+- **axe (wcag2a, wcag2aa, wcag21a, wcag21aa) on the 404: 0 violations, in both motion modes.**
+- The wordmark was placed by measurement after the first pass put the drop on top of the stem: `bottom` had
+  been measured from the line box, and line-height is not the same in the nav as in the footer. It is now
+  anchored to the baseline with a zero-width inline-block.
+
+**Not run:** no pass on a real GPU. This machine's Chromium runs WebGL 2 through SwiftShader, so the reveal
+is confirmed to render and animate, but its speed and the look of the rim on real hardware are still owed.
+
+## v4 / the hero gives the action bar its room back (Task 103)
+
+Reported from a phone with a screenshot: on the home page the hero's two buttons were behind the fixed
+bottom action bar at first paint, so the only way to reach them was to scroll. No new section and no new
+layout family, so the Task 27 row for the hero stands as written. A tuning change to one section.
+
+### What was actually wrong
+
+The bar's space was reserved by `body { padding-bottom }`, which the Task 27 work put in. That reserves
+room at the foot of the **document**. The bar is `position: fixed`, so it also covers the last 4.75rem of
+the **viewport**, at any scroll position, and on a short phone the first viewport is where the hero's CTAs
+land. Those are two different problems and only the first was solved.
+
+Checked first, and all three were false: `position: fixed` is intact (the bar's `top` is identical at
+scroll 0 and scroll 400), no ancestor carries a transform, filter or containment that would capture it,
+and the bar is in the prerendered HTML, so it does not wait for JavaScript. The bar was never the bug.
+
+Measured before the fix, at 390 wide:
+
+| Viewport | Buttons | Bar top | Result |
+| --- | --- | --- | --- |
+| 375 x 553 (iPhone SE, Safari) | 418 to 518 | 480 | 38px behind |
+| 390 x 656 (iPhone 15, Safari) | 582 to 682 | 583 | both behind |
+| 390 x 844 (no browser chrome) | 598 to 698 | 771 | clear |
+
+The hero is sized to its content below lg, so the only reason it looked right in testing is that a
+browser without its own chrome is about 190px taller than the same phone in Safari.
+
+### Where the room came from
+
+Everything under the photograph is close to a fixed cost, about 286px at phone widths once the gaps are
+closed, so the picture and the rhythm are the only give. Three rules, in order of what they cost:
+
+1. The photograph's height below md becomes `min(its 3/2 height, what the screen has left)`. 31rem is the
+   fixed cost plus the bar plus the top padding. It binds under about 756px, so a tall phone keeps the
+   crop it has today.
+2. Three margins close by one rhythm step under 804px, which buys 40px. That is the difference between a
+   photograph and the letterbox strip the Task 27 comment says the crop exists to avoid.
+3. Under 626px there is no crop left worth looking at, so the picture goes and the words keep the screen.
+
+### Two things that did not work, and why they are worth knowing
+
+**An attribute rule in `@layer base` loses to a Tailwind utility.** The margins were first written as
+`[data-hero-copy] { margin-top: 1.5rem }` beside the bar's padding in `globals.css`. Same specificity as
+`mt-10`, lower layer, so they did nothing and the measurements came back unchanged. They are now variants
+on the elements. The photograph's height rule had worked only because no utility competes with it.
+
+**`max-height` plus `aspect-ratio` moves the width.** Capping the height while `aspect-[3/2]` was still in
+force made Chromium transfer the constraint back to the other axis: the box went to **240px wide** on a
+390px screen and the full-bleed photograph stopped reaching the right edge. Caught by reading the box, not
+by looking at it, because at a glance the dark right of the picture reads as part of the picture. The fix
+is `aspect-auto` below md plus an explicit height, so only the crop moves.
+
+### Measurements
+
+Buttons to bar, at first paint, scroll 0. Positive is clearance.
+
+| Viewport | Photograph | Gap |
+| --- | --- | --- |
+| 375 x 553 iPhone SE Safari | hidden | +98 |
+| 360 x 600 small Android | hidden | +145 |
+| 390 x 629 iPhone 13 mini Safari | 133px | +41 |
+| 390 x 656 the reported one | 160px | +41 |
+| 390 x 700 | 204px | +25 |
+| 414 x 780 | 276px | +33 |
+| 390 x 844 iPhone 14 | 260px, unchanged | +73 |
+| 768 x 1024 tablet | 384px | no bar |
+| 1280 x 900 desktop | unchanged | no bar |
+
+Photograph box at 390 x 656: 390 wide by 160 tall, filling the width.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check ok, motion check clean, build 99 routes, route test ok. Nine viewports
+driven in a real browser; the two that the report named are the two that were broken and both now clear.
+
+**Not run:** no pass on a physical iOS device. These are Chromium viewports sized to match Safari's visible
+area, which is what the report described but not the same engine.
+
+## v4 / the mobile action bar waits for the first screen, and Task 103 is reverted (Task 104)
+
+The owner, from a phone, on seeing Task 103 shipped: the bar should not be there when the page opens, and
+should arrive after a little scrolling. Task 103 read the same screenshot as "the bar must stop covering
+the hero" and kept the bar where it was. The behaviour, not the hero, was the thing to change.
+
+### What changed
+
+`NavBar` gates the bar on scroll. It renders once the reader has passed `actionBarRevealVh` of the
+viewport, which is 0.85, and leaves again on the way back up. `useMotionValueEvent` on the `scrollY` the
+nav backdrop already subscribes to, so there is no second listener and no new scroll work; the state is a
+boolean, so it flips at most twice a visit.
+
+It arrives from under the fold on `y: 100%`, its own height, which is right at any text size and is a
+transform, so rule 10 holds. Reduced motion cross-fades in place rather than not arriving at all, which is
+the choice `StickyCTA` already makes two files over and for the same reason: the arrival is information.
+
+A share of the viewport and not a pixel count, because what it has to clear is the first screen. The cost
+is recorded in the token: on a page shorter than about 1.85 screens there is never enough scroll and the
+bar does not appear, which is the right answer, because a page that short has its footer CTA in view.
+
+### Task 103 is reverted
+
+Its hero changes are gone and `Hero.tsx` is byte for byte what it was before that task. They existed only
+to keep the hero's CTAs clear of a bar that was always on screen, and bought that with the hero's own
+design on short phones: the photograph capped against the viewport below 756px and dropped entirely below
+626px. With the bar waiting for the first screen the CTAs are clear on their own, so that was a price paid
+for nothing. Measured after the revert: when the bar does arrive, the hero's buttons are already above it
+at 390x656 and at 375x553.
+
+What Task 103 leaves behind is its two findings, which stand and are worth keeping:
+
+- an attribute rule in `@layer base` ties with a Tailwind utility on specificity and loses on layer order,
+  so it silently does nothing;
+- `max-height` with `aspect-ratio` still in force transfers the constraint to the other axis, and a
+  full-bleed box went to 240px wide on a 390px screen.
+
+The `brand-wordmark` top crop from Task 102 is untouched by the revert.
+
+### Measurements
+
+Home page, three contexts, scroll driven in a real browser.
+
+| | At rest | 0.8 screens | 1.2 screens | Back at top |
+| --- | --- | --- | --- | --- |
+| 390 x 656 | absent | absent | present, opacity 1 | absent |
+| 375 x 553 | absent | absent | present, opacity 1 | absent |
+| 390 x 656, reduced motion | absent | absent | present, opacity 1 | absent |
+
+When it arrives it is clear of the hero's buttons at both sizes.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check ok, motion check clean, build 99 routes, route test ok. axe
+(wcag2a, wcag2aa, wcag21a, wcag21aa) on the mobile home page: 0 violations with the bar hidden and 0 with
+it showing.
+
+**Not run:** no pass on a physical iOS device.

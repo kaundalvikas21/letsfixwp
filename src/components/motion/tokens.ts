@@ -75,6 +75,20 @@ export const stickyCtaThreshold = 0.6;
 /** Scroll distance in px after which the header condenses. */
 export const headerCondenseAt = 80;
 
+/**
+ * Scroll depth, as a share of the viewport, at which the mobile action bar arrives.
+ *
+ * A share and not a pixel count, because the thing it has to clear is the first screen: the bar is
+ * fixed and covers the last 4.75rem of the viewport, and until the reader has moved past the hero
+ * the page's own CTA is sitting there already. Just under one screen means the bar turns up once
+ * that first CTA has gone, which is the moment it has a job.
+ *
+ * The cost of measuring it this way: on a page shorter than about 1.85 screens there is not enough
+ * scroll to reach it and the bar never appears. That is the right answer rather than a gap in one,
+ * because a page that short has its footer CTA in view instead.
+ */
+export const actionBarRevealVh = 0.85;
+
 /** Every direction an entrance can travel from, and the axis and sign each one implies. */
 export const directions = {
   up: { axis: "Y", sign: 1 },

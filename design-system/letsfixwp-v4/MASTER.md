@@ -87,6 +87,38 @@ const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
 At display sizes set `font-variation-settings: "opsz" 72` (or the matching size) so the optical axis
 does the work instead of faking it with tracking alone. Never set body copy in Bricolage Grotesque.
 
+### The Mark
+
+Added in Task 102. Before it the brand was a name in a typeface and nothing else: no logo, and the
+`favicon.ico` that `create-next-app` wrote.
+
+**The ember drop.** The dot of the `i` in "Fix" is a falling droplet, in `--accent`. It says the fix
+landing on the site, and it is in the same tense as the H1: on its way down, not already finished.
+
+**Wordmark.** `brand.name` in Bricolage 800 at `-0.04em`, exactly as the rest of the display type.
+The letter under the drop is the dotless `ı` (U+0131), which is in the latin subset the face already
+loads, so the mark stays live text: it is selectable, it copies as "LetsFixWP", and it inherits every
+type property from wherever it is mounted. The visual pair is `aria-hidden` with an `sr-only` copy of
+the name beside it, so the name is announced once and not spelled around a letter.
+
+The drop is placed against the face, not by eye. A canvas pixel scan of Bricolage's own `i` at 800
+puts the dot between 0.575em and 0.725em above the baseline, with the dotless stem ending at the
+0.53em x-height. The drop starts where the dot starts, runs 0.05em taller, and is centred on the
+0.235em advance of the stem. It is positioned from the baseline rather than from the line box,
+because line-height is not the same in the nav as it is in the footer.
+
+**Monogram.** The droplet at icon size with a W knocked out of it, one path with `fill-rule="evenodd"`.
+A hole and not a second shape, because the glass reveal reduces the logo to alpha and a W drawn in the
+page colour would arrive as a solid droplet. This is the favicon, the touch icon, the share card and
+the 404 reveal.
+
+**Colour.** One ember moment per mark. The letters stay `--text` and only the drop carries accent.
+The giant footer wordmark is the exception and takes `fill-accent/70`: its letters are a 36% mix of
+`--text`, and an ember drop at full strength beside them was the loudest thing on every page.
+
+**Never:** a second hue in the mark, a gradient in the drop, the drop on a letter other than the `i`
+in "Fix", the wordmark as an image, or `brand.name` typed as a string anywhere.
+
 ### Shape Lock
 
 **All-soft, 14px, everywhere.** Cards, image containers, capture frames, buttons, chips, inputs,
@@ -284,6 +316,7 @@ tree, and every one of these lives in its own `'use client'` leaf.
 | Nav backdrop | Motion | `useScroll` to `useTransform(scrollY, [0, 8], [0, 1])` on the backdrop layer's opacity. No scroll listener, no state, opacity only | State change: the page has left the hero |
 | Nav progress rail | Motion | a 2px ember rule along the bottom of the bar, `scaleX` bound to `scrollYProgress`, fading in with the backdrop. Scale only; reduced motion keeps it, because it tracks the visitor's own scrolling 1:1 rather than moving on its own | Orientation: the home page runs to about 18,000px and two pinned scenes make the scrollbar lie about it |
 | Wordmark underline | CSS | an ember rule, `scale-x-0` to `scale-x-100` from the left over 200ms `ease-out`, on hover and on focus-visible | Feedback: the mark answers the pointer and the keyboard alike |
+| Mark reveal, 404 only | WebGL2 (`GlassIconReveal`) | the monogram forms inside a glass droplet, the droplet spreads into a rounded tile and magnifies the mark against its rim, then the glass lets go and the bare mark stays. Plays once, about 3.5s, no loop. No WebGL 2 or reduced motion renders the static monogram, which is the same final state | Arrival: the one page whose subject is something broken, and the fix forming on it |
 | Mega menu reveal | Motion | categories 50ms apart, opacity 0 to 1 and y 24 to 0, spring stiffness 100 / damping 20. Reduced motion fades in 160ms with no stagger and no travel | Hierarchy: the eye lands on Fixes first |
 
 **Superseded 2026-10-31, by the owner, Task 22.** This section read "Nothing else moves", and the
@@ -452,6 +485,7 @@ generic GSAP scroll-reveal snippet. Each was replaced by the V4.0 brief:
 | Scroll Reveal for everything | ~~Six mapped motions; nothing else moves~~ **Reversed 2026-10-31 (Task 22):** a site-wide element-level reveal, plus the mapped motions | Was: motion must be motivated, and the UX lookups cap it at "1 to 2 key elements per view maximum". Now: the owner named gotechark.com as the reference and asked twice for its behaviour, and that reference reveals per element on every page (67, 314 and 23 `wow` nodes on three of its pages). The cap is overridden knowingly, for this one motion, with the contrast and island constraints in Task 22 holding. |
 | (brief implies 3 scroll scenes) | 2 pinned (sticky-stack, horizontal pan); zoom-parallax scrubs unpinned | GSAP guidance: do not pin more than 1 to 2 sections per page; excessive pinning fights native scroll and hurts mobile. |
 | Trust and Authority + Conversion pattern | Funnel (3-step conversion), mapped to break > fix > result, with no visible step labels or step colours | The brief is a story, and the funnel's section order is that story. Contract rule 6 bans numbered-step labels and the single accent replaces the red / orange / green step colouring. |
+| (none) | Glass allowed in the 404 mark reveal only | Task 102. The anti-patterns below ban glass outside the scrolled nav bar, and the vendored reveal is glass by definition. It is one route, not the shared band, and not the home page. Its rainbow dispersion and cool blue rim are dialled out rather than accepted: dispersion and colour bleed held low so the bent light stays warm, and the two hardcoded blue literals in the shader replaced by one `uRimCol` uniform fed from `--text`, which keeps the one-accent lock. |
 | Logo carousel (pattern note) | One CSS marquee per page with pause, previous and next, hover and focus stop, static under reduced motion | Kept as specified by the pattern and contract rules 3 and 9. |
 | "Light mode: text contrast 4.5:1" checklist item | Dark-only contrast table | There is no light mode in this variation. |
 | `-p fixmywp-v4` (brief) | Folder `letsfixwp-v4` | fixmywp.com is a different, trading company; CLAUDE.md forbids reusing its name, and `scripts/check-content.ts` fails the build on it. Same override as v3. |

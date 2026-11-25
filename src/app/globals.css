@@ -436,8 +436,13 @@
      air above the caps and 0.155em below the baseline. These two negative margins remove exactly
      that, which makes the element's box the letters themselves. The box then needs no height of its
      own and the mark sits tight to the foot of the page at every size, where a fixed height clipped
-     the glyphs at desktop and nothing at all at 375. */
-  margin-top: -0.105em;
+     the glyphs at desktop and nothing at all at 375.
+
+     The top figure was 0.105em until Task 102, when the dot of the `i` became the ember drop. The
+     drop stands 0.05em taller than the dot it replaced, so the highest ink in the string moved up by
+     that much and the old crop took the tip off it. The number still describes the same thing: the
+     air above the ink. */
+  margin-top: -0.055em;
   margin-bottom: -0.155em;
 
   /* Large text, so WCAG's 3:1 applies rather than 4.5:1, and `--text` at 36% over `--bg` measures

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FooterWordmark } from "@/components/FooterWordmark";
+import { Wordmark } from "@/components/Logo";
 import { brand } from "@/config/brand";
 import { nodes, routes } from "@/config/routes";
 
@@ -101,7 +102,9 @@ export function SiteFooter() {
             it reads as the one sentence it is. */}
         <div className="mt-14 flex flex-col gap-4 border-t border-line pt-8 text-sm text-muted md:flex-row md:items-start md:justify-between md:gap-12">
           <address className="not-italic">
-            <span className="font-display font-bold text-text">{brand.name}</span>
+            <span className="font-display font-bold text-text">
+              <Wordmark />
+            </span>
             {hasEmail ? (
               <>
                 {" · "}
@@ -139,8 +142,9 @@ export function SiteFooter() {
             `FooterWordmark` is a client leaf for one reason, and it is not the animation: this
             footer is a sibling of `<main>` in the root layout and survives a soft navigation, so
             the mark has to be re-keyed per route or it animates once on the landing page and never
-            again. Its own doc comment has the rest. `brand.name`, never a typed string. */}
-        <FooterWordmark name={brand.name} />
+            again. Its own doc comment has the rest. The name comes from `Wordmark`, which reads
+            `brand.name`, so no string is typed here or passed down. */}
+        <FooterWordmark />
       </div>
     </footer>
   );

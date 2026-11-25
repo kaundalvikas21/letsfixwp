@@ -6,7 +6,10 @@ import { compares, guides } from "../src/content";
 
 const read = (f: string) => JSON.parse(readFileSync(`.next/${f}`, "utf8"));
 const slash = (p: string) => (p.endsWith("/") ? p : `${p}/`);
-const isMeta = (p: string) => /^\/(_not-found|_global-error|favicon\.ico|sitemap\.xml|robots\.txt)\/?$/.test(p) || p.includes("opengraph-image");
+// `icon` and `apple-icon` joined this list in Task 102, when the mark replaced the default favicon.ico:
+// they are generated metadata routes, which is the category this function already names.
+const isMeta = (p: string) =>
+  /^\/(_not-found|_global-error|favicon\.ico|icon|apple-icon|sitemap\.xml|robots\.txt)\/?$/.test(p) || p.includes("opengraph-image");
 
 // Concrete prerendered paths (static pages and generateStaticParams output) plus static app routes rendered on demand.
 const prerendered = Object.keys(read("prerender-manifest.json").routes);
