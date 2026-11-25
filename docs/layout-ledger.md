@@ -10126,3 +10126,82 @@ this project:
 
 **Not run:** no pass on a real GPU. This machine's Chromium runs WebGL 2 through SwiftShader, so the reveal
 is confirmed to render and animate, but its speed and the look of the rim on real hardware are still owed.
+
+## v4 / the hero gives the action bar its room back (Task 103)
+
+Reported from a phone with a screenshot: on the home page the hero's two buttons were behind the fixed
+bottom action bar at first paint, so the only way to reach them was to scroll. No new section and no new
+layout family, so the Task 27 row for the hero stands as written. A tuning change to one section.
+
+### What was actually wrong
+
+The bar's space was reserved by `body { padding-bottom }`, which the Task 27 work put in. That reserves
+room at the foot of the **document**. The bar is `position: fixed`, so it also covers the last 4.75rem of
+the **viewport**, at any scroll position, and on a short phone the first viewport is where the hero's CTAs
+land. Those are two different problems and only the first was solved.
+
+Checked first, and all three were false: `position: fixed` is intact (the bar's `top` is identical at
+scroll 0 and scroll 400), no ancestor carries a transform, filter or containment that would capture it,
+and the bar is in the prerendered HTML, so it does not wait for JavaScript. The bar was never the bug.
+
+Measured before the fix, at 390 wide:
+
+| Viewport | Buttons | Bar top | Result |
+| --- | --- | --- | --- |
+| 375 x 553 (iPhone SE, Safari) | 418 to 518 | 480 | 38px behind |
+| 390 x 656 (iPhone 15, Safari) | 582 to 682 | 583 | both behind |
+| 390 x 844 (no browser chrome) | 598 to 698 | 771 | clear |
+
+The hero is sized to its content below lg, so the only reason it looked right in testing is that a
+browser without its own chrome is about 190px taller than the same phone in Safari.
+
+### Where the room came from
+
+Everything under the photograph is close to a fixed cost, about 286px at phone widths once the gaps are
+closed, so the picture and the rhythm are the only give. Three rules, in order of what they cost:
+
+1. The photograph's height below md becomes `min(its 3/2 height, what the screen has left)`. 31rem is the
+   fixed cost plus the bar plus the top padding. It binds under about 756px, so a tall phone keeps the
+   crop it has today.
+2. Three margins close by one rhythm step under 804px, which buys 40px. That is the difference between a
+   photograph and the letterbox strip the Task 27 comment says the crop exists to avoid.
+3. Under 626px there is no crop left worth looking at, so the picture goes and the words keep the screen.
+
+### Two things that did not work, and why they are worth knowing
+
+**An attribute rule in `@layer base` loses to a Tailwind utility.** The margins were first written as
+`[data-hero-copy] { margin-top: 1.5rem }` beside the bar's padding in `globals.css`. Same specificity as
+`mt-10`, lower layer, so they did nothing and the measurements came back unchanged. They are now variants
+on the elements. The photograph's height rule had worked only because no utility competes with it.
+
+**`max-height` plus `aspect-ratio` moves the width.** Capping the height while `aspect-[3/2]` was still in
+force made Chromium transfer the constraint back to the other axis: the box went to **240px wide** on a
+390px screen and the full-bleed photograph stopped reaching the right edge. Caught by reading the box, not
+by looking at it, because at a glance the dark right of the picture reads as part of the picture. The fix
+is `aspect-auto` below md plus an explicit height, so only the crop moves.
+
+### Measurements
+
+Buttons to bar, at first paint, scroll 0. Positive is clearance.
+
+| Viewport | Photograph | Gap |
+| --- | --- | --- |
+| 375 x 553 iPhone SE Safari | hidden | +98 |
+| 360 x 600 small Android | hidden | +145 |
+| 390 x 629 iPhone 13 mini Safari | 133px | +41 |
+| 390 x 656 the reported one | 160px | +41 |
+| 390 x 700 | 204px | +25 |
+| 414 x 780 | 276px | +33 |
+| 390 x 844 iPhone 14 | 260px, unchanged | +73 |
+| 768 x 1024 tablet | 384px | no bar |
+| 1280 x 900 desktop | unchanged | no bar |
+
+Photograph box at 390 x 656: 390 wide by 160 tall, filling the width.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check ok, motion check clean, build 99 routes, route test ok. Nine viewports
+driven in a real browser; the two that the report named are the two that were broken and both now clear.
+
+**Not run:** no pass on a physical iOS device. These are Chromium viewports sized to match Safari's visible
+area, which is what the report described but not the same engine.
