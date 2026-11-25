@@ -1,8 +1,16 @@
 # Netlify deploy config.
 #
-# No [[plugins]] block on purpose. Netlify auto-installs @netlify/plugin-nextjs (the OpenNext
-# adapter) on every build and auto-updates it, which is how their Next.js security fixes arrive.
-# Pinning it here would freeze that.
+# The [[plugins]] block is declared rather than left to auto-install, because auto-install did not
+# happen. Measured against the first deploy of this site: the build succeeded, but no adapter ran,
+# so Netlify published .next as a plain static directory. .next has no index.html at its root, so
+# every route 404'd while .next's own internals were served as files: /BUILD_ID, /package.json
+# ({"type": "commonjs"}, which is .next/package.json, not this repo's), /routes-manifest.json,
+# /build-manifest.json, /trace, and /prerender-manifest.json, the last of which carries Next's
+# draft-mode signing and encryption keys. Declaring the plugin is the documented fallback.
+#
+# The dependency is a caret range on 5.x, not an exact pin, so patch and minor fixes still arrive
+# on npm install. 5.16.9 is installed, above the 5.16.6 that Netlify's November 2026 Next.js
+# advisory asks for. Revisit if Netlify's auto-install starts working for this site.
 #
 # The `echo` before the build is not boilerplate, it is load-bearing. Measured on Next 16.3.8:
 # `next build` does NOT read NEXT_PUBLIC_* from the ambient process environment, only from `.env*`
@@ -31,3 +39,6 @@
 
 [build.environment]
   NODE_VERSION = "22"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
