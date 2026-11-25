@@ -3,6 +3,7 @@
 import { NeuroNoise } from "@paper-design/shaders-react";
 import { useReducedMotion } from "motion/react";
 import { useSyncExternalStore } from "react";
+import { hasWebGl } from "@/lib/webgl";
 
 /**
  * The flowing field behind the home page's closing CTA (`@paper-design/shaders-react`).
@@ -37,27 +38,7 @@ const TOKENS = ["--bg", "--accent", "--surface-2"] as const;
 /** Tokens do not change at runtime here, so there is nothing to subscribe to. */
 const subscribe = () => () => {};
 
-/**
- * Whether this browser can actually run the thing, checked before it is mounted.
- *
- * Without this the library throws `Paper Shaders: WebGL is not supported in this browser` as an
- * **uncaught promise rejection**, which no error boundary catches because it is not a render error.
- * Observed here: the browser these changes were checked in has no WebGL, and so does any visitor
- * whose GPU is on a driver blocklist, who has hardware acceleration off, or who is behind a privacy
- * setting that disables the context. They would get a console error and a blank canvas.
- *
- * Detecting first means they get neither: the component renders nothing, and the section falls back
- * to the `--bg` layer and the scrim already underneath it, which is a complete design on its own.
- * The probe canvas is never attached to the document and is collected straight after.
- */
-const hasWebGl = () => {
-  try {
-    const probe = document.createElement("canvas");
-    return !!(probe.getContext("webgl2") || probe.getContext("webgl"));
-  } catch {
-    return false;
-  }
-};
+/** The probe lives in `@/lib/webgl`: a second component needs the same answer. */
 
 let cached: string | null = null;
 const readTokens = () => {

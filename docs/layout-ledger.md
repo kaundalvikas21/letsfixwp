@@ -9994,3 +9994,135 @@ Read off `.next/server/app/index.html` and the files.
 reads back every line; 0 black frames; every in-world text passes the library's reading-time check.
 
 **Not run, and not claimed:** no browser pass of the modal player with the new file.
+
+## v4 / the brand gets a mark: the ember drop, and a 404 that reveals it (Task 102)
+
+Logged before coding, as contract rule 3 asks. The site had no logo at all: `brand.name` was a bare text
+node in the nav, in the footer brand line, in the giant footer wordmark and on the OG cards, and
+`src/app/favicon.ico` was still the file `create-next-app` wrote in October. This task draws the mark and
+gives it a home.
+
+### The mark
+
+**Wordmark.** `brand.name` set in Bricolage 800 as it already was, with one change: the dot of the `i` in
+"Fix" is replaced by a falling ember droplet. The letter underneath is the dotless `ı` (U+0131), which is in
+the latin subset the display face already loads, so the name stays live selectable text and the drop is a
+sibling SVG rather than a glyph swap. Copy and paste still yields "LetsFixWP", and a screen reader reads the
+name once from an `sr-only` node while the visual pair is `aria-hidden`.
+
+What it says: the fix landing on the site. The drop is above the word and on its way down, not a finished
+state, which is the same tense as the H1 ("back online today").
+
+**Monogram.** The same droplet at the size of an app icon, with a W knocked out of its body by
+`fill-rule="evenodd"`. One path, so it survives being reduced to alpha: the glass reveal below turns the
+logo into a signed distance field and a second coloured shape inside the first would fill solid.
+
+### The 404
+
+A page that did not exist before this task. `src/app/not-found.tsx`, which Next also serves for every
+unmatched URL.
+
+| # | Section | Layout family | Eyebrow | Marquee | CTA intents |
+| --- | --- | --- | --- | --- | --- |
+| 1 | This page is broken (`not-found.tsx`) | centred single column, the mark above the headline | no | no | BOOK, CHAT |
+
+Budgets for this route: 1 section, 0 marquees, 0 eyebrows, 0 pinned scenes of 2.
+
+### The WebGL exception, and why it is argued here
+
+Task 15 recorded that WebGL is home-page only, and refused a shader in the shared `ClosingBand` because that
+band renders on about 99 routes. That decision holds. This is the narrow case it leaves room for: a single
+route, reached deliberately or by accident, which renders no `ClosingBand`, carries no other client island,
+and is the one page on the site whose whole subject is something broken. The reveal is the mark arriving
+out of glass, which is the fix arriving. Nothing else on the route moves.
+
+It is not on the home page, which already runs two contexts (`HeroRays`, `CtaShader`), and it is not in the
+shared band. If it ever wants a second home, that is a new row here, not an edit to this one.
+
+### The glass override
+
+MASTER's anti-patterns ban glass and `backdrop-filter` outside the scrolled nav bar, and ban any second
+accent or status hue. The vendored component ships both: rainbow dispersion at the rim and a cool blue
+specular. Both are dialled out rather than accepted:
+
+- dispersion and colour bleed held low, so the light that the rim bends stays warm around the ember instead
+  of fanning into a spectrum
+- the rim and halo colour, two hardcoded cool blue literals in the shader, become one `uRimCol` uniform fed
+  from `--text`
+
+The override is recorded in MASTER's overrides table as glass in this one reveal only.
+
+### Fallback
+
+The reveal is never assumed. Reduced motion, no WebGL, or tokens not yet read all render the static monogram
+in ember, which is the complete design for the page on its own and the final state contract rule 10 asks for.
+The probe is `CtaShader`'s, promoted to a shared module rather than copied.
+
+### What changed
+
+- `src/components/Logo.tsx`: the mark. `Wordmark`, `Monogram`, `monogramSvg()` and the two path constants.
+- `src/components/motion/interactions/NavBar.tsx`: the bar and the mega menu both mount it. The local
+  `Wordmark` there, which is the link box and not the mark, is renamed `MarkLink`.
+- `src/components/SiteFooter.tsx`, `src/components/FooterWordmark.tsx`: the footer brand line and the giant
+  wordmark. `FooterWordmark` loses its `name` prop, since the mark reads `brand.name` itself.
+- `src/app/globals.css`: `brand-wordmark`'s top crop moves from `-0.105em` to `-0.055em`. The number is the
+  air above the ink, and the ink moved: the drop stands 0.05em taller than the dot it replaced, so the old
+  crop took the tip off it.
+- `src/lib/brand-raster.tsx` (new), `src/lib/og.tsx`: the share card moves off the v3 light and green palette
+  onto v4, and carries the monogram. The palette is literal there because Satori has no stylesheet.
+- `src/app/icon.tsx`, `src/app/apple-icon.tsx` (new), `src/app/favicon.ico` (deleted).
+- `src/lib/webgl.ts` (new): `CtaShader`'s WebGL probe, promoted so a second component can ask. `hasWebGl2`
+  is added beside it, because this renderer asks for version 2 and a browser with 1 and no 2 would pass the
+  looser check and still get an empty box. It probes both types on one canvas and releases the context it
+  gets through `WEBGL_lose_context`: a browser allows about sixteen live contexts and the home page already
+  spends two, and taking a context type per call built a second canvas on exactly the machines with the
+  least room for one.
+- `src/components/ui/liquid-glass-logo-reveal.tsx` (new, vendored), `LogoReveal.tsx` (new leaf),
+  `src/app/not-found.tsx` (new page).
+- `scripts/route-test.ts`: `icon` and `apple-icon` join the metadata routes it already allows beside
+  `favicon.ico`, or the build fails them as routes with no SITEMAP entry.
+
+### The chunk, which did not split on its own
+
+The leaf boundary was not enough. Importing the renderer statically put it in the same chunk as
+`motion/react`, which every route loads, so the shader shipped on all 99: **16.7KB gzipped of WebGL on
+about 23 routes that otherwise ship no client JS at all.** Measured, not assumed, by reading
+`precision highp float` out of the built chunks and counting the HTML files that reference each one.
+
+`next/dynamic` with `ssr: false` fixes it and is the only one on the site. The renderer is now a chunk of
+its own, **10.4KB gzipped, referenced by 0 prerendered HTML files**, fetched when the component mounts.
+
+### Measurements
+
+| | |
+| --- | --- |
+| Favicon (`/icon`) | 32 x 32 PNG, 822B, generated |
+| Touch icon (`/apple-icon`) | 180 x 180 PNG, 3,891B, generated |
+| Glass renderer chunk | 25.7KB raw, 10.4KB gzipped, 0 HTML references (fetched on mount) |
+| Home page shader chunk | unchanged, still referenced by `index.html` only |
+| `_not-found.html` | 63.3KB |
+| Drop, measured off the face | dot of Bricolage `i` at 800 sits 0.575em to 0.725em above the baseline; dotless stem ends at the 0.53em x-height; stem advance 0.235em |
+| Drop, as drawn | 0.16em wide, 0.20em tall, bottom at 0.575em above the baseline, 0.05em taller than the dot |
+| Reveal | plays once, about 3.5s, no loop |
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check ok (52 match candidates, 218 files), motion check clean, build 99 routes,
+route test ok.
+
+**Browser pass, and this one was run.** Loopback is blocked in this sandbox, but the Windows host that
+serves the build is reachable on its own address, so Playwright drove the real pages for the first time in
+this project:
+
+- `/no-such-page/` returns **404**, not 200, and renders the new page.
+- The reveal runs: a 480 x 480 canvas mounts, no console errors, and frames at 250ms, 600ms and 4.2s show
+  the droplet bending the mark at the rim, the glass tile holding it, and the bare mark at rest. The rim
+  reads near-white, not blue, so the `uRimCol` change holds.
+- Reduced motion renders the static monogram, which is the same frame the reveal ends on.
+- **axe (wcag2a, wcag2aa, wcag21a, wcag21aa) on the 404: 0 violations, in both motion modes.**
+- The wordmark was placed by measurement after the first pass put the drop on top of the stem: `bottom` had
+  been measured from the line box, and line-height is not the same in the nav as in the footer. It is now
+  anchored to the baseline with a zero-width inline-block.
+
+**Not run:** no pass on a real GPU. This machine's Chromium runs WebGL 2 through SwiftShader, so the reveal
+is confirmed to render and animate, but its speed and the look of the rim on real hardware are still owed.

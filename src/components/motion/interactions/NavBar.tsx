@@ -6,8 +6,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { BookLink } from "@/components/Cta";
+import { Wordmark } from "@/components/Logo";
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { brand } from "@/config/brand";
 import { CTA } from "@/config/cta";
 import { routes } from "@/config/routes";
 import { useChat } from "@/components/chat/ChatProvider";
@@ -26,13 +26,14 @@ const Rules = ({ crossed = false }: { crossed?: boolean }) => (
   </span>
 );
 
-const Wordmark = ({ onClick }: { onClick?: () => void }) => (
+/** The mark, as the link home. The mark itself is `Wordmark`; this is the box around it. */
+const MarkLink = ({ onClick }: { onClick?: () => void }) => (
   <Link
     href={routes.home}
     onClick={onClick}
     className="group relative flex h-11 items-center font-display text-xl font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_20]"
   >
-    {brand.name}
+    <Wordmark />
     {/* The one ember on the left of the bar, and only when you reach for it. */}
     <span
       aria-hidden
@@ -83,7 +84,7 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
       <header data-action-bar={actionBar ? "" : undefined} className="fixed inset-x-0 top-0 z-40 h-[var(--header-h)]">
         <motion.div aria-hidden style={{ opacity: backdrop, y: reduce ? 0 : slide }} className="nav-blur absolute inset-0 border-b border-line" />
         <div className="relative mx-auto flex h-[var(--header-h)] w-full max-w-page items-center gap-2 px-4 md:px-6">
-          <Wordmark />
+          <MarkLink />
           <div className="ml-auto flex items-center gap-2">
             <CommandPalette />
             {/* Under 768px the bottom bar carries BOOK, so the bar does not show it twice. */}
@@ -103,7 +104,7 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
         <DialogTitle className="sr-only">Menu</DialogTitle>
         <DialogDescription className="sr-only">Everything on the site, by what has gone wrong</DialogDescription>
         <div className="mx-auto flex h-[var(--header-h)] w-full max-w-page shrink-0 items-center gap-2 px-4 md:px-6">
-          <Wordmark onClick={close} />
+          <MarkLink onClick={close} />
           <button type="button" onClick={close} className="btn-secondary ml-auto gap-2.5">
             <Rules crossed />
             Close

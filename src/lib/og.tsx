@@ -1,11 +1,19 @@
 import { ImageResponse } from "next/og";
 import { brand } from "@/config/brand";
+import { RasterMonogram, V4 } from "./brand-raster";
 
 export const ogSize = { width: 1200, height: 630 };
 
-// v3 palette, from design-system/letsfixwp-v3/MASTER.md. Not brand.accent: that is the company red, which this
-// variation locks out (one accent, back-online green).
-const V3 = { bg: "#FCFCFD", text: "#0F1115", muted: "#555B66", accent: "#15803D" };
+/**
+ * The share card.
+ *
+ * It was on the v3 palette until Task 102: a near-white page with a green rule along the top, which is the
+ * one thing a visitor sees of the site before they arrive and the only surface still telling them it is
+ * light and green. It is now the v4 page it belongs to, with the mark on it.
+ *
+ * Colours come from `brand-raster.tsx`, which explains why they are literals here and tokens everywhere
+ * else: Satori has no stylesheet to read them from.
+ */
 export function ogImage(title: string) {
   return new ImageResponse(
     (
@@ -17,12 +25,17 @@ export function ogImage(title: string) {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: 72,
-          background: V3.bg,
-          borderTop: `16px solid ${V3.accent}`,
+          background: V4.bg,
+          // The ember rule reads as the one accent on the card. On the near-black page it also keeps the
+          // card from looking like a crop of something larger.
+          borderTop: `16px solid ${V4.accent}`,
         }}
       >
-        <div style={{ fontSize: 64, fontWeight: 700, color: V3.text, lineHeight: 1.1 }}>{title}</div>
-        <div style={{ fontSize: 32, color: V3.muted }}>{brand.name}</div>
+        <div style={{ fontSize: 64, fontWeight: 700, color: V4.text, lineHeight: 1.1 }}>{title}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          <RasterMonogram width={44} />
+          <div style={{ fontSize: 32, color: V4.muted }}>{brand.name}</div>
+        </div>
       </div>
     ),
     ogSize,

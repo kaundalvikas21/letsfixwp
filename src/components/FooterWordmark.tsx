@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { Wordmark } from "@/components/Logo";
 import { Reveal } from "@/components/motion";
 
 /**
@@ -24,15 +25,23 @@ import { Reveal } from "@/components/motion";
  * The second half of the fix is in `app/layout.tsx`: the engine's `MutationObserver` watched `#main`
  * only, so a new node in the footer went unnoticed. It now watches the footer as well.
  *
+ * The mark itself is `Wordmark`, so the drop in "Fix" scales to this size with the letters. The outer
+ * span stays `aria-hidden`, which also silences the component's own `sr-only` name: the footer already
+ * names the business a few lines above, and this is the same word set large.
+ *
  * This is the only client code in the footer, and it costs almost nothing: `usePathname` is already
  * in the bundle on every route because `StickyCTA` in `SiteShell` uses it.
  */
-export function FooterWordmark({ name }: { name: string }) {
+export function FooterWordmark() {
   const pathname = usePathname();
   return (
     <Reveal key={pathname} as="div" direction="clip" duration={900} className="mt-12 overflow-hidden md:mt-20">
       <span aria-hidden className="brand-wordmark">
-        {name}
+        {/* The letters are a 36% mix of `--text`, and the drop was set to match at 40% ember. On this
+            near-black page that much alpha takes the chroma out of it and what rendered was a dull
+            maroon, which is a colour the site does not have. 70% keeps it recognisably the accent
+            while staying under the solid ember of a button. */}
+        <Wordmark dropClass="fill-accent/70" />
       </span>
     </Reveal>
   );
