@@ -49,8 +49,14 @@ type ClipClient = {
   placeholder?: boolean;
 };
 
+type ClipCardProps = { client: ClipClient; className?: string; sizes?: string };
+
 /**
  * One client, as a portrait frame with the attribution under it.
+ *
+ * `sizes` is the poster's layout width. Unset takes `VideoSlotBox`'s own default, which is the grid:
+ * `50vw` on a phone, `25vw` from 768. `ClipWall` has to override it, because a rail slide is
+ * `w-[calc(85%-1rem)]` under `md` and nothing here can see that from inside the card.
  *
  * **An unconfirmed entry is credited to nobody.** The placeholder names in src/content/testimonials.ts
  * are "Client name, Role, Company", and printing those under a frame would read as an attribution
@@ -58,11 +64,11 @@ type ClipClient = {
  * there and that it is not filmed yet. The name appears the day the words are a real client's, which
  * is the same condition `check-confirmed.ts` gates a production build on.
  */
-export function ClipCard({ client, className }: { client: ClipClient; className?: string }) {
+export function ClipCard({ client, className, sizes }: ClipCardProps) {
   const named = !client.placeholder;
   return (
     <figure className={cn(frameShell, "flex h-full flex-col", className)}>
-      <VideoSlotBox id={client.video} />
+      <VideoSlotBox id={client.video} sizes={sizes} />
       <figcaption className="px-2 pt-3 pb-1">
         {named ? (
           <p className="text-[15px]">
@@ -108,7 +114,11 @@ export function ClipWall({
   return (
     <ClipRail label="Client clips" action={action} className={className}>
       {clients.map((client) => (
-        <ClipCard key={client.video} client={client} />
+        // The slide is `w-[calc(85%-1rem)]` under `md`, about 275px at 375. On the card's own
+        // default of `50vw` Next picked a candidate for a 187px box and painted it at 275, so
+        // every poster on the home and pricing rails was upscaled by half. `ClipGrid` keeps the
+        // default, because its two-across phone layout really is 50vw.
+        <ClipCard key={client.video} client={client} sizes="(min-width: 768px) 25vw, 85vw" />
       ))}
     </ClipRail>
   );

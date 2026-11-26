@@ -67,7 +67,7 @@ function Bar({ el, className }: { el?: React.RefObject<HTMLElement | null>; clas
     <m.div
       aria-hidden
       style={{ scaleX }}
-      className={className ?? "fixed inset-x-0 top-16 z-30 h-0.5 origin-left bg-accent"}
+      className={className ?? "fixed inset-x-0 top-[var(--header-h)] z-30 h-0.5 origin-left bg-accent"}
     />
   );
 }

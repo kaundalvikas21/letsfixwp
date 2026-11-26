@@ -33,7 +33,11 @@ const ID = "what-a-fix-looks-like" as const;
  */
 export function FilmBand() {
   return (
-    <section aria-labelledby="watch-a-fix" className="reveal mx-auto max-w-page px-4 py-16 md:px-6 md:py-24">
+    <section aria-labelledby="watch-a-fix" className="mx-auto max-w-page px-4 py-16 md:px-6 md:py-24">
+      {/* No `reveal` on the section: the `Stagger` below already emits one, and `.reveal > *`
+          hides direct children, so the heading and its line were travelling inside a wrapper that
+          was travelling too, for twice the distance the token sets. The Stagger owns the words and
+          the frame carries its own `reveal-self`. */}
       <Stagger>
         <h2
           id="watch-a-fix"
@@ -46,7 +50,7 @@ export function FilmBand() {
         </p>
       </Stagger>
 
-      <VideoFrame id={ID} className="mt-10 md:mt-12" />
+      <VideoFrame id={ID} className="reveal-self mt-10 md:mt-12" />
     </section>
   );
 }

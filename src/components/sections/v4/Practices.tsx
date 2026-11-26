@@ -33,10 +33,15 @@ export function Practices() {
     // narrowed to max-w-4xl, which pushed its left edge 128px inside the heading above and the one
     // below it. DESIGN.md's rule is that measure is capped on the text, never by shrinking the
     // container, so the copy carries its own ch cap below and the spine stays put.
-    <section aria-labelledby="practices" className="reveal mx-auto max-w-page px-4 py-16 md:px-6 md:py-24">
+    <section aria-labelledby="practices" className="mx-auto max-w-page px-4 py-16 md:px-6 md:py-24">
+      {/* `reveal-self` on the heading and not `reveal` on the section. `PracticeRows` renders a
+          `Stagger`, which puts `reveal` on its own <ul>, and `.reveal > *` hides direct children:
+          with both in place the five rows ran their ladder inside a <ul> the section had not
+          revealed yet, so the first rows finished early and popped in fully formed. One owner per
+          ancestor chain, which is the invariant parts.tsx states for `LinkCards`. */}
       <h2
         id="practices"
-        className="font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_30] sm:text-5xl sm:[font-variation-settings:'opsz'_48]"
+        className="reveal-self font-display text-[1.875rem] leading-[1.1] font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_30] sm:text-5xl sm:[font-variation-settings:'opsz'_48]"
       >
         How we work on your site
       </h2>

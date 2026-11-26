@@ -21,21 +21,26 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
   // reading. The criterion cell is also the sticky one, which is why it carries its own opaque
   // `--surface`: under 768 the table scrolls sideways and the column it scrolls away from is the
   // only one that says what the row is about.
-  const th = "border-b border-line-strong px-4 py-3 text-left font-display text-sm font-bold";
+  // `border-b-line-strong` and not `border-line-strong`: the two cells below add a vertical rule
+  // through `cn`, and `border-{color}` and `border-r-{color}` are the same tailwind-merge group,
+  // so the plain form let `border-r-line` win and silently repaint this header underline at 8%
+  // white on two of the three cells while the middle one stayed at 36%. Directional on both
+  // sides, so the two cannot meet.
+  const th = "border-b border-b-line-strong px-4 py-3 text-left font-display text-sm font-bold";
   // Sticky only where the table actually scrolls. `min-w-[40rem]` fits from about 690px up, so above
   // `md` the cell cannot move and the only thing `position: sticky` buys is a positioned element:
   // axe then reports every cell in the next column as "partially obscured" and returns `incomplete`
   // on it rather than a contrast ratio, which silently drops nine cells per page out of coverage on
   // the width the check is usually run at. Scoped to `max-md`, 1440 measures clean again and the
   // phone, where the cell does its job, is measured by compositing instead.
-  const thCriterion = cn(th, "border-r border-line bg-surface max-md:sticky max-md:left-0 max-md:z-10");
-  const td = "border-b border-line px-4 py-4 align-top text-sm";
+  const thCriterion = cn(th, "border-r border-r-line bg-surface max-md:sticky max-md:left-0 max-md:z-10");
+  const td = "border-b border-b-line px-4 py-4 align-top text-sm";
   // `text-left` explicitly: `td` never set an alignment and a `<th>` defaults to `center`, so every
   // row header in this table has been centred inside its column, which on a wrapped two-line title
   // put the second line somewhere other than where the eye expects to resume. Caught at 375, where
   // the column is narrowest and every title wraps.
-  const tdCriterion = cn(td, "border-r border-line bg-surface text-left font-semibold max-md:sticky max-md:left-0");
-  const tdB = cn(td, "border-l border-line text-muted");
+  const tdCriterion = cn(td, "border-r border-r-line bg-surface text-left font-semibold max-md:sticky max-md:left-0");
+  const tdB = cn(td, "border-l border-l-line text-muted");
 
   return (
     <article className={cn(page, pageYMasthead)}>
@@ -129,7 +134,7 @@ export function CompareTemplate({ compare: c }: { compare: Compare }) {
                 <th scope="col" className={th}>
                   {c.a}
                 </th>
-                <th scope="col" className={cn(th, "border-l border-line")}>
+                <th scope="col" className={cn(th, "border-l border-l-line")}>
                   {c.b}
                 </th>
               </tr>

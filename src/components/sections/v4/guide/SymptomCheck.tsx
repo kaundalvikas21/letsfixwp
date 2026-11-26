@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDownIcon, CheckIcon } from "@phosphor-icons/react";
+import { ArrowDownIcon, CheckIcon } from "@phosphor-icons/react/ssr";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 

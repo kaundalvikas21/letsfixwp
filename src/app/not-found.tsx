@@ -21,7 +21,7 @@ export const metadata: Metadata = { title: "Page not found" };
 
 export default function NotFound() {
   return (
-    <main className={`${page} ${pageY}`}>
+    <div className={`${page} ${pageY}`}>
       <div className="mx-auto flex max-w-xl flex-col items-center text-center">
         {/* Capped, because the reveal is square and fills its box: at full column width on a phone it
             would be the whole first screen and the headline would start below the fold. */}
@@ -42,6 +42,6 @@ export default function NotFound() {
           <ChatButton location="404" className="btn-secondary w-full sm:w-auto" />
         </div>
       </div>
-    </main>
+    </div>
   );
 }

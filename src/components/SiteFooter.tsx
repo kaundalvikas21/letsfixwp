@@ -31,9 +31,18 @@ export function SiteFooter() {
   const facts = brand.legacy.facts;
   return (
     <footer className="border-t border-line bg-surface">
-      {/* The chat button floats bottom-right over whatever is under it, and on every page that is
-          this last line. The extra bottom padding is the room it needs, so the footer ends in air
-          rather than with a button sitting on its final sentence. */}
+      {/* `pb-0`, and the wordmark below is why: it runs to the foot of the document with nothing
+          under it, which the comment on `FooterWordmark` sets out in full. This said the opposite
+          until Task 107, that the padding was clearance for the floating chat button, and the two
+          comments in this one file contradicted each other.
+
+          What that clearance was for, and where it went. `ChatLauncher` is `md:inline-flex`, so on a
+          phone there is no floating button at all and the action bar reserves its own space through
+          `body:has(header[data-action-bar])`. From `md` up the button sits at `bottom-6 right-6`,
+          which is now inside the wordmark's box rather than under it. It lands in the lower third,
+          where the mark's own mask has already faded the letterforms out, so it rests on the fade
+          rather than on type. It is also `null` on /contact/ and /free-site-check/, whose forms put
+          a submit button in that corner. Accepted, not overlooked. */}
       <div className="mx-auto max-w-page px-4 pt-14 pb-0 md:px-6">
         {/* CSS columns, not a grid. As a four-up grid the eight blocks were dealt into two rows of
             four, and the first hub has eleven children against its row-mates' four, four and three:

@@ -29,7 +29,11 @@ const Framed = ({ children }: { children: React.ReactNode }) => (
  */
 export function Restored() {
   return (
-    <section aria-labelledby="same-site" className="reveal mx-auto max-w-page px-4 py-16 md:px-6 md:py-24">
+    // No `reveal` here. `RestoredOverlay` renders a `Stagger`, so its two lines were travelling the
+    // token's distance inside a frame travelling the same distance again: 48px for words whose own
+    // doc comment specifies 24. The overlay owns the arrival, which is the moment this section is
+    // built around, and the frame under it simply is.
+    <section aria-labelledby="same-site" className="mx-auto max-w-page px-4 py-16 md:px-6 md:py-24">
       <ZoomImage>
         {hasScreen(CAPTURE) && hasScreen(BROKEN) ? (
           // Both captures exist, so the visitor can do the repair themselves.

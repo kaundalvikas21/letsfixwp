@@ -18,7 +18,15 @@ export type SiteNode = {
 };
 
 export const PRODUCTION_URL = "https://letsfixwp.com";
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? PRODUCTION_URL;
+
+// An empty string is not an unset variable, and `??` does not catch it. netlify.toml writes
+// `NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-$DEPLOY_PRIME_URL}` into .env.production.local, so
+// a build where Netlify supplies neither writes an empty value and every URL below resolves from
+// "". Fail here, naming the variable, rather than three frames later inside `new URL("")`.
+const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+if (configured === "") throw new Error("NEXT_PUBLIC_SITE_URL is set but empty. Unset it to build for production, or give it this deploy's own origin.");
+
+export const SITE_URL = configured ?? PRODUCTION_URL;
 
 /**
  * Whether this build is serving the real site, rather than a staging or preview host.
@@ -27,8 +35,23 @@ export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? PRODUCTION_URL;
  * root metadata adds `noindex, nofollow` when it is false. Staging would otherwise canonicalise to
  * letsfixwp.com, because every canonical, sitemap entry, JSON-LD @id and OG url resolves from
  * SITE_URL above, so a crawl of a staging host would consolidate onto the production domain.
+ *
+ * **Compared by host, not by string.** This was `SITE_URL === PRODUCTION_URL`, and the value it is
+ * compared against is typed into the Netlify UI by hand. Any cosmetic variant of the live
+ * address, a trailing slash, a `www.`, an `http://`, is the same site and fails an exact match,
+ * and the failure is silent and total: all 99 pages ship `noindex, nofollow` and robots.txt
+ * disallows everything, with nothing in the build, tsc, eslint or check able to see it. The
+ * asymmetry is the argument. Reading one variant as staging de-indexes the real site; reading one
+ * as production costs nothing, because a staging host never has the production hostname.
  */
-export const IS_PRODUCTION_HOST = SITE_URL === PRODUCTION_URL;
+const hostOf = (url: string) => {
+  try {
+    return new URL(url).host.replace(/^www\./, "").toLowerCase();
+  } catch {
+    return "";
+  }
+};
+export const IS_PRODUCTION_HOST = hostOf(SITE_URL) === hostOf(PRODUCTION_URL);
 
 export const SITEMAP: SiteNode = {
   title: "Home", path: "/", kind: "home",

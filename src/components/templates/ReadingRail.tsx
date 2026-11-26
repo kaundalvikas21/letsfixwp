@@ -30,6 +30,16 @@ export function ReadingRail() {
     if (found.length < 3) return;
     const headings = found.map((h) => h.textContent ?? "");
 
+    // The band's top edge: the header's measured height plus the same 2rem margin
+    // `scroll-padding-top` reserves in globals.css, so a heading the browser has just scrolled into
+    // place sits exactly at the edge rather than one the rail has already counted as passed.
+    //
+    // Measured and not written down. This was the literal `96`, commented "clears the 64px fixed
+    // header", and the header has since become `--header-h` at 5rem: the number went stale in
+    // silence and the rail began activating each heading 16px early. `offsetHeight` cannot drift
+    // with the token and needs no unit parsing.
+    const clearance = (document.querySelector("header")?.offsetHeight ?? 80) + 32;
+
     const io = new IntersectionObserver(
       () => {
         // The topmost heading currently inside the reading band wins. Measured from the live list
@@ -37,12 +47,14 @@ export function ReadingRail() {
         // on the right one, and one that crosses none keeps the section the reader is already in.
         const i = found.findIndex((h) => {
           const { top, bottom } = h.getBoundingClientRect();
-          return bottom > 96 && top < window.innerHeight * 0.45;
+          return bottom > clearance && top < window.innerHeight * 0.45;
         });
         setRail((prev) => ({ headings, active: i === -1 ? prev.active : i }));
       },
-      // 96px clears the 64px fixed header and the margin scroll-padding-top already reserves.
-      { rootMargin: "-96px 0px -55% 0px", threshold: [0, 1] },
+      // Clears the fixed header and the margin scroll-padding-top already reserves. Read from
+      // --header-h rather than restated as a literal: this was "96px for the 64px header" and the
+      // header has since become 5rem, so the rail was activating a heading 16px before it cleared.
+      { rootMargin: `-${clearance}px 0px -55% 0px`, threshold: [0, 1] },
     );
     found.forEach((h) => io.observe(h));
     return () => io.disconnect();

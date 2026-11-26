@@ -708,7 +708,19 @@ export function LinkCards({ items, cols = 2 }: { items: LinkCardItem[]; cols?: 2
   // the service page's "What we do" tiles and the hub's problem grid already use, for the same
   // reason: a card alone beside a hole reads as something the layout forgot.
   const across = n < 4 ? (n === 3 ? 2 : n) : cols;
-  const wideLast = across === 2 && n % 2 === 1;
+  // Odd at two across, whatever `cols` says. This read `across === 2`, which skipped every
+  // `cols={4}` set, and a four-across grid is still `sm:grid-cols-2` from 640 to 1279: the eleven
+  // service cards on /wordpress-fix/ left their last card alone beside a hole across that whole
+  // range, which is the failure the paragraph above says this exists to prevent. The span is handed
+  // back at `xl`, where four columns put three cards in that last row instead of one.
+  //
+  // Known and left: at `xl` a set of `n % 4 === 1` still ends on a lone card. No hub has one (the
+  // counts are 3, 4, 7, 8 and 11), so the case is theoretical; if one appears, span the remainder
+  // rather than widening this condition.
+  // `sm:col-span-2` closes the two-column gap; `xl:col-span-1` hands it back where the grid
+  // opens to four and the last row fills itself.
+  const wideLast = across >= 2 && n % 2 === 1;
+  const wide = wideLast && cn("sm:col-span-2", across === 4 && "xl:col-span-1");
   return (
     <ul className={cn("reveal grid items-stretch gap-4", across >= 2 && "sm:grid-cols-2", across === 4 && "xl:grid-cols-4")}>
       {items.map((i, index) => {
@@ -717,7 +729,7 @@ export function LinkCards({ items, cols = 2 }: { items: LinkCardItem[]; cols?: 2
           // `card-plate` draws the plate this card slides off, as a `::before` on this wrapper
           // rather than as an element in the card. See globals.css for why it cannot live on the
           // anchor, and Task 62 for why it is a utility rather than markup.
-          <li key={i.href} className={cn("card-plate", wideLast && index === n - 1 && "sm:col-span-2")}>
+          <li key={i.href} className={cn("card-plate", index === n - 1 && wide)}>
             <Link href={i.href} className={cn(cardLink, "flex h-full flex-col", i.banner && "isolate overflow-hidden")}>
               {/* The render is the card's background, not a strip across its top.
 

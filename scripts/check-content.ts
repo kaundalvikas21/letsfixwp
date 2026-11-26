@@ -66,7 +66,7 @@ for (const f of walkMd("src")) {
   readFileSync(f, "utf8")
     .split("\n")
     .forEach((line, i) => {
-      if (/[–—]/.test(line)) mdFail.push(`${f}:${i + 1} em/en dash`);
+      if (/[\u2013\u2014]/.test(line)) mdFail.push(`${f}:${i + 1} em/en dash`);
       if (banned.test(line)) mdFail.push(`${f}:${i + 1} banned word: ${line.match(banned)![0]}`);
     });
 }
