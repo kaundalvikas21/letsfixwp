@@ -42,3 +42,51 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# Build output that must never be reachable over HTTP, denied at the serving layer rather than trusted
+# to be unreachable.
+#
+# `publish` above is `.next`, which is correct only while the adapter runs: the plugin takes that
+# directory and serves the site out of functions, and none of these paths resolve. The first deploy of
+# this site is the case against assuming that holds. No adapter ran, `.next` was published as a plain
+# static directory, and its internals were served as files. `/prerender-manifest.json` is the one that
+# matters: it carries `previewModeId`, `previewModeSigningKey` and `previewModeEncryptionKey`, and those
+# three are enough to mint a valid bypass cookie, which turns the static and ISR cache off for every
+# request the holder sends. Next regenerates them per build, so the exposure ended with the next deploy,
+# but nothing noticed it at the time and nothing would notice a recurrence.
+#
+# `force = true` is the whole point: without it a published file of the same name wins over the rule, so
+# the rule would be inert in exactly the scenario it exists for. The paths listed are the ones that carry
+# a secret (`prerender-manifest.json`), the resolved server config (`required-server-files.json`, whose
+# `env` is empty today and would not be if anyone ever sets `env` in next.config.ts), or server code and
+# build cache (`/server/*`, `/cache/*`). The remaining root files in `.next` (BUILD_ID, the *-manifest.json
+# inventories, trace) are metadata rather than secrets, and Netlify's redirects take an exact path or a
+# trailing splat, never a mid-path glob, so denying each by name would be fifteen more blocks for no
+# secret. None of these paths collides with a route: all 26 built routes were checked against the list.
+#
+# This is a backstop, not the fix. The fix is the [[plugins]] declaration above, and this is what catches
+# it silently failing again.
+
+[[redirects]]
+  from = "/prerender-manifest.json"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/required-server-files.json"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/server/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/cache/*"
+  to = "/404.html"
+  status = 404
+  force = true
