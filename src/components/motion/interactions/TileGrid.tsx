@@ -22,6 +22,16 @@ const CAP = 9;
  * The problem grid: type to narrow it with the same matcher the site uses everywhere, or pick a
  * category. Tiles keep their place with a Motion layout animation so the eye can follow one tile
  * from the full grid into a filtered one. Reduced motion skips the animation and just re-renders.
+ *
+ * **The one file in this folder that still imports `motion` rather than `m`, and the only one
+ * allowed to.** `layout` below is layout projection, which `domAnimation` does not carry; `m`
+ * inside `MotionFeatures` would render the tiles and animate nothing. The alternative is a second
+ * `LazyMotion` boundary on `domMax` for one component, which is the projection engine either way
+ * plus a second feature set to keep straight. So the full import stays here and is paid for on the
+ * one route that renders this, through `ProblemTiles`, instead of in the shared chunk.
+ *
+ * `check:motion` knows about this file by name. A second `motion.*` anywhere under
+ * src/components/motion/ fails the check rather than quietly joining it.
  */
 export function TileGrid({ tiles, categories }: { tiles: Tile[]; categories: string[] }) {
   const [query, setQuery] = useState("");

@@ -1,7 +1,8 @@
 "use client";
 
 import { CaretDownIcon } from "@phosphor-icons/react/ssr";
-import { AnimatePresence, motion, MotionConfig, useReducedMotion } from "motion/react";
+import { MotionFeatures } from "../MotionFeatures";
+import { AnimatePresence, m, MotionConfig, useReducedMotion } from "motion/react";
 import { Tabs } from "radix-ui";
 import { useId, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -47,95 +48,98 @@ export function FaqTabs({ groups }: { groups: FaqGroup[] }) {
   const toggle = (q: string) => setOpen((o) => (o.includes(q) ? o.filter((x) => x !== q) : [...o, q]));
 
   return (
-    <MotionConfig reducedMotion="user">
-      <Tabs.Root
-        value={tab}
-        onValueChange={setTab}
-        orientation="vertical"
-        className="mt-10 md:mt-12 md:grid md:grid-cols-[14rem_minmax(0,48rem)] md:items-start md:gap-12"
-      >
-        <Tabs.List aria-label="Question categories" className="relative isolate flex flex-col">
-          {/* Behind the labels, so a focus ring on any row still draws over it. */}
-          <span
-            aria-hidden
-            style={{ transform: `translateY(${active * ROW}px)` }}
-            className="absolute inset-x-0 top-0 -z-10 h-12 rounded-[14px] bg-surface-2 transition-transform duration-[240ms] ease-[var(--motion-ease)] motion-reduce:transition-none"
-          />
+    // `m` renders nothing outside a feature set, so this boundary is required, not packaging.
+    <MotionFeatures>
+      <MotionConfig reducedMotion="user">
+        <Tabs.Root
+          value={tab}
+          onValueChange={setTab}
+          orientation="vertical"
+          className="mt-10 md:mt-12 md:grid md:grid-cols-[14rem_minmax(0,48rem)] md:items-start md:gap-12"
+        >
+          <Tabs.List aria-label="Question categories" className="relative isolate flex flex-col">
+            {/* Behind the labels, so a focus ring on any row still draws over it. */}
+            <span
+              aria-hidden
+              style={{ transform: `translateY(${active * ROW}px)` }}
+              className="absolute inset-x-0 top-0 -z-10 h-12 rounded-[14px] bg-surface-2 transition-transform duration-[240ms] ease-[var(--motion-ease)] motion-reduce:transition-none"
+            />
+            {groups.map((g) => (
+              <Tabs.Trigger
+                key={g.id}
+                value={g.id}
+                className="flex h-12 cursor-pointer items-center rounded-[14px] px-4 text-left text-[15px] font-medium text-muted transition-[color,scale] duration-150 ease-out active:scale-[0.98] data-[state=active]:text-accent-text motion-reduce:transition-none"
+              >
+                {g.name}
+              </Tabs.Trigger>
+            ))}
+          </Tabs.List>
+
           {groups.map((g) => (
-            <Tabs.Trigger
+            <Tabs.Content
               key={g.id}
               value={g.id}
-              className="flex h-12 cursor-pointer items-center rounded-[14px] px-4 text-left text-[15px] font-medium text-muted transition-[color,scale] duration-150 ease-out active:scale-[0.98] data-[state=active]:text-accent-text motion-reduce:transition-none"
+              // Radix mounts only the open category, so this plays on every switch: the answers arrive
+              // rather than replacing each other in place.
+              className="mt-8 divide-y divide-line border-y border-line md:mt-0 motion-safe:animate-[rise_320ms_var(--ease-spring)]"
             >
-              {g.name}
-            </Tabs.Trigger>
+              {g.faqs.map((f) => {
+                const isOpen = open.includes(f.q);
+                const key = f.q.replace(/\W+/g, "-");
+                const panelId = `${id}-${key}`;
+                const labelId = `${id}-${key}-q`;
+                return (
+                  <div key={f.q}>
+                    <h3>
+                      <button
+                        type="button"
+                        id={labelId}
+                        aria-expanded={isOpen}
+                        // Only while the panel exists. `AnimatePresence` unmounts a closed answer, so
+                        // a permanent `aria-controls` points at an element that is not in the document
+                        // for every collapsed question, which is what `aria-valid-attr-value` fails on.
+                        // `aria-expanded` carries the state either way; `aria-controls` is optional.
+                        aria-controls={isOpen ? panelId : undefined}
+                        onClick={() => toggle(f.q)}
+                        className="group flex w-full cursor-pointer items-center justify-between gap-4 py-5 text-left font-display text-lg font-bold"
+                      >
+                        {f.q}
+                        <m.span
+                          animate={{ rotate: isOpen ? 180 : 0 }}
+                          transition={reduce ? { duration: 0 } : spring}
+                          className={cn(
+                            "shrink-0 transition-colors duration-150 ease-out",
+                            isOpen ? "text-accent-text" : "text-muted group-hover:text-accent-text",
+                          )}
+                        >
+                          <CaretDownIcon weight="duotone" className="size-5" aria-hidden />
+                        </m.span>
+                      </button>
+                    </h3>
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <m.div
+                          key="panel"
+                          id={panelId}
+                          role="region"
+                          aria-labelledby={labelId}
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={reduce ? { duration: 0 } : spring}
+                          className="overflow-hidden"
+                        >
+                          <p className="max-w-[68ch] pb-6 text-muted">{f.a}</p>
+                        </m.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
+            </Tabs.Content>
           ))}
-        </Tabs.List>
-
-        {groups.map((g) => (
-          <Tabs.Content
-            key={g.id}
-            value={g.id}
-            // Radix mounts only the open category, so this plays on every switch: the answers arrive
-            // rather than replacing each other in place.
-            className="mt-8 divide-y divide-line border-y border-line md:mt-0 motion-safe:animate-[rise_320ms_var(--ease-spring)]"
-          >
-            {g.faqs.map((f) => {
-              const isOpen = open.includes(f.q);
-              const key = f.q.replace(/\W+/g, "-");
-              const panelId = `${id}-${key}`;
-              const labelId = `${id}-${key}-q`;
-              return (
-                <div key={f.q}>
-                  <h3>
-                    <button
-                      type="button"
-                      id={labelId}
-                      aria-expanded={isOpen}
-                      // Only while the panel exists. `AnimatePresence` unmounts a closed answer, so
-                      // a permanent `aria-controls` points at an element that is not in the document
-                      // for every collapsed question, which is what `aria-valid-attr-value` fails on.
-                      // `aria-expanded` carries the state either way; `aria-controls` is optional.
-                      aria-controls={isOpen ? panelId : undefined}
-                      onClick={() => toggle(f.q)}
-                      className="group flex w-full cursor-pointer items-center justify-between gap-4 py-5 text-left font-display text-lg font-bold"
-                    >
-                      {f.q}
-                      <motion.span
-                        animate={{ rotate: isOpen ? 180 : 0 }}
-                        transition={reduce ? { duration: 0 } : spring}
-                        className={cn(
-                          "shrink-0 transition-colors duration-150 ease-out",
-                          isOpen ? "text-accent-text" : "text-muted group-hover:text-accent-text",
-                        )}
-                      >
-                        <CaretDownIcon weight="duotone" className="size-5" aria-hidden />
-                      </motion.span>
-                    </button>
-                  </h3>
-                  <AnimatePresence initial={false}>
-                    {isOpen && (
-                      <motion.div
-                        key="panel"
-                        id={panelId}
-                        role="region"
-                        aria-labelledby={labelId}
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={reduce ? { duration: 0 } : spring}
-                        className="overflow-hidden"
-                      >
-                        <p className="max-w-[68ch] pb-6 text-muted">{f.a}</p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              );
-            })}
-          </Tabs.Content>
-        ))}
-      </Tabs.Root>
-    </MotionConfig>
+        </Tabs.Root>
+      </MotionConfig>
+    </MotionFeatures>
   );
 }

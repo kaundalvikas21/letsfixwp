@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion, useSpring } from "motion/react";
+import { m, useReducedMotion, useSpring } from "motion/react";
+import { MotionFeatures } from "../MotionFeatures";
 import { useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 
 const COARSE = "(pointer: coarse)";
@@ -37,28 +38,31 @@ export function TiltSlab({ children }: { children: ReactNode }) {
   const rotateY = useSpring(REST.y, SPRING);
 
   return (
-    <div
-      aria-hidden
-      className="grid h-full min-h-44 place-items-center [perspective:50rem]"
-      onPointerMove={(e) => {
-        if (off) return;
-        const r = e.currentTarget.getBoundingClientRect();
-        const px = (e.clientX - r.left) / r.width - 0.5;
-        const py = (e.clientY - r.top) / r.height - 0.5;
-        rotateY.set(REST.y + px * 2 * REACH.y);
-        rotateX.set(REST.x - py * 2 * REACH.x);
-      }}
-      onPointerLeave={() => {
-        rotateX.set(REST.x);
-        rotateY.set(REST.y);
-      }}
-    >
-      <motion.div className="tilt-slab" style={off ? { rotateX: REST.x, rotateY: REST.y } : { rotateX, rotateY }}>
-        {Array.from({ length: SLICES }, (_, i) => (
-          <span key={i} data-slice style={{ "--n": SLICES - i } as CSSProperties} />
-        ))}
-        <span data-face>{children}</span>
-      </motion.div>
-    </div>
+    // `m` renders nothing outside a feature set, so this boundary is required, not packaging.
+    <MotionFeatures>
+      <div
+        aria-hidden
+        className="grid h-full min-h-44 place-items-center [perspective:50rem]"
+        onPointerMove={(e) => {
+          if (off) return;
+          const r = e.currentTarget.getBoundingClientRect();
+          const px = (e.clientX - r.left) / r.width - 0.5;
+          const py = (e.clientY - r.top) / r.height - 0.5;
+          rotateY.set(REST.y + px * 2 * REACH.y);
+          rotateX.set(REST.x - py * 2 * REACH.x);
+        }}
+        onPointerLeave={() => {
+          rotateX.set(REST.x);
+          rotateY.set(REST.y);
+        }}
+      >
+        <m.div className="tilt-slab" style={off ? { rotateX: REST.x, rotateY: REST.y } : { rotateX, rotateY }}>
+          {Array.from({ length: SLICES }, (_, i) => (
+            <span key={i} data-slice style={{ "--n": SLICES - i } as CSSProperties} />
+          ))}
+          <span data-face>{children}</span>
+        </m.div>
+      </div>
+    </MotionFeatures>
   );
 }

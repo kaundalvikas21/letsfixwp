@@ -1,7 +1,8 @@
 "use client";
 
 import { CaretDownIcon } from "@phosphor-icons/react/ssr";
-import { motion, useReducedMotion } from "motion/react";
+import { MotionFeatures } from "../MotionFeatures";
+import { m, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { useId, useState } from "react";
 import { BookLink, ChatButton } from "@/components/Cta";
@@ -43,143 +44,146 @@ export function MegaMenu({
   };
 
   return (
-    <>
-      <nav
-        aria-label="All pages"
-        className="flex-1 overflow-auto px-4 pb-10 md:px-6"
-      >
-        <motion.ul
-          initial="hidden"
-          animate="shown"
-          variants={{
-            shown: { transition: { staggerChildren: reduce ? 0 : 0.05 } },
-          }}
-          className="relative mx-auto max-w-5xl"
+    // `m` renders nothing outside a feature set, so this boundary is required, not packaging.
+    <MotionFeatures>
+      <>
+        <nav
+          aria-label="All pages"
+          className="flex-1 overflow-auto px-4 pb-10 md:px-6"
         >
-          {categories.map((c, i) => (
-            <li
-              key={c.href}
-              onPointerEnter={(e) => e.pointerType === "mouse" && choose(i)}
-              className="border-b border-line last:border-0 md:w-[52%] md:border-0 md:py-2"
-            >
-              {/* The reveal animates this wrapper, never the row. A transform makes an element the
-                  containing block for its absolutely positioned descendants, so animating the row made
-                  the panel resolve against the 52%-wide row for the length of the animation and then
-                  jump to its real place the frame Motion wrote `transform: none`. Measured before the
-                  fix: panel at x=426 w=234 until 719ms, x=701 w=451 from 785ms. */}
-              <motion.div
-                variants={{
-                  hidden: { opacity: 0, y: reduce ? 0 : 24 },
-                  shown: {
-                    opacity: 1,
-                    y: 0,
-                    transition: reduce ? { duration: 0.16 } : spring,
-                  },
-                }}
+          <m.ul
+            initial="hidden"
+            animate="shown"
+            variants={{
+              shown: { transition: { staggerChildren: reduce ? 0 : 0.05 } },
+            }}
+            className="relative mx-auto max-w-5xl"
+          >
+            {categories.map((c, i) => (
+              <li
+                key={c.href}
+                onPointerEnter={(e) => e.pointerType === "mouse" && choose(i)}
+                className="border-b border-line last:border-0 md:w-[52%] md:border-0 md:py-2"
               >
-                {/* Phone: a disclosure, so all six categories fit on one screen until one is asked for. */}
-                <button
-                  type="button"
-                  aria-expanded={i === active && touched}
-                  aria-controls={`${id}-${i}`}
-                  onClick={() => choose(i === active && touched ? -1 : i)}
-                  style={{ fontVariationSettings: '"opsz" 36' }}
-                  className="flex w-full items-center justify-between gap-4 py-4 text-left font-display text-4xl leading-[1.05] font-extrabold tracking-[-0.04em] md:hidden"
+                {/* The reveal animates this wrapper, never the row. A transform makes an element the
+                    containing block for its absolutely positioned descendants, so animating the row made
+                    the panel resolve against the 52%-wide row for the length of the animation and then
+                    jump to its real place the frame Motion wrote `transform: none`. Measured before the
+                    fix: panel at x=426 w=234 until 719ms, x=701 w=451 from 785ms. */}
+                <m.div
+                  variants={{
+                    hidden: { opacity: 0, y: reduce ? 0 : 24 },
+                    shown: {
+                      opacity: 1,
+                      y: 0,
+                      transition: reduce ? { duration: 0.16 } : spring,
+                    },
+                  }}
                 >
-                  {c.label}
-                  <CaretDownIcon
-                    weight="duotone"
-                    aria-hidden
-                    className={cn(
-                      "size-6 shrink-0 text-accent-text transition-[rotate] duration-200 ease-out motion-reduce:transition-none",
-                      i === active && touched && "rotate-180",
-                    )}
-                  />
-                </button>
-                {/* Pointer: the category is a link, and hover or focus opens its panel beside it. */}
-                <Link
-                  href={c.href}
-                  onClick={onNavigate}
-                  onFocus={() => choose(i)}
-                  style={{ fontVariationSettings: '"opsz" 48' }}
-                  className={cn(
-                    "hidden font-display text-5xl leading-[1.05] font-extrabold tracking-[-0.04em] md:block",
-                    i === active && "md:text-accent-text",
-                  )}
-                >
-                  {c.label}
-                </Link>
-              </motion.div>
-              <ul
-                id={`${id}-${i}`}
-                // Tabbing into the links keeps the row open; on a phone this re-selects the row that
-                // is already open, which changes nothing.
-                onFocus={() => choose(i)}
-                className={cn(
-                  "space-y-2 pb-4 md:absolute md:top-0 md:right-0 md:w-[44%] md:pb-0",
-                  i === active
-                    ? touched
-                      ? "block"
-                      : "hidden md:block"
-                    : "hidden",
-                )}
-              >
-                {/* The hub itself, which the heading links to on a pointer and cannot on a phone. */}
-                <li className="md:hidden">
+                  {/* Phone: a disclosure, so all six categories fit on one screen until one is asked for. */}
+                  <button
+                    type="button"
+                    aria-expanded={i === active && touched}
+                    aria-controls={`${id}-${i}`}
+                    onClick={() => choose(i === active && touched ? -1 : i)}
+                    style={{ fontVariationSettings: '"opsz" 36' }}
+                    className="flex w-full items-center justify-between gap-4 py-4 text-left font-display text-4xl leading-[1.05] font-extrabold tracking-[-0.04em] md:hidden"
+                  >
+                    {c.label}
+                    <CaretDownIcon
+                      weight="duotone"
+                      aria-hidden
+                      className={cn(
+                        "size-6 shrink-0 text-accent-text transition-[rotate] duration-200 ease-out motion-reduce:transition-none",
+                        i === active && touched && "rotate-180",
+                      )}
+                    />
+                  </button>
+                  {/* Pointer: the category is a link, and hover or focus opens its panel beside it. */}
                   <Link
                     href={c.href}
                     onClick={onNavigate}
-                    className="flex min-h-11 items-center font-semibold text-accent-text"
+                    onFocus={() => choose(i)}
+                    style={{ fontVariationSettings: '"opsz" 48' }}
+                    className={cn(
+                      "hidden font-display text-5xl leading-[1.05] font-extrabold tracking-[-0.04em] md:block",
+                      i === active && "md:text-accent-text",
+                    )}
                   >
-                    All {c.label.toLowerCase()}
+                    {c.label}
                   </Link>
-                </li>
-                {c.links.map((l) => (
-                  <li key={l.href}>
+                </m.div>
+                <ul
+                  id={`${id}-${i}`}
+                  // Tabbing into the links keeps the row open; on a phone this re-selects the row that
+                  // is already open, which changes nothing.
+                  onFocus={() => choose(i)}
+                  className={cn(
+                    "space-y-2 pb-4 md:absolute md:top-0 md:right-0 md:w-[44%] md:pb-0",
+                    i === active
+                      ? touched
+                        ? "block"
+                        : "hidden md:block"
+                      : "hidden",
+                  )}
+                >
+                  {/* The hub itself, which the heading links to on a pointer and cannot on a phone. */}
+                  <li className="md:hidden">
                     <Link
-                      href={l.href}
+                      href={c.href}
                       onClick={onNavigate}
-                      className="flex min-h-11 items-center text-muted hover:text-text"
+                      className="flex min-h-11 items-center font-semibold text-accent-text"
                     >
-                      {l.label}
+                      All {c.label.toLowerCase()}
                     </Link>
                   </li>
-                ))}
-              </ul>
-            </li>
-          ))}
-        </motion.ul>
-      </nav>
-
-      <div className="shrink-0 border-t border-line px-4 py-4 md:px-6">
-        <div className="mx-auto flex max-w-5xl flex-col gap-4 md:flex-row md:items-center">
-          <ul className="flex flex-wrap items-center gap-x-5 gap-y-1">
-            {support.map((l) => (
-              <li key={l.href}>
-                <Link
-                  href={l.href}
-                  onClick={onNavigate}
-                  className="flex min-h-11 items-center text-[15px] text-muted hover:text-text"
-                >
-                  {l.label}
-                </Link>
+                  {c.links.map((l) => (
+                    <li key={l.href}>
+                      <Link
+                        href={l.href}
+                        onClick={onNavigate}
+                        className="flex min-h-11 items-center text-muted hover:text-text"
+                      >
+                        {l.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </li>
             ))}
-          </ul>
-          <div className="flex items-center gap-2 md:ml-auto">
-            <ChatButton
-              location="menu"
-              className="btn-secondary flex-1 md:flex-none"
-              onClick={onNavigate}
-            />
-            <BookLink
-              location="menu"
-              className="btn-primary flex-1 md:flex-none"
-              onClick={onNavigate}
-            />
+          </m.ul>
+        </nav>
+
+        <div className="shrink-0 border-t border-line px-4 py-4 md:px-6">
+          <div className="mx-auto flex max-w-5xl flex-col gap-4 md:flex-row md:items-center">
+            <ul className="flex flex-wrap items-center gap-x-5 gap-y-1">
+              {support.map((l) => (
+                <li key={l.href}>
+                  <Link
+                    href={l.href}
+                    onClick={onNavigate}
+                    className="flex min-h-11 items-center text-[15px] text-muted hover:text-text"
+                  >
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <div className="flex items-center gap-2 md:ml-auto">
+              <ChatButton
+                location="menu"
+                className="btn-secondary flex-1 md:flex-none"
+                onClick={onNavigate}
+              />
+              <BookLink
+                location="menu"
+                className="btn-primary flex-1 md:flex-none"
+                onClick={onNavigate}
+              />
+            </div>
           </div>
         </div>
-      </div>
-    </>
+      </>
+    </MotionFeatures>
   );
 }

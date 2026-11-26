@@ -1,7 +1,8 @@
 "use client";
 
 import { ChatCircleIcon } from "@phosphor-icons/react/ssr";
-import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
+import { MotionFeatures } from "../MotionFeatures";
+import { AnimatePresence, m, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -69,14 +70,22 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
   // ours is fixed from the first pixel and never leaves, so there is no bar to slide, only this
   // panel. `top` would be wrong here anyway: it is not compositor-animatable, so it would relayout
   // a full-width fixed overlay every frame at first paint on all 99 routes, and contract rule 10
-  // allows transform and opacity only. -64 is the bar's own height, so at rest the panel sits
-  // exactly one bar above the viewport and is never caught half-drawn across the type. The spring
-  // is the site's one spring, so an 8px switch reads as a slide and a settle rather than a snap.
+  // allows transform and opacity only. At rest the panel sits exactly one bar above the viewport,
+  // so it is never caught half-drawn across the type. The spring is the site's one spring, so an
+  // 8px switch reads as a slide and a settle rather than a snap.
+  //
+  // `-100%` of the panel's own height and not a pixel count. This was `-64`, commented "the bar's
+  // own height", and the bar has since become `--header-h` at 5rem: the panel then rested 16px
+  // inside the viewport and its `border-b` drew a hairline sliding down the page, which is exactly
+  // what the paragraph above says cannot happen. A percentage is the height, whatever the token
+  // says. The spring still runs on a number, 0 to 1, because `useSpring` has no physics for a
+  // string; the percentage is mapped after it settles.
   //
   // What it communicates: the page has left the hero, and this is now a surface over content.
   const reduce = useReducedMotion();
   const backdrop = useTransform(scrollY, [0, 8], [0, 1]);
-  const slide = useSpring(useTransform(scrollY, [0, 8], [-64, 0]), { stiffness: 100, damping: 20 });
+  const settle = useSpring(useTransform(scrollY, [0, 8], [0, 1]), { stiffness: 100, damping: 20 });
+  const slide = useTransform(settle, (v) => `${(v - 1) * 100}%`);
 
   // The bar waits for the reader to leave the first screen. Until then the hero's own CTA is on
   // screen and the bar would be the same words a second time, sitting on top of them: the state the
@@ -89,61 +98,64 @@ export function NavBar({ categories, support }: { categories: MenuCategory[]; su
   const close = () => setOpen(false);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <header data-action-bar={actionBar ? "" : undefined} className="fixed inset-x-0 top-0 z-40 h-[var(--header-h)]">
-        <motion.div aria-hidden style={{ opacity: backdrop, y: reduce ? 0 : slide }} className="nav-blur absolute inset-0 border-b border-line" />
-        <div className="relative mx-auto flex h-[var(--header-h)] w-full max-w-page items-center gap-2 px-4 md:px-6">
-          <MarkLink />
-          <div className="ml-auto flex items-center gap-2">
-            <CommandPalette />
-            {/* Under 768px the bottom bar carries BOOK, so the bar does not show it twice. */}
-            <BookLink location="nav" className="btn-primary hidden md:inline-flex" />
-            <DialogTrigger className="btn-secondary gap-2.5">
-              <Rules />
-              Menu
-            </DialogTrigger>
+    // `m` renders nothing outside a feature set, so this boundary is required, not packaging.
+    <MotionFeatures>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <header data-action-bar={actionBar ? "" : undefined} className="fixed inset-x-0 top-0 z-40 h-[var(--header-h)]">
+          <m.div aria-hidden style={{ opacity: backdrop, y: reduce ? 0 : slide }} className="nav-blur absolute inset-0 border-b border-line" />
+          <div className="relative mx-auto flex h-[var(--header-h)] w-full max-w-page items-center gap-2 px-4 md:px-6">
+            <MarkLink />
+            <div className="ml-auto flex items-center gap-2">
+              <CommandPalette />
+              {/* Under 768px the bottom bar carries BOOK, so the bar does not show it twice. */}
+              <BookLink location="nav" className="btn-primary hidden md:inline-flex" />
+              <DialogTrigger className="btn-secondary gap-2.5">
+                <Rules />
+                Menu
+              </DialogTrigger>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <DialogContent
-        showCloseButton={false}
-        className="inset-0 top-0 left-0 flex h-dvh w-full max-w-none translate-x-0 flex-col rounded-none border-0 bg-bg p-0 shadow-none motion-safe:data-[state=open]:animate-[fade-in_160ms_ease-out]"
-      >
-        <DialogTitle className="sr-only">Menu</DialogTitle>
-        <DialogDescription className="sr-only">Everything on the site, by what has gone wrong</DialogDescription>
-        <div className="mx-auto flex h-[var(--header-h)] w-full max-w-page shrink-0 items-center gap-2 px-4 md:px-6">
-          <MarkLink onClick={close} />
-          <button type="button" onClick={close} className="btn-secondary ml-auto gap-2.5">
-            <Rules crossed />
-            Close
-          </button>
-        </div>
-        <MegaMenu categories={categories} support={support} onNavigate={close} />
-      </DialogContent>
+        <DialogContent
+          showCloseButton={false}
+          className="inset-0 top-0 left-0 flex h-dvh w-full max-w-none translate-x-0 flex-col rounded-none border-0 bg-bg p-0 shadow-none motion-safe:data-[state=open]:animate-[fade-in_160ms_ease-out]"
+        >
+          <DialogTitle className="sr-only">Menu</DialogTitle>
+          <DialogDescription className="sr-only">Everything on the site, by what has gone wrong</DialogDescription>
+          <div className="mx-auto flex h-[var(--header-h)] w-full max-w-page shrink-0 items-center gap-2 px-4 md:px-6">
+            <MarkLink onClick={close} />
+            <button type="button" onClick={close} className="btn-secondary ml-auto gap-2.5">
+              <Rules crossed />
+              Close
+            </button>
+          </div>
+          <MegaMenu categories={categories} support={support} onNavigate={close} />
+        </DialogContent>
 
-      <AnimatePresence>
-        {actionBar && !open && pastFirstScreen && (
-          // A landmark, so the bar is not page content sitting outside one (axe: region).
-          //
-          // It arrives from under the fold on its own height, so the travel is right at any text
-          // size and is a transform, which is all rule 10 allows. Reduced motion cross-fades in
-          // place: the arrival is information, not decoration, so it still happens.
-          <motion.nav
-            key="action-bar"
-            aria-label="Quick actions"
-            initial={reduce ? { opacity: 0 } : { opacity: 0, y: "100%" }}
-            animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0 }}
-            exit={reduce ? { opacity: 0 } : { opacity: 0, y: "100%" }}
-            transition={{ duration: reduce ? 0 : duration.smallUi, ease: [...easing] }}
-            className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-line bg-surface px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:hidden"
-          >
-            <BookLink location="bottom-bar" className="btn-primary h-12 flex-1" />
-            <ChatIconButton />
-          </motion.nav>
-        )}
-      </AnimatePresence>
-    </Dialog>
+        <AnimatePresence>
+          {actionBar && !open && pastFirstScreen && (
+            // A landmark, so the bar is not page content sitting outside one (axe: region).
+            //
+            // It arrives from under the fold on its own height, so the travel is right at any text
+            // size and is a transform, which is all rule 10 allows. Reduced motion cross-fades in
+            // place: the arrival is information, not decoration, so it still happens.
+            <m.nav
+              key="action-bar"
+              aria-label="Quick actions"
+              initial={reduce ? { opacity: 0 } : { opacity: 0, y: "100%" }}
+              animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0 }}
+              exit={reduce ? { opacity: 0 } : { opacity: 0, y: "100%" }}
+              transition={{ duration: reduce ? 0 : duration.smallUi, ease: [...easing] }}
+              className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-line bg-surface px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:hidden"
+            >
+              <BookLink location="bottom-bar" className="btn-primary h-12 flex-1" />
+              <ChatIconButton />
+            </m.nav>
+          )}
+        </AnimatePresence>
+      </Dialog>
+    </MotionFeatures>
   );
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "motion/react";
+import { m, useScroll, useTransform } from "motion/react";
+import { MotionFeatures } from "../MotionFeatures";
 import { useRef, type ReactNode } from "react";
 
 /**
@@ -17,10 +18,13 @@ export function ZoomImage({ children }: { children: ReactNode }) {
   const scale = useTransform(scrollYProgress, [0, 1], [0.7, 1]);
 
   return (
-    <div ref={ref} className="mt-10">
-      <motion.div style={{ scale }} className="origin-center motion-reduce:transform-none!">
-        {children}
-      </motion.div>
-    </div>
+    // `m` renders nothing outside a feature set, so this boundary is required, not packaging.
+    <MotionFeatures>
+      <div ref={ref} className="mt-10">
+        <m.div style={{ scale }} className="origin-center motion-reduce:transform-none!">
+          {children}
+        </m.div>
+      </div>
+    </MotionFeatures>
   );
 }

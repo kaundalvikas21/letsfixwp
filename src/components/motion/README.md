@@ -32,6 +32,7 @@ They are also Server Components, so wrapping a section does not make it a client
 (rule 6), and they ship no JavaScript of their own.
 
 Everything else in the folder is Motion inside `LazyMotion` + `domAnimation`, using `m` components.
+`TileGrid` is the exception, for layout projection, and `check:motion` is what keeps that list at one.
 `Marquee` is a third case: plain CSS, because a linear loop that never gets interrupted runs better
 off the main thread. Each exception is argued in its own file's doc comment.
 

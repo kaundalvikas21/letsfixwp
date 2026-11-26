@@ -7,6 +7,12 @@
  *    two at build time, so this compares them and says which declaration is stale.
  * 2. **One place that imports Motion.** Brief rule: no page or section may import `motion/react`.
  *    Anything outside `src/components/motion/` that does is reported with its line.
+ * 3. **`m` inside the folder, never `motion`.** `MotionFeatures` exists so the bundle carries
+ *    `domAnimation` and not the full feature set, and a single `motion.*` component anywhere in the
+ *    boundary pulls the whole thing back in. `MotionFeatures` claimed this script checked that and
+ *    it did not: every file under `interactions/` used `motion.*`, including `NavBar` and
+ *    `MegaMenu`, which `SiteShell` puts on all 99 routes, so the arrangement bought nothing
+ *    anywhere. `TileGrid` is the one exception and is named below with the reason.
  *
  * Deliberately a string comparison rather than a CSS parse: the values are five literals and a
  * parser would be more code than the thing it checks.
@@ -50,13 +56,25 @@ const walk = (dir: string): string[] =>
   });
 
 const motionDir = join("src", "components", "motion") + sep;
+
+// `layout` is layout projection, which domAnimation does not carry, so this one file keeps the full
+// import. Its doc comment argues it. Anything else here is a regression, not a second exception.
+const FULL_MOTION_ALLOWED = new Set([join("src", "components", "motion", "interactions", "TileGrid.tsx")]);
+
+// Inside the folder the rule is "no motion.* component"; outside it, "no motion/react import".
+// One pass, one rule per file, chosen by where the file sits.
 for (const file of walk("src")) {
-  if (file.startsWith(motionDir)) continue;
-  const lines = readFileSync(file, "utf8").split("\n");
-  lines.forEach((line, i) => {
-    if (/^\s*import .*from ["']motion\/react["']/.test(line) || /from ["']framer-motion["']/.test(line))
-      fail.push(`${file}:${i + 1} imports Motion directly; use @/components/motion`);
-  });
+  if (FULL_MOTION_ALLOWED.has(file)) continue;
+  const inside = file.startsWith(motionDir);
+  // The second arm is deliberately two alternatives and not one anchored group: the framer-motion
+  // half never required a leading `import`, so it also catches a re-export or a dynamic import.
+  const offence = inside ? /<\/?motion\./ : /^\s*import .*from ["']motion\/react["']|from ["']framer-motion["']/;
+  const message = inside ? "uses a motion.* component; use m.* inside MotionFeatures" : "imports Motion directly; use @/components/motion";
+  readFileSync(file, "utf8")
+    .split("\n")
+    .forEach((line, i) => {
+      if (offence.test(line)) fail.push(`${file}:${i + 1} ${message}`);
+    });
 }
 
 assert.deepStrictEqual(fail, [], `\n  ${fail.join("\n  ")}\n`);
