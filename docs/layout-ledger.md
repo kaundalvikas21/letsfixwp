@@ -10264,3 +10264,100 @@ When it arrives it is clear of the hero's buttons at both sizes.
 it showing.
 
 **Not run:** no pass on a physical iOS device.
+
+## v4 / the stat strips lose their edge exceptions (Task 105)
+
+The owner, with a screenshot of the About strip and an arrow at the left of `500+`: the first count has
+no left spacing, the other three do, make it match.
+
+### What changed
+
+Three strips carried `first:pl-0 last:pr-0` on top of their cell padding, so the outermost cells had a
+gutter on one side only. The intent was that the first numeral align optically with the page spine, the
+same left edge as the headings above it. That reasoning holds for a bare numeral on a bare background.
+It stops holding on the About strip, where each cell is a `HoverFill` and the hover state paints a box
+around the text: against a painted edge, zero padding reads as a missing gutter, not as alignment.
+
+The pair is gone from all three. Only the shared padding is left, so every cell is inset equally on both
+sides.
+
+| File | Was | Now |
+| --- | --- | --- |
+| `src/app/about/page.tsx` | `lg:px-6 lg:first:pl-0 lg:last:pr-0` | `lg:px-6` |
+| `src/app/guides/page.tsx` | `sm:px-5 sm:first:pl-0 sm:last:pr-0` | `sm:px-5` |
+| `src/components/templates/CityTemplates.tsx` | `sm:px-5 sm:first:pl-0 sm:last:pr-0` | `sm:px-5` |
+
+Guides and the city hub were changed with About rather than after it: the three are the same instrument
+in three sizes, and leaving two of them flush would have made the exception look like a bug on those
+pages instead of a decision on this one.
+
+Accepted and deliberate: `500+` no longer lines up with the spine. The owner asked for the gutter.
+
+### Measurements
+
+Computed `padding-left` / `padding-right` per cell, in a real browser.
+
+| Page | Width | Cells | Padding |
+| --- | --- | --- | --- |
+| `/about/` | 1440 | 4 | 24px / 24px on all four |
+| `/guides/` | 1440 | 3 | 20px / 20px on all three |
+| `/wordpress-development/cities/` | 1440 | 2 | 20px / 20px on both |
+| `/about/` | below `lg` | 4 | 0 / 0 on all four, unchanged: the cells stack full width |
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check ok, motion check clean, build 99 routes, route test ok.
+
+## v4 / the About strip is two across on a phone (Task 106)
+
+The owner, from a phone, on the strip Task 105 had just evened out: the counts should sit two to a
+row with the same left and right spacing they have on desktop, not stacked one per row.
+
+### What changed
+
+The strip was one column below `sm`, two from `sm`, four from `lg`, and it only took horizontal
+padding at `lg`. So on a phone it was four numerals down the page, each flush to the page gutter,
+with nothing beside any of them. Four counts in a single column is a list; the thing that makes this
+an instrument is reading one figure against another, which needs a neighbour.
+
+| | Was | Now |
+| --- | --- | --- |
+| Strip | `grid border-t sm:grid-cols-2 lg:grid-cols-4 lg:divide-x` | `grid grid-cols-2 border-t lg:grid-cols-4 lg:divide-x` |
+| Cell | `border-b py-5 lg:border-b-0 lg:px-6` | `border-b px-4 py-5 max-lg:even:border-l lg:border-b-0 lg:px-6` |
+
+Two columns now start at the narrowest width rather than at `sm`, and `px-4` runs from the base up,
+stepping to `px-6` at `lg`. `px-4` and not `px-6`: the cell is 171.5px wide at 375, and 24px a side
+would leave 123px for a 36px numeral and a two-line label.
+
+### The column rule is not `divide-x`
+
+`divide-x` borders the inline end of every child but the last. In a four-across row that draws the
+three dividers you want. In a two-across grid it also borders the third cell, which is the first
+cell of the second row, so the line lands on the strip's own left edge with nothing to its left.
+`max-lg:even:border-l` instead borders the left of the right-hand column only, which is correct in a
+two-column grid at any number of rows.
+
+The `max-lg:` cap is load-bearing and was found by measuring, not by reading. Unscoped,
+`even:border-l` survives into `lg`, where `divide-x` has already put a border on the *end* of cells
+1-3: cells 2 and 4 then carry a left border against a neighbour's right border, and two of the three
+desktop dividers render at 2px while the middle one stays at 1px.
+
+### Measurements
+
+Computed per cell, in a real browser, after the cap was added.
+
+| Width | Columns | Padding | Vertical rules | Horizontal rules |
+| --- | --- | --- | --- | --- |
+| 375 | 2 (171.5px each) | 16px / 16px | 1px, on cells 2 and 4 only | 1px under each row |
+| 768 | 2 | 16px / 16px | 1px, on cells 2 and 4 only | 1px under each row |
+| 1440 | 4 | 24px / 24px | 1px, on cells 1-3 end edges, none doubled | none |
+
+At 375 the widest numeral, `500+`, measures 81px in a 140px box, and the document does not scroll
+horizontally at any of the three widths.
+
+### Checks
+
+`tsc` 0, `eslint` 0, content check ok, motion check clean, build 99 routes, route test ok.
+
+**Not run:** no axe pass on this strip, and no pass on a physical device.
+

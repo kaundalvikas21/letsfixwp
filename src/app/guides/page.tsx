@@ -113,7 +113,12 @@ export default function GuidesIndex() {
           style={{ animationDelay: "210ms" }}
         >
           {measures.map((m) => (
-            <div key={m.label} className="flex items-baseline justify-between gap-4 border-b border-line py-4 sm:block sm:border-b-0 sm:px-5 sm:first:pl-0 sm:last:pr-0">
+            // No `first:pl-0 last:pr-0`. The pair aligned the outer numerals with the page spine,
+            // which works for a bare numeral and stopped working once the About strip painted a
+            // hover box behind each cell: against a painted edge a zero gutter reads as missing,
+            // not as alignment. Dropped from all three strips at once, so the exception does not
+            // survive on two of them looking like a bug. Task 105.
+            <div key={m.label} className="flex items-baseline justify-between gap-4 border-b border-line py-4 sm:block sm:border-b-0 sm:px-5">
               <dt className="text-sm text-muted sm:order-2 sm:mt-1">{m.label}</dt>
               <dd className="font-display text-[1.75rem] font-extrabold tabular-nums tracking-[-0.03em] [font-variation-settings:'opsz'_28] sm:order-1">
                 {m.value}

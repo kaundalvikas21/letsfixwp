@@ -138,9 +138,15 @@ export default function About() {
           one page in two different type sizes reads as two different facts.
 
           Four cells, never three: contract rule 6 bans three equal cards in a row, and the one
-          exception the site spends is the delivery track's numerals. Two across at `sm`, four at
-          `lg`, one at 375. The divider is a hairline between cells rather than a border around
-          each, so the strip reads as one instrument and not as four cards.
+          exception the site spends is the delivery track's numerals. Two across at every width below
+          `lg`, four at `lg`, and never one: a single stacked column put four numerals down the page
+          with nothing to compare each against, which is a list and not an instrument. The divider is
+          a hairline between cells rather than a border around each, so the strip reads as one thing
+          and not as four cards. `max-lg:even:border-l` draws the two-column rule rather than
+          `divide-x`, which in a two-column grid would also border the third cell, down the strip's
+          own left edge. It is capped at `max-lg` and not left open: `divide-x` borders the *end* of
+          every cell but the last, so an unscoped `even:border-l` meets that edge at `lg` and renders
+          two of the three dividers at 2px while the middle one stays at 1px.
 
           `Stagger` and `CountUp` are the Task 41 primitives doing exactly the job the motion table
           mapped them to. The numerals carry `tabular-nums` from `CountUp` itself, so a digit
@@ -152,7 +158,7 @@ export default function About() {
           a pointer response for things that go somewhere. Spent on the owner's instruction. */}
       <Stagger
         as="dl"
-        className="mt-10 grid border-t border-line sm:grid-cols-2 lg:grid-cols-4 lg:divide-x lg:divide-line"
+        className="mt-10 grid grid-cols-2 border-t border-line lg:grid-cols-4 lg:divide-x lg:divide-line"
       >
         {[
           { value: brand.stats.sitesRecovered, suffix: "+", label: "Sites brought back online" },
@@ -165,7 +171,7 @@ export default function About() {
         ].map((s) => (
           <HoverFill
             key={s.label}
-            className="flex flex-col border-b border-line py-5 lg:border-b-0 lg:px-6 lg:first:pl-0 lg:last:pr-0"
+            className="flex flex-col border-b border-line px-4 py-5 max-lg:even:border-l lg:border-b-0 lg:px-6"
           >
             <dt className="order-2 mt-1.5 text-sm text-muted">{s.label}</dt>
             <dd className="order-1 font-display text-[2.25rem] leading-none font-extrabold tracking-[-0.04em] [font-variation-settings:'opsz'_36] md:text-[2.75rem] md:[font-variation-settings:'opsz'_44]">
